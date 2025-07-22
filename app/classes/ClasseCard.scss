@@ -1,0 +1,74 @@
+.classe-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.1em 1.5em 1.3em 1.5em;
+  margin: 0.7em 0;
+  max-width: 410px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  position: relative;
+  transition: box-shadow 0.15s;
+  cursor: pointer;
+}
+.classe-card:hover {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+}
+.classe-card__header {
+  display: flex;
+  gap: 1.1em;
+  align-items: baseline;
+  font-size: 1.18em;
+  font-weight: 600;
+  color: #1a2956;
+}
+.classe-card__niveau {
+  font-size: 1.1em;
+}
+.classe-card__alias {
+  font-size: 1.1em;
+  color: #3b3b3b;
+}
+.classe-card__annee {
+  margin-left: auto;
+  font-size: 0.98em;
+  color: #888;
+  font-weight: 400;
+}
+.classe-card__infos {
+  display: flex;
+  align-items: center;
+  gap: 1.2em;
+}
+.classe-card__photo {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 7px;
+  border: 1px solid #e0e0e0;
+  background: #f9f9f9;
+}
+.classe-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  font-size: 1em;
+}
+.classe-card__editbtn {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: #f5f5f5;
+  border: 1px solid #c0c0c0;
+  border-radius: 4px;
+  padding: 0.25em 0.7em;
+  font-size: 1em;
+  cursor: pointer;
+  color: #2a2a2a;
+  transition: background 0.15s;
+}
+.classe-card__editbtn:hover {
+  background: #e6e6e6;
+}

@@ -1,0 +1,859 @@
+.modal{
+    display: block;
+    position: relative;
+    padding: 1em;
+    box-shadow: 0 0 10px 1px inset;
+    border-radius: 4px;
+}
+
+.person-detail {
+  position:relative;
+  max-width: 700px;
+  margin: 2em auto;
+  padding: 2em;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px #d8d8ff66;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  &__photo {
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    padding: 1em;
+    background: silver;
+    z-index: 10;
+    display: block;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto 1em auto;
+    border: 2px solid #eee;
+  }
+
+  &__editbtn {
+    position:absolute;
+    right:1em;
+    z-index:2;
+    padding:0.3em 0.7em;
+    font-size:0.95em;
+    background:#fff;
+    border:1px solid #bbb;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 1px 4px #0001;
+  }
+  &__title {
+    margin-bottom: 0;
+    font-size: 1.6em;
+    text-align: center;
+  }
+
+  &__classe {
+    opacity: .8;
+    margin-bottom: 1em;
+    font-size: 1.1em;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  &__gmap {
+    margin-bottom: 1em;
+    text-align: center;
+  }
+  &__gmap-btn {
+    background: transparent;
+    border: none;
+    font-size: 1em;
+    cursor: pointer;
+    color: #2b47a2;
+    margin-left: 0.5em;
+    font-weight: 500;
+  }
+  &__gmap-map {
+    height: 300px;
+    width: 100%;
+    margin: 1em 0 2em 0;
+  }
+
+  &__block {
+    margin: 2em 0 1em 0;
+  }
+  &__subtitle {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+  }
+
+  // Responsive
+  @media (max-width: 600px) {
+    padding: 0.7em;
+    border-radius: 8px;
+    &__photo {
+      width: 80px;
+      height: 80px;
+    }
+  }
+}
+
+
+section>div:has(.modal){
+  position: relative;
+}
+#map{
+    height: 400px;
+}
+
+.parents-block {
+  display: flex;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.parent-card {
+  background: #f8f8fc;
+  border: 2px solid #e0e0e0;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+  min-width: 220px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.parent-img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 0.7rem;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+}
+.parent-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.7rem;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .parents-block {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .parent-card {
+    max-width: 100%;
+    min-width: 0;
+  }
+}
+
+.eleves-list,.enseignants-list,.classes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.3em 2.1em;
+  justify-content: flex-start;
+  margin: 2em 0 1em 0;
+}
+
+#modalPersonForm select {
+  background: #fff;
+  border: 2px solid #d0d5df;
+  border-radius: 8px;
+  padding: 0.6em 2.2em 0.6em 1em;
+  font-size: 1rem;
+  color: #2a2a2a;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  position: relative;
+  min-width: 220px;
+  margin: 0.7em 0;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.8em center;
+  background-size: 1.2em;
+}
+#modalPersonForm select:focus:focus {
+  border-color: #6c63ff;
+  box-shadow: 0 0 0 2px rgba(108,99,255,0.15);
+}
+
+.isinterne-card {
+  display: flex;
+  align-items: center;
+  background: #f8f8fc;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 0.7em 1.2em;
+  margin: 1em 0 1.2em 0;
+  min-width: 220px;
+  width: 100%;
+}
+.isinterne-img {
+  width: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1.2em;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+}
+.isinterne-label {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  font-weight: 600;
+  font-size: 1.18em;
+  color: #3a356a;
+  padding: 1.2em 1em;
+  border-radius: 8px;
+//   background: rgba(108,99,255,0.05);
+  box-shadow: 0 1px 4px rgba(108,99,255,0.06);
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+}
+.isinterne-label:hover {
+  background: rgba(0,0,0,0.13);
+  color: black;
+}
+.isinterne-label input[type="checkbox"] {
+  appearance: none;
+  width: 1.4em;
+  height: 1.4em;
+  border: 2px solid #bdbdfc;
+  border-radius: 6px;
+  background: #fff;
+  margin-right: 0.5em;
+  position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  cursor: pointer;
+  vertical-align: middle;
+  box-shadow: 0 1px 4px rgba(108,99,255,0.07);
+}
+.isinterne-label input[type="checkbox"]:checked {
+  border-color: black;
+  background: black;
+}
+.isinterne-label input[type="checkbox"]:checked:after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 0.33em;
+  top: 0.13em;
+  width: 0.45em;
+  height: 0.85em;
+  border: solid #fff;
+  border-width: 0 0.18em 0.18em 0;
+  transform: rotate(45deg);
+}
+.isinterne-label input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 2px #bdbdfc;
+}
+.isinterne-label span {
+  margin-left: 0.2em;
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+.previewImageAddForm{
+    max-width: 400px;
+    max-height: 300px;
+    margin: 0 auto;
+    // object-position: 0% 0%;
+    object-position: top;
+}
+
+.entry-block {
+  background: #f8f8fc;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.1em 1.5em 1.2em 1.5em;
+  margin: 1.2em 0 1.4em 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  min-width: 220px;
+  max-width: 600px;
+}
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.7em;
+  font-weight: 600;
+  font-size: 1.04em;
+}
+.entry-list {
+  margin-bottom: 0.7em;
+}
+.add-entry-btn {
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.32em 1.1em;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.add-entry-btn:hover {
+  background: #554fc6;
+}
+.entry-month {
+  margin-bottom: 0.8em;
+}
+.entry-title {
+  font-weight: 500;
+  color: #6c63ff;
+  margin-bottom: 0.2em;
+  font-size: 1.01em;
+}
+.entry-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+.entry-entry {
+  background: #fbe9e7;
+  color: #9c2921;
+  border-radius: 7px;
+  padding: 0.32em 1.2em 0.32em 0.9em;
+  font-size: 0.97em;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(156,41,33,0.04);
+  margin-bottom: 0.2em;
+  margin-right: 0.5em;
+}
+.remove-entry-btn {
+  position: absolute;
+  top: -0.45em;
+  right: -0.45em;
+  background: #fff;
+  border: 1.5px solid #c00;
+  color: #b00;
+  border-radius: 50%;
+  width: 1.4em;
+  height: 1.4em;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(156,41,33,0.07);
+  transition: background 0.15s, color 0.15s;
+}
+.remove-entry-btn:hover {
+  background: #ffeaea;
+  color: #e00;
+}
+.entry-picker-modal {
+  background: #fff;
+  border: 2px solid #6c63ff;
+  box-shadow: 0 2px 16px rgba(108,99,255,0.09);
+  border-radius: 12px;
+  padding: 1.2em 2em 1.2em 2em;
+  margin: 1em auto;
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  width: fit-content;
+}
+// Spécialisation commentaires professeur
+.commentaires-block {
+  border: 2px solid #b0b0b0;
+  border-radius: 7px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  &__header {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+  }
+  &__list {
+    margin-bottom: 8px;
+  }
+  &__empty {
+    color: #888;
+    font-style: italic;
+  }
+  &__entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  &__entry-date { color: #2e2e7e; font-weight: 600; margin-right: 8px; font-size: 0.95em; }
+  &__entry-txt { color: #222; font-size: 1em; }
+  &__remove-btn {
+    background: none;
+    border: none;
+    color: #d00;
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  &__add-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    input[type='text'] { font-size: 1em; flex: 1; }
+  }
+}
+
+// Spécialisation historique écoles
+.school-history-block {
+  border: 2px solid #b3b3b3;
+  border-radius: 7px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  &__header {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+  }
+  &__list {
+    margin-bottom: 8px;
+  }
+  &__empty {
+    color: #888;
+    font-style: italic;
+  }
+  &__entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  &__entry-year { color: #2e2e7e; font-weight: 600; margin-right: 8px; }
+  &__entry-ecole { color: #222; font-size: 1em; }
+  &__remove-btn {
+    background: none;
+    border: none;
+    color: #d00;
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  &__add-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    select, input[type='text'] { font-size: 1em; }
+  }
+}
+
+// Spécialisation scolarité
+.scolarity-fees-block {
+  border: 2px solid #bbb;
+  border-radius: 7px;
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  &--complete { background: #d2ffd2; border-color: #4caf50; }
+  &--incomplete { background: #fff9e0; border-color: #ffa500; }
+  &__header {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+  }
+  &__totals {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 8px;
+    span { font-size: 1em; }
+  }
+  &__list {
+    margin-bottom: 8px;
+  }
+  &__empty {
+    color: #888;
+    font-style: italic;
+  }
+  &__entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  &__entry-date { color: #666; font-size: 0.95em; margin-right: 8px; }
+  &__entry-argent { color: #137c13; font-weight: 600; }
+  &__entry-riz { color: #3466b8; font-weight: 600; }
+  &__remove-btn {
+    background: none;
+    border: none;
+    color: #d00;
+    font-weight: bold;
+    font-size: 1.2em;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  &__add-btn {
+    background: #0a0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    cursor: pointer;
+  }
+  &__add-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    select, input[type='number'] { font-size: 1em; }
+  }
+  &__add-cancel {
+    background: #ccc;
+    color: #222;
+    border-radius: 4px;
+    border: none;
+    padding: 2px 12px;
+    font-weight: 600;
+    margin-left: 4px;
+    cursor: pointer;
+  }
+}
+
+// Spécialisation compositions
+.compositions-block {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 16px;
+
+  &__header {
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  &__trimestre {
+    margin-bottom: 10px;
+    background: #f8f8fa;
+    border-radius: 4px;
+    padding: 8px;
+  }
+  &__trimestre-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  &__trimestre-title {
+    min-width: 120px;
+  }
+  &__add-btn {
+    margin-left: 8px;
+    background: #0a0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+    cursor: pointer;
+    &--cancel {
+      background: #ccc;
+      color: #222;
+    }
+  }
+  &__notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  &__note {
+    position: relative;
+    padding: 2px 16px 2px 8px;
+    background: #e8f6e8;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    button {
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      border: none;
+      background: transparent;
+      color: #d00;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  }
+  &__no-compo {
+    color: #888;
+    font-style: italic;
+    margin-right: 8px;
+  }
+  &__add-form {
+      display: flex;
+    align-items: center;
+    gap: 4px;
+    input[type='number'] {
+      width: 60px;
+    }
+  }
+  &__year-select{
+    .option_blue{background: blue;}
+    .option_green{background: green;font-size:2em;}
+    .option_red{background: red;}
+    option:checked{color:gold;font-size:1.5em;}
+  }
+    
+}
+
+// Spécialisation notes
+.add-note-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .add-note-date {
+    min-width: 120px;
+  }
+  .add-note-matiere {
+    min-width: 100px;
+  }
+  .add-note-note {
+    min-width: 60px;
+  }
+  .add-note-btn {
+    background: #0a0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-weight: 600;
+  }
+  .add-note-error {
+    color: red;
+    margin-left: 8px;
+  }
+// Spécialisation absences
+.absences-block {
+  @extend .entry-block;
+}
+.absences-header {
+  @extend .entry-header;
+}
+.absences-list {
+  @extend .entry-list;
+}
+.absence-month {
+  @extend .entry-month;
+}
+.month-title {
+  @extend .entry-title;
+}
+.month-dates {
+  @extend .entry-dates;
+}
+.absence-date {
+  @extend .entry-entry;
+}
+.remove-absence-btn {
+  @extend .remove-entry-btn;
+}
+.absence-picker-modal {
+  @extend .entry-picker-modal;
+}
+// Spécialisation bonus
+.bonus-block {
+  @extend .entry-block;
+}
+.bonus-header {
+  @extend .entry-header;
+}
+.bonus-list {
+  @extend .entry-list;
+}
+.bonus-month {
+  @extend .entry-month;
+}
+.month-bonus {
+  @extend .entry-dates;
+}
+.bonus-entry {
+  @extend .entry-entry;
+}
+.remove-bonus-btn {
+  @extend .remove-entry-btn;
+}
+.bonus-picker-modal {
+  @extend .entry-picker-modal;
+}
+// Spécialisation manus
+.manus-block {
+  @extend .entry-block;
+}
+.manus-header {
+  @extend .entry-header;
+}
+.manus-list {
+  @extend .entry-list;
+}
+.manus-month {
+  @extend .entry-month;
+}
+.month-manus {
+  @extend .entry-dates;
+}
+.manus-entry {
+  @extend .entry-entry;
+}
+.remove-manus-btn {
+  @extend .remove-entry-btn;
+}
+.manus-picker-modal {
+  @extend .entry-picker-modal;
+}
+
+.documents-block {
+  @extend .entry-block;
+  margin-top: 1.5em;
+}
+.documents-list {
+  margin-top: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+.document-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.22em 0.1em;
+  font-size: 1em;
+}
+.doc-icon {
+  font-size: 1.4em;
+  margin-right: 0.2em;
+}
+
+// --- Styles imbriqués BEM pour le layout admin école ---
+.ecole-admin {
+  padding: 32px;
+  margin-bottom: 5em;
+  background: #f8f8fc;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #e0e0e0cc;
+  min-height: 100vh;
+
+  &__title {
+    font-size: 2.1em;
+    font-weight: 700;
+    margin-bottom: 0.6em;
+    color: #3a356a;
+    letter-spacing: 0.01em;
+  }
+
+  &__nav {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+    margin-bottom: 2.2em;
+    justify-content: center;
+    background: silver;
+    padding: 1em;
+
+    &-btn {
+      font-size: 1.1em;
+      padding: 0.7em 1.3em;
+      border-radius: 8px;
+      border: 1px solid #dadada;
+      background: #f4f4fa;
+      color: #222;
+      cursor: pointer;
+      transition: background 0.17s, border 0.17s, color 0.17s;
+      font-weight: 500;
+      outline: none;
+
+      &:hover,
+      &:focus {
+        background: #e7e7fd;
+        border: 1.5px solid #6c63ff;
+        color: #3a356a;
+      }
+
+      >span{
+        font-size:1.4em;
+      }
+    }
+  }
+
+  &__stats {
+    margin-bottom: 2.2em;
+
+    &-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    &-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    &-label {
+      font-size: 1.1em;
+      color: #444;
+      margin-bottom: 0.2em;
+      font-weight: 600;
+    }
+    &-value {
+      font-weight: bold;
+      font-size: 1.08em;
+      color: #222;
+    }
+  }
+
+  &__content {
+    margin-top: 32px;
+    >div{
+      >h1{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: silver;
+        padding: 1em;
+        >button{
+
+        }
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    padding: 10px;
+    &__nav {
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 18px;
+    }
+    &__content {
+      margin-top: 18px;
+    }
+  }
+}

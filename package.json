@@ -1,0 +1,43 @@
+{
+  "name": "ecom",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^6.21.0",
+    "@googlemaps/react-wrapper": "^1.2.0",
+    "chart.js": "^4.5.0",
+    "fast-equals": "^5.2.2",
+    "formidable": "^3.5.4",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "mongoose-unique": "^0.0.5",
+    "mongoose-unique-validator": "^4.0.1",
+    "multer": "^2.0.1",
+    "next": "15.3.3",
+    "node-localstorage": "^3.0.5",
+    "prop-types": "^15.8.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sass": "^1.89.2",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.1",
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  },
+  "description": "Idées évolution app école (conversation gemini) https://gemini.google.com/app/951a0c213d4a23a1?hl=fr",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

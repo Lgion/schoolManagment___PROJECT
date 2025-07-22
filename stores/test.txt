@@ -1,0 +1,236 @@
+diff --git a/app/_/Gmap.jsx b/app/_/Gmap.jsx
+index bdccb01..3ecfece 100644
+--- a/app/_/Gmap.jsx
++++ b/app/_/Gmap.jsx
+@@ -112,7 +112,7 @@ export default function Gmap() {
+     };
+ 
+     return <Wrapper 
+-        apiKey={"AIzaSyBJcEaaYtL4Y9RmWSDg10UW3dFFpUY6KXc"} 
++        apiKey={"AIzaSyA91x3_pmeeoc1bwFWvj2dehOCBuH0VKcU"} 
+         render={render}
+     >
+         <Map 
+diff --git a/app/_/Hgroup.jsx b/app/_/Hgroup.jsx
+index abd8c25..ade92cb 100644
+--- a/app/_/Hgroup.jsx
++++ b/app/_/Hgroup.jsx
+@@ -62,7 +62,8 @@ export default function Hgroup() {
+                         // fill="layout"
+                     />
+                     <span>
+-                        SANCTUAIRE Notre Dame du ROSAIRE de Bolobi
++                        <span>SANCTUAIRE</span> <span>Notre Dame du ROSAIRE</span> <span>de Bolobi</span>
++                        <span>Abidjan, Côte d'ivoire</span>
+                         {/* <strong>Évangélisation</strong>, <strong>Prière</strong> et{" "}
+                         <strong>Assistance spirituelle</strong> */}
+                     </span>
+diff --git a/app/sanctuaire-rosaire-bolobi-adzope/_/Article.jsx b/app/sanctuaire-rosaire-bolobi-adzope/_/Article.jsx
+index 1b8315f..92b9940 100644
+--- a/app/sanctuaire-rosaire-bolobi-adzope/_/Article.jsx
++++ b/app/sanctuaire-rosaire-bolobi-adzope/_/Article.jsx
+@@ -2,17 +2,20 @@
+ 
+ import Link from "next/link";
+ import Cards from "./Cards";
++import IntroVideo from './components/IntroVideo'
+ 
+ 
+ 
+ 
+ export default function Article() {
+     return <article>
+-        <h3 id="firstH3" data-icon="1">Bienvenue au Sanctuaire Notre Dame du Rosaire à Bolobi, Abidjan, Côte d'Ivoire</h3>
+-
+ 
++        <h3>Itinéraire vidéo vers le Sanctuaire notre Dame Raosaire Bolobi</h3>
++        <p>Situé sur l'<b>axe routier Abidjan-Adzopé</b>, cette vidéo explique <b>comment se rendre au <u>Sanctuaire Notre Dame du Rosaire de Bolobi</u></b>.</p>
++        <IntroVideo />
+         {/* <iframe width="560" height="315" src="https://www.youtube.com/embed/Yv3BHtHt3Pg?si=e2Kepaxuk2NhGbK1" title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe> */}
+ 
++        <h3 id="firstH3" data-icon="1">Bienvenue au Sanctuaire Notre Dame du Rosaire à Bolobi, Abidjan, Côte d'Ivoire</h3>
+ 
+         <p>Si vous êtes à la recherche d'<b>un lieu de paix, de prière et de recueillement au cœur de la nature</b>, le <Link href="#">Sanctuaire Notre Dame du Rosaire à Bolobi</Link> est l'endroit idéal pour vous.</p>
+         <p>Niché dans les magnifiques collines verdoyantes du <b>diocèse d'Agboville</b>, en périphérie du grand Abidjan sur la <b>route Abidjan-Adzopé</b>, s'étendant sur 18Ha, ce sanctuaire chrétien offre une expérience spirituelle apaisante et unique.</p>
+diff --git a/app/sanctuaire-rosaire-bolobi-adzope/_/components/IntroVideo.jsx b/app/sanctuaire-rosaire-bolobi-adzope/_/components/IntroVideo.jsx
+new file mode 100644
+index 0000000..3f0d39d
+--- /dev/null
++++ b/app/sanctuaire-rosaire-bolobi-adzope/_/components/IntroVideo.jsx
+@@ -0,0 +1,17 @@
++const IntroVideo = () => {
++    return (
++        <div className="intro-video-container">
++            <iframe
++                // src="https://www.youtube.com/embed/FjO441MnCr8"
++                src="https://www.youtube.com/embed/cSL0O2KJcWc?si=Hjq0LHhx5ZH9Ia9W"
++                title="Présentation Librairie Puissance Divine"
++                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
++                allowFullScreen
++                className="intro-video"
++                style={{width: "100%","height": "400px"}}
++            />
++        </div>
++    );
++};
++
++export default IntroVideo;
+diff --git a/assets/scss/index.scss b/assets/scss/index.scss
+index 585317f..3254db4 100644
+--- a/assets/scss/index.scss
++++ b/assets/scss/index.scss
+@@ -606,7 +606,8 @@ body{
+         // top: 0;
+         >img{
+           height: 100%;
+-          width: 133px;
++          // height: 100%;
++          width: 125px;
+         }
+         >span{
+           // margin: 0 auto;
+@@ -626,15 +627,35 @@ body{
+           font-size: .8em;
+           &:not(:first-of-type)>span{display: none;}
+           >span{
+-            left: 133px;
+-            right: 133px;
++            left: 125px;
++            right: 125px;
+             font-size: 1em;
+             line-height: .75em;
+           }
+         }
+         &:nth-of-type(1)>span{
++          font-size:.9em;
+           color: $secondary;
+           text-shadow: 0 1px 0px black,.1px 0px 0px black;
++          @include mobile-only{
++            display: flex;
++            flex-flow: wrap;
++            height: 100%;
++            >span{
++              width: 100%;
++              &:nth-child(1){}
++              &:nth-child(2){
++                line-height: 1em;
++              }
++              &:nth-child(3){}
++              &:nth-child(4){
++                font-size: .5em;
++                position: absolute;
++                bottom: 0;
++                letter-spacing: 1.5px;
++              }
++            }
++          }
+         }
+         &:nth-of-type(2)>span{
+           top:calc(2em + 3px);
+@@ -861,12 +882,14 @@ body{
+               }
+               &.homeLink{
+                 >span{    
++                  background: url(../../public/home_.webp) center center no-repeat, black;
++                  &:hover{background: url(../../public/home.webp) center center no-repeat,goldenrod;}
++                  background-size: contain !important;
+                   width: 50px;
+                   height: 50px;
+                   border-radius: 2em;
+                   border: 1px solid;
+-                  box-shadow: 0 0 10px 1px black;
+-                  background: white;
++                  // background: white;
+                   display: flex;
+                   align-items: center;
+                   justify-content: center;
+@@ -876,6 +899,7 @@ body{
+                   transition:all .1s;
+                   &:hover{
+                     border-width: 3px;
++                    box-shadow: 0 0 10px 1px black;
+                   }
+                 }
+               }
+@@ -929,9 +953,19 @@ body{
+         // background:transparent;
+         transition:font-size .2s;
+         &:hover{font-size:1.2em;}
+-        background: url(../../public/img/login.png) no-repeat;
+-        background-size: contain;
++        background: url(../../public/img/login.webp) no-repeat;
++        background: url(../../public/login.webp) center center no-repeat;
++        &:hover{background: url(../../public/login.webp) center center no-repeat, radial-gradient(gold, transparent);}
++        background-size: contain !important;
++        transition:background .4;
++        border-left: 1px solid black;
++        width: 100%;
++        padding:1em;
++        border:none;
++        // background:transparent;
+         z-index: 2;
++        transition:font-size .2s;
++        &:hover{font-size:1.2em;}
+         &:has(*){background: unset;}
+       }
+       >form#connexion{
+@@ -1080,6 +1114,7 @@ body{
+       margin-bottom: 0;
+       @include mobile-only{
+         font-size: .7em;
++        display:none;
+       }
+     }
+     /*
+@@ -2330,7 +2365,6 @@ body{
+                 border-radius: 100px;
+               }
+               >p{
+-                height:72%;
+                 position: relative;
+                 opacity: 1;
+                 font-size: .75em;
+@@ -2369,7 +2403,7 @@ body{
+             }
+             >p{
+               padding: 0.25em .25em 2em;
+-              max-height: 70%;
++              height: 70%;
+               position: relative;
+               transition:all .5s .4s, background .2s;
+               opacity:0;
+diff --git a/public/home.webp b/public/home.webp
+new file mode 100644
+index 0000000..d8f4f45
+Binary files /dev/null and b/public/home.webp differ
+diff --git a/public/home_.webp b/public/home_.webp
+new file mode 100644
+index 0000000..5ce81cf
+Binary files /dev/null and b/public/home_.webp differ
+diff --git a/public/login.webp b/public/login.webp
+new file mode 100644
+index 0000000..f1dc859
+Binary files /dev/null and b/public/login.webp differ
+diff --git a/stores/authContext.js b/stores/authContext.js
+index ea7f807..5be35ea 100644
+--- a/stores/authContext.js
++++ b/stores/authContext.js
+@@ -133,7 +133,7 @@ export const AuthContextProvider = ({children}) => {
+             href:"/",
+             title:"Accueil: Librairie religieuse chrétienne Abidjan, Ecommerce chrétien, centre de retraite spirituelle à Bolobi (entre azaguié et yakasseme, sur route d'Adzopé)",
+             h2: "DÉCOUVRIR: La Puissance Divine de Côte d'ivoire",
+-            content:"🏡",
++            content:"",
+             tagzone:["librairie","librairie religieuse","librairie religieuse chrétienne", "ecommerce chrétien", "sanctuaire bolobi", "retraites spirituelles"],
+             titrePage:["Sanctuaire Notre Dame du Rosaire de Bolobi, et la Librairie Puissance Divine, vous souhaitent la bienvenue."],
+             sns:{"Puissance Divine d'Amour d'Abidjan Cocody 2plateaux rue des jardins":"https://www.facebook.com/genevieve.achi/"},
+@@ -144,7 +144,8 @@ export const AuthContextProvider = ({children}) => {
+             , href:"/sanctuaire-rosaire-bolobi-adzope"
+             , title:"Sanctuaire du Rosaire de Bolobi: activités spirituelles religieuses chrétien catholique"
+             , h2:"RÉSERVER: au Sanctuaire ND Rosaire de BOLOBI"
+-            , content:"Sanctuaire ND du Rosaire Bolobi"
++            // , content:"Sanctuaire ND du Rosaire Bolobi"
++            , content:"Retraites Spirituelles"
+             , tagzone:["retraites de prières"
+                 , "activités spirituelles"
+                 , "lieu de loisir abidjan"
