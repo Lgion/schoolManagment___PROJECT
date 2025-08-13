@@ -1,10 +1,10 @@
  "use client"
 
-import Link from 'next/link';
 import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../..//stores/ai_adminContext';
 import Gmap from '../../_/Gmap_plus';
+import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 
 export default function EnseignantDetailPage() {
   const { id } = useParams();
@@ -17,8 +17,7 @@ export default function EnseignantDetailPage() {
   }, []);
 
   const { setSelected, showModal, setShowModal } = ctx;
-  const enseignant = (ctx.enseignants || []).find(e => String(e._id) === String(id));
-  const classe = ctx.classes.find(c=>c._id==enseignant.current_classes)
+  const { entity: enseignant, classe } = useEntityDetail(id, ctx, 'enseignants');
   const [gmapOpen, setGmapOpen] = useState(false)
 
   if (!enseignant) return <div style={{color:'red'}}>Enseignant introuvable</div>;
@@ -46,9 +45,7 @@ export default function EnseignantDetailPage() {
       }
       <img className="person-detail__photo" src={enseignant.photo_$_file || '/default-photo.png'} alt="" />
       <h1 className="person-detail__title"><u>Enseignant :</u> {enseignant.nom} {enseignant.prenoms} ({enseignant.sexe}) <span style={{fontWeight:400}}>[<time dateTime={enseignant.naissance_$_date}>{enseignant.naissance_$_date ? new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</time>]</span></h1>
-      <div className="person-detail__classe" style={{marginBottom:'1em'}}>
-        <u>Classe principale :</u> <Link href={`/classes/${classe._id}`}>{classe.niveau} - {classe.alias}</Link>
-      </div>
+      <ClasseDisplay classe={classe} label="Classe principale :" />
       <div className="person-detail__gmap">
         <u>Domicilié (coordonées gmap): </u>
         <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>

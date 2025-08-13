@@ -25,10 +25,20 @@ export default function EleveCard({ classe, eleve, onEdit }) {
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
   const progress = getScolarityProgress(fees);
+  
+  // Couleur de fond selon le sexe
+  const getBackgroundColor = (sexe) => {
+    if (sexe === 'Garçon' || sexe === 'garcon' || sexe === 'M' || sexe === 'Masculin') {
+      return 'rgba(54, 162, 235, 0.1)'; // Bleu très léger
+    } else if (sexe === 'Fille' || sexe === 'fille' || sexe === 'F' || sexe === 'Féminin') {
+      return 'rgba(255, 99, 132, 0.1)'; // Rose très léger
+    }
+    return 'transparent';
+  };
 
   return (
     <div className="eleve-card-wrapper" style={{position:'relative'}}>
-      <Link href={`/eleves/${eleve._id}`} className="eleve-card" tabIndex={0}>
+      <Link href={`/eleves/${eleve._id}`} className="eleve-card" tabIndex={0} style={{backgroundColor: getBackgroundColor(eleve.sexe)}}>
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
         <div className="eleve-card__infos">
           <div className="eleve-card__name">{eleve.nom} <span className="eleve-card__prenoms">{prenoms}</span></div>

@@ -1,3 +1,5 @@
+"use client"
+
 import Head from 'next/head'
 import BlogPost from './BlogPost'
 import { useEffect, useState, useCallback, useMemo } from 'react';

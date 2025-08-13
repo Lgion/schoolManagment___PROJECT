@@ -2,24 +2,31 @@
 
 
 export function getAllFavoris(){
+    if (typeof window === 'undefined') return {};
     return JSON.parse(localStorage.cart || "{}")
 }
 
 
 export function saveArticle(object, key="cart"){
-    localStorage[key] = JSON.stringify(object)
+    if (typeof window !== 'undefined') {
+        localStorage[key] = JSON.stringify(object)
+    }
 }
 
 
 export function addArticle(articleID,qty){
-    localStorage.cart = JSON.stringify({...getAllFavoris(), [articleID]: qty})
+    if (typeof window !== 'undefined') {
+        localStorage.cart = JSON.stringify({...getAllFavoris(), [articleID]: qty})
+    }
 }
 
 
 export function deleteArticle(articleID){
-    const ls = getAllFavoris()
-    delete ls[articleID]
-    localStorage.cart = JSON.stringify(ls)
+    if (typeof window !== 'undefined') {
+        const ls = getAllFavoris()
+        delete ls[articleID]
+        localStorage.cart = JSON.stringify(ls)
+    }
 }
 
 

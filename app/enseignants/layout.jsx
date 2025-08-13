@@ -16,7 +16,9 @@ export default function EcoleAdminEleveLayout({ children }) {
         <h1>Liste des enseignants <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button></h1>
         {enseignants ?
             <div className="enseignants-list">
-                {enseignants.map(enseignant => (
+                {enseignants
+                    .sort((a, b) => a.nom.localeCompare(b.nom))
+                    .map(enseignant => (
                     <PersonCard
                     key={enseignant._id}
                     person={enseignant}

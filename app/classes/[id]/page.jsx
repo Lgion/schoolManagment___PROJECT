@@ -4,6 +4,7 @@ import { useContext, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import Link from 'next/link';
+import { getClasseImagePath } from '../../../utils/imageUtils';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -18,12 +19,27 @@ export default function ClasseDetailPage() {
   const { setSelected, showModal, setShowModal } = ctx;
   const classe = (ctx.classes || []).find(c => String(c._id) === String(id));
   if (!classe) return <div style={{color:'red'}}>Classe introuvable</div>;
-  // Liste des élèves de la classe
-  const eleves = (ctx.eleves || []).filter(e => e.current_classe === classe._id);
-  const enseignants = (ctx.enseignants || []).filter(e => e.current_classes === classe._id);
+  
+  // Déterminer si c'est une classe de l'année actuelle ou historique
+  const currentYear = new Date().getFullYear();
+  const currentSchoolYear = (new Date().getMonth() + 1) < 7 
+    ? `${currentYear - 1}-${currentYear}` 
+    : `${currentYear}-${currentYear + 1}`;
+  
+  const isCurrentYear = classe.annee === currentSchoolYear;
+  
+  // Liste des élèves selon le contexte (actuel vs historique)
+  const eleves = isCurrentYear 
+    ? (ctx.eleves || []).filter(e => e.current_classe === classe._id) // Relations dynamiques
+    : classe.eleves || []; // Snapshot historique
+    
+  const enseignants = isCurrentYear
+    ? (ctx.enseignants || []).filter(e => e.current_classes === classe._id) // Relations dynamiques
+    : classe.professeur || []; // Snapshot historique
   // Prof principal (optionnel)
   const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
 
+  console.log(ctx.eleves);
   console.log(enseignants);
   console.log(ctx.enseignants);
   console.log(classe);
@@ -41,34 +57,43 @@ export default function ClasseDetailPage() {
         onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
       >Fermer Édition</button>}
       <div className="person-detail__block">
-        <img className="classe-card__photo" src={classe.photo} alt={classe.niveau + ' ' + classe.alias} />
+        <img 
+          className="classe-card__photo" 
+          src={getClasseImagePath(classe)} 
+          alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
+          onError={(e) => {
+            e.target.src = '/school/default-classe.webp';
+          }}
+        />
         <h2 className="person-detail__subtitle">Informations principales</h2>
         <div><b>Année scolaire :</b> {classe.annee}</div>
-        <div><b>Niveau :</b> {classe.niveau}</div>
-        <div><b>Alias :</b> {classe.alias}</div>
-        <div><b>Prof principal :</b> {prof ? `${prof.nom} ${prof.prenoms}` : (classe.prof_principal_nom || '—')}</div>
-        <div><b>Effectif :</b> {eleves.length}</div>
+        <div><b>Niveau classe:</b> {classe.niveau}</div>
+        <div><b>Alias classe :</b> {classe.alias}</div>
+        {/* <div><b>Prof principal :</b> {prof ? `${prof.nom} ${prof.prenoms}` : (classe.prof_principal_nom || '—')}</div> */}
+        <div><b>Effectif élèves:</b> {eleves.length}</div>
       </div>
       <div className="person-detail__block">
         <h2 className="person-detail__subtitle">Liste des élèves</h2>
         {eleves.length === 0 ? <div>Aucun élève dans cette classe.</div> :
           <ul className="classe-detail__eleves-list">
-            {eleves.map(eleve => (
-              <li key={eleve._id}>
-                <Link href={`/admin/ecole/eleves/${eleve._id}`}>{eleve.nom} {eleve.prenoms}</Link>
+            {eleves.map(eleve => {
+              const student = ctx.eleves.find(el=>el._id===eleve)
+              return <li key={eleve._id}>
+                <Link href={`/eleves/${eleve}`}>{student.nom} {student.prenoms}</Link>
               </li>
-            ))}
+            })}
           </ul>
         }
       <div className="person-detail__block">
         <h2 className="person-detail__subtitle">Enseignant attitré.e</h2>
         {enseignants.length === 0 ? <div>Aucun élève dans cette classe.</div> :
           <ul className="classe-detail__eleves-list">
-            {enseignants.map(enseignant => (
-              <li key={enseignant._id}>
-                <Link href={`/enseignants/${enseignant._id}`}>{enseignant.nom} {enseignant.prenoms}</Link>
+            {enseignants.map(enseignant => {
+              const teacher = ctx.enseignants.find(el=>el._id===enseignant)
+              return <li key={enseignant._id}>
+                <Link href={`/enseignants/${enseignant}`}>{teacher.nom} {teacher.prenoms}</Link>
               </li>
-            ))}
+}           )}
           </ul>
         }
       </div>

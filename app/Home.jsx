@@ -1,16 +1,18 @@
 "use client"
 
 import Link from 'next/link';
-import { useState,useContext,useEffect } from 'react';
+import { useContext,useEffect } from 'react';
 import {AiAdminContext} from '../stores/ai_adminContext';
 
 export default ({children}) => {
-  const { fetchEleves, fetchEnseignants, fetchClasses } = useContext(AiAdminContext)
-  const [stats, setStats] = useState({
-    eleves: 0,
-    enseignants: 0,
-    classes: 0
-  })
+  const { 
+    eleves, 
+    enseignants, 
+    classes, 
+    fetchEleves, 
+    fetchEnseignants, 
+    fetchClasses 
+  } = useContext(AiAdminContext)
 
   useEffect(() => {
     fetchClasses()
@@ -37,12 +39,9 @@ export default ({children}) => {
       <div className="ecole-admin__stats-row">
         <div className="ecole-admin__stats-col">
           <span className="ecole-admin__stats-label">Statistiques</span>
-          <span className="ecole-admin__stats-value">Nombre d'élèves: {JSON.parse(localStorage.getItem('eleves'))?.length
-            || 0}</span>
-          <span className="ecole-admin__stats-value">Nombre d'enseignants:
-            {JSON.parse(localStorage.getItem('enseignants'))?.length || 0}</span>
-          <span className="ecole-admin__stats-value">Nombre de classes:
-            {JSON.parse(localStorage.getItem('classes'))?.length || 0}</span>
+          <span className="ecole-admin__stats-value">Nombre d'élèves: {eleves?.length || 0}</span>
+          <span className="ecole-admin__stats-value">Nombre d'enseignants: {enseignants?.length || 0}</span>
+          <span className="ecole-admin__stats-value">Nombre de classes: {classes?.length || 0}</span>
         </div>
       </div>
     </article>

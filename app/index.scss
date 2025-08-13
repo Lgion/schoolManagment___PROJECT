@@ -1,37 +1,26 @@
-.modal{
-    display: block;
-    position: relative;
-    padding: 1em;
-    box-shadow: 0 0 10px 1px inset;
-    border-radius: 4px;
-}
+// Import des variables et composants SCSS avec la nouvelle syntaxe @use
+@use 'sass:map';
+@use '../assets/scss/variables' as *;
+@use '../assets/scss/components/MODALS/entityModal.scss';
+@use '../assets/scss/components/DISPLAYS/classeEnseignantDisplay.scss';
+@use '../assets/scss/components/LISTS/classesList.scss';
 
 .person-detail {
-  position:relative;
-  max-width: 700px;
-  margin: 2em auto;
-  padding: 2em;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 2px 12px #d8d8ff66;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-
+  @extend %entityModal__container;
+  position: relative;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  
   &__photo {
-    position: fixed;
-    right: 0px;
-    top: 0px;
-    padding: 1em;
-    background: silver;
+    @extend %entityModal__photoPreview;
+    position: absolute;
+    right: 2rem;
+    top: 2rem;
+    width: 100px;
+    height: 100px;
     z-index: 10;
-    display: block;
-    width: 200px;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin: 0 auto 1em auto;
-    border: 2px solid #eee;
+    margin: 0;
   }
 
   &__editbtn {
@@ -159,41 +148,50 @@ section>div:has(.modal){
   margin: 2em 0 1em 0;
 }
 
-#modalPersonForm select {
-  background: #fff;
-  border: 2px solid #d0d5df;
-  border-radius: 8px;
-  padding: 0.6em 2.2em 0.6em 1em;
-  font-size: 1rem;
-  color: #2a2a2a;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  appearance: none;
-  position: relative;
-  min-width: 220px;
-  margin: 0.7em 0;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 0.8em center;
-  background-size: 1.2em;
-}
-#modalPersonForm select:focus:focus {
-  border-color: #6c63ff;
-  box-shadow: 0 0 0 2px rgba(108,99,255,0.15);
+#modalPersonForm {
+  @extend %entityModal__form;
+  
+  select {
+    @extend %entityModal__select;
+    min-width: 220px;
+    margin: 0.7em 0;
+  }
+  
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="number"] {
+    @extend %entityModal__input;
+  }
+  
+  textarea {
+    @extend %entityModal__textarea;
+  }
+
+  label {
+    @extend %entityModal__label;
+  }
 }
 
 .isinterne-card {
   display: flex;
   align-items: center;
-  background: #f8f8fc;
-  border: 2px solid #e0e0e0;
+  background: map.get($themeColors, gray100);
+  border: 2px solid map.get($themeColors, gray300);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  padding: 0.7em 1.2em;
-  margin: 1em 0 1.2em 0;
+  box-shadow: map.get($shadows, sm);
+  padding: map.get($spacing, md) map.get($spacing, lg);
+  margin: map.get($spacing, md) 0 map.get($spacing, lg) 0;
   min-width: 220px;
   width: 100%;
+  font-family: $primaryFont;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: map.get($themeColors, primary);
+    box-shadow: map.get($shadows, md);
+  }
 }
 .isinterne-img {
   width: 200px;
@@ -562,6 +560,26 @@ section>div:has(.modal){
   &__trimestre-title {
     min-width: 120px;
   }
+  &__nav-btn {
+    @extend %entityModal__btn;
+    @extend %entityModal__btn--primary;
+    padding: 16px 24px;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+    }
+
+    span {
+      font-size: 1.4em;
+    }
+  }
   &__add-btn {
     margin-left: 8px;
     background: #0a0;
@@ -730,27 +748,64 @@ section>div:has(.modal){
   @extend .entry-picker-modal;
 }
 
+// Documents block BEM styles
 .documents-block {
   @extend .entry-block;
-  margin-top: 1.5em;
+  margin-top: map.get($spacing, lg);
+  
+  &__list {
+    margin-top: map.get($spacing, sm);
+    display: flex;
+    flex-direction: column;
+    gap: map.get($spacing, xs);
+  }
+  
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: map.get($spacing, sm);
+    padding: map.get($spacing, xs) map.get($spacing, sm);
+    font-size: 1em;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    cursor: pointer;
+    
+    &:hover {
+      background: map.get($themeColors, gray100);
+    }
+  }
+  
+  &__icon {
+    font-size: 1.4em;
+    margin-right: map.get($spacing, xs);
+  }
+  
+  &__name {
+    flex: 1;
+    font-family: $primaryFont;
+  }
+  
+  &__input {
+    @extend %entityModal__input;
+    margin-left: map.get($spacing, sm);
+    flex: 1;
+  }
 }
+
+// Remplacement des anciens sélecteurs par BEM
 .documents-list {
-  margin-top: 0.5em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
+  @extend .documents-block__list;
 }
+
 .document-item {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  padding: 0.22em 0.1em;
-  font-size: 1em;
+  @extend .documents-block__item;
 }
+
 .doc-icon {
-  font-size: 1.4em;
-  margin-right: 0.2em;
+  @extend .documents-block__icon;
 }
+
+
 
 // --- Styles imbriqués BEM pour le layout admin école ---
 .ecole-admin {

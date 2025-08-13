@@ -1,10 +1,11 @@
  "use client";
- import Link from 'next/link';
 import { useContext,useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
 import Gmap from '../../_/Gmap_plus';
+import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
+import ClasseEnseignantDisplay from '../../components/ClasseEnseignantDisplay';
 
 export default function ElevePage() {
   const { id } = useParams();
@@ -27,11 +28,10 @@ export default function ElevePage() {
   console.log(ctx.eleves);
   const { setSelected, showModal, setShowModal } = ctx;
   
-  const eleve = (ctx.eleves || []).find(e => String(e._id) === String(id));
+  const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
   if (!eleve) return <div style={{color:'red'}}>Élève introuvable</div>;
-  const classe = (ctx.classes || []).find(c => c._id === eleve.current_classe) || {}
 
 
   // Récupère toutes les années de scolarité pour progression globale
@@ -70,9 +70,9 @@ export default function ElevePage() {
       }
       <img className="person-detail__photo" src={eleve.photo_$_file} alt="" />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
-      <div className="person-detail__classe">
-        <u>En classe de:</u> <Link href={`/classes/${classe._id}`}>{classe.niveau} - {classe.alias}</Link>
-      </div>
+      <ClasseDisplay classe={classe} label="En classe de:" />
+      <ClasseEnseignantDisplay classe={classe} label="Enseignant de la classe:" />
+       
       <div className="person-detail__gmap">
         <u>Domicilié (coordonées gmap): </u>
         <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>
@@ -106,7 +106,7 @@ export default function ElevePage() {
 
       <div className="person-detail__block person-detail__block--history">
         <h2 className="person-detail__subtitle">Historique des écoles</h2>
-        <SchoolHistoryBlock schoolHistory={eleve.schoolHistory} />
+        <SchoolHistoryBlock schoolHistory={eleve.school_history} />
       </div>
       <div className="person-detail__block person-detail__block--fees">
         <h2 className="person-detail__subtitle">Frais de scolarité</h2>

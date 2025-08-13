@@ -1,3 +1,5 @@
+"use client"
+
 import {useState,useEffect,useContext} from 'react'
 import Link from "next/link";
 import { SignInButton, SignUpButton, UserProfile, UserButton, useAuth, isLoaded, useUser, SignedIn, SignedOut, useClerk } from "@clerk/nextjs"

@@ -1,5 +1,6 @@
-import { useContext, useState, useRef, useEffect, Fragment } from 'react';
+import { useContext, useState, useEffect, useRef, Fragment } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import { MATIERES_SCOLAIRES, convertOldNotesToNew, extractMatiereNote } from '../../utils/matieres';
 import Gmap from '../_/Gmap_plus';
 
 // type: 'eleve' | 'enseignant' | 'classe'
@@ -230,14 +231,33 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   // Rendu dynamique selon le type
   return (
     <div className="modal">
-      {(uploading || (typeof window !== 'undefined' && ctx && ctx.showModal && uploading)) && (
-        <div style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',background:'rgba(255,255,255,0.75)',zIndex:999,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1.5em',fontWeight:600}}>
-          <span>Enregistrement en cours...</span>
-        </div>
-      )}
-      <div className="modal-content">
-        <button onClick={onClose}>Fermer</button>
-        <form onSubmit={handleSubmit} id="modalPersonForm">
+      <div className="modal__container">
+        <header className="modal__header">
+          <h2 className="modal__title">
+            {type === 'eleve' && (entity ? 'Modifier l\'élève' : 'Ajouter un élève')}
+            {type === 'enseignant' && (entity ? 'Modifier l\'enseignant' : 'Ajouter un enseignant')}
+            {type === 'classe' && (entity ? 'Modifier la classe' : 'Ajouter une classe')}
+          </h2>
+          <button type="button" className="modal__closeBtn" onClick={onClose} aria-label="Fermer">
+            ✕
+          </button>
+        </header>
+        
+        {(uploading || (typeof window !== 'undefined' && ctx && ctx.showModal && uploading)) && (
+          <div className="modal__loadingOverlay">
+            <div className="modal__loadingSpinner"></div>
+            <span>Enregistrement en cours...</span>
+          </div>
+        )}
+        
+        <div className="modal__body">
+          {error && (
+            <div className="modal__errorMessage">
+              {error}
+            </div>
+          )}
+          
+          <form onSubmit={handleSubmit} id="modalPersonForm" className="modal__form">
 
 
 
@@ -247,21 +267,57 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
           
           {type === 'eleve' && <>
-            <label htmlFor="input-nom">Nom</label>
-            <input id="input-nom" name="nom" value={form.nom} onChange={handleChange} placeholder="Nom" required />
+            <div className="modal__fieldGroup modal__fieldGroup--grid">
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-nom" className="modal__label">Nom</label>
+                <input 
+                  id="input-nom" 
+                  name="nom" 
+                  value={form.nom} 
+                  onChange={handleChange} 
+                  placeholder="Nom de famille" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
 
-            <label htmlFor="input-prenoms">Prénoms</label>
-            <input id="input-prenoms" name="prenoms" value={Array.isArray(form.prenoms) ? form.prenoms.join(',') : form.prenoms || ''} onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} placeholder="Prénoms (séparés par des virgules)" required />
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-prenoms" className="modal__label">Prénoms</label>
+                <input 
+                  id="input-prenoms" 
+                  name="prenoms" 
+                  value={Array.isArray(form.prenoms) ? form.prenoms.join(',') : form.prenoms || ''} 
+                  onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} 
+                  placeholder="Prénoms (séparés par des virgules)" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+            </div>
             
-            <label htmlFor="input-sexe">Sexe</label>
-            <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez le sexe</option>
-              <option value="M">Masculin</option>
-              <option value="F">Féminin</option>
-            </select>
+            <div className="modal__fieldGroup modal__fieldGroup--grid">
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-sexe" className="modal__label">Sexe</label>
+                <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} className="modal__select" required>
+                  <option value="">Sélectionnez le sexe</option>
+                  <option value="M">Masculin</option>
+                  <option value="F">Féminin</option>
+                </select>
+              </div>
 
-            <label htmlFor="input-naissance">Date de naissance</label>
-            <input id="input-naissance" type="date" name="naissance_$_date" value={form.naissance_$_date} onChange={handleChange} required />
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-naissance" className="modal__label">Date de naissance</label>
+                <input 
+                  id="input-naissance" 
+                  type="date" 
+                  name="naissance_$_date" 
+                  value={form.naissance_$_date} 
+                  onChange={handleChange} 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+            </div>
 
             <label htmlFor="input-adresse">Adresse</label>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -474,16 +530,41 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             </select>
 
           </>}
-          {error && <div style={{ color: 'red' }}>{error}</div>}
-          <button type="submit">Enregistrer</button>
-          {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-          {entity && entity._id && <button type="button" onClick={() => {
-            if (type === 'eleve') ctx.deleteEleve(entity._id);
-            if (type === 'enseignant') ctx.deleteEnseignant(entity._id);
-            if (type === 'classe') ctx.deleteClasse(entity._id);
-            onClose();
-          }}>Supprimer</button>}
-        </form>
+          
+          </form>
+        </div>
+        
+        <footer className="modal__actions">
+          <button type="submit" form="modalPersonForm" className="modal__btn modal__btn--primary">
+            {uploading ? (
+              <>
+                <span className="modal__loadingSpinner"></span>
+                Enregistrement...
+              </>
+            ) : (
+              'Enregistrer'
+            )}
+          </button>
+          
+          {entity && entity._id && (
+            <button 
+              type="button" 
+              className="modal__btn modal__btn--danger"
+              onClick={() => {
+                if (type === 'eleve') ctx.deleteEleve(entity._id);
+                if (type === 'enseignant') ctx.deleteEnseignant(entity._id);
+                if (type === 'classe') ctx.deleteClasse(entity._id);
+                onClose();
+              }}
+            >
+              Supprimer
+            </button>
+          )}
+          
+          <button type="button" className="modal__btn modal__btn--secondary" onClick={onClose}>
+            Annuler
+          </button>
+        </footer>
       </div>
     </div>
   );
@@ -750,9 +831,11 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
 
 // --- Bloc de gestion des compositions par trimestre ---
 function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear }) {
-  // Format attendu : {"2025-2026": [[11, 12], [14], [8,15,11]]}
+  // Format attendu : {"2025-2026": [[{"Mathématiques": 15}, {"Français": 12}], [{"Sciences": 14}], [{"Anglais": 18}]]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
+  const [selectedMatiere, setSelectedMatiere] = useState('Mathématiques');
+  const [selectedDenominateur, setSelectedDenominateur] = useState('20');
   const trimestres = ["1er trimestre", "2e trimestre", "3e trimestre"];
   // Génère la liste des années disponibles (de N-10 à N+10, + toutes années trouvées dans les données)
   const now = new Date();
@@ -766,14 +849,64 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
   // On récupère le tableau pour l'année courante
   const compoArr = compositions[schoolYear] || [[], [], []];
 
+  // Fonction pour calculer la moyenne d'un trimestre
+  const calculateTrimestreMoyenne = (trimestreNotes) => {
+    if (!Array.isArray(trimestreNotes) || trimestreNotes.length === 0) return null;
+    
+    let totalPoints = 0;
+    let totalDenominateur = 0;
+    
+    trimestreNotes.forEach(note => {
+      let noteValue, denominateur;
+      
+      if (typeof note === 'number') {
+        noteValue = note;
+        denominateur = 20;
+      } else if (typeof note === 'object' && note !== null) {
+        const [, value] = Object.entries(note)[0] || [null, 0];
+        if (typeof value === 'object' && value.note !== undefined) {
+          noteValue = value.note;
+          denominateur = value.sur || 20;
+        } else {
+          noteValue = value;
+          denominateur = 20;
+        }
+      } else {
+        return; // Skip invalid notes
+      }
+      
+      // Convertir en note sur 20 pour uniformiser
+      const noteSur20 = (noteValue / denominateur) * 20;
+      totalPoints += noteSur20;
+      totalDenominateur += 20;
+    });
+    
+    return totalDenominateur > 0 ? (totalPoints / trimestreNotes.length) : null;
+  };
+
+  // Calculer les moyennes trimestrielles
+  const moyennesTrimestrielles = compoArr.map(trimestreNotes => calculateTrimestreMoyenne(trimestreNotes));
+
+  // Calculer la moyenne annuelle
+  const calculateMoyenneAnnuelle = () => {
+    const moyennesValides = moyennesTrimestrielles.filter(moyenne => moyenne !== null);
+    if (moyennesValides.length === 0) return null;
+    return moyennesValides.reduce((sum, moyenne) => sum + moyenne, 0) / moyennesValides.length;
+  };
+
+  const moyenneAnnuelle = calculateMoyenneAnnuelle();
+
   const handleAdd = idx => {
-    if (newNote === '' || isNaN(Number(newNote))) return;
+    if (!onChange || newNote === '' || isNaN(Number(newNote))) return;
     const noteNum = Number(newNote);
-    const newArr = compoArr.map((arr, i) => i === idx ? [...arr, noteNum] : arr);
+    const denominateur = Number(selectedDenominateur);
+    const noteObj = { [selectedMatiere]: { note: noteNum, sur: denominateur } };
+    const newArr = compoArr.map((arr, i) => i === idx ? [...arr, noteObj] : arr);
     onChange({ ...compositions, [schoolYear]: newArr });
-    setAdding(null); setNewNote('');
+    setAdding(null); setNewNote(''); setSelectedMatiere('Mathématiques'); setSelectedDenominateur('20');
   };
   const handleRemove = (idx, nidx) => {
+    if (!onChange) return;
     const newArr = compoArr.map((arr, i) => i === idx ? arr.filter((_, j) => j !== nidx) : arr);
     onChange({ ...compositions, [schoolYear]: newArr });
   };
@@ -795,43 +928,108 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
           return <option key={y} value={y} className={"option_" + color}>{y}</option>;
         })}
       </select>
+      
+      {/* Moyenne annuelle */}
+      <div className="compositions-block__moyenne-annuelle">
+        <strong>Moyenne annuelle : </strong>
+        {moyenneAnnuelle !== null ? `${moyenneAnnuelle.toFixed(2)}/20` : 'Non calculée'}
+      </div>
 
       {trimestres.map((tri, idx) => (
         <div key={tri} className="compositions-block__trimestre">
           <div className="compositions-block__trimestre-header">
             <span className="compositions-block__trimestre-title">{tri}</span>
-            <button
-              type="button"
-              className="compositions-block__add-btn"
-              onClick={() => { setAdding(idx); setNewNote(''); }}
-            >Ajouter</button>
+            <span className="compositions-block__trimestre-score">
+              Moyenne trimestrielle: {moyennesTrimestrielles[idx] !== null ? `${moyennesTrimestrielles[idx].toFixed(2)}/20` : 'Non calculée'}
+            </span>
+            {onChange && (
+              <button
+                type="button"
+                className="compositions-block__add-btn"
+                onClick={() => { setAdding(idx); setNewNote(''); }}
+              >Ajouter</button>
+            )}
           </div>
           <div className="compositions-block__notes">
             {Array.isArray(compoArr[idx]) && compoArr[idx].length > 0 ? (
-              compoArr[idx].map((note, nidx) => (
-                <div key={nidx} className="compositions-block__note">
-                  {note}
-                  <button
-                    type="button"
-                    title="Supprimer"
-                    onClick={() => handleRemove(idx, nidx)}
-                  >×</button>
-                </div>
-              ))
+              compoArr[idx].map((note, nidx) => {
+                // Support ancien format (nombre), format intermédiaire (objet simple) et nouveau format (objet avec note/sur)
+                let matiere, noteValue, denominateur;
+                
+                if (typeof note === 'number') {
+                  // Ancien format : 15
+                  matiere = "Autre matière";
+                  noteValue = note;
+                  denominateur = 20;
+                } else if (typeof note === 'object' && note !== null) {
+                  const [matiereKey, value] = Object.entries(note)[0] || ['Autre matière', 0];
+                  matiere = matiereKey;
+                  
+                  if (typeof value === 'object' && value.note !== undefined) {
+                    // Nouveau format : {"Mathématiques": {note: 15, sur: 20}}
+                    noteValue = value.note;
+                    denominateur = value.sur || 20;
+                  } else {
+                    // Format intermédiaire : {"Mathématiques": 15}
+                    noteValue = value;
+                    denominateur = 20;
+                  }
+                } else {
+                  matiere = "Autre matière";
+                  noteValue = 0;
+                  denominateur = 20;
+                }
+                
+                return (
+                  <div key={nidx} className="compositions-block__note">
+                    <span className="compositions-block__note-matiere">{matiere}:</span>
+                    <span className="compositions-block__note-value">{noteValue}/{denominateur}</span>
+                    {onChange && (
+                      <button
+                        type="button"
+                        title="Supprimer"
+                        onClick={() => handleRemove(idx, nidx)}
+                      >×</button>
+                    )}
+                  </div>
+                );
+              })
             ) : (
               <span className="compositions-block__no-compo">Aucune composition</span>
             )}
             {adding === idx && (
               <span className="compositions-block__add-form">
+                <select
+                  className="compositions-block__matiere-select"
+                  value={selectedMatiere}
+                  onChange={e => setSelectedMatiere(e.target.value)}
+                >
+                  {MATIERES_SCOLAIRES.map(matiere => (
+                    <option key={matiere} value={matiere}>{matiere}</option>
+                  ))}
+                </select>
                 <input
                   type="number"
                   min="0"
-                  max="20"
+                  max={selectedDenominateur}
                   value={newNote}
                   onChange={e => setNewNote(e.target.value)}
                   placeholder="Note"
                   autoFocus
                 />
+                <span className="compositions-block__separator">/</span>
+                <select
+                  className="compositions-block__denominateur-select"
+                  value={selectedDenominateur}
+                  onChange={e => setSelectedDenominateur(e.target.value)}
+                >
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
                 <button
                   type="button"
                   className="compositions-block__add-btn"
