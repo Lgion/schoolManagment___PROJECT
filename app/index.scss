@@ -1,9 +1,16 @@
 // Import des variables et composants SCSS avec la nouvelle syntaxe @use
 @use 'sass:map';
+@use 'sass:color';
 @use '../assets/scss/variables' as *;
 @use '../assets/scss/components/MODALS/entityModal.scss';
 @use '../assets/scss/components/DISPLAYS/classeEnseignantDisplay.scss';
 @use '../assets/scss/components/LISTS/classesList.scss';
+
+// Variables individuelles extraites des maps pour compatibilité
+$primary-color: map.get($themeColors, primary);
+$secondary-color: map.get($themeColors, secondary);
+$font-primary: $primaryFont;
+$font-secondary: $secondaryFont;
 
 .person-detail {
   @extend %entityModal__container;
@@ -816,12 +823,668 @@ section>div:has(.modal){
   box-shadow: 0 2px 12px #e0e0e0cc;
   min-height: 100vh;
 
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5em;
+    flex-wrap: wrap;
+    gap: 1em;
+  }
+
   &__title {
+    display: flex;
+    flex-flow: row wrap;
     font-size: 2.1em;
     font-weight: 700;
     margin-bottom: 0.6em;
-    color: #3a356a;
+    color: $primary-color;
     letter-spacing: 0.01em;
+    font-family: $font-primary;
+    
+    > a:not(:first-of-type) {
+      width: 100%;
+    }
+  }
+
+  &__authSection {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+  }
+
+  &__authButtons {
+    display: flex;
+    gap: 0.75em;
+    align-items: center;
+  }
+
+  &__authButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.6em 1.2em;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    font-family: $font-secondary;
+    font-weight: 600;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+
+    &--signIn {
+      background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
+      color: white;
+      
+      &:hover {
+        background: linear-gradient(135deg, color.adjust($primary-color, $lightness: -5%), $primary-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+      }
+    }
+
+    &--signUp {
+      background: transparent;
+      color: $primary-color;
+      border-color: $primary-color;
+      
+      &:hover {
+        background: $primary-color;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($primary-color, 0.2);
+      }
+    }
+
+    &-icon {
+      font-size: 1.1em;
+    }
+
+    &-text {
+      white-space: nowrap;
+    }
+  }
+
+  &__userSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 0.5em 1em;
+    background: rgba($primary-color, 0.1);
+    border-radius: 25px;
+    border: 1px solid rgba($primary-color, 0.2);
+  }
+
+  &__userWelcome {
+    font-family: $font-secondary;
+    font-weight: 500;
+    color: $primary-color;
+    font-size: 0.9em;
+  }
+
+  &__userAvatar {
+    border-radius: 50%;
+    border: 2px solid $primary-color;
+  }
+}
+
+// --- Styles BEM pour les composants de rôles ---
+.permissionGate {
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1em;
+    background: rgba($primary-color, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba($primary-color, 0.2);
+  }
+
+  &__loader {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: $font-secondary;
+    color: $primary-color;
+
+    &-icon {
+      font-size: 1.2em;
+      animation: pulse 1.5s infinite;
+    }
+
+    &-text {
+      font-weight: 500;
+    }
+  }
+
+  &--denied {
+    padding: 1em;
+    background: rgba(#ff4757, 0.1);
+    border: 1px solid rgba(#ff4757, 0.3);
+    border-radius: 8px;
+    color: #ff4757;
+    text-align: center;
+    font-family: $font-secondary;
+  }
+
+  &--granted {
+    // Pas de styles spécifiques, juste un wrapper
+  }
+}
+
+.roleIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.4em 0.8em;
+  border-radius: 20px;
+  font-family: $font-secondary;
+  font-weight: 600;
+  font-size: 0.85em;
+  border: 2px solid;
+
+  &__icon {
+    font-size: 1.1em;
+  }
+
+  &__label {
+    white-space: nowrap;
+  }
+
+  &__name {
+    font-weight: 400;
+    opacity: 0.8;
+    font-size: 0.9em;
+  }
+
+  &--admin {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border-color: #ff6b6b;
+    box-shadow: 0 2px 8px rgba(#ff6b6b, 0.3);
+  }
+
+  &--prof {
+    background: linear-gradient(135deg, #4834d4, #686de0);
+    color: white;
+    border-color: #4834d4;
+    box-shadow: 0 2px 8px rgba(#4834d4, 0.3);
+  }
+
+  &--eleve {
+    background: linear-gradient(135deg, #00d2d3, #01a3a4);
+    color: white;
+    border-color: #00d2d3;
+    box-shadow: 0 2px 8px rgba(#00d2d3, 0.3);
+  }
+
+  &--public {
+    background: linear-gradient(135deg, #a4b0be, #747d8c);
+    color: white;
+    border-color: #a4b0be;
+    box-shadow: 0 2px 8px rgba(#a4b0be, 0.3);
+  }
+}
+
+.userProfile {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: $font-primary;
+
+  &--loading {
+    padding: 2em;
+    text-align: center;
+    color: $primary-color;
+  }
+
+  &--error {
+    padding: 2em;
+    text-align: center;
+    background: rgba(#ff4757, 0.1);
+    border: 1px solid rgba(#ff4757, 0.3);
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5em;
+    color: #ff4757;
+    font-weight: 500;
+
+    &-icon {
+      font-size: 1.2em;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding: 1.5em;
+    background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
+    color: white;
+  }
+
+  &__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(white, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(white, 0.3);
+
+    &-icon {
+      font-size: 1.8em;
+    }
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__name {
+    margin: 0 0 0.3em 0;
+    font-size: 1.3em;
+    font-weight: 700;
+    font-family: $font-primary;
+  }
+
+  &__email {
+    margin: 0 0 0.5em 0;
+    opacity: 0.9;
+    font-size: 0.9em;
+  }
+
+  &__role {
+    // Styles hérités du roleIndicator
+  }
+
+  &__permissions {
+    padding: 1.5em;
+    border-bottom: 1px solid #eee;
+
+    &-title {
+      margin: 0 0 1em 0;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: $primary-color;
+      font-family: $font-secondary;
+    }
+
+    &-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.5em;
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      padding: 0.4em 0;
+    }
+
+    &-icon {
+      color: #2ed573;
+      font-weight: bold;
+    }
+
+    &-text {
+      font-size: 0.9em;
+      color: #555;
+    }
+  }
+
+  &__roleData {
+    padding: 1.5em;
+
+    &-title {
+      margin: 0 0 1em 0;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: $primary-color;
+      font-family: $font-secondary;
+    }
+
+    &-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5em 0;
+      border-bottom: 1px solid #f0f0f0;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    &-label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    &-value {
+      color: $primary-color;
+      font-weight: 600;
+    }
+  }
+}
+
+.roleBasedNavigation {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  font-family: $font-primary;
+
+  &__section {
+    border-bottom: 1px solid #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    padding: 1em 1.5em 0.5em;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: $primary-color;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: $font-secondary;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    border-bottom: 1px solid #f5f5f5;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 0.8em 1.5em;
+    color: #555;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+
+    &:hover {
+      background: rgba($primary-color, 0.05);
+      color: $primary-color;
+      transform: translateX(4px);
+    }
+
+    &:active {
+      background: rgba($primary-color, 0.1);
+    }
+  }
+}
+
+// Animation pour le loader
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// Continuation des styles ecole-admin
+.ecole-admin {
+  // --- Styles pour les dashboards adaptatifs ---
+  &__publicDashboard {
+    padding: 2em;
+    text-align: center;
+  }
+
+  &__welcomeCard {
+    background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 15%));
+    color: white;
+    padding: 3em 2em;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba($primary-color, 0.3);
+    margin-bottom: 2em;
+
+    &-title {
+      font-size: 2.2em;
+      font-weight: 700;
+      margin: 0 0 0.5em 0;
+      font-family: $font-primary;
+    }
+
+    &-subtitle {
+      font-size: 1.1em;
+      margin: 0 0 2em 0;
+      opacity: 0.9;
+      font-family: $font-secondary;
+    }
+
+    &-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5em;
+      margin-top: 2em;
+    }
+  }
+
+  &__feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 1em;
+    background: rgba(white, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(white, 0.2);
+
+    &-icon {
+      font-size: 1.5em;
+    }
+
+    &-text {
+      font-weight: 500;
+      font-family: $font-secondary;
+    }
+  }
+
+  &__loading {
+    padding: 4em 2em;
+    text-align: center;
+  }
+
+  &__loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+    font-family: $font-secondary;
+    color: $primary-color;
+    font-size: 1.2em;
+
+    &-icon {
+      font-size: 1.5em;
+      animation: pulse 1.5s infinite;
+    }
+
+    &-text {
+      font-weight: 500;
+    }
+  }
+
+  &__dashboardTitle {
+    font-size: 1.8em;
+    font-weight: 700;
+    margin: 0 0 1.5em 0;
+    color: $primary-color;
+    font-family: $font-primary;
+    padding: 0 2em;
+    text-align: center;
+  }
+
+  &__adminDashboard,
+  &__profDashboard,
+  &__eleveDashboard,
+  &__publicUserDashboard {
+    padding: 2em 0;
+  }
+
+  &__publicMessage {
+    padding: 0 2em 2em;
+  }
+
+  &__messageCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 1em;
+    padding: 1.5em;
+    background: rgba(#ffa726, 0.1);
+    border: 1px solid rgba(#ffa726, 0.3);
+    border-radius: 12px;
+    text-align: left;
+
+    &-icon {
+      font-size: 1.5em;
+      color: #ffa726;
+      flex-shrink: 0;
+    }
+
+    &-content {
+      flex: 1;
+    }
+
+    &-title {
+      margin: 0 0 0.5em 0;
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #e65100;
+      font-family: $font-secondary;
+    }
+
+    &-text {
+      margin: 0;
+      color: #666;
+      line-height: 1.5;
+    }
+  }
+
+  &__quickActions {
+    padding: 0 2em;
+    margin-top: 2em;
+
+    &-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin: 0 0 1em 0;
+      color: $primary-color;
+      font-family: $font-secondary;
+    }
+
+    &-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1em;
+    }
+  }
+
+  &__quickAction {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    padding: 1em 1.5em;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: $font-secondary;
+    font-weight: 500;
+
+    &:hover {
+      border-color: $primary-color;
+      background: rgba($primary-color, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba($primary-color, 0.2);
+    }
+
+    &-icon {
+      font-size: 1.2em;
+    }
+
+    &-text {
+      color: #555;
+    }
+  }
+
+  &__studentInfo {
+    padding: 0 2em;
+    margin-top: 2em;
+
+    &-title {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin: 0 0 1em 0;
+      color: $primary-color;
+      font-family: $font-secondary;
+    }
+
+    &-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1em;
+    }
+  }
+
+  &__infoCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+    padding: 1.5em;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    text-align: center;
+
+    &-icon {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+    }
+
+    &-label {
+      font-size: 0.9em;
+      color: #666;
+      font-weight: 500;
+      font-family: $font-secondary;
+    }
+
+    &-value {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: $primary-color;
+      font-family: $font-primary;
+    }
   }
 
   &__nav {
@@ -837,19 +1500,76 @@ section>div:has(.modal){
       font-size: 1.1em;
       padding: 0.7em 1.3em;
       border-radius: 8px;
-      border: 1px solid #dadada;
+      border: 2px solid transparent;
       background: #f4f4fa;
       color: #222;
       cursor: pointer;
-      transition: background 0.17s, border 0.17s, color 0.17s;
+      transition: all 0.3s ease;
       font-weight: 500;
       outline: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
 
       &:hover,
       &:focus {
-        background: #e7e7fd;
-        border: 1.5px solid #6c63ff;
-        color: #3a356a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      // Modificateurs selon les rôles
+      &--admin {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        border-color: #ff6b6b;
+
+        &:hover {
+          background: linear-gradient(135deg, color.adjust(#ff6b6b, $lightness: -5%), #ff6b6b);
+          box-shadow: 0 4px 12px rgba(#ff6b6b, 0.4);
+        }
+      }
+
+      &--prof {
+        background: linear-gradient(135deg, #4834d4, #686de0);
+        color: white;
+        border-color: #4834d4;
+
+        &:hover {
+          background: linear-gradient(135deg, color.adjust(#4834d4, $lightness: -5%), #4834d4);
+          box-shadow: 0 4px 12px rgba(#4834d4, 0.4);
+        }
+      }
+
+      &--eleve {
+        background: linear-gradient(135deg, #00d2d3, #01a3a4);
+        color: white;
+        border-color: #00d2d3;
+
+        &:hover {
+          background: linear-gradient(135deg, color.adjust(#00d2d3, $lightness: -5%), #00d2d3);
+          box-shadow: 0 4px 12px rgba(#00d2d3, 0.4);
+        }
+      }
+
+      &--public {
+        background: linear-gradient(135deg, #a4b0be, #747d8c);
+        color: white;
+        border-color: #a4b0be;
+
+        &:hover {
+          background: linear-gradient(135deg, color.adjust(#a4b0be, $lightness: -5%), #a4b0be);
+          box-shadow: 0 4px 12px rgba(#a4b0be, 0.4);
+        }
+      }
+
+      // Style par défaut (pour compatibilité)
+      &:not(&--admin):not(&--prof):not(&--eleve):not(&--public) {
+        &:hover,
+        &:focus {
+          background: #e7e7fd;
+          border-color: #6c63ff;
+          color: #3a356a;
+        }
       }
 
       >span{

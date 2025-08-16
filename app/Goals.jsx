@@ -28,6 +28,7 @@ export default () => <section>
     </li>
     <li>Globalement: 
         <ul>
+            <li>Créer un systeme d'authentification via clerk, et de role (admion, prof, eleve, public, parent). <br/>Si on veut créer un role parent, il faut rajouter une propriété "email" à la propriété "parents" du modele Eleve</li>
         <li>Courte biographie de l'école (page accueil) avec potentiellement des photos.</li>
         <li>Coordonnées de l'école (email, tel, etc)</li>
         <li>Intérer un chat accéssible à tous, avec des actions possibles communes et différentes pour les élèves, enseignants, et (p^t aussi) administrateurs.</li>

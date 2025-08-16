@@ -1,3 +1,12 @@
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+import { UserRoleProvider } from '../stores/useUserRole';
 import "./index.scss"
 import Home from "./Home"
 import Goals from "./Goals"
@@ -15,9 +24,14 @@ export default function RootLayout({ children }) {
       <body>
         <AdminContextProvider>
           <Goals />
-          <Home>
-            {children}
-          </Home>
+          <ClerkProvider>
+            <UserRoleProvider>
+              <Home>
+                {children}
+              </Home>
+            </UserRoleProvider>
+          </ClerkProvider>
+
         </AdminContextProvider>
       </body>
     </html>
