@@ -28,7 +28,29 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [newManusReason, setNewManusReason] = useState('');
   const ctx = useContext(AiAdminContext);
   const fileInput = useRef();
-  const [form, setForm] = useState(entity || {});
+  
+  // Fonction utilitaire pour convertir timestamp en format YYYY-MM-DD
+  const timestampToDateString = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toISOString().split('T')[0]; // Format YYYY-MM-DD
+  };
+  
+  // Initialiser le formulaire avec conversion des dates
+  const initializeForm = (entityData) => {
+    if (!entityData) return {};
+    
+    const formData = { ...entityData };
+    
+    // Convertir le timestamp en format date pour l'input
+    if (formData.naissance_$_date && typeof formData.naissance_$_date === 'number') {
+      formData.naissance_$_date = timestampToDateString(formData.naissance_$_date);
+    }
+    
+    return formData;
+  };
+  
+  const [form, setForm] = useState(initializeForm(entity));
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -37,10 +59,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
   // Pré-remplissage par défaut selon l'entité
   useEffect(() => {
-    if (!entity) {
+    if (entity) {
+      // Mode édition : initialiser avec les données de l'entité (avec conversion des dates)
+      setForm(initializeForm(entity));
+    } else {
+      // Mode création : initialiser avec des valeurs par défaut
       if (type === 'eleve') setForm({ nom: '', prenoms: [''], naissance_$_date: '', adresse_$_map: '', parents: { mere: '', pere: '', phone: '' }, photo_$_file: '', current_classe: '', documents: [], ...form });
-      if (type === 'enseignant') setForm({ nom: '', prenoms: [''], naissance_$_date: '', adresse_$_map: '', photo_$_file: '', phone_$_tel: '', email_$_email: '', current_classes: '', ...form });
-      if (type === 'classe') setForm({ annee: '', niveau: '', alias: '', photo: '', professeur: [], eleves: [], ...form });
+      if (type === 'enseignant') setForm({ nom: '', prenoms: [''], naissance_$_date: '', adresse_$_map: '', photo_$_file: '', phone_$_tel: '', email_$_email: '', current_classes: [], ...form });
+      if (type === 'classe') setForm({ annee: '', niveau: '', alias: '', photo: '', ...form });
     }
     // Chargement des données fictives
     if (!entity) {
@@ -61,19 +87,18 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           prenoms: ['Jean'],
           naissance_$_date: '1970-01-01',
           adresse_$_map: "5.333333, 3.866667",
-          photo_$_file: 'https://picsum.photos/200/300',
+          photo_$_file: '/school/prof.webp',
           phone_$_tel: '01 23 45 67 89',
           email_$_email: 'jdupont@ecole.com',
         });
       }
       if (type === 'classe') {
         setForm({
-          annee: '2023-2024',
+          annee: '',
           niveau: '6e',
-          alias: '6eA',
-          photo: 'https://picsum.photos/200/300',
-          professeur: [{ nom: 'Dupont', prenoms: ['Jean'] }],
-          eleves: [{ nom: 'Doe', prenoms: ['John'] }],
+          alias: 'a',
+          photo: '/school/classe.webp',
+
         });
       }
     }
@@ -106,7 +131,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     console.log(form);
     
     let newForm = { ...form };
-    alert(type)
+    // alert(type)
     // Si un fichier a été sélectionné, on l'upload maintenant
     if (selectedFile || (selectedDocuments && selectedDocuments.length > 0)) {
       setUploading(true);
@@ -198,25 +223,84 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           newForm['adresse_$_map'] = `${newForm['adresse_$_map'].lat},${newForm['adresse_$_map'].lng}`;
         }
       }
-      // Correction current_classe(s)
-      if ('current_classes' in newForm && (!newForm.current_classes || newForm.current_classes === '')) {
-        delete newForm.current_classes;
+      // Correction current_classe(s) - ne supprimer que si vraiment vide
+      if ('current_classes' in newForm && (!newForm.current_classes || (Array.isArray(newForm.current_classes) && newForm.current_classes.length === 0))) {
+        // Pour les enseignants, on peut avoir un array vide (pas de classe assignée)
+        // Ne pas supprimer le champ, juste s'assurer qu'il est un array vide
+        if (type === 'enseignant') {
+          newForm.current_classes = [];
+        } else {
+          delete newForm.current_classes;
+        }
       }
       // Correction naissance_$_date
       if (typeof newForm['naissance_$_date'] === 'string' && newForm['naissance_$_date'].length > 0) {
         newForm['naissance_$_date'] = +new Date(newForm['naissance_$_date']);
       }
       setError('');
-      console.log(newForm);
+      console.log('🔍 DEBUG ENSEIGNANT - Données avant sauvegarde:', newForm);
+      console.log('🔍 DEBUG ENSEIGNANT - Type de current_classes:', typeof newForm.current_classes);
+      console.log('🔍 DEBUG ENSEIGNANT - Valeur current_classes:', newForm.current_classes);
+      console.log('🔍 DEBUG ENSEIGNANT - Est un array?', Array.isArray(newForm.current_classes));
 
       await ctx.saveEnseignant(newForm);
     } else if (type === 'classe') {
-      alert('kkk ')
-      console.log(newForm);
+      console.log('DEBUG SUBMIT CLASSE - Avant traitement:', newForm);
 
-      if (!newForm.niveau || !newForm.alias || !newForm.photo) return setError('Niveau, alias et photo obligatoires.');
+      if (!newForm.niveau || !newForm.alias) return setError('Niveau et alias obligatoires.');
+      
+      // Si aucune photo personnalisée n'a été uploadée (utilise encore l'image par défaut)
+      if (!newForm.photo || newForm.photo === '/school/classe.webp'|| newForm.photo === '/school/prof.webp') {
+        console.log('📁 Utilisation de l\'image par défaut pour la classe...');
+        setUploading(true);
+        
+        try {
+          // Charger l'image par défaut depuis /school/classe.webp
+          const defaultImagePath = type === 'enseignant' ? '/school/prof.webp' : '/school/classe.webp';
+          console.log('🖼️ Chargement de l\'image par défaut:', defaultImagePath);
+          
+          // Télécharger l'image par défaut et la convertir en Blob
+          const response = await fetch(defaultImagePath);
+          if (!response.ok) throw new Error('Image par défaut introuvable');
+          
+          const blob = await response.blob();
+          const file = new File([blob], 'photo.webp', { type: 'image/webp' });
+          
+          // Uploader l'image par défaut vers le dossier de la classe
+          const uploadPayload = {
+            file: file,
+            type: 'classe',
+            entityType: 'classe',
+            annee: newForm.annee,
+            niveau: newForm.niveau,
+            alias: newForm.alias
+          };
+          
+          const uploadRes = await ctx.uploadFile(uploadPayload);
+          console.log('📤 Résultat copie image par défaut:', uploadRes);
+          
+          const { paths, error } = uploadRes;
+          
+          if (error || !paths) {
+            throw new Error(error || 'Aucun chemin de fichier retourné');
+          }
+          
+          // Assigner le chemin de la photo copiée
+          newForm.photo = paths.find(p => p.endsWith('photo.webp'));
+          console.log('✅ Image par défaut copiée:', newForm.photo);
+          
+        } catch (error) {
+          console.error('❌ Erreur lors de la copie de l\'image par défaut:', error);
+          setError('Erreur lors de la copie de l\'image par défaut: ' + error.message);
+          setUploading(false);
+          return;
+        } finally {
+          setUploading(false);
+        }
+      }
+      
       setError('');
-      console.log('DEBUG SUBMIT CLASSE', newForm);
+      console.log('DEBUG SUBMIT CLASSE - Après traitement:', newForm);
       await ctx.saveClasse(newForm);
     }
     onClose();
@@ -273,7 +357,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 <input 
                   id="input-nom" 
                   name="nom" 
-                  value={form.nom} 
+                  value={form.nom || ''} 
                   onChange={handleChange} 
                   placeholder="Nom de famille" 
                   className="modal__input"
@@ -311,7 +395,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   id="input-naissance" 
                   type="date" 
                   name="naissance_$_date" 
-                  value={form.naissance_$_date} 
+                  value={form.naissance_$_date || ''} 
                   onChange={handleChange} 
                   className="modal__input"
                   required 
@@ -349,14 +433,35 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             <label htmlFor="input-classe">Classe actuelle</label>
             <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} required>
               <option value="">Sélectionnez une classe</option>
-              {ctx.classes && ctx.classes.map(classe => (
-                <option key={classe._id} value={classe._id}>{classe.niveau} - {classe.alias}</option>
-              ))}
+              {ctx.classes && (() => {
+                // Logique dynamique : filtrer les classes de l'année courante et suivante
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth(); // 0-11
+                const currentYear = currentDate.getFullYear();
+                
+                // Déterminer l'année scolaire courante (septembre à août)
+                const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
+                
+                // Générer l'année scolaire courante et suivante
+                const relevantSchoolYears = [
+                  `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
+                  `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
+                ];
+                
+                return ctx.classes
+                  .filter(classe => relevantSchoolYears.includes(classe.annee))
+                  .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
+                  .map(classe => (
+                    <option key={classe._id} value={classe._id}>
+                      {classe.niveau} {classe.alias} ({classe.annee})
+                    </option>
+                  ));
+              })()}
             </select>
 
             <label htmlFor="input-photo">Photo de l'élève</label>
             <input id="input-photo" type="file" ref={fileInput} accept="image/*" required={!form.photo_$_file} onChange={handleFile} />
-            {(previewUrl || form.photo_$_file) && <img src={previewUrl || form.photo_$_file} alt="photo" className="previewImageAddForm" />}
+            {<img src={previewUrl || "/school/classe.webp" || form.photo_$_file} alt="photo" className="previewImageAddForm" />}
 
             <IsInterneBlock form={form} setForm={setForm} />
             <AbsencesBlock absences={form.absences} setForm={setForm} />
@@ -432,24 +537,56 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
           {type === 'enseignant' && <>
             <label htmlFor="input-nom">Nom</label>
-            <input name="nom" value={form.nom} onChange={handleChange} placeholder="Nom" required />
+            <input name="nom" value={form.nom || ''} onChange={handleChange} placeholder="Nom" required />
             <label htmlFor="input-prenoms">Prénoms</label>
-            <input name="prenoms" value={form.prenoms} onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} placeholder="Prénoms (séparés par des virgules)" required />            
+            <input name="prenoms" value={Array.isArray(form.prenoms) ? form.prenoms.join(', ') : (form.prenoms || '')} onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} placeholder="Prénoms (séparés par des virgules)" required />            
             <label htmlFor="input-sexe">Sexe</label>
             <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} required>
               <option value="">Sélectionnez le sexe</option>
               <option value="M">Masculin</option>
               <option value="F">Féminin</option>
             </select>
-            <label htmlFor="input-classes">Classe actuelle</label>
-            <select id="input-classes" name="current_classes" value={form.current_classes || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez une classe</option>
-              {ctx.classes && ctx.classes.map(classe => (
-                <option key={classe._id} value={classe._id}>{classe.niveau} - {classe.alias}</option>
-              ))}
+            <label htmlFor="input-classes">Classes assignées</label>
+            <select 
+              id="input-classes" 
+              name="current_classes" 
+              multiple 
+              value={Array.isArray(form.current_classes) ? form.current_classes : []} 
+              onChange={e => {
+                const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
+                console.log('🔍 DEBUG SELECT - Classes sélectionnées:', selectedValues);
+                console.log('🔍 DEBUG SELECT - Type:', typeof selectedValues);
+                console.log('🔍 DEBUG SELECT - Est array?', Array.isArray(selectedValues));
+                setForm(f => ({ ...f, current_classes: selectedValues }));
+              }} 
+              required>
+              {ctx.classes && (() => {
+                // Logique dynamique : filtrer les classes des 2 dernières années scolaires
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth(); // 0-11
+                const currentYear = currentDate.getFullYear();
+                
+                // Déterminer l'année scolaire courante (septembre à août)
+                const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
+                
+                // Générer l'année scolaire courante et suivante
+                const relevantSchoolYears = [
+                  `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
+                  `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
+                ];
+                
+                return ctx.classes
+                  .filter(classe => relevantSchoolYears.includes(classe.annee))
+                  .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
+                  .map(classe => (
+                    <option key={classe._id} value={classe._id}>
+                      {classe.niveau} {classe.alias} ({classe.annee})
+                    </option>
+                  ));
+              })()}
             </select>
             <label htmlFor="input-naissance">Date de naissance</label>
-            <input id="input-naissance" type="date" name="naissance_$_date" value={form.naissance_$_date} onChange={handleChange} required />
+            <input id="input-naissance" type="date" name="naissance_$_date" value={form.naissance_$_date || ''} onChange={handleChange} required />
             <label htmlFor="input-adresse">Adresse</label>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <input
@@ -476,9 +613,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               </div>
             )}
             <label htmlFor="input-tel">N° Téléphone</label>
-            <input id="input-tel" name="phone_$_tel" value={form.phone_$_tel} onChange={handleChange} placeholder="Téléphone" required />
+            <input id="input-tel" name="phone_$_tel" value={form.phone_$_tel || ''} onChange={handleChange} placeholder="Téléphone" required />
             <label htmlFor="input-email">Email</label>
-            <input id="input-email" name="email_$_email" value={form.email_$_email} onChange={handleChange} placeholder="Email" required />
+            <input id="input-email" name="email_$_email" value={form.email_$_email || ''} onChange={handleChange} placeholder="Email" required />
             <label htmlFor="input-photo">Photo de l'enseignant</label>
             <input id="input-photo" type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo_$_file && !previewUrl} />
             {(previewUrl || form.photo_$_file) && <img src={previewUrl || form.photo_$_file} alt="photo" className="previewImageAddForm" />}
@@ -494,40 +631,43 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
 
           {type === 'classe' && <>
-            <input name="annee" value={form.annee} onChange={handleChange} placeholder="Année" required />
-            <select name="niveau" value={form.niveau} onChange={handleChange} required>
+            <label htmlFor="input-annee">Année scolaire</label>
+            <select id="input-annee" name="annee" value={form.annee || ''} onChange={handleChange} required>
+              <option value="">Sélectionnez l'année scolaire</option>
+              {(() => {
+                const currentYear = new Date().getFullYear()
+                const currentMonth = new Date().getMonth() + 1
+                // Si nous sommes avant juillet, l'année scolaire actuelle a commencé l'année précédente
+                const schoolYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+                const years = []
+                // Générer 5 années (2 précédentes, actuelle, 2 suivantes)
+                for (let i = -2; i <= 2; i++) {
+                  const startYear = schoolYearStart + i
+                  const endYear = startYear + 1
+                  years.push(`${startYear}-${endYear}`)
+                }
+                return years.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))
+              })()}
+            </select>
+            
+            <label htmlFor="input-niveau">Niveau de classe</label>
+            <select id="input-niveau" name="niveau" value={form.niveau || ''} onChange={handleChange} required>
               <option value="">Sélectionnez le niveau</option>
-              {["CP", "CE1", "CE2", "CM1", "CM2", "6ème", "5ème", "4ème", "3ème", "2nde", "1ère", "Terminale"].map(n => <option key={n} value={n}>{n}</option>)}
+              {["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-            <input name="alias" value={form.alias} onChange={handleChange} placeholder="Alias (ex: 4B)" required />
-            <input type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo && !previewUrl} />
+            
+            <label htmlFor="input-alias">Alias de la classe</label>
+            <input id="input-alias" name="alias" value={form.alias || ''} onChange={handleChange} placeholder="Alias (ex: 4B, A, Rouge...)" required />
+            
+            <label htmlFor="input-photo-classe">Photo de la classe</label>
+            <input id="input-photo-classe" type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo && !previewUrl} />
             {(previewUrl || form.photo) && <img src={previewUrl || form.photo} alt="photo" className="previewImageAddForm" />}
-            <label>Professeurs</label>
-            <select multiple name="professeur" value={form.professeur} onChange={e => {
-              const options = e.target.options;
-              const values = [];
-              for (let i = 0; i < options.length; i++) {
-                if (options[i].selected) values.push(options[i].value);
-              }
-              setForm(f => ({ ...f, professeur: values }));
-            }}>
-              {ctx.enseignants && ctx.enseignants.map(ens => (
-                <option key={ens._id} value={ens._id}>{ens.nom} {Array.isArray(ens.prenoms) ? ens.prenoms.join(' ') : ens.prenoms}</option>
-              ))}
-            </select>
-            <label>Élèves</label>
-            <select multiple name="eleves" value={form.eleves} onChange={e => {
-              const options = e.target.options;
-              const values = [];
-              for (let i = 0; i < options.length; i++) {
-                if (options[i].selected) values.push(options[i].value);
-              }
-              setForm(f => ({ ...f, eleves: values }));
-            }}>
-              {ctx.eleves && ctx.eleves.map(eleve => (
-                <option key={eleve._id} value={eleve._id}>{eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}</option>
-              ))}
-            </select>
+            
+            <div className="form-info-note">
+              <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>
+            </div>
 
           </>}
           
@@ -609,6 +749,22 @@ function CommentairesBlock({ commentaires, setForm }) {
     return kb - ka;
   });
 
+  // Fonction pour ajouter un commentaire
+  const handleAdd = () => {
+    if (!newComment.trim()) return;
+    const timestamp = Date.now().toString();
+    const newCommentObj = { [timestamp]: newComment.trim() };
+    const updatedCommentaires = [...items, newCommentObj];
+    setForm(f => ({ ...f, commentaires: updatedCommentaires }));
+    setNewComment('');
+  };
+
+  // Fonction pour supprimer un commentaire
+  const handleRemove = (index) => {
+    const updatedCommentaires = items.filter((_, i) => i !== index);
+    setForm(f => ({ ...f, commentaires: updatedCommentaires }));
+  };
+
   // Si pas de setForm, read-only : juste affichage
   if (!setForm) {
     return (
@@ -631,19 +787,7 @@ function CommentairesBlock({ commentaires, setForm }) {
     );
   }
 
-  // Mode édition si setForm fourni
-  const onChange = c => setForm(f => ({ ...f, commentaires: c }))
-  const handleAdd = () => {
-    if (!newComment.trim()) return;
-    const ts = Date.now();
-    onChange([{ [ts]: newComment.trim() }, ...items]);
-    setNewComment('');
-  };
-  const handleRemove = (idx) => {
-    const arr = items.slice();
-    arr.splice(idx, 1);
-    onChange(arr);
-  };
+  // Edition
   return (
     <div className="commentaires-block">
       <div className="commentaires-block__header">Commentaires du professeur</div>
@@ -800,7 +944,11 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
       </div>
       {showForm ? (
         <div className="scolarity-fees-block__add-form">
-          <select value={type} onChange={e => setType(e.target.value)}>
+          <select
+            className="scolarity-fees-block__type-select"
+            value={type}
+            onChange={e => setType(e.target.value)}
+          >
             <option value="argent">Argent (F)</option>
             <option value="riz">Riz (kg)</option>
           </select>
@@ -1466,6 +1614,3 @@ function DocumentsBlock({ form, setForm, selectedDocuments = [], setSelectedDocu
 }
 
 export {SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock } 
-
-
-

@@ -9,7 +9,7 @@
  */
 export const getClasseImagePath = (classe) => {
   if (!classe || !classe.niveau || !classe.alias || !classe.annee) {
-    return '/school/default-classe.webp'; // Image par défaut
+    return '/school/classe.webp'; // Image par défaut
   }
   
   // Normalisation selon la logique API

@@ -39,6 +39,8 @@ const classeSchema = mongoose.Schema({
         },
     },
     commentaires: { default: [], type: [Object], required: true },
+    schedules: [{ type: ObjectId, ref: 'Schedule' }],
+    currentScheduleId: { type: ObjectId, ref: 'Schedule' },
     createdAt: { default: +new Date(), type: String},
 
 })

@@ -99,7 +99,7 @@ export default function ClassesPage({children}) {
                                     <ClasseCard
                                       key={classe._id}
                                       classe={classe}
-                                      enseignants={enseignants.filter(e => e.current_classes === classe._id)}
+                                      enseignants={enseignants}
                                       eleves={eleves.filter(e => e.current_classe === classe._id)}
                                       onEdit={e => { setSelected(e); setShowModal(true); }}
                                     />

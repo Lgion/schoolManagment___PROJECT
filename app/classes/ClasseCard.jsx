@@ -6,15 +6,50 @@ import { getClasseImagePath } from '../../utils/imageUtils';
 
 export default function ClasseCard({ classe, enseignants, onEdit, onClick }) {
   if (!classe) return null;
-  let enseignant = enseignants.find(el=>el._id==classe.professeur[0])
-  console.log(enseignant);
   
-  enseignant = `${enseignant.nom} ${enseignant.prenoms}`
-  console.log(classe);
+  // Gestion sécurisée du professeur principal
+  let enseignantObj = null
+  let enseignantNom = '—' // Tiret par défaut
   
-  console.log("classe.professeur");
-  console.log(classe.professeur);
-  console.log(enseignants);
+  if (enseignants && enseignants.length > 0) {
+    // Nouvelle logique : chercher l'enseignant qui a classe._id dans son array current_classes
+    enseignantObj = enseignants.find(enseignant => 
+      Array.isArray(enseignant.current_classes) && enseignant.current_classes.includes(classe._id)
+    )
+    
+    if (enseignantObj) {
+      const nom = enseignantObj.nom || ''
+      const prenoms = Array.isArray(enseignantObj.prenoms) 
+        ? enseignantObj.prenoms.join(' ') 
+        : enseignantObj.prenoms || ''
+      enseignantNom = `${nom} ${prenoms}`.trim()
+    }
+    
+    // Fallback : ancienne logique pour compatibilité avec les anciennes classes
+    if (!enseignantObj && classe.professeur && classe.professeur.length > 0) {
+      const premierProf = classe.professeur[0]
+      
+      if (typeof premierProf === 'string') {
+        enseignantObj = enseignants.find(el => el._id === premierProf)
+      } else if (typeof premierProf === 'object' && premierProf !== null) {
+        if (premierProf._id) {
+          enseignantObj = enseignants.find(el => el._id === premierProf._id)
+        } else if (premierProf.nom) {
+          enseignantNom = `${premierProf.nom || ''} ${Array.isArray(premierProf.prenoms) ? premierProf.prenoms.join(' ') : premierProf.prenoms || ''}`.trim()
+        }
+      }
+      
+      if (enseignantObj && enseignantNom === '—') {
+        const nom = enseignantObj.nom || ''
+        const prenoms = Array.isArray(enseignantObj.prenoms) 
+          ? enseignantObj.prenoms.join(' ') 
+          : enseignantObj.prenoms || ''
+        enseignantNom = `${nom} ${prenoms}`.trim()
+      }
+    }
+  }
+  
+
   
   
   return (
@@ -31,12 +66,12 @@ export default function ClasseCard({ classe, enseignants, onEdit, onClick }) {
             src={getClasseImagePath(classe)} 
             alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
             onError={(e) => {
-              e.target.src = '/school/default-classe.webp';
+              e.target.src = '/school/classe.webp';
             }}
           />
           <div className="classe-card__details">
             <div><b>Effectif :</b> {classe?.eleves?.length ?? '—'}</div>
-            <div><b>Professeur principal :</b> {enseignant}</div>
+            <div><b>Professeur principal :</b> {enseignantNom}</div>
           </div>
         </div>
         {onEdit && (

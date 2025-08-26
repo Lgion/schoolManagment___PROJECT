@@ -7,7 +7,7 @@ console.log(schema);
 
 const teacherSchema = mongoose.Schema({
     // current_classes: { default: "", type: Object, required:true },
-    current_classes: { default: "", type: ObjectId, ref: Object.keys(schema.obj)[0], required:true },
+    current_classes: { default: [], type: [ObjectId], ref: Object.keys(schema.obj)[0], required:true },
     nom: { default: "", type: String, required:true },
     prenoms: { default: "", type: String, required:true },
     naissance_$_date: { default: new Date().getTime(), type: Number, required:true },

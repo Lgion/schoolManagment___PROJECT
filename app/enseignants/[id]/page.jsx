@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../..//stores/ai_adminContext';
 import Gmap from '../../_/Gmap_plus';
-import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
+import { useEntityDetail, ClasseDisplay, MultiClasseDisplay } from '../../../utils/classeUtils';
 
 export default function EnseignantDetailPage() {
   const { id } = useParams();
@@ -45,7 +45,7 @@ export default function EnseignantDetailPage() {
       }
       <img className="person-detail__photo" src={enseignant.photo_$_file || '/default-photo.png'} alt="" />
       <h1 className="person-detail__title"><u>Enseignant :</u> {enseignant.nom} {enseignant.prenoms} ({enseignant.sexe}) <span style={{fontWeight:400}}>[<time dateTime={enseignant.naissance_$_date}>{enseignant.naissance_$_date ? new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</time>]</span></h1>
-      <ClasseDisplay classe={classe} label="Classe principale :" />
+      <MultiClasseDisplay classes={ctx.classes} classeIds={enseignant.current_classes} label="Classes assignées :" />
       <div className="person-detail__gmap">
         <u>Domicilié (coordonées gmap): </u>
         <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>

@@ -22,7 +22,9 @@ export default function ClasseEnseignantDisplay({ classe, label = "Enseignant de
   
   if (isCurrentYear) {
     // Relations dynamiques pour l'année actuelle
-    enseignant = (ctx.enseignants || []).find(e => e.current_classes === classe._id);
+    enseignant = (ctx.enseignants || []).find(e => 
+      Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
+    );
   } else {
     // Snapshot historique pour les années passées
     const enseignantId = classe.professeur && classe.professeur[0];

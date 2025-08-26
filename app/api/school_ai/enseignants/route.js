@@ -17,9 +17,16 @@ export async function POST(request) {
   try {
     await dbConnect();
     const body = await request.json();
+    console.log('🔍 DEBUG API POST - Données reçues:', body);
+    console.log('🔍 DEBUG API POST - Type current_classes:', typeof body.current_classes);
+    console.log('🔍 DEBUG API POST - Valeur current_classes:', body.current_classes);
+    console.log('🔍 DEBUG API POST - Est un array?', Array.isArray(body.current_classes));
+    
     const created = await Teacher.create(body);
+    console.log('🔍 DEBUG API POST - Données sauvegardées:', created);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
+    console.error('❌ Erreur création enseignant:', error);
     return NextResponse.json({ error: 'Erreur lors de la création de l\'enseignant' }, { status: 500 });
   }
 }

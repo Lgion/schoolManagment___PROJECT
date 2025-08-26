@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useContext,useEffect } from 'react';
 import {AiAdminContext} from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
-import PermissionGate, { RoleIndicator } from '../components/PermissionGate';
+import PermissionGate, { RoleIndicator } from './components/PermissionGate';
 import {
   SignInButton,
   SignUpButton,

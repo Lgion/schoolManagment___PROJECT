@@ -5,6 +5,11 @@
 @use '../assets/scss/components/MODALS/entityModal.scss';
 @use '../assets/scss/components/DISPLAYS/classeEnseignantDisplay.scss';
 @use '../assets/scss/components/LISTS/classesList.scss';
+@use '../assets/scss/components/SCHEDULES/scheduling.scss';
+@use '../assets/scss/components/SCHEDULES/scheduleViewer.scss';
+@use '../assets/scss/components/SCHEDULES/scheduleManager.scss';
+@use '../assets/scss/components/SCHEDULES/scheduleHistory.scss';
+@use '../assets/scss/components/SCHEDULES/scheduleEditor.scss';
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);
@@ -19,15 +24,52 @@ $font-secondary: $secondaryFont;
   margin: 0;
   padding: 0;
   
-  &__photo {
-    @extend %entityModal__photoPreview;
-    position: absolute;
-    right: 2rem;
-    top: 2rem;
-    width: 100px;
-    height: 100px;
-    z-index: 10;
+  // En-tête moderne de la classe
+  &__header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+
+    &-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    &-info {
+      flex: 1;
+    }
+
+    &-image {
+      flex-shrink: 0;
+    }
+  }
+
+  &__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  &__subtitle-text {
+    font-size: 1.1rem;
+    opacity: 0.9;
     margin: 0;
+    font-weight: 300;
+  }
+
+  &__photo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    object-fit: cover;
   }
 
   &__editbtn {
@@ -75,22 +117,287 @@ $font-secondary: $secondaryFont;
     margin: 1em 0 2em 0;
   }
 
+  // Cartes de statistiques
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  &__stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+  }
+
+  &__stat-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  &__stat-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1;
+  }
+
+  &__stat-label {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
   &__block {
     margin: 2em 0 1em 0;
+    
+    // Bloc spécifique pour l'emploi du temps
+    &--schedule {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2.5em 0;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      
+      // Le ScheduleViewer à l'intérieur
+      .scheduleViewer__container {
+        margin: 0;
+        border-radius: 8px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      }
+    }
+
+    // Blocs pour élèves et enseignants
+    &--students, &--teachers {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+    }
   }
+  
   &__subtitle {
-    font-size: 1.2em;
+    font-size: 1.4rem;
     font-weight: 700;
-    margin-bottom: 0.5em;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    // Style spécifique pour le titre emploi du temps
+    .person-detail__block--schedule & {
+      color: #6c63ff;
+      border-bottom: 2px solid #6c63ff;
+      padding-bottom: 0.3em;
+      margin-bottom: 1em;
+    }
+
+    &-icon {
+      font-size: 1.2rem;
+    }
+  }
+
+  // Grille de cartes pour élèves/enseignants
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  &__card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      border-color: #667eea;
+    }
+
+    &-avatar {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    &-content {
+      flex: 1;
+    }
+
+    &-name {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem 0;
+      color: #2c3e50;
+    }
+
+    &-role {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+  }
+
+  // État vide
+  &__empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #7f8c8d;
+
+    &-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    &-text {
+      font-size: 1.1rem;
+      margin: 0;
+      font-weight: 500;
+    }
   }
 
   // Responsive
-  @media (max-width: 600px) {
-    padding: 0.7em;
-    border-radius: 8px;
+  @media (max-width: 768px) {
+    padding: 1rem;
+    
+    &__header {
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      
+      &-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+      }
+    }
+    
+    &__title {
+      font-size: 2rem;
+    }
+    
     &__photo {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
+    }
+    
+    &__stats {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    &__stat-card {
+      padding: 1rem;
+    }
+    
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+    
+    &__block {
+      margin: 1.5rem 0;
+      
+      &--schedule {
+        padding: 1rem;
+        margin: 1.5rem 0;
+      }
+      
+      &--students, &--teachers {
+        padding: 1rem;
+      }
+    }
+    
+    &__subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &__header {
+      padding: 1rem;
+      border-radius: 12px;
+    }
+    
+    &__title {
+      font-size: 1.8rem;
+    }
+    
+    &__stat-card {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.5rem;
+    }
+    
+    &__stat-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+    }
+    
+    &__card {
+      padding: 0.75rem;
+      
+      &-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+      
+      &-name {
+        font-size: 0.9rem;
+      }
+      
+      &-role {
+        font-size: 0.75rem;
+      }
     }
   }
 }

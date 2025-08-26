@@ -1,6 +1,6 @@
 "use client"
 
-import { useUserRole } from '../stores/useUserRole';
+import { useUserRole } from '../../stores/useUserRole';
 
 // Composant pour contrôler l'accès selon les permissions
 export default function PermissionGate({ 
