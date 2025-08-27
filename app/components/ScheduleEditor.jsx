@@ -117,8 +117,6 @@ const ScheduleEditor = ({
         classeId,
         label: '',
         planning: createEmptyPlanning(),
-        dateDebut: new Date(),
-        dateFin: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // +1 an
       })
     }
   }
@@ -417,27 +415,6 @@ const ScheduleEditor = ({
               onChange={(e) => setCurrentSchedule(prev => ({ ...prev, label: e.target.value }))}
               placeholder="Ex: Emploi du temps CM1 - Semestre 1"
             />
-          </div>
-
-          <div className="scheduleEditor__form-row">
-            <div className="scheduleEditor__form-group">
-              <label className="scheduleEditor__label">Date de début</label>
-              <input 
-                type="date"
-                className="scheduleEditor__input"
-                value={new Date(currentSchedule.dateDebut).toISOString().split('T')[0]}
-                onChange={(e) => setCurrentSchedule(prev => ({ ...prev, dateDebut: new Date(e.target.value) }))}
-              />
-            </div>
-            <div className="scheduleEditor__form-group">
-              <label className="scheduleEditor__label">Date de fin</label>
-              <input 
-                type="date"
-                className="scheduleEditor__input"
-                value={new Date(currentSchedule.dateFin).toISOString().split('T')[0]}
-                onChange={(e) => setCurrentSchedule(prev => ({ ...prev, dateFin: new Date(e.target.value) }))}
-              />
-            </div>
           </div>
         </div>
 

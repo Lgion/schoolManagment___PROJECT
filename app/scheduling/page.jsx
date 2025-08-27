@@ -20,6 +20,7 @@ export default function SchedulingPage() {
   const [currentView, setCurrentView] = useState('manager')
   const [selectedClasseId, setSelectedClasseId] = useState(null)
   const [selectedSchedule, setSelectedSchedule] = useState(null)
+  const [selectedClasse, setSelectedClasse] = useState(null)
 
   // Récupération des paramètres URL
   useEffect(() => {
@@ -32,6 +33,42 @@ export default function SchedulingPage() {
     
     setCurrentView(view)
   }, [searchParams])
+
+  // Récupération des informations de la classe sélectionnée
+  useEffect(() => {
+    if (selectedClasseId) {
+      fetchClasseInfo(selectedClasseId)
+    } else {
+      setSelectedClasse(null)
+    }
+  }, [selectedClasseId])
+
+  // Fonction pour récupérer les informations de la classe
+  const fetchClasseInfo = async (classeId) => {
+    try {
+      const response = await fetch(`/api/school_ai/classes`, {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const classes = await response.json()
+        const classe = classes.find(c => c._id === classeId)
+        
+        if (classe) {
+          setSelectedClasse(classe)
+        } else {
+          console.warn('Classe non trouvée:', classeId)
+          setSelectedClasse(null)
+        }
+      } else {
+        console.error('Erreur lors de la récupération des classes')
+        setSelectedClasse(null)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des informations de classe:', error)
+      setSelectedClasse(null)
+    }
+  }
 
   // Gestion de la navigation
   const handleViewChange = (view, options = {}) => {
@@ -75,10 +112,16 @@ export default function SchedulingPage() {
         <header className="scheduling__header">
           <div className="scheduling__header-content">
             <h1 className="scheduling__title">
-              📅 Gestion des Emplois du Temps
+              📅 {selectedClasse 
+                ? `Emplois du Temps - ${selectedClasse.niveau} ${selectedClasse.alias} (${selectedClasse.annee})`
+                : 'Gestion des Emplois du Temps'
+              }
             </h1>
             <p className="scheduling__subtitle">
-              Créez, modifiez et gérez les emplois du temps de vos classes
+              {selectedClasse 
+                ? `Gérez les emplois du temps de la classe ${selectedClasse.niveau} ${selectedClasse.alias}`
+                : 'Créez, modifiez et gérez les emplois du temps de vos classes'
+              }
             </p>
           </div>
           
@@ -96,7 +139,7 @@ export default function SchedulingPage() {
               disabled={!selectedClasseId}
             >
               <span className="scheduling__nav-btn-icon">📚</span>
-              Historique
+              Historique {selectedClasse?.niveau}-{selectedClasse?.alias}
             </button>
             <button 
               className={`scheduling__nav-btn ${currentView === 'editor' ? 'scheduling__nav-btn--active' : ''}`}
@@ -104,7 +147,7 @@ export default function SchedulingPage() {
               disabled={!selectedClasseId}
             >
               <span className="scheduling__nav-btn-icon">✏️</span>
-              Éditeur
+              Éditeur {selectedClasse?.niveau}-{selectedClasse?.alias}
             </button>
           </nav>
         </header>

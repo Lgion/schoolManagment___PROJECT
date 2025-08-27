@@ -52,14 +52,6 @@ const scheduleSchema = mongoose.Schema({
   },
   
   // Métadonnées
-  dateDebut: { 
-    type: Date, 
-    required: true 
-  },
-  dateFin: { 
-    type: Date, 
-    required: true 
-  },
   isArchived: { 
     type: Boolean, 
     default: false 
@@ -76,7 +68,7 @@ const scheduleSchema = mongoose.Schema({
     }, // clerkId
     action: { 
       type: String,
-      enum: ["created", "updated", "archived"]
+      enum: ["created", "updated", "archived", "reactivated"]
     },
     details: { 
       type: Object 

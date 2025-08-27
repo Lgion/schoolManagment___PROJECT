@@ -39,9 +39,17 @@ export async function DELETE(request) {
   try {
     await dbConnect();
     const body = await request.json();
-    await Classe.findByIdAndDelete(body._id);
+    
+    // Utiliser findOneAndDelete pour déclencher le middleware de nettoyage
+    const deleted = await Classe.findOneAndDelete({ _id: body._id });
+    
+    if (!deleted) {
+      return NextResponse.json({ error: 'Classe non trouvée' }, { status: 404 });
+    }
+    
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
+    console.error('Erreur lors de la suppression de la classe:', error);
     return NextResponse.json({ error: 'Erreur lors de la suppression de la classe' }, { status: 500 });
   }
 }

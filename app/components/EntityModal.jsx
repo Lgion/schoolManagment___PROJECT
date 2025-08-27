@@ -675,7 +675,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         </div>
         
         <footer className="modal__actions">
-          <button type="submit" form="modalPersonForm" className="modal__btn modal__btn--primary">
+          <button type="submit" form="modalPersonForm" className="modal__actions-btn modal__actions-btn--primary">
             {uploading ? (
               <>
                 <span className="modal__loadingSpinner"></span>
@@ -689,7 +689,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           {entity && entity._id && (
             <button 
               type="button" 
-              className="modal__btn modal__btn--danger"
+              className="modal__actions-btn modal__actions-btn--danger"
               onClick={() => {
                 if (type === 'eleve') ctx.deleteEleve(entity._id);
                 if (type === 'enseignant') ctx.deleteEnseignant(entity._id);
@@ -701,7 +701,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             </button>
           )}
           
-          <button type="button" className="modal__btn modal__btn--secondary" onClick={onClose}>
+          <button type="button" className="modal__actions-btn modal__actions-btn--secondary" onClick={onClose}>
             Annuler
           </button>
         </footer>

@@ -24,12 +24,25 @@ $font-secondary: $secondaryFont;
   margin: 0;
   padding: 0;
   
+  &__close {
+    position:absolute;
+    left:calc(50% + 3em);
+    top:-20px;
+    // left: 50%;
+    color:red;
+    background:black;
+    border:none;
+    border-radius:5px;
+    font-size:2em;
+    cursor:pointer;
+    z-index:10
+  }
   // En-tête moderne de la classe
   &__header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 2rem;
-    border-radius: 16px;
+    border-radius: 16px 16px 0 0;
     margin-bottom: 2rem;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 
@@ -74,15 +87,21 @@ $font-secondary: $secondaryFont;
 
   &__editbtn {
     position:absolute;
-    right:1em;
+    right:calc(50% - 3em);
+    top:-20px;
+    // left: 50%;
     z-index:2;
     padding:0.3em 0.7em;
-    font-size:0.95em;
+    font-size:1.5em;
     background:#fff;
     border:1px solid #bbb;
     border-radius:6px;
     cursor:pointer;
     box-shadow:0 1px 4px #0001;
+    
+    &:hover {
+      background:#f5f5f5;
+    }
   }
   &__title {
     margin-bottom: 0;
@@ -402,6 +421,331 @@ $font-secondary: $secondaryFont;
   }
 }
 
+
+
+// Styles pour les modales de listes (classes et enseignants)
+.modal {
+  margin-bottom:3em;
+  &__container {
+    max-width: 95vw;
+    // max-height: 90vh;
+    width: auto;
+    // height: auto;
+    padding: 0;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    overflow: hidden;
+  }
+  // En-tête de la modale
+  &__header {
+    background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    
+    h2 {
+      margin: 0;
+      font-family: $font-primary;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  }
+    
+  // Corps de la modale
+  &__body {
+    padding: 2rem;
+    // max-height: calc(90vh - 120px);
+    // overflow-y: auto;
+    
+    // Grille des cartes
+    .entities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    
+    // Styles pour les cartes d'entités
+    .entity-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    &-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+    
+    &-info {
+      flex: 1;
+      
+      h3 {
+        margin: 0 0 0.25rem 0;
+        font-family: $font-primary;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+      }
+      
+      p {
+        margin: 0;
+        font-family: $font-secondary;
+        font-size: 0.9rem;
+        color: #718096;
+      }
+    }
+  }
+        
+  &__content {
+    font-family: $font-secondary;
+    
+    &-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e2e8f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &-label {
+        font-weight: 500;
+        color: #4a5568;
+      }
+      
+      &-value {
+        color: #2d3748;
+        font-weight: 600;
+      }
+    }
+  }
+        
+  &__actions {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    
+    &--centered {
+      justify-content: center;
+    }
+    
+    &--spaced {
+      justify-content: space-between;
+    }
+    
+    &--stacked {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    // Boutons d'action avec nomenclature BEM
+    &-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 10px;
+      font-family: $font-secondary;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      
+      // Animation de survol avec onde
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.3s ease, height 0.3s ease;
+      }
+      
+      &:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+      
+      &:active {
+        transform: scale(0.98);
+      }
+      
+      // Modificateurs BEM pour les types de boutons
+      &--primary {
+        background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
+        
+        &:hover {
+          background: linear-gradient(135deg, darken($primary-color, 5%) 0%, darken($primary-color, 15%) 100%);
+          box-shadow: 0 6px 16px rgba($primary-color, 0.4);
+          transform: translateY(-2px);
+        }
+        
+        &:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.3);
+        }
+      }
+      
+      &--secondary {
+        background: linear-gradient(135deg, $secondary-color 0%, darken($secondary-color, 10%) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba($secondary-color, 0.3);
+        
+        &:hover {
+          background: linear-gradient(135deg, darken($secondary-color, 5%) 0%, darken($secondary-color, 15%) 100%);
+          box-shadow: 0 6px 16px rgba($secondary-color, 0.4);
+          transform: translateY(-2px);
+        }
+        
+        &:focus {
+          outline: none;
+          box-shadow: 0 0 0 3px rgba($secondary-color, 0.3);
+        }
+      }
+      
+      &--success {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        
+        &:hover {
+          background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+          box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
+          transform: translateY(-2px);
+        }
+      }
+      
+      &--danger {
+        background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
+        
+        &:hover {
+          background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+          box-shadow: 0 6px 16px rgba(245, 101, 101, 0.4);
+          transform: translateY(-2px);
+        }
+      }
+      
+      &--outline {
+        background: transparent;
+        border: 2px solid #e2e8f0;
+        color: #4a5568;
+        
+        &:hover {
+          background: #f7fafc;
+          border-color: #cbd5e0;
+          transform: translateY(-1px);
+        }
+      }
+      
+      &--ghost {
+        background: transparent;
+        color: #4a5568;
+        
+        &:hover {
+          background: rgba(0, 0, 0, 0.05);
+          transform: translateY(-1px);
+        }
+      }
+      
+      &--disabled {
+        background: #e2e8f0;
+        color: #a0aec0;
+        cursor: not-allowed;
+        
+        &:hover {
+          transform: none;
+          box-shadow: none;
+        }
+        
+        &::before {
+          display: none;
+        }
+      }
+      
+      // Icônes dans les boutons
+      &-icon {
+        font-size: 1rem;
+        
+        &--left {
+          margin-right: 0.5rem;
+          margin-left: -0.25rem;
+        }
+        
+        &--right {
+          margin-left: 0.5rem;
+          margin-right: -0.25rem;
+        }
+      }
+    }
+  }
+    
+  // Bouton de fermeture
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+  }
+}
 
 section>div:has(.modal){
   position: relative;
@@ -1886,7 +2230,9 @@ section>div:has(.modal){
   }
 
   &__stats {
-    margin-bottom: 2.2em;
+    // margin-bottom: 2.2em;
+    background: silver;
+    padding: 1em;
 
     &-row {
       display: flex;
@@ -1895,8 +2241,15 @@ section>div:has(.modal){
     }
     &-col {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      flex-flow: wrap;
+      // justify-content: space-between;
+      width: 100%;
+      column-gap: 3em;
+    }
+    &-title {
+      width:100%;
+      text-align: center;
+      text-decoration: underline;
     }
     &-label {
       font-size: 1.1em;

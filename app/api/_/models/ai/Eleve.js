@@ -48,6 +48,75 @@ const studentSchema = mongoose.Schema({
 
 })
 
+// Middleware pour capturer l'ancienne valeur avant modification
+// DÉSACTIVÉ : nous capturons _original dans l'API maintenant
+// studentSchema.pre('save', function(next) {
+//   console.log("111uuuuuuuuuuuuuuuuuu");
+//   console.log(this.isNew);
+//   console.log("222uuuuuuuuuuuuuuuuuu");
+//   
+//   if (!this.isNew) {
+//     this._original = this.toObject()
+//   }
+//   next()
+// })
+
+// Middleware pour synchroniser automatiquement les listes de classes
+studentSchema.post('save', async function(doc, next) {
+  console.log('🔍 DEBUG: Middleware post-save déclenché pour élève:', doc._id)
+  console.log('🔍 DEBUG: current_classe actuelle:', doc.current_classe)
+  console.log('🔍 DEBUG: current_classe précédente:', this._original?.current_classe)
+  
+  // Comparer directement les valeurs au lieu d'utiliser isModified()
+  const currentClasse = doc.current_classe?.toString()
+  const previousClasse = this._original?.current_classe?.toString()
+  const hasChanged = currentClasse !== previousClasse
+  
+  console.log('🔍 DEBUG: Comparaison directe - hasChanged:', hasChanged)
+  
+  if (hasChanged) {
+    try {
+      // Ajouter l'élève à la nouvelle classe
+      if (doc.current_classe) {
+        await mongoose.model('ai_Ecole_St_Martin')
+          .findByIdAndUpdate(doc.current_classe, {
+            $addToSet: { eleves: doc._id }
+          })
+        console.log(`✅ Élève ${doc._id} ajouté à la classe ${doc.current_classe}`)
+      }
+      
+      // Retirer l'élève de l'ancienne classe
+      if (this._original?.current_classe && this._original.current_classe !== doc.current_classe) {
+        await mongoose.model('ai_Ecole_St_Martin')
+          .findByIdAndUpdate(this._original.current_classe, {
+            $pull: { eleves: doc._id }
+          })
+        console.log(`✅ Élève ${doc._id} retiré de l'ancienne classe ${this._original.current_classe}`)
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la synchronisation des classes pour élève:', error)
+    }
+  } else {
+    console.log('⚠️ DEBUG: current_classe non modifiée, middleware ignoré')
+  }
+  next()
+})
+
+// Middleware pour nettoyer les classes lors de la suppression d'un élève
+studentSchema.post('findOneAndDelete', async function(doc) {
+  if (doc && doc.current_classe) {
+    try {
+      await mongoose.model('ai_Ecole_St_Martin')
+        .findByIdAndUpdate(doc.current_classe, {
+          $pull: { eleves: doc._id }
+        })
+      console.log(`✅ Élève ${doc._id} retiré de la classe ${doc.current_classe} lors de la suppression`)
+    } catch (error) {
+      console.error('❌ Erreur lors du nettoyage des classes pour élève supprimé:', error)
+    }
+  }
+})
+
 
 let model 
 

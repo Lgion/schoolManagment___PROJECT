@@ -11,11 +11,10 @@ export default function ClasseCard({ classe, enseignants, onEdit, onClick }) {
   let enseignantObj = null
   let enseignantNom = '—' // Tiret par défaut
   
-  if (enseignants && enseignants.length > 0) {
-    // Nouvelle logique : chercher l'enseignant qui a classe._id dans son array current_classes
-    enseignantObj = enseignants.find(enseignant => 
-      Array.isArray(enseignant.current_classes) && enseignant.current_classes.includes(classe._id)
-    )
+  if (enseignants && enseignants.length > 0 && classe.professeur && classe.professeur.length > 0) {
+    // Nouvelle logique : récupérer l'enseignant à partir du champ professeur de la classe
+    const premierProfId = classe.professeur[0]
+    enseignantObj = enseignants.find(enseignant => enseignant._id === premierProfId)
     
     if (enseignantObj) {
       const nom = enseignantObj.nom || ''

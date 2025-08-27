@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { requireAuth } from '../../lib/authWithFallback'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../../_/models/ai/Schedule')
-const { archiveSchedule, convertPlanningToDetails } = require('../../../../utils/scheduleHelpers')
+const { archiveSchedule, reactivateSchedule, convertPlanningToDetails } = require('../../../../utils/scheduleHelpers')
 
 /**
  * GET /api/schedules/[id]
@@ -11,13 +11,12 @@ const { archiveSchedule, convertPlanningToDetails } = require('../../../../utils
  */
 export async function GET(request, { params }) {
   try {
-    const { userId } = auth()
+    // Authentification avec fallback robuste
+    const userId = await requireAuth(request, 'GET /api/schedules/[id]')
     
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
+    // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
+    if (userId instanceof NextResponse) {
+      return userId
     }
 
     const { id } = params
@@ -52,18 +51,16 @@ export async function GET(request, { params }) {
  */
 export async function PUT(request, { params }) {
   try {
-    const { userId } = auth()
+    // Authentification avec fallback robuste
+    const userId = await requireAuth(request, 'PUT /api/schedules/[id]')
     
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      )
+    // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
+    if (userId instanceof NextResponse) {
+      return userId
     }
 
     const { id } = params
     const body = await request.json()
-    const { label, planning, dateDebut, dateFin } = body
 
     const schedule = await Schedule.findById(id)
 
@@ -87,8 +84,6 @@ export async function PUT(request, { params }) {
     // Met à jour les champs
     if (label) schedule.label = label
     if (planning) schedule.planning = planning
-    if (dateDebut) schedule.dateDebut = new Date(dateDebut)
-    if (dateFin) schedule.dateFin = new Date(dateFin)
 
     // Ajoute la modification à l'historique
     schedule.modifications.push({
@@ -114,32 +109,50 @@ export async function PUT(request, { params }) {
 }
 
 /**
- * PATCH /api/schedules/[id]/archive
- * Archive un emploi du temps (pas de suppression)
+ * PATCH /api/schedules/[id]
+ * Archive ou réactive un emploi du temps selon l'action
  */
 export async function PATCH(request, { params }) {
+  let body
   try {
-    const { userId } = auth()
+    // Authentification avec fallback robuste
+    const userId = await requireAuth(request, 'PATCH /api/schedules/[id]')
     
-    if (!userId) {
+    // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
+    if (userId instanceof NextResponse) {
+      return userId
+    }
+
+    const { id } = await params
+    body = await request.json()
+    const { action } = body
+
+    if (!action || !['archive', 'reactivate'].includes(action)) {
       return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
+        { error: 'Action requise: "archive" ou "reactivate"' },
+        { status: 400 }
       )
     }
 
-    const { id } = params
+    let result
+    let message
 
-    const archivedSchedule = await archiveSchedule(id, userId)
+    if (action === 'archive') {
+      result = await archiveSchedule(id, userId)
+      message = 'Emploi du temps archivé avec succès'
+    } else if (action === 'reactivate') {
+      result = await reactivateSchedule(id, userId)
+      message = 'Emploi du temps réactivé avec succès'
+    }
 
     return NextResponse.json({
       success: true,
-      data: archivedSchedule,
-      message: 'Emploi du temps archivé avec succès'
+      data: result,
+      message
     })
 
   } catch (error) {
-    console.error('Erreur PATCH /api/schedules/[id]/archive:', error)
+    console.error(`Erreur PATCH /api/schedules/[id] (${body?.action}):`, error)
     return NextResponse.json(
       { error: error.message || 'Erreur serveur' },
       { status: 500 }

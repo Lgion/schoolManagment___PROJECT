@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { requireAuth } from '../lib/authWithFallback'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../_/models/ai/Schedule')
@@ -11,42 +11,13 @@ const { getActiveSchedule, getScheduleHistory } = require('../../../utils/schedu
  */
 export async function GET(request) {
   try {
-    // Méthode alternative pour récupérer l'userId depuis les headers Clerk
-    const authStatus = request.headers.get('x-clerk-auth-status')
-    const authToken = request.headers.get('x-clerk-auth-token')
+    // Authentification avec fallback robuste
+    const userId = await requireAuth(request, 'GET /api/schedules')
     
-    console.log('🔐 Authentification GET /api/schedules:')
-    console.log('  - authStatus:', authStatus)
-    
-    let userId = null
-    
-    // Essayer d'abord la méthode standard
-    try {
-      const authResult = auth()
-      userId = authResult.userId
-    } catch (authError) {
-      console.log('  - Erreur auth():', authError.message)
+    // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
+    if (userId instanceof NextResponse) {
+      return userId
     }
-    
-    // Si auth() échoue, essayer de décoder le token manuellement
-    if (!userId && authToken) {
-      try {
-        const tokenPayload = JSON.parse(atob(authToken.split('.')[1]))
-        userId = tokenPayload.sub
-      } catch (tokenError) {
-        console.log('  - Erreur décodage token:', tokenError.message)
-      }
-    }
-    
-    if (!userId || authStatus !== 'signed-in') {
-      console.log('❌ Utilisateur non authentifié')
-      return NextResponse.json(
-        { error: 'Non autorisé - Utilisateur non connecté' },
-        { status: 401 }
-      )
-    }
-    
-    console.log('✅ Utilisateur authentifié:', userId)
 
     const { searchParams } = new URL(request.url)
     const classeId = searchParams.get('classeId')
@@ -91,78 +62,62 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    // Méthode alternative pour récupérer l'userId depuis les headers Clerk
-    const authStatus = request.headers.get('x-clerk-auth-status')
-    const authToken = request.headers.get('x-clerk-auth-token')
+    // Authentification avec fallback robuste
+    const userId = await requireAuth(request, 'POST /api/schedules')
     
-    console.log('🔐 Authentification POST /api/schedules:')
-    console.log('  - authStatus:', authStatus)
-    console.log('  - authToken présent:', !!authToken)
-    
-    let userId = null
-    
-    // Essayer d'abord la méthode standard
-    try {
-      const authResult = auth()
-      userId = authResult.userId
-      console.log('  - userId (auth()):', userId)
-    } catch (authError) {
-      console.log('  - Erreur auth():', authError.message)
+    // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
+    if (userId instanceof NextResponse) {
+      return userId
     }
-    
-    // Si auth() échoue, essayer de décoder le token manuellement
-    if (!userId && authToken) {
-      try {
-        // Décoder le JWT pour extraire le sub (userId)
-        const tokenPayload = JSON.parse(atob(authToken.split('.')[1]))
-        userId = tokenPayload.sub
-        console.log('  - userId (token décodé):', userId)
-      } catch (tokenError) {
-        console.log('  - Erreur décodage token:', tokenError.message)
-      }
-    }
-    
-    if (!userId || authStatus !== 'signed-in') {
-      console.log('❌ Utilisateur non authentifié')
-      console.log('  - userId final:', userId)
-      console.log('  - authStatus:', authStatus)
-      return NextResponse.json(
-        { error: 'Non autorisé - Utilisateur non connecté' },
-        { status: 401 }
-      )
-    }
-    
-    console.log('✅ Utilisateur authentifié:', userId)
 
     const body = await request.json()
-    const { classeId, label, planning, dateDebut, dateFin } = body
+    const { classeId, label, planning, } = body
 
     // Validation des données requises
-    if (!classeId || !planning || !dateDebut || !dateFin) {
+    if (!classeId || !planning ) {
       return NextResponse.json(
-        { error: 'classeId, planning, dateDebut et dateFin sont requis' },
+        { error: '"classeId" et "planning" sont requis' },
         { status: 400 }
       )
     }
 
-    // Validation des dates
-    const debut = new Date(dateDebut)
-    const fin = new Date(dateFin)
     
-    if (debut >= fin) {
-      return NextResponse.json(
-        { error: 'La date de fin doit être postérieure à la date de début' },
-        { status: 400 }
-      )
-    }
+    // return NextResponse.json(
+    //   { error: 'La date de fin doit être postérieure à la date de début' },
+    //   { status: 400 }
+    // )
 
+    // ÉTAPE 1: Archiver tous les emplois du temps actifs de cette classe
+    console.log('📚 Archivage des emplois du temps précédents pour la classe:', classeId)
+    
+    const archivedCount = await Schedule.updateMany(
+      { 
+        classeId: classeId,
+        isArchived: false // Seulement les emplois du temps actifs
+      },
+      { 
+        $set: { 
+          isArchived: true 
+        },
+        $push: {
+          modifications: {
+            userId,
+            action: "archived",
+            details: { reason: "Nouveau emploi du temps créé" }
+          }
+        }
+      }
+    )
+    
+    console.log(`✅ ${archivedCount.modifiedCount} emploi(s) du temps archivé(s)`)
+
+    // ÉTAPE 2: Créer le nouvel emploi du temps (qui sera actif par défaut)
     const newSchedule = new Schedule({
       classeId,
       label: label || undefined, // Utilise le default du schéma si non fourni
       planning,
-      dateDebut: debut,
-      dateFin: fin,
       createdBy: userId,
+      isArchived: false, // Explicitement actif
       modifications: [{
         userId,
         action: "created",
@@ -171,6 +126,7 @@ export async function POST(request) {
     })
 
     const savedSchedule = await newSchedule.save()
+    console.log('✅ Nouvel emploi du temps créé et activé:', savedSchedule._id)
 
     return NextResponse.json({
       success: true,

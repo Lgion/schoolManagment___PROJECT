@@ -14,6 +14,7 @@ export default function EnseignantDetailPage() {
   useEffect(() => {
     ctx.fetchEnseignants && ctx.fetchEnseignants();
     ctx.fetchClasses && ctx.fetchClasses();
+    ctx.fetchEleves && ctx.fetchEleves();
   }, []);
 
   const { setSelected, showModal, setShowModal } = ctx;
@@ -22,11 +23,20 @@ export default function EnseignantDetailPage() {
 
   if (!enseignant) return <div style={{color:'red'}}>Enseignant introuvable</div>;
 
+  // Récupérer les classes assignées à cet enseignant
+  const classesAssignees = (ctx.classes || []).filter(c => 
+    Array.isArray(enseignant.current_classes) && enseignant.current_classes.includes(c._id)
+  );
+
+  // Récupérer tous les élèves des classes de cet enseignant
+  const elevesEnseignes = (ctx.eleves || []).filter(e => 
+    classesAssignees.some(c => e.current_classe === c._id)
+  );
+
   return !enseignant ? <div>....loading.....</div>
     : <div className="person-detail" style={{position:'relative'}}>
       <button
         className="person-detail__close"
-        style={{position:'absolute',top:-15,right:5,color:'red',background:'none',border:'none',fontSize:'2em',cursor:'pointer',zIndex:10}}
         aria-label="Fermer"
         onClick={() => router.back()}
       >✕</button>
@@ -43,28 +53,135 @@ export default function EnseignantDetailPage() {
           onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
         >Fermer Édition</button>
       }
-      <img className="person-detail__photo" src={enseignant.photo_$_file || '/default-photo.png'} alt="" />
-      <h1 className="person-detail__title"><u>Enseignant :</u> {enseignant.nom} {enseignant.prenoms} ({enseignant.sexe}) <span style={{fontWeight:400}}>[<time dateTime={enseignant.naissance_$_date}>{enseignant.naissance_$_date ? new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</time>]</span></h1>
-      <MultiClasseDisplay classes={ctx.classes} classeIds={enseignant.current_classes} label="Classes assignées :" />
-      <div className="person-detail__gmap">
-        <u>Domicilié (coordonées gmap): </u>
-        <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>
-          {gmapOpen ? 'Cacher' : enseignant.adresse_$_map}
-        </button>
-        {gmapOpen && (
-          <div className="person-detail__gmap-map">
-            <Gmap 
-              initialPosition={[enseignant.adresse_$_map?.lat, enseignant.adresse_$_map?.lng]} 
-              zoom={16}
+
+      {/* En-tête de l'enseignant */}
+      <div className="person-detail__header">
+        <div className="person-detail__header-content">
+          <div className="person-detail__header-info">
+            <h1 className="person-detail__title">
+              {enseignant.nom} {enseignant.prenoms}
+            </h1>
+            <p className="person-detail__subtitle-text">
+              Enseignant • {enseignant.sexe === 'M' ? 'Homme' : 'Femme'}
+            </p>
+            {enseignant.naissance_$_date && (
+              <p className="person-detail__subtitle-text">
+                Né(e) le {new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', { 
+                  year: 'numeric', month: 'long', day: 'numeric' 
+                })}
+              </p>
+            )}
+          </div>
+          <div className="person-detail__header-image">
+            <img 
+              className="person-detail__photo" 
+              src={enseignant.photo_$_file || '/default-photo.png'} 
+              alt={`${enseignant.nom} ${enseignant.prenoms}`}
+              onError={(e) => {
+                e.target.src = '/default-photo.png';
+              }}
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Statistiques rapides */}
+      <div className="person-detail__stats">
+        <div className="person-detail__stat-card">
+          <div className="person-detail__stat-icon">🏫</div>
+          <div className="person-detail__stat-content">
+            <span className="person-detail__stat-number">{classesAssignees.length}</span>
+            <span className="person-detail__stat-label">Classes</span>
+          </div>
+        </div>
+        <div className="person-detail__stat-card">
+          <div className="person-detail__stat-icon">👨‍🎓</div>
+          <div className="person-detail__stat-content">
+            <span className="person-detail__stat-number">{elevesEnseignes.length}</span>
+            <span className="person-detail__stat-label">Élèves</span>
+          </div>
+        </div>
+        <div className="person-detail__stat-card">
+          <div className="person-detail__stat-icon">📞</div>
+          <div className="person-detail__stat-content">
+            <span className="person-detail__stat-number">{enseignant.phone_$_tel ? '✓' : '✗'}</span>
+            <span className="person-detail__stat-label">Contact</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Classes assignées */}
+      <div className="person-detail__block person-detail__block--classes">
+        <h2 className="person-detail__subtitle">
+          <span className="person-detail__subtitle-icon">🏫</span>
+          Classes assignées
+        </h2>
+        {classesAssignees.length === 0 ? (
+          <div className="person-detail__empty">
+            <div className="person-detail__empty-icon">🏫</div>
+            <p className="person-detail__empty-text">Aucune classe assignée</p>
+          </div>
+        ) : (
+          <div className="person-detail__grid">
+            {classesAssignees.map(classe => (
+              <div key={classe._id} className="person-detail__card">
+                <div className="person-detail__card-avatar">🏫</div>
+                <div className="person-detail__card-content">
+                  <h3 className="person-detail__card-name">{classe.niveau} {classe.alias}</h3>
+                  <p className="person-detail__card-role">Année {classe.annee}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
-      <div className="person-detail__contact" style={{marginBottom:'1em'}}>
-        <u>Contact :</u><br/>
-        <span style={{display:'block',margin:'0.3em 0'}}><b>Téléphone : </b>{enseignant.phone_$_tel  || <span style={{color:'grey'}}>Non renseigné</span>}</span>
-        <span style={{display:'block',margin:'0.3em 0'}}><b>Email : </b>{enseignant.email_$_email || <span style={{color:'grey'}}>Non renseigné</span>}</span>
+
+      {/* Informations de contact */}
+      <div className="person-detail__block person-detail__block--contact">
+        <h2 className="person-detail__subtitle">
+          <span className="person-detail__subtitle-icon">📞</span>
+          Informations de contact
+        </h2>
+        <div className="person-detail__contact-info">
+          <div className="person-detail__contact-item">
+            <span className="person-detail__contact-label">Téléphone :</span>
+            <span className="person-detail__contact-value">
+              {enseignant.phone_$_tel || <span style={{color:'grey'}}>Non renseigné</span>}
+            </span>
+          </div>
+          <div className="person-detail__contact-item">
+            <span className="person-detail__contact-label">Email :</span>
+            <span className="person-detail__contact-value">
+              {enseignant.email_$_email || <span style={{color:'grey'}}>Non renseigné</span>}
+            </span>
+          </div>
+        </div>
       </div>
-      {/* Ajoute ici d'autres blocs d'infos si besoin */}
+
+      {/* Localisation */}
+      {enseignant.adresse_$_map && (
+        <div className="person-detail__block person-detail__block--location">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">📍</span>
+            Localisation
+          </h2>
+          <div className="person-detail__location">
+            <button 
+              className="person-detail__location-btn" 
+              onClick={() => setGmapOpen(o => !o)}
+            >
+              {gmapOpen ? '🔼 Masquer la carte' : '🔽 Afficher sur la carte'}
+            </button>
+            {gmapOpen && (
+              <div className="person-detail__location-map">
+                <Gmap 
+                  initialPosition={[enseignant.adresse_$_map?.lat, enseignant.adresse_$_map?.lng]} 
+                  zoom={16}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
 }

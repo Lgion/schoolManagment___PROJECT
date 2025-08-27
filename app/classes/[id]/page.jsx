@@ -1,12 +1,13 @@
 "use client"
 
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { useUserRole } from '../../../stores/useUserRole';
 import Link from 'next/link';
 import { getClasseImagePath } from '../../../utils/imageUtils';
 import ScheduleViewer from '../../components/ScheduleViewer';
+import EntityModal from '../../components/EntityModal';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -43,20 +44,33 @@ export default function ClasseDetailPage() {
     : classe.professeur || []; // Snapshot historique
   // Prof principal (optionnel)
   const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
+  const onEdit = e => { setSelected(e); setShowModal(true); }
 
-  console.log(ctx.eleves);
-  console.log(enseignants);
-  console.log(ctx.enseignants);
-  console.log(classe);
+  // console.log(ctx.eleves);
+  // console.log(enseignants);
+  // console.log(ctx.enseignants);
+  // console.log(classe);
   
   return !classe ? <div>....loading.....</div>
       : <div className="person-detail" style={{position:'relative'}}>
       <button
         className="person-detail__close"
-        style={{position:'absolute',top:-15,right:5,color:'red',background:'none',border:'none',fontSize:'2em',cursor:'pointer',zIndex:10}}
         aria-label="Fermer"
         onClick={() => router.back()}
       >✕</button>
+      {onEdit && !showModal &&(
+        <button
+          type="button"
+          className="person-detail__editbtn"
+          onClick={e => { 
+            e.stopPropagation(); 
+            e.preventDefault(); 
+            alert("don't work yet")
+            onEdit(classe); 
+          }}
+          tabIndex={0}
+        >Éditer</button>
+      )}
       {showModal && <button
         className="person-detail__editbtn"
         onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
@@ -123,9 +137,12 @@ export default function ClasseDetailPage() {
         ) : (
           <div className="person-detail__grid">
             {eleves.map(eleve => {
-              const student = ctx.eleves.find(el=>el._id===eleve)
+              const student = ctx.eleves.find(el=>el._id===(eleve._id||eleve))
+              console.log(student);
+              
+              
               return (
-                <Link key={eleve._id} href={`/eleves/${eleve}`} className="person-detail__card">
+                <Link key={"eleves_"+student._id} href={`/eleves/${student._id}`} className="person-detail__card">
                   <div className="person-detail__card-avatar">👨‍🎓</div>
                   <div className="person-detail__card-content">
                     <h3 className="person-detail__card-name">{student?.nom} {student?.prenoms}</h3>
@@ -150,7 +167,9 @@ export default function ClasseDetailPage() {
         ) : (
           <div className="person-detail__grid">
             {enseignants.map(enseignant => {
-              const teacher = ctx.enseignants.find(el=>el._id===enseignant)
+              const teacher = ctx.enseignants.find(el=>el._id===enseignant._id||enseignant)
+              console.log(teacher);
+              
               return (
                 <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
                   <div className="person-detail__card-avatar">👨‍🏫</div>

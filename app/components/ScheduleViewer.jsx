@@ -19,11 +19,10 @@ const ScheduleViewer = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+  const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi']
   const heures = [
-    '08:00-09:00', '09:00-10:00', '10:00-10:15', '10:15-11:15', 
-    '11:15-12:15', '12:15-13:30', '13:30-14:30', '14:30-15:30', 
-    '15:30-15:45', '15:45-16:45'
+    '08:00-09:00', '09:00-10:00', '10:00-10:30', '10:30-12:00', 
+    '12:00-14:00', '14:00-15:00', '15:00-16:00'
   ]
 
   // Récupération de l'emploi du temps actif
@@ -44,17 +43,47 @@ const ScheduleViewer = ({
         const scheduleData = await scheduleResponse.json()
 
         if (scheduleData.success && scheduleData.data.length > 0) {
-          setSchedule(scheduleData.data[0])
+          const activeSchedule = scheduleData.data[0]
+          console.log('📅 Active schedule loaded:', activeSchedule)
+          console.log('📋 Schedule planning structure:', activeSchedule.planning)
+          
+          // Log des subjectIds trouvés dans le planning
+          const subjectIds = []
+          Object.keys(activeSchedule.planning || {}).forEach(jour => {
+            if (activeSchedule.planning[jour]) {
+              activeSchedule.planning[jour].forEach(slot => {
+                if (slot.subjectId) {
+                  subjectIds.push(slot.subjectId)
+                }
+              })
+            }
+          })
+          console.log('🔗 SubjectIds in schedule:', subjectIds)
+          
+          setSchedule(activeSchedule)
         } else {
+          console.log('❌ No active schedule found for classe:', classeId)
           setSchedule(null)
         }
 
         // Récupération des matières
-        const subjectsResponse = await fetch('/api/subjects')
+        const subjectsResponse = await fetch('/api/subjects', {
+          credentials: 'include'
+        })
         const subjectsData = await subjectsResponse.json()
 
-        if (subjectsData.success) {
+        console.log('📚 Subjects API Response:', subjectsData)
+
+        if (subjectsData.success && subjectsData.data) {
           setSubjects(subjectsData.data)
+          console.log('✅ Subjects loaded:', subjectsData.data.length, 'matières')
+        } else if (Array.isArray(subjectsData)) {
+          // Fallback si la réponse est directement un array
+          setSubjects(subjectsData)
+          console.log('✅ Subjects loaded (direct array):', subjectsData.length, 'matières')
+        } else {
+          console.error('❌ Failed to load subjects:', subjectsData)
+          setSubjects([])
         }
 
       } catch (err) {
@@ -70,10 +99,40 @@ const ScheduleViewer = ({
 
   // Fonction pour obtenir les informations d'une matière
   const getSubjectInfo = (subjectId) => {
-    return subjects.find(subject => subject._id === subjectId) || {
-      nom: 'Matière inconnue',
-      couleur: '#95a5a6'
+    console.log('🔍 Looking for subject:', subjectId, 'Type:', typeof subjectId)
+    
+    // Si subjectId est déjà un objet peuplé (populated), le retourner directement
+    if (typeof subjectId === 'object' && subjectId !== null && subjectId.nom) {
+      console.log('✅ Subject already populated:', subjectId.nom)
+      return {
+        nom: subjectId.nom,
+        couleur: subjectId.couleur || '#3498db',
+        code: subjectId.code || '',
+        ...subjectId
+      }
     }
+    
+    // Sinon, chercher dans la liste des matières
+    console.log('📋 Available subjects:', subjects.map(s => ({ id: s._id, nom: s.nom, type: typeof s._id })))
+    
+    // Essayer de trouver par _id (string ou ObjectId)
+    let subject = subjects.find(s => s._id === subjectId)
+    
+    // Si pas trouvé, essayer avec toString() au cas où il y aurait un problème de type
+    if (!subject && subjectId) {
+      subject = subjects.find(s => s._id.toString() === subjectId.toString())
+    }
+    
+    if (!subject) {
+      console.warn('⚠️ Subject not found:', subjectId, 'Available IDs:', subjects.map(s => s._id))
+      return {
+        nom: `Matière inconnue (${subjectId})`,
+        couleur: '#95a5a6'
+      }
+    }
+    
+    console.log('✅ Subject found:', subject.nom)
+    return subject
   }
 
   // Fonction pour obtenir les créneaux d'un jour et d'une heure
@@ -101,11 +160,13 @@ const ScheduleViewer = ({
     })
   }
 
-  // Fonction pour déterminer si c'est une pause
-  const isBreakTime = (heureIndex) => {
-    return heures[heureIndex].includes('10:00-10:15') || 
-           heures[heureIndex].includes('15:30-15:45') ||
-           heures[heureIndex].includes('12:15-13:30')
+  // Fonction pour déterminer si c'est une pause (seulement si le slot est vide)
+  const isBreakTime = (heureIndex, hasSlot) => {
+    // Ne marquer comme pause que si le créneau est vide ET correspond aux heures de pause
+    if (hasSlot) return false
+    
+    return heures[heureIndex].includes('10:00-10:30') || 
+           heures[heureIndex].includes('12:00-14:00')
   }
 
   // Rendu du composant de chargement
@@ -169,9 +230,6 @@ const ScheduleViewer = ({
       <div className="scheduleViewer__header">
         <div>
           <h3 className="scheduleViewer__header-title">{schedule.label}</h3>
-          <p className="scheduleViewer__header-subtitle">
-            Du {new Date(schedule.dateDebut).toLocaleDateString('fr-FR')} au {new Date(schedule.dateFin).toLocaleDateString('fr-FR')}
-          </p>
         </div>
         {isEditable && (
           <div className="scheduleViewer__actions">
@@ -211,7 +269,7 @@ const ScheduleViewer = ({
             </div>
             {heures.map((heure, heureIndex) => {
               const slot = getTimeSlot(jour, heureIndex)
-              const isBreak = isBreakTime(heureIndex)
+              const isBreak = isBreakTime(heureIndex, !!slot)
               
               return (
                 <div
@@ -240,7 +298,7 @@ const ScheduleViewer = ({
                     </div>
                   ) : isBreak ? (
                     <div className="scheduleViewer__subject">
-                      <span className="scheduleViewer__subject-name">Pause</span>
+                      <span className={`scheduleViewer__subject-name ${heure === '10:00-10:30' ? 'scheduleViewer__subject-name--break' : ''}`}>Pause {heure === '10:00-10:30' ? "goûté" :"midi"}</span>
                     </div>
                   ) : null}
                 </div>

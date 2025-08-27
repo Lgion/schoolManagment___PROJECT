@@ -51,7 +51,6 @@ export default function ElevePage() {
     : <div className="person-detail">
       <button
         className="person-detail__close"
-        style={{position:'absolute',top:-15,right:5,color:'red',  background:'none',border:'none',fontSize:'2em',cursor:'pointer',zIndex:10}}
         aria-label="Fermer"
         onClick={() => router.back()}
       >✕</button>

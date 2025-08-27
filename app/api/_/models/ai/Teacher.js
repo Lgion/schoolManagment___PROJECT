@@ -20,6 +20,81 @@ const teacherSchema = mongoose.Schema({
     createdAt: { default: +new Date(), type: String},
 })
 
+// Middleware pour capturer l'ancienne valeur avant modification
+// DÉSACTIVÉ : nous capturons _original dans l'API maintenant
+// teacherSchema.pre('save', function(next) {
+//   if (!this.isNew) {
+//     this._original = this.toObject()
+//   }
+//   next()
+// })
+
+// Middleware pour synchroniser automatiquement les listes de classes
+teacherSchema.post('save', async function(doc, next) {
+  console.log('🔍 DEBUG: Middleware post-save déclenché pour enseignant:', doc._id)
+  console.log('🔍 DEBUG: current_classes actuelle:', doc.current_classes)
+  console.log('🔍 DEBUG: current_classes précédente:', this._original?.current_classes)
+  
+  // Comparer directement les valeurs au lieu d'utiliser isModified()
+  const oldClasses = this._original?.current_classes || []
+  const newClasses = doc.current_classes || []
+  const hasChanged = JSON.stringify(oldClasses.sort()) !== JSON.stringify(newClasses.sort())
+  
+  console.log('🔍 DEBUG: Comparaison directe - hasChanged:', hasChanged)
+  
+  if (hasChanged) {
+    try {
+      // Pas besoin de réimporter mongoose, il est déjà disponible
+      
+      // Ajouter l'enseignant aux nouvelles classes
+      for (const classeId of newClasses) {
+        if (!oldClasses.includes(classeId)) {
+          await mongoose.model('ai_Ecole_St_Martin')
+            .findByIdAndUpdate(classeId, {
+              $addToSet: { professeur: doc._id }
+            })
+          console.log(`✅ Enseignant ${doc._id} ajouté à la classe ${classeId}`)
+        }
+      }
+      
+      // Retirer l'enseignant des anciennes classes
+      for (const classeId of oldClasses) {
+        if (!newClasses.includes(classeId)) {
+          await mongoose.model('ai_Ecole_St_Martin')
+            .findByIdAndUpdate(classeId, {
+              $pull: { professeur: doc._id }
+            })
+          console.log(`✅ Enseignant ${doc._id} retiré de l'ancienne classe ${classeId}`)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la synchronisation des classes pour enseignant:', error)
+    }
+  } else {
+    console.log('⚠️ DEBUG: current_classes non modifiées, middleware ignoré')
+  }
+  next()
+})
+
+// Middleware pour nettoyer les classes lors de la suppression d'un enseignant
+teacherSchema.post('findOneAndDelete', async function(doc) {
+  if (doc && doc.current_classes && doc.current_classes.length > 0) {
+    const mongoose = require('mongoose')
+    
+    try {
+      for (const classeId of doc.current_classes) {
+        await mongoose.model('ai_Ecole_St_Martin')
+          .findByIdAndUpdate(classeId, {
+            $pull: { professeur: doc._id }
+          })
+        console.log(`✅ Enseignant ${doc._id} retiré de la classe ${classeId} lors de la suppression`)
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du nettoyage des classes pour enseignant supprimé:', error)
+    }
+  }
+})
+
 
 let model 
 

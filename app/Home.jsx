@@ -180,10 +180,10 @@ export default ({children}) => {
               <article className="ecole-admin__stats">
                 <div className="ecole-admin__stats-row">
                   <div className="ecole-admin__stats-col">
-                    <span className="ecole-admin__stats-label">Statistiques globales</span>
-                    <span className="ecole-admin__stats-value">Nombre d'élèves: {eleves?.length || 0}</span>
-                    <span className="ecole-admin__stats-value">Nombre d'enseignants: {enseignants?.length || 0}</span>
-                    <span className="ecole-admin__stats-value">Nombre de classes: {classes?.length || 0}</span>
+                    <h2 className="ecole-admin__stats-title">Statistiques globales: </h2>
+                    <span className="ecole-admin__stats-value"><u>Nombre d'élèves:</u> {eleves?.length || 0}</span>
+                    <span className="ecole-admin__stats-value"><u>Nombre d'enseignants:</u> {enseignants?.length || 0}</span>
+                    <span className="ecole-admin__stats-value"><u>Nombre de classes:</u> {classes?.length || 0}</span>
                   </div>
                 </div>
               </article>

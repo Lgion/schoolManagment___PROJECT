@@ -15,9 +15,11 @@ let {schema: schemaEleve} = modelEleves
 
 const classeSchema = mongoose.Schema({
     // professeur: { default: "", type: [ObjectId], ref: Object.keys(schemaTeacher.obj)[0], required: true },
-    professeur: { default: [], type: [Object], required: true },
+    // professeur: { default: [], type: [Object], required: true },
+    
     // eleves: { default: [], type: [ObjectId], ref: Object.keys(schemaStudent.obj)[0], required: true },
-    eleves: { default: [], type: [Object], required: true },
+    // eleves: { default: [], type: [Object], required: true },
+
     annee: { default: "", type: String, required: true },
     niveau: { default: "", type: String, required: true },
     alias: { default: "", type: String, required: true },

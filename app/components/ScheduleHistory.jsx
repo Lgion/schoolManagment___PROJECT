@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { archiveSchedule } from '../../utils/scheduleHelpers'
 import { useUser } from '@clerk/nextjs'
 
 /**
@@ -15,11 +14,14 @@ const ScheduleHistory = ({
 }) => {
   const { user } = useUser()
   const [schedules, setSchedules] = useState([])
+  const [classe, setClasse] = useState(null)
   const [loading, setLoading] = useState(true)
   const [archiving, setArchiving] = useState(null)
+  const [reactivating, setReactivating] = useState(null)
 
   useEffect(() => {
     loadScheduleHistory()
+    loadClasseInfo()
   }, [classeId])
 
   const loadScheduleHistory = async () => {
@@ -38,23 +40,90 @@ const ScheduleHistory = ({
     }
   }
 
+  const loadClasseInfo = async () => {
+    try {
+      const response = await fetch(`/api/school_ai/classes`, {
+        credentials: 'include'
+      })
+      
+      if (response.ok) {
+        const classes = await response.json()
+        const classeInfo = classes.find(c => c._id === classeId)
+        
+        if (classeInfo) {
+          setClasse(classeInfo)
+        } else {
+          console.warn('Classe non trouvée:', classeId)
+        }
+      } else {
+        console.error('Erreur lors de la récupération des classes')
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des informations de classe:', error)
+    }
+  }
+
   const handleArchiveSchedule = async (scheduleId) => {
     if (!confirm('Êtes-vous sûr de vouloir archiver cet emploi du temps ?')) {
       return
     }
 
     try {
-      alert(1)
       setArchiving(scheduleId)
-      alert(2)
-      await archiveSchedule(scheduleId, user?.id)
+      
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'archive' })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'archivage')
+      }
+
       await loadScheduleHistory() // Recharge la liste
     } catch (error) {
       console.error('Erreur lors de l\'archivage:', error)
       alert('Erreur lors de l\'archivage de l\'emploi du temps')
     } finally {
       setArchiving(null)
-      alert(3)
+    }
+  }
+
+  const handleReactivateSchedule = async (scheduleId) => {
+    if (!confirm('Êtes-vous sûr de vouloir réactiver cet emploi du temps ?')) {
+      return
+    }
+
+    try {
+      setReactivating(scheduleId)
+      
+      const response = await fetch(`/api/schedules/${scheduleId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'reactivate' })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors de la réactivation')
+      }
+
+      await loadScheduleHistory() // Recharge la liste
+    } catch (error) {
+      console.error('Erreur lors de la réactivation:', error)
+      alert('Erreur lors de la réactivation de l\'emploi du temps')
+    } finally {
+      setReactivating(null)
     }
   }
 
@@ -64,8 +133,6 @@ const ScheduleHistory = ({
       ...schedule,
       _id: null, // Nouveau document
       label: `${schedule.label} (Copie)`,
-      dateDebut: new Date(),
-      dateFin: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // +1 an
       isArchived: false,
       modifications: []
     }
@@ -92,9 +159,12 @@ const ScheduleHistory = ({
           <span className="scheduleHistory__back-btn-icon">←</span>
           Retour au gestionnaire
         </button>
-        <h2 className="scheduleHistory__title">Historique des emplois du temps</h2>
+        <h2 className="scheduleHistory__title">
+          Historique des emplois du temps{classe ? ` : classe de ${classe.niveau}${classe.alias ? `-${classe.alias} (${classe.annee})` : ''}` : ''}
+        </h2>
         <p className="scheduleHistory__subtitle">
           {schedules.length} emploi{schedules.length > 1 ? 's' : ''} du temps trouvé{schedules.length > 1 ? 's' : ''}
+          {classe && ` pour l'année ${classe.annee}`}
         </p>
       </header>
 
@@ -149,9 +219,6 @@ const ScheduleHistory = ({
               </div>
 
               <div className="scheduleHistory__item-meta">
-                <span className="scheduleHistory__item-date">
-                  📅 Du {new Date(schedule.dateDebut).toLocaleDateString('fr-FR')} au {new Date(schedule.dateFin).toLocaleDateString('fr-FR')}
-                </span>
                 <span className="scheduleHistory__item-created">
                   🕒 Créé le {new Date(schedule.createdAt).toLocaleDateString('fr-FR')}
                 </span>
@@ -189,7 +256,7 @@ const ScheduleHistory = ({
                   Dupliquer
                 </button>
                 
-                {!schedule.isArchived && (
+                {!schedule.isArchived ? (
                   <button 
                     className="scheduleHistory__item-btn scheduleHistory__item-btn--archive"
                     onClick={() => handleArchiveSchedule(schedule._id)}
@@ -199,6 +266,17 @@ const ScheduleHistory = ({
                       {archiving === schedule._id ? '⏳' : '📦'}
                     </span>
                     {archiving === schedule._id ? 'Archivage...' : 'Archiver'}
+                  </button>
+                ) : (
+                  <button 
+                    className="scheduleHistory__item-btn scheduleHistory__item-btn--reactivate"
+                    onClick={() => handleReactivateSchedule(schedule._id)}
+                    disabled={reactivating === schedule._id}
+                  >
+                    <span className="scheduleHistory__item-btn-icon">
+                      {reactivating === schedule._id ? '⏳' : '🔄'}
+                    </span>
+                    {reactivating === schedule._id ? 'Réactivation...' : 'Réactiver'}
                   </button>
                 )}
               </div>
@@ -219,6 +297,7 @@ const ScheduleHistory = ({
                           {mod.action === 'created' && '✨ Créé'}
                           {mod.action === 'updated' && '✏️ Modifié'}
                           {mod.action === 'archived' && '📦 Archivé'}
+                          {mod.action === 'reactivated' && '🔄 Réactivé'}
                         </span>
                         <span className="scheduleHistory__modification-user">
                           par {mod.userId}

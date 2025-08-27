@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { authWithFallback } from '../lib/authWithFallback'
+import dbConnect from '../lib/dbConnect'
 
 // Import dynamique pour les modèles Mongoose
 const Subject = require('../_/models/ai/Subject')
@@ -10,14 +11,16 @@ const Subject = require('../_/models/ai/Subject')
  */
 export async function GET(request) {
   try {
-    const { userId } = auth()
+    const authResult = await authWithFallback(request)
     
-    if (!userId) {
+    if (!authResult.success) {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 401 }
       )
     }
+
+    await dbConnect()
 
     const { searchParams } = new URL(request.url)
     const niveau = searchParams.get('niveau')
@@ -53,9 +56,9 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { userId } = auth()
+    const authResult = await authWithFallback(request)
     
-    if (!userId) {
+    if (!authResult.success) {
       return NextResponse.json(
         { success: false, error: 'Non autorisé' },
         { status: 401 }

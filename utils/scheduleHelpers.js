@@ -114,6 +114,70 @@ const archiveSchedule = async (scheduleId, userId) => {
 }
 
 /**
+ * Réactive un emploi du temps archivé
+ * IMPORTANT: Archive automatiquement tous les autres emplois du temps actifs de la même classe
+ * @param {String} scheduleId - ID de l'emploi du temps
+ * @param {String} userId - ID de l'utilisateur (clerkId)
+ * @returns {Object} - Emploi du temps réactivé
+ */
+const reactivateSchedule = async (scheduleId, userId) => {
+  try {
+    const Schedule = require('../app/api/_/models/ai/Schedule')
+    const schedule = await Schedule.findById(scheduleId)
+    
+    if (!schedule) {
+      throw new Error('Emploi du temps non trouvé')
+    }
+    
+    if (!schedule.isArchived) {
+      throw new Error('Cet emploi du temps n\'est pas archivé')
+    }
+
+    // ÉTAPE 1: Archiver tous les emplois du temps actifs de cette classe
+    console.log('📚 Archivage des emplois du temps actifs pour la classe:', schedule.classeId)
+    
+    const archivedCount = await Schedule.updateMany(
+      { 
+        classeId: schedule.classeId,
+        isArchived: false,
+        _id: { $ne: scheduleId } // Exclure l'emploi du temps qu'on réactive
+      },
+      { 
+        $set: { 
+          isArchived: true 
+        },
+        $push: {
+          modifications: {
+            userId,
+            action: "archived",
+            details: { reason: "Emploi du temps réactivé" }
+          }
+        }
+      }
+    )
+    
+    console.log(`✅ ${archivedCount.modifiedCount} emploi(s) du temps archivé(s) automatiquement`)
+
+    // ÉTAPE 2: Réactiver l'emploi du temps sélectionné
+    schedule.modifications.push({
+      userId,
+      action: "reactivated",
+      details: convertPlanningToDetails(schedule.planning)
+    })
+    
+    schedule.isArchived = false
+    
+    const reactivatedSchedule = await schedule.save()
+    console.log('✅ Emploi du temps réactivé:', reactivatedSchedule._id)
+    
+    return reactivatedSchedule
+  } catch (error) {
+    console.error('Erreur lors de la réactivation:', error)
+    throw error
+  }
+}
+
+/**
  * Récupère l'historique des emplois du temps pour une classe
  * @param {String} classeId - ID de la classe
  * @param {Boolean} includeArchived - Inclure les emplois du temps archivés
@@ -210,6 +274,7 @@ module.exports = {
   convertPlanningToDetails,
   getActiveSchedule,
   archiveSchedule,
+  reactivateSchedule,
   getScheduleHistory,
   validatePlanning,
   generateDefaultLabel

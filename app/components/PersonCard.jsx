@@ -3,7 +3,7 @@ import React from 'react';
 import Link from "next/link";
 import './PersonCard.scss';
 
-export default function PersonCard({ person, classe, onClick, onEdit, type }) {
+export default function PersonCard({ person, classes, onClick, onEdit, type }) {
   const photoUrl = person.photo_$_file || '/default-photo.png';
   
   // Couleur de fond selon le sexe
@@ -16,6 +16,9 @@ export default function PersonCard({ person, classe, onClick, onEdit, type }) {
     return 'transparent';
   };
 
+  console.log(person.nom);
+  console.log(classes);
+  
   return (
     <div className="person-card-wrapper" style={{position:'relative'}}>
       <Link href={`/${type}s/${person._id}`} className="person-card" tabIndex={0} style={{backgroundColor: getBackgroundColor(person.sexe)}}>
@@ -23,7 +26,7 @@ export default function PersonCard({ person, classe, onClick, onEdit, type }) {
         <div className="person-card__infos">
           <div className="person-card__name">{person.nom} <span className="person-card__prenoms">{person.prenoms}</span></div>
           <div className="person-card__sexe">Sexe : {person.sexe === 'M' ? 'Masculin' : person.sexe === 'F' ? 'Féminin' : '-'}</div>
-          <div className="person-card__classe">{classe?.niveau} - {classe?.alias}</div>
+          <div className="person-card__classe">{classes.map(el=>el?.niveau+" - "+el?.alias)}</div>
           {/* Badge ou champ spécifique selon le type */}
           {type === 'eleve' && (
             <div className="person-card__isinterne">
