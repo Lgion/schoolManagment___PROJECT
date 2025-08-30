@@ -18,6 +18,12 @@ const classeSchema = mongoose.Schema({
     homework: { default: {}, type: Object, required: true },
     // absences: { default: {}, type: Object, required: true },
     compositions: { default: [], type: Object, required: true },
+    coefficients: { 
+        default: {}, 
+        type: Object, 
+        required: false,
+        // Structure: {"0": 4, "1": 4, "2": 3, "3": 1} où les clés sont les indices des matières
+    },
     moyenne_trimetriel: {
         default: ["", "", ""], type: [String],
         validate: {

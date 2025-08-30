@@ -22,6 +22,26 @@ export const MATIERES_SCOLAIRES = [
   'Autre matière'
 ];
 
+// Coefficients par matière (utilisés comme dénominateur par défaut)
+export const COEFFICIENTS_MATIERES = {
+  'Mathématiques': 40,
+  'Exploration de texte': 30,
+  'Éveil au milieu': 20,
+  'Dictée': 20,
+  'Français': 40,
+  'Anglais': 30,
+  'Sciences Physiques': 30,
+  'Sciences de la Vie et de la Terre': 30,
+  'Histoire-Géographie': 30,
+  'Philosophie': 20,
+  'Éducation Physique': 10,
+  'Arts Plastiques': 10,
+  'Musique': 10,
+  'Informatique': 20,
+  'Économie': 20,
+  'Autre matière': 20
+};
+
 /**
  * Convertit l'ancien format de notes (nombres) vers le nouveau format (objets)
  * @param {Array} oldNotes - Ancien format [15, 12, 18]

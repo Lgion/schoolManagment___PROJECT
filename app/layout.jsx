@@ -23,7 +23,9 @@ export default function RootLayout({ children }) {
     <html lang="fr">
       <body>
         <AdminContextProvider>
-          <Goals />
+
+          {/* <Goals /> */}
+
           <ClerkProvider>
             <UserRoleProvider>
               <Home>

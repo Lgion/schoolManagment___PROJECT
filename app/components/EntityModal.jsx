@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect, useRef, Fragment } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import { MATIERES_SCOLAIRES, convertOldNotesToNew, extractMatiereNote } from '../../utils/matieres';
+import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres';
 import Gmap from '../_/Gmap_plus';
 
 // type: 'eleve' | 'enseignant' | 'classe'
@@ -47,6 +47,11 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       formData.naissance_$_date = timestampToDateString(formData.naissance_$_date);
     }
     
+    // S'assurer que les coefficients sont toujours initialisés pour les classes
+    if (type === 'classe' && !formData.coefficients) {
+      formData.coefficients = {};
+    }
+    
     return formData;
   };
   
@@ -56,6 +61,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [showMap, setShowMap] = useState(false);
+  
+  // États pour les matières dynamiques depuis MongoDB (utilisé par CoefficientsManager et CompositionsBlock)
+  const [dynamicSubjects, setDynamicSubjects] = useState([]);
+  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
+  
+  // États pour les coefficients de classe
+  const [classCoefficients, setClassCoefficients] = useState({});
+  const [classCoefficientsLoaded, setClassCoefficientsLoaded] = useState(false);
 
   // Pré-remplissage par défaut selon l'entité
   useEffect(() => {
@@ -66,7 +79,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       // Mode création : initialiser avec des valeurs par défaut
       if (type === 'eleve') setForm({ nom: '', prenoms: [''], naissance_$_date: '', adresse_$_map: '', parents: { mere: '', pere: '', phone: '' }, photo_$_file: '', current_classe: '', documents: [], ...form });
       if (type === 'enseignant') setForm({ nom: '', prenoms: [''], naissance_$_date: '', adresse_$_map: '', photo_$_file: '', phone_$_tel: '', email_$_email: '', current_classes: [], ...form });
-      if (type === 'classe') setForm({ annee: '', niveau: '', alias: '', photo: '', ...form });
+      if (type === 'classe') setForm({ annee: '', niveau: '', alias: '', photo: '', coefficients: {}, ...form });
     }
     // Chargement des données fictives
     if (!entity) {
@@ -104,6 +117,170 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     }
   }, [type, entity])
   const [selectedDocuments, setSelectedDocuments] = useState([]);
+  
+  // Chargement des matières avec priorité localStorage (selon règles projet)
+  const loadSubjectsForEntityModal = async () => {
+    try {
+      console.log('🔄 [EntityModal] Chargement des matières - priorité localStorage...');
+      
+      // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
+      const localStorageSubjects = localStorage.getItem('app_subjects');
+      if (localStorageSubjects) {
+        try {
+          const parsedSubjects = JSON.parse(localStorageSubjects);
+          if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
+            console.log('✅ [EntityModal] Matières trouvées dans localStorage:', parsedSubjects.length);
+            setDynamicSubjects(parsedSubjects);
+            setSubjectsLoaded(true);
+            return; // Utiliser localStorage, pas besoin de fallback
+          }
+        } catch (parseError) {
+          console.warn('⚠️ [EntityModal] Erreur parsing localStorage subjects:', parseError);
+        }
+      }
+      
+      console.log('� [EntityModal] Pas de matières dans localStorage, fallback MongoDB...');
+      
+      // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
+      const response = await fetch('/api/subjects', {
+        credentials: 'include'
+      });
+      console.log('📡 [EntityModal] Réponse API subjects:', response.status);
+      
+      const data = await response.json();
+      console.log('📊 [EntityModal] Données matières reçues:', data);
+      
+      if (data.success && data.data) {
+        console.log('✅ [EntityModal] Matières MongoDB chargées:', data.data.length);
+        
+        // Convertir la structure MongoDB en format utilisable
+        // IMPORTANT: Trier par ordre de création pour maintenir la cohérence avec les indices
+        const sortedData = data.data
+          .filter(subject => subject.isActive)
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Tri par date de création
+        
+        const subjects = sortedData.map(subject => subject.nom);
+        
+        // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
+        localStorage.setItem('app_subjects', JSON.stringify(subjects));
+        console.log('💾 [EntityModal] Matières sauvegardées dans localStorage');
+        
+        setDynamicSubjects(subjects);
+        setSubjectsLoaded(true);
+        
+        console.log('✅ [EntityModal] Matières configurées (triées par date):', { 
+          subjects, 
+          first4: subjects.slice(0, 4)
+        });
+      } else {
+        console.log('⚠️ [EntityModal] Pas de données MongoDB, utilisation du fallback hardcodé');
+        // Sauvegarder le fallback hardcodé dans localStorage
+        localStorage.setItem('app_subjects', JSON.stringify(MATIERES_SCOLAIRES));
+        setDynamicSubjects(MATIERES_SCOLAIRES);
+        setSubjectsLoaded(true);
+      }
+    } catch (error) {
+      console.error('❌ [EntityModal] Erreur lors du chargement des matières:', error);
+      // En cas d'erreur, utiliser le fallback hardcodé et le sauvegarder
+      localStorage.setItem('app_subjects', JSON.stringify(MATIERES_SCOLAIRES));
+      setDynamicSubjects(MATIERES_SCOLAIRES);
+      setSubjectsLoaded(true);
+    }
+  };
+  
+  // Charger les matières depuis MongoDB au montage du composant
+  useEffect(() => {
+    loadSubjectsForEntityModal();
+  }, []);
+  
+  // Charger les coefficients de classe quand l'élève a une classe assignée
+  useEffect(() => {
+    if (type === 'eleve' && form.current_classe) {
+      loadClassCoefficients(form.current_classe);
+    }
+  }, [type, form.current_classe]);
+  
+  // Chargement des coefficients de classe avec priorité localStorage (selon règles projet)
+  const loadClassCoefficients = async (classeId) => {
+    try {
+      console.log('🎓 [EntityModal] Chargement des coefficients de classe - priorité localStorage...', classeId);
+      
+      // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
+      const localStorageKey = `app_class_coefficients_${classeId}`;
+      const localStorageCoefficients = localStorage.getItem(localStorageKey);
+      if (localStorageCoefficients) {
+        try {
+          const parsedCoefficients = JSON.parse(localStorageCoefficients);
+          if (typeof parsedCoefficients === 'object' && parsedCoefficients !== null) {
+            console.log('✅ [EntityModal] Coefficients trouvés dans localStorage:', parsedCoefficients);
+            setClassCoefficients(parsedCoefficients);
+            setClassCoefficientsLoaded(true);
+            return; // Utiliser localStorage, pas besoin de fallback
+          }
+        } catch (parseError) {
+          console.warn('⚠️ [EntityModal] Erreur parsing localStorage coefficients:', parseError);
+        }
+      }
+      
+      console.log('📡 [EntityModal] Pas de coefficients dans localStorage, fallback MongoDB...');
+      
+      // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
+      const response = await fetch(`/api/classes/${classeId}`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 [EntityModal] Données classe reçues:', data);
+        
+        if (data.success && data.data && data.data.coefficients) {
+          console.log('✅ [EntityModal] Coefficients MongoDB chargés:', data.data.coefficients);
+          
+          // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
+          localStorage.setItem(localStorageKey, JSON.stringify(data.data.coefficients));
+          console.log('💾 [EntityModal] Coefficients sauvegardés dans localStorage');
+          
+          setClassCoefficients(data.data.coefficients);
+        } else {
+          console.log('⚠️ [EntityModal] Pas de coefficients configurés pour cette classe');
+          // Sauvegarder objet vide dans localStorage
+          localStorage.setItem(localStorageKey, JSON.stringify({}));
+          setClassCoefficients({});
+        }
+      } else {
+        console.log('❌ [EntityModal] Erreur lors du chargement de la classe (404 normal si API pas implémentée)');
+        // 3. FALLBACK FINAL : Utiliser coefficients par défaut et sauvegarder
+        const defaultCoefficients = {};
+        const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
+        
+        // Créer des coefficients par défaut pour les 4 premières matières
+        for (let i = 0; i < 4; i++) {
+          defaultCoefficients[i.toString()] = defaultCoeff;
+        }
+        
+        localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
+        console.log('💾 [EntityModal] Coefficients par défaut sauvegardés dans localStorage');
+        setClassCoefficients(defaultCoefficients);
+      }
+      
+      setClassCoefficientsLoaded(true);
+    } catch (error) {
+      console.error('❌ [EntityModal] Erreur lors du chargement des coefficients de classe:', error);
+      
+      // En cas d'erreur, utiliser coefficients par défaut et sauvegarder
+      const defaultCoefficients = {};
+      const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
+      
+      for (let i = 0; i < 4; i++) {
+        defaultCoefficients[i.toString()] = defaultCoeff;
+      }
+      
+      const localStorageKey = `app_class_coefficients_${classeId}`;
+      localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
+      setClassCoefficients(defaultCoefficients);
+      setClassCoefficientsLoaded(true);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -301,7 +478,53 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       
       setError('');
       console.log('DEBUG SUBMIT CLASSE - Après traitement:', newForm);
-      await ctx.saveClasse(newForm);
+      
+      // Sauvegarder la classe d'abord
+      const savedClasse = await ctx.saveClasse(newForm);
+      
+      // Ensuite, sauvegarder les coefficients si configurés
+      console.log('🔍 [EntityModal] Vérification des coefficients à sauvegarder:', {
+        hasCoefficients: !!form.coefficients,
+        coefficientsType: typeof form.coefficients,
+        coefficientsKeys: form.coefficients ? Object.keys(form.coefficients) : 'N/A',
+        coefficientsContent: form.coefficients
+      });
+      
+      if (form.coefficients && Object.keys(form.coefficients).length > 0) {
+        console.log('💾 [EntityModal] Sauvegarde des coefficients de classe:', form.coefficients);
+        
+        try {
+          const classeId = entity?._id || savedClasse?._id || savedClasse?.data?._id;
+          if (classeId) {
+            const response = await fetch(`/api/classes/${classeId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                coefficients: form.coefficients
+              })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              console.log('✅ [EntityModal] Coefficients sauvegardés avec succès:', result);
+              
+              // Mettre à jour le localStorage aussi
+              const localStorageKey = `app_class_coefficients_${classeId}`;
+              localStorage.setItem(localStorageKey, JSON.stringify(form.coefficients));
+              console.log('💾 [EntityModal] Coefficients mis à jour dans localStorage');
+            } else {
+              console.error('❌ [EntityModal] Erreur lors de la sauvegarde des coefficients:', response.status);
+            }
+          } else {
+            console.warn('⚠️ [EntityModal] Impossible de récupérer l\'ID de la classe pour sauvegarder les coefficients');
+          }
+        } catch (error) {
+          console.error('❌ [EntityModal] Erreur lors de la sauvegarde des coefficients:', error);
+        }
+      }
     }
     onClose();
   };
@@ -488,6 +711,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               schoolYear={schoolYear}
               onChange={newCompo => setForm(f => ({ ...f, compositions: newCompo }))}
               onChangeYear={setSchoolYear}
+              studentData={form}
+              dynamicSubjects={dynamicSubjects}
+              subjectsLoaded={subjectsLoaded}
+              classCoefficients={classCoefficients}
             />
             <textarea readOnly name="compositions" value={form.compositions ? JSON.stringify(form.compositions) : ''}
             // onChange={e => setForm(f => ({ ...f, compositions: e.target.value ? JSON.parse(e.target.value) : {} }))} 
@@ -664,6 +891,23 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             <label htmlFor="input-photo-classe">Photo de la classe</label>
             <input id="input-photo-classe" type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo && !previewUrl} />
             {(previewUrl || form.photo) && <img src={previewUrl || form.photo} alt="photo" className="previewImageAddForm" />}
+            
+            {/* Section Coefficients des matières */}
+            <div className="modal__fieldGroup modal__fieldGroup--coefficients">
+              <h3 className="modal__sectionTitle">Coefficients des matières</h3>
+              <p className="modal__sectionDescription">
+                Configurez les coefficients pour chaque matière de cette classe. 
+                Si non configuré, le coefficient par défaut sera {process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2'}.
+              </p>
+              
+              <CoefficientsManager 
+                coefficients={form.coefficients || {}}
+                onChange={(newCoefficients) => setForm(f => ({ ...f, coefficients: newCoefficients }))}
+                subjectGroup={process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]'}
+                dynamicSubjects={dynamicSubjects}
+                subjectsLoaded={subjectsLoaded}
+              />
+            </div>
             
             <div className="form-info-note">
               <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>
@@ -977,13 +1221,224 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
   );
 }
 
+// --- Composant de gestion des coefficients par classe ---
+function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubjects, subjectsLoaded }) {
+  const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
+  
+  // États pour l'interface de saisie
+  const [selectedMatiere, setSelectedMatiere] = useState('');
+  const [selectedCoefficient, setSelectedCoefficient] = useState('20');
+  
+  // Obtenir la liste des matières disponibles
+  const getAvailableSubjects = () => {
+    if (!subjectsLoaded) return [];
+    return dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES;
+  };
+  
+  // Obtenir la liste des matières selon les indices pour l'affichage
+  const getConfiguredSubjects = () => {
+    if (!subjectsLoaded) return [];
+    
+    try {
+      const indices = JSON.parse(subjectGroup);
+      if (Array.isArray(indices)) {
+        const availableSubjects = getAvailableSubjects();
+        return indices.map((index, i) => ({
+          index: index.toString(),
+          name: availableSubjects[index] || `Matière ${index}`,
+          displayIndex: i
+        })).filter(subject => subject.name);
+      }
+    } catch (e) {
+      // Fallback: traiter comme noms directs
+      return subjectGroup.split(',').map((name, i) => ({
+        index: i.toString(),
+        name: name.trim(),
+        displayIndex: i
+      }));
+    }
+    return [];
+  };
+  
+  const availableSubjects = getAvailableSubjects();
+  const configuredSubjects = getConfiguredSubjects();
+  
+  // Initialiser la matière sélectionnée
+  useEffect(() => {
+    if (availableSubjects.length > 0 && !selectedMatiere) {
+      setSelectedMatiere(availableSubjects[0]);
+    }
+  }, [availableSubjects, selectedMatiere]);
+  
+  const handleAddCoefficient = () => {
+    if (!selectedMatiere) return;
+    
+    const subjectIndex = availableSubjects.indexOf(selectedMatiere);
+    if (subjectIndex === -1) return;
+    
+    const newCoefficients = { ...coefficients };
+    const coeffValue = Math.floor(parseInt(selectedCoefficient) / 10); // Convertir dénominateur en coefficient
+    newCoefficients[subjectIndex.toString()] = coeffValue;
+    onChange(newCoefficients);
+    
+    console.log('✅ Coefficient ajouté:', {
+      matiere: selectedMatiere,
+      index: subjectIndex,
+      denominateur: selectedCoefficient,
+      coefficient: coeffValue
+    });
+  };
+  
+  const handleRemoveCoefficient = (index) => {
+    const newCoefficients = { ...coefficients };
+    delete newCoefficients[index];
+    onChange(newCoefficients);
+  };
+  
+  const resetToDefault = () => {
+    const defaultCoefficients = {};
+    configuredSubjects.forEach(subject => {
+      defaultCoefficients[subject.index] = defaultCoeff;
+    });
+    onChange(defaultCoefficients);
+  };
+  
+  if (!subjectsLoaded) {
+    return <div className="coefficients-manager__loading">Chargement des matières...</div>;
+  }
+  
+  return (
+    <div className="coefficients-manager">
+      <div className="coefficients-manager__header">
+        <h3>Configuration des coefficients par matière</h3>
+        <button 
+          type="button" 
+          className="coefficients-manager__reset-btn"
+          onClick={resetToDefault}
+          title="Remettre tous les coefficients à la valeur par défaut"
+        >
+          Réinitialiser ({defaultCoeff})
+        </button>
+      </div>
+      
+      {/* Interface de saisie similaire aux notes d'élève */}
+      <div className="compositions-block__add-form coefficients-manager__add-form">
+        <select
+          className="compositions-block__matiere-select"
+          value={selectedMatiere}
+          onChange={(e) => setSelectedMatiere(e.target.value)}
+        >
+          {availableSubjects.map(matiere => (
+            <option key={matiere} value={matiere}>{matiere}</option>
+          ))}
+        </select>
+        
+        <select
+          className="compositions-block__denominateur-select"
+          value={selectedCoefficient}
+          onChange={(e) => setSelectedCoefficient(e.target.value)}
+        >
+          <option value="10">10 (coeff 1)</option>
+          <option value="20">20 (coeff 2)</option>
+          <option value="30">30 (coeff 3)</option>
+          <option value="40">40 (coeff 4)</option>
+          <option value="50">50 (coeff 5)</option>
+          <option value="100">100 (coeff 10)</option>
+        </select>
+        
+        <button
+          type="button"
+          className="compositions-block__add-btn"
+          onClick={handleAddCoefficient}
+        >
+          Configurer
+        </button>
+      </div>
+      
+      {/* Affichage des coefficients configurés */}
+      <div className="coefficients-manager__configured">
+        <h4>Coefficients configurés :</h4>
+        {Object.keys(coefficients).length > 0 ? (
+          <div className="coefficients-manager__list">
+            {Object.entries(coefficients).map(([index, coeff]) => {
+              const subjectName = availableSubjects[parseInt(index)] || `Matière ${index}`;
+              return (
+                <div key={index} className="coefficients-manager__configured-item">
+                  <span className="coefficients-manager__subject-name">{subjectName}</span>
+                  <span className="coefficients-manager__coefficient">Coefficient {coeff} (sur {coeff * 10})</span>
+                  <button
+                    type="button"
+                    className="coefficients-manager__remove-btn"
+                    onClick={() => handleRemoveCoefficient(index)}
+                    title="Supprimer ce coefficient"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="coefficients-manager__empty">Aucun coefficient configuré. Les valeurs par défaut seront utilisées.</p>
+        )}
+      </div>
+      
+      <div className="coefficients-manager__info">
+        <p><strong>💡 Astuce :</strong> Le coefficient détermine l'importance de la matière dans le calcul des moyennes.</p>
+        <p><strong>📊 Exemple :</strong> Coefficient 4 = la note compte 4 fois plus qu'une matière de coefficient 1.</p>
+        <p><strong>🎯 Note :</strong> Le dénominateur (sur 20, sur 30, etc.) correspond au coefficient × 10.</p>
+      </div>
+    </div>
+  );
+}
+
 // --- Bloc de gestion des compositions par trimestre ---
-function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear }) {
+function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, studentData, dynamicSubjects, subjectsLoaded, classCoefficients }) {
   // Format attendu : {"2025-2026": [[{"Mathématiques": 15}, {"Français": 12}], [{"Sciences": 14}], [{"Anglais": 18}]]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
   const [selectedMatiere, setSelectedMatiere] = useState('Mathématiques');
-  const [selectedDenominateur, setSelectedDenominateur] = useState('20');
+  const [selectedDenominateur, setSelectedDenominateur] = useState(COEFFICIENTS_MATIERES['Mathématiques'].toString());
+  const [selectedDate, setSelectedDate] = useState('');
+  const [isOfficiel, setIsOfficiel] = useState(true);
+  
+  // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
+  const getCoefficientForSubject = (matiere) => {
+    // 1. Chercher par index dans les coefficients de classe
+    const subjectIndex = dynamicSubjects.indexOf(matiere);
+    if (subjectIndex !== -1 && classCoefficients[subjectIndex.toString()]) {
+      return classCoefficients[subjectIndex.toString()] * 10; // coefficient * 10 = sur
+    }
+    
+    // 2. Fallback sur coefficients hardcodés
+    if (COEFFICIENTS_MATIERES[matiere]) {
+      return COEFFICIENTS_MATIERES[matiere];
+    }
+    
+    // 3. Valeur par défaut
+    return parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2') * 10;
+  };
+  
+  // Fonction pour gérer le changement de matière et ajuster automatiquement le dénominateur
+  const handleMatiereChange = (matiere) => {
+    setSelectedMatiere(matiere);
+    // Ajuster automatiquement le dénominateur selon le coefficient de la matière
+    const coefficient = getCoefficientForSubject(matiere);
+    setSelectedDenominateur(coefficient.toString());
+    
+    console.log('🎯 Coefficient calculé pour', matiere, ':', {
+      coefficient,
+      source: classCoefficients[dynamicSubjects.indexOf(matiere)] ? 'classe' : 'fallback'
+    });
+  };
+
+  // États pour le formulaire de groupe
+  const [showingGroupForm, setShowingGroupForm] = useState(null); // trimestre en cours de saisie groupée
+  const [groupFormData, setGroupFormData] = useState({}); // {matiere: {note, sur, officiel}}
+  const [groupCommonDate, setGroupCommonDate] = useState(''); // Date commune pour toutes les notes du groupe
+  
+
+  
   const trimestres = ["1er trimestre", "2e trimestre", "3e trimestre"];
   // Génère la liste des années disponibles (de N-10 à N+10, + toutes années trouvées dans les données)
   const now = new Date();
@@ -997,39 +1452,39 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
   // On récupère le tableau pour l'année courante
   const compoArr = compositions[schoolYear] || [[], [], []];
 
-  // Fonction pour calculer la moyenne d'un trimestre
+  // Fonction pour calculer la moyenne d'un trimestre avec coefficients (sur = coefficient)
   const calculateTrimestreMoyenne = (trimestreNotes) => {
     if (!Array.isArray(trimestreNotes) || trimestreNotes.length === 0) return null;
     
     let totalPoints = 0;
-    let totalDenominateur = 0;
+    let totalCoefficients = 0;
     
     trimestreNotes.forEach(note => {
-      let noteValue, denominateur;
+      let noteValue, coefficient;
       
       if (typeof note === 'number') {
         noteValue = note;
-        denominateur = 20;
+        coefficient = 2; // Coefficient par défaut pour ancien format
       } else if (typeof note === 'object' && note !== null) {
         const [, value] = Object.entries(note)[0] || [null, 0];
         if (typeof value === 'object' && value.note !== undefined) {
           noteValue = value.note;
-          denominateur = value.sur || 20;
+          coefficient = (value.sur || 20) / 10; // sur/10 = coefficient (sur:20 = coeff:2)
         } else {
           noteValue = value;
-          denominateur = 20;
+          coefficient = 2; // Coefficient par défaut pour format intermédiaire
         }
       } else {
         return; // Skip invalid notes
       }
       
       // Convertir en note sur 20 pour uniformiser
-      const noteSur20 = (noteValue / denominateur) * 20;
-      totalPoints += noteSur20;
-      totalDenominateur += 20;
+      const noteSur20 = (noteValue / (coefficient * 10)) * 20;
+      totalPoints += noteSur20 * coefficient;
+      totalCoefficients += coefficient;
     });
     
-    return totalDenominateur > 0 ? (totalPoints / trimestreNotes.length) : null;
+    return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : null;
   };
 
   // Calculer les moyennes trimestrielles
@@ -1045,13 +1500,151 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
   const moyenneAnnuelle = calculateMoyenneAnnuelle();
 
   const handleAdd = idx => {
-    if (!onChange || newNote === '' || isNaN(Number(newNote))) return;
+    if (!onChange || newNote === '' || isNaN(Number(newNote)) || !selectedDate) return;
     const noteNum = Number(newNote);
     const denominateur = Number(selectedDenominateur);
-    const noteObj = { [selectedMatiere]: { note: noteNum, sur: denominateur } };
+    const noteObj = { 
+      [selectedMatiere]: { 
+        note: noteNum, 
+        sur: denominateur,
+        date: selectedDate,
+        officiel: isOfficiel
+      } 
+    };
     const newArr = compoArr.map((arr, i) => i === idx ? [...arr, noteObj] : arr);
     onChange({ ...compositions, [schoolYear]: newArr });
-    setAdding(null); setNewNote(''); setSelectedMatiere('Mathématiques'); setSelectedDenominateur('20');
+    setAdding(null); 
+    setNewNote(''); 
+    setSelectedMatiere('Mathématiques'); 
+    setSelectedDenominateur(COEFFICIENTS_MATIERES['Mathématiques'].toString());
+    setSelectedDate('');
+    setIsOfficiel(true);
+  };
+
+  // Fonction pour ouvrir le formulaire de groupe
+  const handleCreateGroup = (idx) => {
+    console.log('🔍 DEBUG - Ouverture du formulaire de groupe...');
+    
+    // NOUVEAU : Utiliser les indices réellement configurés dans les coefficients de classe
+    // au lieu de la variable d'environnement statique
+    const configuredIndices = classCoefficients && Object.keys(classCoefficients).length > 0 
+      ? Object.keys(classCoefficients).map(key => parseInt(key))
+      : null;
+    
+    // Fallback sur la variable d'environnement si pas de coefficients configurés
+    const subjectGroup = process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]';
+    
+    console.log('📊 État actuel:', {
+      configuredIndices,
+      classCoefficients,
+      subjectGroup,
+      subjectsLoaded,
+      dynamicSubjectsLength: dynamicSubjects.length,
+      dynamicSubjects,
+      hardcodedFirst4: MATIERES_SCOLAIRES.slice(0, 4)
+    });
+    
+    // Gérer le cas où on a des coefficients configurés ou utiliser la variable d'environnement
+    let subjects;
+    let indices;
+    
+    if (configuredIndices && configuredIndices.length > 0) {
+      // PRIORITÉ : Utiliser les indices des coefficients configurés
+      indices = configuredIndices;
+      console.log('✅ Utilisation des indices des coefficients configurés:', indices);
+    } else {
+      // FALLBACK : Utiliser la variable d'environnement
+      try {
+        indices = JSON.parse(subjectGroup);
+        console.log('⚠️ Fallback sur la variable d\'environnement:', indices);
+      } catch (e) {
+        indices = [0, 1, 2, 3]; // Fallback par défaut
+        console.log('⚠️ Fallback par défaut:', indices);
+      }
+    }
+    
+    if (Array.isArray(indices)) {
+      // Convertir les indices en noms de matières
+      // Utiliser les matières dynamiques en priorité, puis fallback sur hardcodé
+      const availableSubjects = dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES;
+      subjects = indices.map(index => availableSubjects[index]).filter(Boolean);
+      
+      console.log('🎯 Conversion des indices:', {
+        indices,
+        availableSubjectsFirst6: availableSubjects.slice(0, 6),
+        subjects,
+        source: dynamicSubjects.length > 0 ? 'MongoDB' : 'hardcodé',
+        mongodbFirst4: dynamicSubjects.slice(0, 4),
+        hardcodedFirst4: MATIERES_SCOLAIRES.slice(0, 4)
+      });
+    } else {
+      // Fallback si les indices ne sont pas un array
+      subjects = [dynamicSubjects[0] || MATIERES_SCOLAIRES[0]];
+      console.log('⚠️ Fallback sur première matière:', subjects);
+    }
+    
+    // Initialiser les données du formulaire de groupe
+    const initialFormData = {};
+    const defaultDate = new Date().toISOString().split('T')[0];
+    
+    subjects.forEach(matiere => {
+      initialFormData[matiere] = {
+        note: '',
+        sur: getCoefficientForSubject(matiere),
+        officiel: true
+      };
+    });
+    
+    setGroupFormData(initialFormData);
+    setGroupCommonDate(defaultDate); // Initialiser la date commune
+    setShowingGroupForm(idx);
+    console.log('Formulaire de groupe initialisé:', { formData: initialFormData, commonDate: defaultDate });
+  };
+  
+  // Fonction pour valider le formulaire de groupe
+  const handleValidateGroup = () => {
+    // Vérifier que la date commune est renseignée
+    if (!groupCommonDate) {
+      alert('Veuillez sélectionner une date pour les compositions.');
+      return;
+    }
+    
+    const groupNotes = Object.entries(groupFormData).map(([matiere, data]) => ({
+      [matiere]: {
+        note: parseFloat(data.note) || 0,
+        sur: data.sur,
+        date: groupCommonDate, // Utiliser la date commune pour toutes les notes
+        officiel: data.officiel
+      }
+    }));
+    
+    const newArr = compoArr.map((arr, i) => i === showingGroupForm ? [...arr, ...groupNotes] : arr);
+    onChange({ ...compositions, [schoolYear]: newArr });
+    
+    // Réinitialiser le formulaire
+    setShowingGroupForm(null);
+    setGroupFormData({});
+    setGroupCommonDate(''); // Réinitialiser la date commune
+    
+    alert(`Groupe de ${Object.keys(groupFormData).length} notes créé avec succès pour le ${groupCommonDate} !`);
+  };
+  
+  // Fonction pour annuler le formulaire de groupe
+  const handleCancelGroup = () => {
+    setShowingGroupForm(null);
+    setGroupFormData({});
+    setGroupCommonDate(''); // Réinitialiser la date commune
+  };
+  
+  // Fonction pour mettre à jour une donnée du formulaire de groupe
+  const updateGroupFormData = (matiere, field, value) => {
+    setGroupFormData(prev => ({
+      ...prev,
+      [matiere]: {
+        ...prev[matiere],
+        [field]: value
+      }
+    }));
   };
   const handleRemove = (idx, nidx) => {
     if (!onChange) return;
@@ -1088,14 +1681,27 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
           <div className="compositions-block__trimestre-header">
             <span className="compositions-block__trimestre-title">{tri}</span>
             <span className="compositions-block__trimestre-score">
-              Moyenne trimestrielle: {moyennesTrimestrielles[idx] !== null ? `${moyennesTrimestrielles[idx].toFixed(2)}/20` : 'Non calculée'}
+              Moyenne trimestrielle: {moyennesTrimestrielles[idx] !== null ? `${(moyennesTrimestrielles[idx] / 2).toFixed(2)}/10` : 'Non calculée'}
             </span>
             {onChange && (
-              <button
-                type="button"
-                className="compositions-block__add-btn"
-                onClick={() => { setAdding(idx); setNewNote(''); }}
-              >Ajouter</button>
+              <div className="compositions-block__actions">
+                <button
+                  type="button"
+                  className="compositions-block__add-btn"
+                  onClick={() => { 
+                    setAdding(idx); 
+                    setNewNote(''); 
+                    setSelectedDate(new Date().toISOString().split('T')[0]);
+                  }}
+                >Ajouter</button>
+                
+                <button
+                  type="button"
+                  className="compositions-block__createGroup-btn"
+                  onClick={() => handleCreateGroup(idx)}
+                  title="Créer un groupe de notes pour toutes les matières définies"
+                >Créer groupe</button>
+              </div>
             )}
           </div>
           <div className="compositions-block__notes">
@@ -1104,13 +1710,18 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
                 // Support ancien format (nombre), format intermédiaire (objet simple) et nouveau format (objet avec note/sur)
                 let matiere, noteValue, denominateur;
                 
+                // Debug: Log the note structure
+                console.log('Note structure debug:', { note, type: typeof note, entries: typeof note === 'object' ? Object.entries(note) : null });
+                
                 if (typeof note === 'number') {
                   // Ancien format : 15
                   matiere = "Autre matière";
                   noteValue = note;
                   denominateur = 20;
                 } else if (typeof note === 'object' && note !== null) {
-                  const [matiereKey, value] = Object.entries(note)[0] || ['Autre matière', 0];
+                  const entries = Object.entries(note);
+                  console.log('Object entries:', entries);
+                  const [matiereKey, value] = entries[0] || [null, 0];
                   matiere = matiereKey;
                   
                   if (typeof value === 'object' && value.note !== undefined) {
@@ -1132,9 +1743,25 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
                   <div key={nidx} className="compositions-block__note">
                     <span className="compositions-block__note-matiere">{matiere}:</span>
                     <span className="compositions-block__note-value">{noteValue}/{denominateur}</span>
+                    {/* Affichage de la date et du type */}
+                    {typeof note === 'object' && note !== null && typeof Object.values(note)[0] === 'object' && (
+                      <div className="compositions-block__note-details">
+                        {Object.values(note)[0].date && (
+                          <span className="compositions-block__note-date">
+                            {new Date(Object.values(note)[0].date).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
+                        {Object.values(note)[0].officiel !== undefined && (
+                          <span className={`compositions-block__note-badge ${Object.values(note)[0].officiel ? 'compositions-block__note-badge--officiel' : 'compositions-block__note-badge--non-officiel'}`}>
+                            {Object.values(note)[0].officiel ? 'Officiel' : 'Non officiel'}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {onChange && (
                       <button
                         type="button"
+                        className="compositions-block__remove-btn"
                         title="Supprimer"
                         onClick={() => handleRemove(idx, nidx)}
                       >×</button>
@@ -1146,16 +1773,25 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
               <span className="compositions-block__no-compo">Aucune composition</span>
             )}
             {adding === idx && (
-              <span className="compositions-block__add-form">
+              <div className="compositions-block__add-form">
+                <input
+                  type="date"
+                  className="compositions-block__date-input"
+                  value={selectedDate}
+                  onChange={e => setSelectedDate(e.target.value)}
+                  required
+                />
+                
                 <select
                   className="compositions-block__matiere-select"
                   value={selectedMatiere}
-                  onChange={e => setSelectedMatiere(e.target.value)}
+                  onChange={e => handleMatiereChange(e.target.value)}
                 >
-                  {MATIERES_SCOLAIRES.map(matiere => (
+                  {(dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES).map(matiere => (
                     <option key={matiere} value={matiere}>{matiere}</option>
                   ))}
                 </select>
+                
                 <input
                   type="number"
                   min="0"
@@ -1163,9 +1799,12 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
                   value={newNote}
                   onChange={e => setNewNote(e.target.value)}
                   placeholder="Note"
+                  className="compositions-block__note-input"
                   autoFocus
                 />
+                
                 <span className="compositions-block__separator">/</span>
+                
                 <select
                   className="compositions-block__denominateur-select"
                   value={selectedDenominateur}
@@ -1178,17 +1817,114 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear })
                   <option value="50">50</option>
                   <option value="100">100</option>
                 </select>
+                
+                <button
+                  type="button"
+                  className={`compositions-block__officiel-badge ${isOfficiel ? 'compositions-block__officiel-badge--active' : ''}`}
+                  onClick={() => setIsOfficiel(!isOfficiel)}
+                  title="Cliquer pour changer le type"
+                >
+                  {isOfficiel ? 'Officiel' : 'Non officiel'}
+                </button>
+                
                 <button
                   type="button"
                   className="compositions-block__add-btn"
                   onClick={() => handleAdd(idx)}
                 >Valider</button>
+                
                 <button
                   type="button"
                   className="compositions-block__add-btn compositions-block__add-btn--cancel"
-                  onClick={() => { setAdding(null); setNewNote(''); }}
+                  onClick={() => { 
+                    setAdding(null); 
+                    setNewNote(''); 
+                    setSelectedDate('');
+                    setIsOfficiel(true);
+                  }}
                 >Annuler</button>
-              </span>
+              </div>
+            )}
+            
+            {/* Formulaire de groupe */}
+            {showingGroupForm === idx && (
+              <div className="compositions-block__group-form">
+                <h4 className="compositions-block__group-title">Saisie groupée de notes</h4>
+                
+                {/* Date commune pour toutes les notes du groupe */}
+                <div className="compositions-block__group-date">
+                  <label className="compositions-block__group-date-label">
+                    <strong>📅 Date de composition :</strong>
+                  </label>
+                  <input
+                    type="date"
+                    className="compositions-block__date-input compositions-block__group-date-input"
+                    value={groupCommonDate}
+                    onChange={e => setGroupCommonDate(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                {Object.entries(groupFormData).map(([matiere, data]) => (
+                  <div key={matiere} className="compositions-block__add-form">
+                    <select
+                      className="compositions-block__matiere-select"
+                      value={matiere}
+                      disabled
+                    >
+                      <option value={matiere}>{matiere}</option>
+                    </select>
+                    
+                    <input
+                      type="number"
+                      min="0"
+                      max={data.sur}
+                      value={data.note}
+                      onChange={e => updateGroupFormData(matiere, 'note', e.target.value)}
+                      placeholder="Note"
+                      className="compositions-block__note-input"
+                    />
+                    
+                    <span className="compositions-block__separator">/</span>
+                    
+                    <select
+                      className="compositions-block__denominateur-select"
+                      value={data.sur}
+                      onChange={e => updateGroupFormData(matiere, 'sur', parseInt(e.target.value))}
+                    >
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="30">30</option>
+                      <option value="40">40</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                    
+                    <button
+                      type="button"
+                      className={`compositions-block__officiel-badge ${data.officiel ? 'compositions-block__officiel-badge--active' : ''}`}
+                      onClick={() => updateGroupFormData(matiere, 'officiel', !data.officiel)}
+                      title="Cliquer pour changer le type"
+                    >
+                      {data.officiel ? 'Officiel' : 'Non officiel'}
+                    </button>
+                  </div>
+                ))}
+                
+                <div className="compositions-block__group-actions">
+                  <button
+                    type="button"
+                    className="compositions-block__add-btn"
+                    onClick={handleValidateGroup}
+                  >Valider tout</button>
+                  
+                  <button
+                    type="button"
+                    className="compositions-block__add-btn compositions-block__add-btn--cancel"
+                    onClick={handleCancelGroup}
+                  >Annuler</button>
+                </div>
+              </div>
             )}
           </div>
         </div>
