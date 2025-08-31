@@ -2,6 +2,7 @@
 @use 'sass:map';
 @use 'sass:color';
 @use '../assets/scss/variables' as *;
+@use '../assets/scss/layouts/headers' as *;
 @use '../assets/scss/components/MODALS/entityModal.scss';
 @use '../assets/scss/components/DISPLAYS/classeEnseignantDisplay.scss';
 @use '../assets/scss/components/LISTS/classesList.scss';
@@ -23,11 +24,28 @@ $font-secondary: $secondaryFont;
   max-width: none;
   margin: 0;
   padding: 0;
+
+  &.--reduce{
+    inset: 150px 0px 55% 85%;
+    padding:0;
+    overflow:hidden;
+    &.--{
+      inset:160px 0px 60% 90%;
+    }
+    .person-detail__header{
+      padding:0;
+    }
+  }
+  &.--reduce>*:not(.person-detail__photo):not(.person-detail__header)
+  , &.--reduce .person-detail__header-info{
+    display: none !important;
+  }
   
   &__close {
+    padding: .1em .45em;
     position:absolute;
     left:calc(50% + 3em);
-    top:-20px;
+    top:0px;
     // left: 50%;
     color:red;
     background:black;
@@ -88,7 +106,7 @@ $font-secondary: $secondaryFont;
   &__editbtn {
     position:absolute;
     right:calc(50% - 3em);
-    top:-20px;
+    top:0px;
     // left: 50%;
     z-index:2;
     padding:0.3em 0.7em;
@@ -424,8 +442,23 @@ $font-secondary: $secondaryFont;
 
 
 // Styles pour les modales de listes (classes et enseignants)
+.person-detail,.modal{
+  position:fixed !important;
+  top: 150px;
+  left: 2.5em;
+  right: 2.5em;
+  bottom: 0;
+  z-index: 10;
+  overflow-y: scroll;
+  box-shadow: 0 0 22px .1px;
+  padding: 1em;
+  &__container{
+    box-shadow: 0 0 22px .1px !important;
+  }
+}
 .modal {
   margin-bottom:3em;
+  z-index: 11;
   &__container {
     max-width: 95vw;
     // max-height: 90vh;

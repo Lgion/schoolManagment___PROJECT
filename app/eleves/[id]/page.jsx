@@ -49,11 +49,20 @@ export default function ElevePage() {
   
   return !eleve ? <div>....loading.....</div>
     : <div className="person-detail">
-      <button
+      {/* <button
         className="person-detail__close"
         aria-label="Fermer"
         onClick={() => router.back()}
-      >✕</button>
+      >✕</button> */}
+      <button
+        className="person-detail__close"
+        aria-label="Fermer"
+        title="Réduire la fenêtre"
+        onClick={e => {
+          e.preventDefault();
+          e.target.parentNode.classList.toggle('--reduce')
+        }}
+      >_</button>
       {onEdit && !showModal &&(
         <button
           type="button"
@@ -67,7 +76,14 @@ export default function ElevePage() {
           onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
         >Fermer Édition</button>
       }
-      <img className="person-detail__photo" src={eleve.photo_$_file} alt="" />
+      <img className="person-detail__photo" 
+        src={eleve.photo_$_file} 
+        alt="" 
+        title="Réduire la fenêtre"
+        onClick={e => {
+          e.target.parentNode.classList.toggle('--reduce')
+        }}
+      />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
       <ClasseDisplay classe={classe} label="En classe de:" />
       <ClasseEnseignantDisplay classe={classe} label="Enseignant de la classe:" />

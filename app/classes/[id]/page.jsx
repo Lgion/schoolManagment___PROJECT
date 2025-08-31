@@ -52,12 +52,21 @@ export default function ClasseDetailPage() {
   // console.log(classe);
   
   return !classe ? <div>....loading.....</div>
-      : <div className="person-detail" style={{position:'relative'}}>
-      <button
+    : <div className="person-detail" style={{position:'relative'}}>
+      {/* <button
         className="person-detail__close"
         aria-label="Fermer"
         onClick={() => router.back()}
-      >✕</button>
+      >✕</button> */}
+      <button
+        className="person-detail__close"
+        aria-label="Fermer"
+        title="Réduire la fenêtre"
+        onClick={e => {
+          e.preventDefault();
+          e.target.parentNode.classList.toggle('--reduce')
+        }}
+      >_</button>
       {onEdit && !showModal &&(
         <button
           type="button"
@@ -93,6 +102,11 @@ export default function ClasseDetailPage() {
               alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
               onError={(e) => {
                 e.target.src = '/school/classe.webp';
+              }}
+              onClick={e => {
+                e.preventDefault();
+                e.target.closest('.person-detail').classList.toggle('--reduce')
+                e.target.closest('.person-detail').classList.toggle('--')
               }}
             />
           </div>

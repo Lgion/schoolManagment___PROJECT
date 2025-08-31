@@ -35,11 +35,21 @@ export default function EnseignantDetailPage() {
 
   return !enseignant ? <div>....loading.....</div>
     : <div className="person-detail" style={{position:'relative'}}>
-      <button
+      {/* <button
         className="person-detail__close"
         aria-label="Fermer"
         onClick={() => router.back()}
-      >✕</button>
+      >✕</button> */}
+      <button
+        className="person-detail__close"
+        aria-label="Fermer"
+        title="Réduire la fenêtre"
+        onClick={e => {
+          e.preventDefault();
+          e.target.parentNode.classList.toggle('--reduce')
+          e.target.parentNode.classList.toggle('--')
+        }}
+      >_</button>
       {setSelected && !showModal && (
         <button
           type="button"
@@ -79,6 +89,11 @@ export default function EnseignantDetailPage() {
               alt={`${enseignant.nom} ${enseignant.prenoms}`}
               onError={(e) => {
                 e.target.src = '/default-photo.png';
+              }}
+              onClick={e => {
+                e.preventDefault();
+                e.target.closest('.person-detail').classList.toggle('--reduce')
+                e.target.closest('.person-detail').classList.toggle('--')
               }}
             />
           </div>

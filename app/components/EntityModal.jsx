@@ -2,6 +2,7 @@ import { useContext, useState, useEffect, useRef, Fragment } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres';
 import Gmap from '../_/Gmap_plus';
+import CameraCapture from './CameraCapture';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -69,6 +70,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   // États pour les coefficients de classe
   const [classCoefficients, setClassCoefficients] = useState({});
   const [classCoefficientsLoaded, setClassCoefficientsLoaded] = useState(false);
+  
+  // États pour la capture caméra
+  const [showCamera, setShowCamera] = useState(false);
 
   // Pré-remplissage par défaut selon l'entité
   useEffect(() => {
@@ -292,6 +296,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     if (!file) return;
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  // Gestionnaire pour la capture caméra
+  const handleCameraCapture = (file) => {
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setShowCamera(false);
+    console.log('📷 Photo capturée depuis la caméra:', file.name);
   };
 
   const handleDocumentChange = (index, customName) => {
@@ -682,9 +694,55 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               })()}
             </select>
 
-            <label htmlFor="input-photo">Photo de l'élève</label>
-            <input id="input-photo" type="file" ref={fileInput} accept="image/*" required={!form.photo_$_file} onChange={handleFile} />
-            {<img src={previewUrl || "/school/classe.webp" || form.photo_$_file} alt="photo" className="previewImageAddForm" />}
+            <div className="modal__fieldGroup">
+              <label className="modal__label">Photo de l'élève</label>
+              
+              <div className="modal__photo-controls">
+                <input 
+                  id="input-photo" 
+                  type="file" 
+                  ref={fileInput} 
+                  accept="image/*" 
+                  required={!form.photo_$_file && !previewUrl} 
+                  onChange={handleFile}
+                  className="modal__input modal__input--file"
+                />
+                
+                <button 
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="modal__camera-btn"
+                  title="Prendre une photo avec la caméra"
+                >
+                  <span className="modal__camera-btn-icon">📷</span>
+                  <span className="modal__camera-btn-text">Caméra</span>
+                </button>
+              </div>
+              
+              {(previewUrl || form.photo_$_file) && (
+                <div className="modal__photo-preview">
+                  <img 
+                    src={previewUrl || form.photo_$_file || "/school/classe.webp"} 
+                    alt="Photo de l'élève" 
+                    className="modal__preview-image"
+                  />
+                  {previewUrl && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setPreviewUrl('');
+                        setSelectedFile(null);
+                        if (fileInput.current) fileInput.current.value = '';
+                      }}
+                      className="modal__remove-photo-btn"
+                      title="Supprimer la photo"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             <IsInterneBlock form={form} setForm={setForm} />
             <AbsencesBlock absences={form.absences} setForm={setForm} />
@@ -950,6 +1008,15 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           </button>
         </footer>
       </div>
+      
+      {/* Modal de capture caméra */}
+      {showCamera && (
+        <CameraCapture 
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+          facingMode="user"
+        />
+      )}
     </div>
   );
 }
