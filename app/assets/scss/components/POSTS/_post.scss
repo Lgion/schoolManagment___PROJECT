@@ -1,0 +1,149 @@
+// BEM BEMIFIED : composant Post, version mixin, paramétrable et contrast
+/************************************************************/
+/**************************PLACEHOLDER**************************/
+/************************************************************/
+%post {
+  font-family: var(--font-main, 'Roboto', Arial, sans-serif);
+  background: var(--color-bg, #fff);
+  border: 1px solid var(--color-border, #eee);
+  border-radius: 8px;
+  margin: 1rem 0;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+
+  &__header {
+    margin-bottom: 1rem;
+    &-title {
+      font-family: var(--font-alt, 'Merriweather', serif);
+      font-size: 2rem;
+      color: var(--color-title, #1a1a1a);
+      margin: 0;
+    }
+    &-meta {
+      font-size: 0.9rem;
+      color: var(--color-meta, #888);
+      margin-top: 0.3rem;
+    }
+  }
+  &__content {
+    color: var(--color-content, #333);
+    font-size: 1.15rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    &-item {
+      background: var(--color-border, #eee);
+      color: var(--color-meta, #888);
+      font-size: 0.85rem;
+      border-radius: 4px;
+      padding: 0.2rem 0.7rem;
+    }
+  }
+}
+
+/************************************************************/
+/**************************MIXIN**************************/
+/************************************************************/
+@mixin post(
+  $paramMixi_: $post,
+  $exempleParamFromBEMComponentVariable: map-get($post, exempleParamFromBEMComponentVariable)
+  // BEMMixinParam
+){
+  $paramMixi: post(map-merge($post, $paramMixi_));
+  @extend %post;
+  font-family: map-get($paramMixi, font-main, 'Roboto, Arial, sans-serif');
+  background: map-get($paramMixi, color-bg, #fff);
+  border: 1px solid map-get($paramMixi, color-border, #eee);
+  border-radius: map-get($paramMixi, border-radius, 8px);
+  margin: map-get($paramMixi, margin, 1rem 0);
+  padding: map-get($paramMixi, padding, 1.5rem);
+  box-shadow: map-get($paramMixi, box-shadow, 0 2px 8px rgba(0,0,0,0.03));
+
+  &__header {
+    margin-bottom: map-get($paramMixi, header-margin-bottom, 1rem);
+    &-title {
+      font-family: map-get($paramMixi, font-alt, 'Merriweather, serif');
+      font-size: map-get($paramMixi, title-font-size, 2rem);
+      color: map-get($paramMixi, color-title, #1a1a1a);
+      margin: 0;
+    }
+    &-meta {
+      font-size: map-get($paramMixi, meta-font-size, 0.9rem);
+      color: map-get($paramMixi, color-meta, #888);
+      margin-top: 0.3rem;
+    }
+  }
+  &__content {
+    color: map-get($paramMixi, color-content, #333);
+    font-size: map-get($paramMixi, content-font-size, 1.15rem);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    &-item {
+      background: map-get($paramMixi, color-border, #eee);
+      color: map-get($paramMixi, color-meta, #888);
+      font-size: 0.85rem;
+      border-radius: 4px;
+      padding: 0.2rem 0.7rem;
+    }
+  }
+  // Modifier contrast
+  &--contrast {
+    background: map-get($paramMixi, color-bg-contrast);
+    box-shadow: map-get($paramMixi, box-shadow-contrast);
+    border-color: map-get($paramMixi, color-border-contrast);
+    color: map-get($paramMixi, color-content-contrast);
+    &__header, &__content, &__tags, &__tags-item {
+      color: map-get($paramMixi, color-content-contrast);
+    }
+  }
+}
+
+/************************************************************/
+/**************************FUNCTION**************************/
+/************************************************************/
+@function post($defaultValues){
+  $color-bg: if(map-get($defaultValues, color-bg) != null, map-get($defaultValues, color-bg), #fff);
+  $color-content: if(map-get($defaultValues, color-content) != null, map-get($defaultValues, color-content), #333);
+  $color-border: if(map-get($defaultValues, color-border) != null, map-get($defaultValues, color-border), #eee);
+
+  @return map-merge(
+    $defaultValues,
+    (
+      // color-bg-contrast: darken($color-bg, 10%),
+      color-content-contrast: lighten($color-content, 25%),
+      color-border-contrast: darken($color-border, 18%),
+      box-shadow-contrast: 0 8px 32px rgba(0,0,0,0.15)
+    )
+  );
+}
+
+/******VARAIBLES******/
+$post: (
+  font-main: "'Roboto', Arial, sans-serif",
+  font-alt: "'Merriweather', serif",
+  color-bg: #fff,
+  color-title: #1a1a1a,
+  color-content: #333,
+  color-meta: #888,
+  color-border: #eee,
+  border-radius: 8px,
+  margin: 1rem 0,
+  padding: 1.5rem,
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03)
+);
+
+/************************************************************/
+/**************************BLOC BEM (extension)**************************/
+/************************************************************/
+.post {
+  @include post();
+}

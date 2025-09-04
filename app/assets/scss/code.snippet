@@ -1,0 +1,187 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+
+// IL FAUDRAIT PLUSIEURS VARIABLES, CHAQUE POUR DÉFINIR VIA SON NOM UN MODIFIER
+// LES FONCTIONS SERVIRAIT AUX FINITIONS DU COMPOSANT ET À ADOUCIR DES CONTOURS ET FORMES.
+
+	//SASS ONLY
+		//PLACEHOLDERS
+        "placeholder fontawesome": {
+            "scope": "sass,scss",
+            "prefix": "%fawesome",
+            "body": [
+                "@extend %fawesome;",
+                "content:\"${1:\\f3c5}\";"
+            ],
+            "description": "fawesome"
+        },
+		//EXTENSION
+				"extension basic": {
+					"scope": "sass,scss",
+					"prefix": ["@e","extend"],
+					"body": [
+						"@extend ${1|.,%|}${2:EXTENSION};",
+					],
+					"description": "extension basic"
+				},
+		//BEM
+				"BEM generate basecode": {
+					"scope": "sass,scss",
+					"prefix": ["BEMbase","bgb"],
+					"body": [
+						"/************************************************************/",
+						"/**************************PLACEHOLDER**************************/",
+						"/************************************************************/",
+						"%${1:BLOCK_NAME}{",
+						"",
+						"\t&__${2:ELEMENT_NAME} {",
+						"\t\t",
+						"\t}",	
+						"",
+						"\t&__${3:ELEMENT_NAME} {",
+						"\t\t",
+						"\t}",	
+						"\t//bgee$4",	
+						"\t//bgm",	
+						"}",
+						"",
+						"/************************************************************/",
+						"/**************************MIXIN**************************/",
+						"/************************************************************/",
+						"@mixin ${1:BLOCK_NAME}(",
+						"\t\t\\$paramMixi_: $${1:BLOCK_NAME}",
+						"\t\t, \\$exempleParamFromBEMComponentVariable: map-get($${1:BLOCK_NAME}, exempleParamFromBEMComponentVariable)",
+						"\t\t// BEMMixinParam",
+						"\t){",
+						"\t$paramMixi: ${1:BLOCK_NAME}(map-merge($${1:BLOCK_NAME}, $paramMixi_)); // PERMET DE DÉFINIR LES PARAMÈTRES DES MODIFIER",
+						"",
+						"\t@extend %${1:BLOCK_NAME};",
+                        "\t//background: map-get($paramMixi, background);",
+						"",
+						"\t&__${2:ELEMENT_NAME} {",
+						"\t\t@extend %${1:BLOCK_NAME}__${2:ELEMENT_NAME};",
+                        "\t//background: map-get($paramMixi, ${2:ELEMENT_NAME}Background);",
+						"\t}",	
+						"",
+						"\t&__${3:ELEMENT_NAME} {",
+						"\t\t@extend %${1:BLOCK_NAME}__${3:ELEMENT_NAME};",
+                        "\t//background: map-get($paramMixi, ${3:ELEMENT_NAME}Background);",
+						"\t}",	
+						"\t//bgee$4",	
+						"\t//bgm",	
+						"}",
+						"",
+						"/************************************************************/",
+						"/**************************FUNCTION**************************/",
+						"/************************************************************/",
+						"@function ${1:BLOCK_NAME}(\\$defaultValues){",
+						"\t",	
+						"\t@return map-merge(",	
+						"\t\t$defaultValues,",	
+						"\t\t(",	
+						"\t\t\t// background-contrast: darken(map-get($defaultValues, background), 12%),",	
+						"\t\t)",	
+						"\t);",	
+						"}",
+						"",
+						"/******VARAIBLES******/",
+						"//POUR DÉFINIR DES VALEURS PAR DÉFAUT VIA UNE FONCTION",
+						"$${1:BLOCK_NAME}: (",
+						"\texempleParamFromBEMComponentVariable: red",
+						");",
+						"//POUR DÉFINIR DES VALEURS PAR DÉFAUT EN DUR VIA UNE MAP",
+						"//SI DÉCOMMENTÉ, ÉCRASERA LA FUNCTION SI-DESSUS",
+						"//$${1:BLOCK_NAME}: ();",
+						"",
+						"/*************************************",
+						"VARIABLES PARAMÉTRABLE DU BLOC BEM",
+						"EX: ",
+						"box-shadow(color), background, border-color",
+						"*************************************/",
+						"",
+						"/************************************************************/",
+						"/**************************BLOC BEM (extension)**************************/",
+						"/************************************************************/",
+						".${1:BLOCK_NAME}{",
+						"\t@include ${1:BLOCK_NAME}(/*ICI, VOUS POUVEZ ÉCRASER LES VALEUR DE LA VARIABLES \"\\$defaultValues\"*/);",
+						"\t//bge",	
+						"\t//bgm",	
+						"}",
+					],
+					"description": "generate basecode"
+				},
+				"BEM generate ELEMENT": {
+					"scope": "sass,scss",
+					"prefix": ["BEMElement","bge"],
+					"body": [
+						"&__${2:ELEMENT_NAME} {",
+						"\t$0",
+						"}",
+					],
+					"description": "generate BEM ELEMENT"
+				},
+				"BEM generate ELEMENT calling placeholder": {
+					"scope": "sass,scss",
+					"prefix": ["BEMElementCallingPlaceholder","bgee"],
+					"body": [
+						"&${3:__${4:ELEMENT_NAME}} {",
+						"\t@extend %${1:BLOCK_NAME}__$2${3:ELEMENT_NAME};$0",
+						"}",
+					],
+					"description": "generate BEM ELEMENT calling placeholder"
+				},
+				"BEM generate MODIFIER": {
+					"scope": "sass,scss",
+					"prefix": ["BEMModifier","bgm"],
+					"body": [
+						"&--${1:MODIFIER} {",
+						"\t$0",
+						"}",
+					],
+					"description": "generate MODIFIER"
+				},
+				"BEM generate Mixin parameter": {
+					"prefix": ["BEMMixinParam","bgmp"],
+					"body": ", \\$${3:bs}: ${1:map-get(\\$${2:composantBEM}, ${4:${3:bs}})}$0",
+					"description": "BEM generate Mixin parameter"
+				},
+		//CSS OR SASS
+				"sepration": {
+					"scope": "sass,css,scss",
+					"prefix": "separation",
+					"body": [
+						"",
+						"/*********************************************************************************************************/$0",
+					],
+					"description": "sépartion"
+				},
+				"sepration_grande": {
+					"scope": "sass,css,scss",
+					"prefix": "separation_",
+					"body": [
+						"",
+						"/*********************************************************************************************************/",
+						"/*********************************************************************************************************/",
+						"/******************${1:*************}**************************************************************************/",
+						""
+					],
+					"description": "grande sépartion"
+				},
+
+	
+}

@@ -1,0 +1,98 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '../../_variables' as *;
+
+.classe-enseignant-display {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-family: $primaryFont;
+  
+  &__label {
+    display: block;
+    font-weight: 600;
+    color: map.get($themeColors, primary);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    text-decoration: underline;
+    text-decoration-color: map.get($themeColors, primary);
+    text-underline-offset: 3px;
+  }
+  
+  &__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      
+      .classe-enseignant-display__card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-color: map.get($themeColors, primary);
+      }
+    }
+    
+    &:focus {
+      outline: 2px solid map.get($themeColors, primary);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+  }
+  
+  &__card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+  
+  &__photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid map.get($themeColors, primary);
+    flex-shrink: 0;
+  }
+  
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  &__name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+    font-family: $primaryFont;
+  }
+  
+  &__role {
+    font-size: 0.9rem;
+    color: map.get($themeColors, success);
+    font-weight: 500;
+    font-family: $secondaryFont;
+    font-style: italic;
+  }
+  
+  &__empty {
+    padding: 1rem;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    background: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    border-radius: 6px;
+    font-family: $secondaryFont;
+  }
+}

@@ -1,0 +1,291 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '../_variables' as *;
+
+// Header principal BEM
+.ecole-admin {
+  &__header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, 
+      map.get($themeColors, primary) 0%, 
+      color.adjust(map.get($themeColors, primary), $lightness: -10%) 100%
+    );
+    color: map.get($themeColors, white);
+    padding: 1rem 0;
+    box-shadow: map.get($shadows, lg);
+    backdrop-filter: blur(10px);
+    
+    &-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+  }
+
+  &__branding {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    >div{display: flex;}
+    
+    &-logo {
+      font-size: 2rem;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+    
+    &-title {
+      font-family: $primaryFont;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+      
+      @media (max-width: 768px) {
+        font-size: 1.2rem;
+      }
+    }
+    
+    &-subtitle {
+      font-family: $secondaryFont;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin: 0;
+      font-weight: 300;
+      
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+  }
+
+  &__headerActions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    // Section contact
+    &-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+
+      &-btn {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+
+        &:hover {
+          color: white;
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &--email {
+          font-weight: 500;
+        }
+
+        &--phone {
+          font-weight: 400;
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    // Section reset
+    &-reset {
+      display: flex;
+      align-items: center;
+
+      &-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+
+        &:hover {
+          background: linear-gradient(135deg, #c82333, #a71e2a);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+        }
+
+        &-icon {
+          font-size: 1rem;
+        }
+
+        &-text {
+          @media (max-width: 768px) {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  &__authSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__authButtons {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__authButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-family: $secondaryFont;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    
+    &--signIn {
+      background: rgba(255, 255, 255, 0.1);
+      color: map.get($themeColors, white);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+    }
+    
+    &--signUp {
+      background: map.get($themeColors, white);
+      color: map.get($themeColors, primary);
+      
+      &:hover {
+        background: color.adjust(map.get($themeColors, white), $lightness: -5%);
+        transform: translateY(-2px);
+      }
+    }
+    
+    &-icon {
+      font-size: 1.1rem;
+    }
+    
+    &-text {
+      font-size: 0.95rem;
+      
+      @media (max-width: 576px) {
+        display: none;
+      }
+    }
+  }
+
+  &__userSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    &-welcome {
+      font-family: $secondaryFont;
+      font-size: 0.9rem;
+      opacity: 0.9;
+      
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+  }
+
+  &__userAvatar {
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    transition: all 0.3s ease !important;
+    
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.6) !important;
+      transform: scale(1.05) !important;
+    }
+  }
+
+  // Navigation mobile hamburger
+  &__mobileToggle {
+    display: none;
+    background: none;
+    border: none;
+    color: map.get($themeColors, white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    
+    @media (max-width: 768px) {
+      display: block;
+    }
+  }
+
+  // Contact dropdown pour mobile
+  &__contactDropdown {
+    position: absolute;
+    top: 100%;
+    right: 1.5rem;
+    background: map.get($themeColors, white);
+    border-radius: 8px;
+    box-shadow: map.get($shadows, lg);
+    padding: 1rem;
+    min-width: 200px;
+    display: none;
+    
+    &--active {
+      display: block;
+    }
+    
+    &-item {
+      display: block;
+      padding: 0.75rem;
+      color: map.get($themeColors, dark);
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background: map.get($themeColors, light);
+      }
+      
+      &::before {
+        margin-right: 0.5rem;
+      }
+    }
+  }
+}

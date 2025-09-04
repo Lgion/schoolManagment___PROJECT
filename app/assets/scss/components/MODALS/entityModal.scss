@@ -1,0 +1,909 @@
+@use 'sass:color';
+@use 'sass:map';
+@use '../../_variables' as *;
+
+/************************************************************/
+/**************************VARIABLES**************************/
+/************************************************************/
+$entityModal: (
+  background: #ffffff,
+  overlayBackground: rgba(0, 0, 0, 0.6),
+  borderRadius: 16px,
+  boxShadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+  maxWidth: 800px,
+  padding: 2rem,
+  headerBackground: linear-gradient(135deg, #6c63ff, #4c46d6),
+  headerColor: #ffffff,
+  inputBorder: #e1e5e9,
+  inputFocus: #6c63ff,
+  buttonPrimary: #6c63ff,
+  buttonDanger: #ff4757,
+  buttonSuccess: #2ed573,
+  primaryFont: 'Inter, Segoe UI, sans-serif',
+  secondaryFont: 'Poppins, Arial, sans-serif',
+  infoNoteBackground: #f8f9fa,
+  infoNoteBorder: #dee2e6,
+  infoNoteColor: #495057
+);
+
+/************************************************************/
+/**************************PLACEHOLDER**************************/
+/************************************************************/
+%entityModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: map.get($entityModal, overlayBackground);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  font-family: map.get($entityModal, primaryFont);
+
+  &__container {
+    background: map.get($entityModal, background);
+    border-radius: map.get($entityModal, borderRadius);
+    box-shadow: map.get($entityModal, boxShadow);
+    // max-width: map.get($entityModal, maxWidth);
+    // width: 90vw;
+    // max-height: 90vh;
+    // overflow-y: auto;
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+  }
+
+  &__header {
+    background: map.get($entityModal, headerBackground);
+    color: map.get($entityModal, headerColor);
+    padding: 1.5rem 2rem;
+    border-radius: map.get($entityModal, borderRadius) map.get($entityModal, borderRadius) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    font-family: map.get($entityModal, secondaryFont);
+  }
+
+  &__closeBtn {
+    background: none;
+    border: none;
+    color: map.get($entityModal, headerColor);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__body {
+    padding: map.get($entityModal, padding);
+  }
+
+  &__form {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  &__fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &--row {
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    &--grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  &__label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__input {
+    padding: 0.75rem 1rem;
+    border: 2px solid map.get($entityModal, inputBorder);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: map.get($entityModal, primaryFont);
+
+    &:focus {
+      outline: none;
+      border-color: map.get($entityModal, inputFocus);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+    }
+
+    &--error {
+      border-color: map.get($entityModal, buttonDanger);
+    }
+  }
+
+  select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+    }
+    
+    // Styles pour select multiple
+    &[multiple] {
+      min-height: 120px;
+      
+      option {
+        padding: 0.5rem;
+        margin: 0.125rem 0;
+        border-radius: 4px;
+        
+        &:checked {
+          background-color: var(--primary-color);
+          color: white;
+        }
+        
+        &:hover {
+          background-color: var(--hover-bg, #f0f0f0);
+        }
+      }
+    }
+  }
+
+  &__select {
+    @extend %entityModal__input;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    padding-right: 3rem;
+    cursor: pointer;
+  }
+
+  &__textarea {
+    @extend %entityModal__input;
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  &__photoUpload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    border: 2px dashed map.get($entityModal, inputBorder);
+    border-radius: 8px;
+    background: #fafbfc;
+    transition: border-color 0.2s;
+    cursor: pointer;
+
+    &:hover {
+      border-color: map.get($entityModal, inputFocus);
+      background: #f0f4ff;
+    }
+
+    &--hasFile {
+      border-color: map.get($entityModal, buttonSuccess);
+      background: #f0fff4;
+    }
+  }
+
+  &__photoPreview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid map.get($entityModal, inputBorder);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &__uploadIcon {
+    font-size: 2rem;
+    color: map.get($entityModal, inputFocus);
+  }
+
+  &__uploadText {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-align: center;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 0 0 map.get($entityModal, borderRadius) map.get($entityModal, borderRadius);
+  }
+
+  &__btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    font-family: map.get($entityModal, primaryFont);
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    &--primary {
+      background: map.get($entityModal, buttonPrimary);
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+      }
+    }
+
+    &--danger {
+      background: map.get($entityModal, buttonDanger);
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: color.adjust(map.get($entityModal, buttonDanger), $lightness: -8%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+      }
+    }
+
+    &--secondary {
+      background: #6c757d;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: color.adjust(#6c757d, $lightness: -8%);
+        transform: translateY(-1px);
+      }
+    }
+
+    &--success {
+      background: map.get($entityModal, buttonSuccess);
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: color.adjust(map.get($entityModal, buttonSuccess), $lightness: -8%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+      }
+    }
+  }
+
+  &__loadingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    font-size: 1.2rem;
+    font-weight: 600;
+    gap: 1rem;
+    border-radius: map.get($entityModal, borderRadius);
+  }
+
+  &__errorMessage {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    color: #c53030;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  &__loadingSpinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  &__spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border);
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  &__add-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #e8e6ff;
+    border-radius: map.get($entityModal, borderRadius);
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+
+    .compositions-block__date-input {
+      padding: 0.5rem;
+      border: 1px solid map.get($entityModal, inputBorder);
+      border-radius: 8px;
+      font-family: map.get($entityModal, secondaryFont);
+      font-size: 0.9rem;
+      min-width: 140px;
+    }
+
+    .compositions-block__note-input {
+      width: 60px;
+      padding: 0.5rem;
+      border: 1px solid map.get($entityModal, inputBorder);
+      border-radius: 8px;
+      text-align: center;
+      font-family: map.get($entityModal, secondaryFont);
+    }
+
+    .compositions-block__officiel-badge {
+      padding: 0.5rem 1rem;
+      border: 2px solid map.get($entityModal, inputBorder);
+      border-radius: map.get($entityModal, borderRadius);
+      background: map.get($entityModal, background);
+      color: #7f8c8d;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: map.get($entityModal, secondaryFont);
+      font-size: 0.85rem;
+      font-weight: 600;
+
+      &:hover {
+        border-color: map.get($entityModal, inputFocus);
+        transform: translateY(-1px);
+      }
+
+      &--active {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-color: #28a745;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: flex-start;
+  }
+
+  &__createGroup-btn {
+    background: linear-gradient(135deg, map.get($entityModal, buttonPrimary), #4c46d6);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: map.get($entityModal, borderRadius);
+    cursor: pointer;
+    font-family: map.get($entityModal, secondaryFont);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      background: linear-gradient(135deg, #8a6bb1, #9b7bc2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__note {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: map.get($entityModal, background);
+    border: 1px solid map.get($entityModal, inputBorder);
+    border-radius: map.get($entityModal, borderRadius);
+    margin-bottom: 0.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: map.get($entityModal, inputFocus);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    &-matiere {
+      font-weight: 600;
+      color: map.get($entityModal, buttonPrimary);
+      font-family: map.get($entityModal, primaryFont);
+    }
+
+    &-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2c3e50;
+      font-family: map.get($entityModal, secondaryFont);
+    }
+
+    &-details {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    &-date {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      font-family: map.get($entityModal, secondaryFont);
+      background: #e8e6ff;
+      padding: 2px 0.5rem;
+      border-radius: 4px;
+    }
+
+    &-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 0.5rem;
+      border-radius: 4px;
+      font-family: map.get($entityModal, secondaryFont);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      &--officiel {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        box-shadow: 0 1px 3px rgba(40, 167, 69, 0.3);
+      }
+
+      &--non-officiel {
+        background: linear-gradient(135deg, #6c757d, #868e96);
+        color: white;
+        box-shadow: 0 1px 3px rgba(108, 117, 125, 0.3);
+      }
+    }
+  }
+
+  &__remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, map.get($entityModal, buttonDanger), #c82333);
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+    }
+  }
+}
+
+// Animation keyframes
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/************************************************************/
+/**************************MIXIN**************************/
+/************************************************************/
+@mixin entityModal(
+  $paramMixi_: $entityModal,
+  $background: map.get($entityModal, background),
+  $borderRadius: map.get($entityModal, borderRadius)
+) {
+  $paramMixi: entityModal(map-merge($entityModal, $paramMixi_));
+
+  @extend %entityModal;
+  
+  &__container {
+    background: map.get($paramMixi, background);
+    border-radius: map.get($paramMixi, borderRadius);
+  }
+}
+
+/************************************************************/
+/**************************FUNCTION**************************/
+/************************************************************/
+@function entityModal($defaultValues) {
+  @return map-merge(
+    $defaultValues,
+    (
+      // background-contrast: darken(map.get($defaultValues, background), 12%),
+    )
+  );
+}
+
+/************************************************************/
+/********************COMPOSITIONS BLOCK********************/
+/************************************************************/
+
+// Styles BEM pour le bloc de compositions avec matières
+.compositions-block {
+  margin: 1.5rem 0;
+  
+  &__header {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: map.get($themeColors, primary);
+    font-family: map.get($entityModal, primaryFont);
+  }
+  
+  &__year-select {
+    @extend %entityModal__select;
+    margin-bottom: 1rem;
+    width: 200px;
+  }
+  
+  &__moyenne-annuelle {
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: map.get($themeColors, primary);
+    font-family: map.get($entityModal, primaryFont);
+    
+    strong {
+      font-weight: 600;
+    }
+  }
+  
+  &__trimestre {
+    margin-bottom: 1.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    
+    &-header {
+      background: #f8f9fa;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      
+      &-title {
+        font-weight: 600;
+        color: #495057;
+        font-size: 1.1rem;
+        font-family: map.get($entityModal, primaryFont);
+      }
+      
+      &-score {
+        font-size: 0.9rem;
+        color: map.get($themeColors, success);
+        font-weight: 500;
+        background: rgba(40, 167, 69, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        font-family: map.get($entityModal, secondaryFont);
+      }
+    }
+  }
+  
+  &__notes {
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    min-height: 60px;
+    align-items: flex-start;
+  }
+  
+  &__note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    
+    &:hover {
+      border-color: map.get($entityModal, inputFocus);
+      box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
+    }
+    
+    &-matiere {
+      font-weight: 600;
+      color: map.get($entityModal, buttonPrimary);
+      font-family: map.get($entityModal, secondaryFont);
+    }
+    
+    &-value {
+      font-weight: 700;
+      color: #2d3748;
+      background: #e2e8f0;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    button {
+      background: map.get($entityModal, buttonDanger);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: color.adjust(map.get($entityModal, buttonDanger), $lightness: -10%);
+        transform: scale(1.1);
+      }
+    }
+  }
+  
+  &__no-compo {
+    color: #6c757d;
+    font-style: italic;
+    padding: 1rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  &__add-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  &__matiere-select {
+    @extend %entityModal__select;
+    min-width: 140px;
+    font-size: 0.9rem;
+    
+    option {
+      padding: 0.5rem;
+    }
+  }
+  
+  &__denominateur-select {
+    @extend %entityModal__select;
+    min-width: 60px;
+    font-size: 0.9rem;
+    
+    option {
+      padding: 0.5rem;
+    }
+  }
+  
+  &__separator {
+    font-weight: bold;
+    color: map.get($themeColors, gray600);
+    margin: 0 4px;
+    font-size: 1rem;
+  }
+  
+  &__add-btn {
+    @extend %entityModal__btn;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    min-width: auto;
+    
+    &--cancel {
+      background: #6c757d;
+      
+      &:hover:not(:disabled) {
+        background: color.adjust(#6c757d, $lightness: -8%);
+      }
+    }
+  }
+
+  // Contrôles de photo avec caméra
+  &__photo-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__input--file {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  &__camera-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: map.get($entityModal, primaryFont);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    white-space: nowrap;
+
+    &:hover {
+      background: linear-gradient(135deg, #20c997, #17a2b8);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+    }
+
+    &-icon {
+      font-size: 1.1rem;
+    }
+
+    &-text {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+  }
+
+  // Prévisualisation photo
+  &__photo-preview {
+    position: relative;
+    display: inline-block;
+    margin-top: 0.75rem;
+  }
+
+  &__preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e1e5e9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &__remove-photo-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+
+    &:hover {
+      background: #c82333;
+      transform: scale(1.1);
+      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Note d'information dans le formulaire
+  .form-info-note {
+    background: map.get($entityModal, infoNoteBackground);
+    border: 1px solid map.get($entityModal, infoNoteBorder);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    
+    p {
+      margin: 0;
+      color: map.get($entityModal, infoNoteColor);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      
+      strong {
+        color: #007bff;
+      }
+    }
+  }
+}

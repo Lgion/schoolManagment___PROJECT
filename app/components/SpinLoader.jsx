@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import { useLoading } from '../../stores/useLoading';
-import "../../assets/scss/components/LOADERS/spinLoader.scss";
 
 /**
  * Composant BEM SpinLoader - Overlay de chargement global

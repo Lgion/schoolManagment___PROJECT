@@ -1,0 +1,14 @@
+// SCHEDULES Components - Index SCSS
+// Import de tous les composants de gestion des emplois du temps
+
+// Composant de visualisation des emplois du temps
+@import 'scheduleViewer';
+
+// Composant de gestion/overview des emplois du temps
+@import 'scheduleManager';
+
+// Composant d'historique des emplois du temps
+@import 'scheduleHistory';
+
+// Composant d'édition des emplois du temps
+@import 'scheduleEditor';

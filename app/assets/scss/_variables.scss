@@ -1,0 +1,133 @@
+// Variables de thème selon les règles de code
+$primaryFont: 'Inter', 'Segoe UI', sans-serif;
+$secondaryFont: 'Poppins', 'Arial', sans-serif;
+
+// Variables CSS pour les composants
+:root {
+  // Polices
+  --font-primary: #{$primaryFont};
+  --font-secondary: #{$secondaryFont};
+  --font-heading: #{$secondaryFont};
+  
+  // Couleurs principales
+  --color-primary: #6c63ff;
+  --color-primary-light: #e8e6ff;
+  --color-primary-dark: #4c46d6;
+  --color-secondary: #764ba2;
+  
+  // Couleurs d'état
+  --color-success: #2ed573;
+  --color-success-light: #e8f5e8;
+  --color-success-dark: #27ae60;
+  --color-danger: #ff4757;
+  --color-danger-light: #ffe8e8;
+  --color-danger-dark: #e74c3c;
+  --color-warning: #ffa726;
+  --color-warning-light: #fff3e0;
+  --color-warning-dark: #f39c12;
+  --color-info: #26c6da;
+  --color-info-light: #e0f7fa;
+  --color-info-dark: #0097a7;
+  
+  // Couleurs de texte et fond
+  --color-background: #f8f9fa;
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #7f8c8d;
+  --color-border: #e9ecef;
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f8f9fa;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #6c757d;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #212529;
+  
+  // Espacements
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+  
+  // Tailles de police
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xxl: 2rem;
+  
+  // Poids de police
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  // Bordures
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  
+  // Ombres
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-large: 0 8px 25px rgba(0, 0, 0, 0.15);
+  
+  // Transitions
+  --transition-fast: 0.15s ease-in-out;
+  --transition-medium: 0.3s ease-in-out;
+}
+
+$themeColors: (
+  primary: #6c63ff,
+  secondary: #4c46d6,
+  success: #2ed573,
+  danger: #ff4757,
+  warning: #ffa726,
+  info: #26c6da,
+  light: #f8f9fa,
+  dark: #2c3e50,
+  white: #ffffff,
+  gray100: #f8f9fa,
+  gray200: #e9ecef,
+  gray300: #dee2e6,
+  gray400: #ced4da,
+  gray500: #adb5bd,
+  gray600: #6c757d,
+  gray700: #495057,
+  gray800: #343a40,
+  gray900: #212529
+);
+
+// Espacements
+$spacing: (
+  xs: 0.25rem,
+  sm: 0.5rem,
+  md: 1rem,
+  lg: 1.5rem,
+  xl: 2rem,
+  xxl: 3rem
+);
+
+// Breakpoints
+$breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px,
+  xxl: 1400px
+);
+
+// Shadows
+$shadows: (
+  sm: 0 1px 3px rgba(0, 0, 0, 0.12),
+  md: 0 4px 6px rgba(0, 0, 0, 0.07),
+  lg: 0 8px 25px rgba(0, 0, 0, 0.15),
+  xl: 0 20px 40px rgba(0, 0, 0, 0.1)
+);

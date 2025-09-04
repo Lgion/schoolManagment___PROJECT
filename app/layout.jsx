@@ -8,7 +8,7 @@ import {
 } from '@clerk/nextjs'
 import { UserRoleProvider } from '../stores/useUserRole';
 import { LoadingProvider } from '../stores/useLoading';
-import "./index.scss"
+import "./assets/scss/index.scss"
 import Home from "./Home"
 import Goals from "./Goals"
 import SpinLoader from "./components/SpinLoader";

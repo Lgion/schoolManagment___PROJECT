@@ -1,0 +1,209 @@
+@use 'sass:map';
+@use 'sass:color';
+@use '../../variables' as *;
+
+// Filtres par année
+.year-filter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0 2rem 0;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  
+  &__reset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: map.get($themeColors, danger);
+    color: map.get($themeColors, white);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: map.get($shadows, sm);
+    
+    &:hover {
+      background: color.adjust(map.get($themeColors, danger), $lightness: -10%);
+      transform: scale(1.1);
+      box-shadow: map.get($shadows, md);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+  
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  &__badge {
+    padding: 0.5rem 1.25rem;
+    border: 2px solid map.get($themeColors, primary);
+    background: map.get($themeColors, white);
+    color: map.get($themeColors, primary);
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: $primaryFont;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    &:hover {
+      background: map.get($themeColors, primary);
+      color: map.get($themeColors, white);
+      transform: translateY(-2px);
+      box-shadow: map.get($shadows, md);
+      
+      &::before {
+        left: 100%;
+      }
+    }
+    
+    &--active {
+      background: linear-gradient(135deg, map.get($themeColors, primary) 0%, map.get($themeColors, secondary) 100%);
+      color: map.get($themeColors, white);
+      box-shadow: map.get($shadows, lg);
+      transform: translateY(-1px);
+      
+      &::after {
+        content: '✓';
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 18px;
+        height: 18px;
+        background: map.get($themeColors, success);
+        color: map.get($themeColors, white);
+        border-radius: 50%;
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+      
+      &:hover {
+        background: linear-gradient(135deg, map.get($themeColors, secondary) 0%, map.get($themeColors, primary) 100%);
+        transform: translateY(-3px);
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.classes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  
+  &__year-group {
+    margin-bottom: 2rem;
+  }
+  
+  &__year-separator {
+    position: relative;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  &__year-label {
+    background: linear-gradient(135deg, map.get($themeColors, primary) 0%, map.get($themeColors, secondary) 100%);
+    color: map.get($themeColors, white);
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: $primaryFont;
+    box-shadow: map.get($shadows, md);
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -10px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 10px solid map.get($themeColors, primary);
+    }
+  }
+  
+  &__year-line {
+    flex: 1;
+    height: 2px;
+    border: none;
+    background: linear-gradient(90deg, map.get($themeColors, primary) 0%, transparent 100%);
+    margin: 0;
+    opacity: 0.6;
+  }
+  
+  &__year-content {
+    display: flex;
+    flex-flow: wrap;
+    // grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding-left: 1rem;
+    
+    @media (max-width: map.get($breakpoints, md)) {
+      grid-template-columns: 1fr;
+      padding-left: 0;
+    }
+  }
+  
+  // Animation d'apparition pour les groupes d'années
+  &__year-group {
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+    
+    &:nth-child(1) { animation-delay: 0.1s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.3s; }
+    &:nth-child(4) { animation-delay: 0.4s; }
+    &:nth-child(5) { animation-delay: 0.5s; }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

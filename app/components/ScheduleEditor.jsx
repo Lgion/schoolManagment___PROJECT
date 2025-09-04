@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { useUserRole } from '../../stores/useUserRole'
-import '../../assets/scss/components/SCHEDULES/scheduleEditor.scss'
 import { validatePlanning } from '../../utils/scheduleHelpers'
 
 /**

@@ -1,5 +1,5 @@
 
-export default async function Page({children}) {
+export default function Page() {
     return <>
     <h2>
         École Martin de Porres : Amour, Partage, Confiance.
@@ -20,6 +20,5 @@ export default async function Page({children}) {
     </picture>
     
 
-    {children}
     </>;
 }
