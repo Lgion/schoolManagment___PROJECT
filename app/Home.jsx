@@ -244,6 +244,7 @@ export default ({children}) => {
     </SignedIn>
 
     {/* Dashboard pour utilisateurs non connectés */}
+    {/*
     <SignedOut>
       <section className="ecole-admin__publicDashboard">
         <div className="ecole-admin__welcomeCard">
@@ -270,9 +271,10 @@ export default ({children}) => {
         </div>
       </section>
     </SignedOut>
+    */}
 
     {/* Dashboard adaptatif selon le rôle */}
-    <SignedIn>
+    {/* <SignedIn> */}
       {loading ? (
         <section className="ecole-admin__loading">
           <div className="ecole-admin__loader">
@@ -283,7 +285,6 @@ export default ({children}) => {
       ) : (
         <>
           {/* Dashboard ADMIN */}
-          <PermissionGate role="admin">
             <section className="ecole-admin__adminDashboard">
               <h2 className="ecole-admin__dashboardTitle">
                 👑 Tableau de bord Administrateur
@@ -333,153 +334,9 @@ export default ({children}) => {
                 </div>
               </article>
             </section>
-          </PermissionGate>
-
-          {/* Dashboard PROF */}
-          <PermissionGate role="prof">
-            <section className="ecole-admin__profDashboard">
-              <h2 className="ecole-admin__dashboardTitle">
-                👨‍🏫 Espace Professeur
-              </h2>
-              
-              <nav className="ecole-admin__nav">
-                <Link href="/prof/classes">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--prof">
-                    <span>🏫</span> Mes classes
-                  </button>
-                </Link>
-                <Link href="/prof/eleves">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--prof">
-                    <span>👨‍🎓</span> Mes élèves
-                  </button>
-                </Link>
-                <Link href="/prof/notes">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--prof">
-                    <span>📊</span> Gestion des notes
-                  </button>
-                </Link>
-                <Link href="/prof/rapports">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--prof">
-                    <span>📋</span> Mes rapports
-                  </button>
-                </Link>
-              </nav>
-
-              <article className="ecole-admin__quickActions">
-                <h3 className="ecole-admin__quickActions-title">Actions rapides</h3>
-                <div className="ecole-admin__quickActions-grid">
-                  <button className="ecole-admin__quickAction">
-                    <span className="ecole-admin__quickAction-icon">✏️</span>
-                    <span className="ecole-admin__quickAction-text">Saisir des notes</span>
-                  </button>
-                  <button className="ecole-admin__quickAction">
-                    <span className="ecole-admin__quickAction-icon">📅</span>
-                    <span className="ecole-admin__quickAction-text">Marquer les absences</span>
-                  </button>
-                </div>
-              </article>
-            </section>
-          </PermissionGate>
-
-          {/* Dashboard ELEVE */}
-          <PermissionGate role="eleve">
-            <section className="ecole-admin__eleveDashboard">
-              <h2 className="ecole-admin__dashboardTitle">
-                👨‍🎓 Mon espace élève
-              </h2>
-              
-              <nav className="ecole-admin__nav">
-                <Link href="/eleve/notes">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--eleve">
-                    <span>📊</span> Mes notes
-                  </button>
-                </Link>
-                <Link href="/eleve/emploi-du-temps">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--eleve">
-                    <span>📅</span> Mon emploi du temps
-                  </button>
-                </Link>
-                <Link href="/eleve/devoirs">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--eleve">
-                    <span>📚</span> Mes devoirs
-                  </button>
-                </Link>
-                <Link href="/eleve/profil">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--eleve">
-                    <span>👤</span> Mon profil
-                  </button>
-                </Link>
-              </nav>
-
-              <article className="ecole-admin__studentInfo">
-                <h3 className="ecole-admin__studentInfo-title">Informations rapides</h3>
-                <div className="ecole-admin__studentInfo-grid">
-                  <div className="ecole-admin__infoCard">
-                    <span className="ecole-admin__infoCard-icon">🎯</span>
-                    <span className="ecole-admin__infoCard-label">Moyenne générale</span>
-                    <span className="ecole-admin__infoCard-value">--/20</span>
-                  </div>
-                  <div className="ecole-admin__infoCard">
-                    <span className="ecole-admin__infoCard-icon">📚</span>
-                    <span className="ecole-admin__infoCard-label">Devoirs à rendre</span>
-                    <span className="ecole-admin__infoCard-value">--</span>
-                  </div>
-                </div>
-              </article>
-            </section>
-          </PermissionGate>
-
-          {/* Dashboard PUBLIC */}
-          <PermissionGate role="public">
-            <section className="ecole-admin__publicUserDashboard">
-              <h2 className="ecole-admin__dashboardTitle">
-                👤 Espace visiteur
-              </h2>
-              
-              <div className="ecole-admin__publicMessage">
-                <div className="ecole-admin__messageCard">
-                  <span className="ecole-admin__messageCard-icon">ℹ️</span>
-                  <div className="ecole-admin__messageCard-content">
-                    <h3 className="ecole-admin__messageCard-title">Accès limité</h3>
-                    <p className="ecole-admin__messageCard-text">
-                      Votre compte n'est pas encore associé à un rôle spécifique dans l'école. 
-                      Contactez l'administration pour obtenir les accès appropriés.
-                    </p>
-                    <div style={{ display: 'flex', gap: '1em', marginTop: '1em', flexWrap: 'wrap' }}>
-                      <button 
-                        onClick={handleSyncUser}
-                        className="ecole-admin__nav-btn ecole-admin__nav-btn--admin"
-                      >
-                        <span>🔄</span> Synchroniser mon compte
-                      </button>
-                      <button 
-                        onClick={clearAllAppData}
-                        className="ecole-admin__nav-btn ecole-admin__nav-btn--public"
-                      >
-                        <span>🗑️</span> Vider le cache
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <nav className="ecole-admin__nav">
-                <Link href="/contact">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--public">
-                    <span>📞</span> Contacter l'école
-                  </button>
-                </Link>
-                <Link href="/informations">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--public">
-                    <span>📋</span> Informations générales
-                  </button>
-                </Link>
-              </nav>
-            </section>
-          </PermissionGate>
         </>
       )}
-    </SignedIn>
+    {/* </SignedIn> */}
     <section className="ecole-admin__content">
       {children}
     </section>
