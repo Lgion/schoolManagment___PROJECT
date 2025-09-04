@@ -2174,6 +2174,7 @@ section>div:has(.modal){
 
   &__nav {
     display: flex;
+    flex-flow: wrap;
     justify-content: space-evenly;
     gap: 24px;
     margin-top: 32px;
@@ -2327,7 +2328,7 @@ section>div:has(.modal){
   @media (max-width: 700px) {
     padding: 10px;
     &__nav {
-      flex-direction: column;
+      // flex-direction: column;
       gap: 14px;
       margin-top: 18px;
     }

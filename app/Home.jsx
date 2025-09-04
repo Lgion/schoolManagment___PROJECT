@@ -293,25 +293,25 @@ export default ({children}) => {
                 <Link href="/eleves">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
                     <span>👨‍🎓</span>
-                    <strong>Gérer les élèves</strong>
+                    <strong>Élèves</strong>
                   </button>
                 </Link>
                 <Link href="/enseignants">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
                     <span>👨‍🏫</span>
-                    <strong>Gérer les enseignants</strong>
+                    <strong>Enseignants</strong>
                   </button>
                 </Link>
                 <Link href="/classes">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
                     <span>🏫</span>
-                    <strong>Gérer les classes</strong>
+                    <strong>Classes</strong>
                   </button>
                 </Link>
                 <Link href="/admin/users">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
                     <span>👥</span>
-                    <strong>Gestion des utilisateurs</strong>
+                    <strong>Utilisateurs</strong>
                   </button>
                 </Link>
                 <Link href="/admin/settings">
