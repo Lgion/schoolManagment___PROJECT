@@ -2173,10 +2173,10 @@ section>div:has(.modal){
 
   &__nav {
     display: flex;
+    justify-content: space-evenly;
     gap: 24px;
     margin-top: 32px;
     margin-bottom: 2.2em;
-    justify-content: center;
     background: silver;
     padding: 1em;
 
@@ -2256,8 +2256,18 @@ section>div:has(.modal){
         }
       }
 
+      display: flex;
+      justify-content: center;
+      position: relative;
       >span{
         font-size:1.4em;
+      }
+      >strong{
+        position: absolute;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        padding: .5em;
+        bottom: -3em;
+        min-width: 5em;
       }
     }
   }

@@ -7,9 +7,12 @@ import {
   UserButton,
 } from '@clerk/nextjs'
 import { UserRoleProvider } from '../stores/useUserRole';
+import { LoadingProvider } from '../stores/useLoading';
 import "./index.scss"
 import Home from "./Home"
 import Goals from "./Goals"
+import SpinLoader from "./components/SpinLoader";
+import NavigationInterceptor from "./components/NavigationInterceptor";
 
 import {AdminContextProvider} from '../stores/ai_adminContext';
 
@@ -28,9 +31,13 @@ export default function RootLayout({ children }) {
 
           <ClerkProvider>
             <UserRoleProvider>
-              <Home>
-                {children}
-              </Home>
+              <LoadingProvider>
+                <Home>
+                  {children}
+                </Home>
+                <SpinLoader />
+                <NavigationInterceptor />
+              </LoadingProvider>
             </UserRoleProvider>
           </ClerkProvider>
 

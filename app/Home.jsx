@@ -292,27 +292,32 @@ export default ({children}) => {
               <nav className="ecole-admin__nav">
                 <Link href="/eleves">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👨‍🎓</span> Gérer les élèves
+                    <span>👨‍🎓</span>
+                    <strong>Gérer les élèves</strong>
                   </button>
                 </Link>
                 <Link href="/enseignants">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👨‍🏫</span> Gérer les enseignants
+                    <span>👨‍🏫</span>
+                    <strong>Gérer les enseignants</strong>
                   </button>
                 </Link>
                 <Link href="/classes">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>🏫</span> Gérer les classes
+                    <span>🏫</span>
+                    <strong>Gérer les classes</strong>
                   </button>
                 </Link>
                 <Link href="/admin/users">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👥</span> Gestion des utilisateurs
+                    <span>👥</span>
+                    <strong>Gestion des utilisateurs</strong>
                   </button>
                 </Link>
                 <Link href="/admin/settings">
                   <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>⚙️</span> Paramètres système
+                    <span>⚙️</span>
+                    <strong>Paramètres système</strong>
                   </button>
                 </Link>
               </nav>
