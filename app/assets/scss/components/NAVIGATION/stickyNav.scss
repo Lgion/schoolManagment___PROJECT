@@ -1,0 +1,304 @@
+// Composant BEM Sticky Navigation avec responsive mobile optimisé
+.ecole-admin {
+  &__stickyNav {
+    position: sticky;
+    top: 80px; // Sous le header
+    z-index: 90;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: var(--spacing-lg, 1.5rem);
+    
+    // Mobile first approach
+    @media (max-width: 768px) {
+      top: 70px; // Header plus petit sur mobile
+      margin-bottom: var(--spacing-md, 1rem);
+    }
+    
+    @media (max-width: 480px) {
+      top: 60px;
+      margin-bottom: var(--spacing-sm, 0.75rem);
+    }
+
+    // Container simplifié (suppression de div inutile)
+    &-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+      
+      @media (max-width: 768px) {
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+      }
+      
+      @media (max-width: 480px) {
+        padding: var(--spacing-xs, 0.5rem);
+      }
+    }
+
+    // Container des tabs (suppression de div inutile)
+    &-tabs {
+      gap: var(--spacing-sm, 0.75rem);
+      
+      &::-webkit-scrollbar {
+        display: none; // Chrome/Safari
+      }
+      
+      @media (max-width: 768px) {
+        gap: var(--spacing-xs, 0.5rem);
+        padding-bottom: var(--spacing-xs, 0.5rem);
+      }
+      
+      @media (max-width: 480px) {
+        gap: var(--spacing-xs, 0.25rem);
+      }
+
+      >div{
+        display: flex;
+        margin-bottom: 3em;
+        justify-content: center;
+        gap: 1em;
+      }
+    }
+
+    // Tab individuel
+    &-tab {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm, 0.75rem);
+      padding: var(--spacing-sm, 0.75rem) var(--spacing-md, 1rem);
+      background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      border: 2px solid transparent;
+      border-radius: var(--border-radius-lg, 12px);
+      font-family: var(--font-primary);
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--color-text-primary);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+      flex-shrink: 0;
+      
+      // Effet de survol
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s;
+      }
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(var(--color-primary), 0.15);
+        border-color: var(--color-primary);
+        background: linear-gradient(135deg, var(--color-primary-light), #ffffff);
+        
+        &::before {
+          left: 100%;
+        }
+        
+        .ecole-admin__stickyNav-tab-icon {
+          transform: scale(1.1);
+        }
+        
+        .ecole-admin__stickyNav-tab-text {
+          color: var(--color-primary);
+        }
+        
+        .ecole-admin__stickyNav-tab-badge {
+          background: var(--color-primary);
+          color: white;
+          transform: scale(1.1);
+        }
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      // État actif (peut être ajouté via JS)
+      &--active {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        color: white;
+        border-color: var(--color-primary-dark);
+        
+        .ecole-admin__stickyNav-tab-text {
+          color: white;
+        }
+        
+        .ecole-admin__stickyNav-tab-badge {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+        }
+      }
+      
+      @media (max-width: 768px) {
+        padding: var(--spacing-xs, 0.5rem) var(--spacing-sm, 0.75rem);
+        gap: var(--spacing-xs, 0.5rem);
+        font-size: 0.8125rem;
+      }
+      
+      @media (max-width: 480px) {
+        padding: var(--spacing-xs, 0.5rem);
+        gap: var(--spacing-xs, 0.25rem);
+        font-size: 0.75rem;
+        min-width: 80px; // Largeur minimum pour éviter le collapse
+      }
+    }
+
+    // Icône du tab
+    &-tab-icon {
+      font-size: 1.25rem;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+      
+      @media (max-width: 768px) {
+        font-size: 1.125rem;
+      }
+      
+      @media (max-width: 480px) {
+        font-size: 1rem;
+      }
+    }
+
+    // Texte du tab
+    &-tab-text {
+      font-weight: 600;
+      transition: color 0.3s ease;
+      
+      @media (max-width: 480px) {
+        display: none; // Masquer le texte sur très petit écran, garder juste icône + badge
+      }
+    }
+
+    // Badge avec compteur
+    &-tab-badge {
+      background: var(--color-gray-200);
+      color: var(--color-text-secondary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 50px;
+      min-width: 1.5rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      
+      @media (max-width: 768px) {
+        font-size: 0.6875rem;
+        padding: 0.2rem 0.4rem;
+        min-width: 1.25rem;
+      }
+      
+      @media (max-width: 480px) {
+        font-size: 0.625rem;
+        padding: 0.15rem 0.3rem;
+        min-width: 1rem;
+      }
+    }
+
+    // Indicateur de scroll sur mobile
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 40px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9));
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      
+      @media (max-width: 768px) {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Styles pour améliorer l'accessibilité
+@media (prefers-reduced-motion: reduce) {
+  .ecole-admin__stickyNav {
+    &-tab {
+      transition: none;
+      
+      &::before {
+        display: none;
+      }
+      
+      &:hover {
+        transform: none;
+      }
+    }
+    
+    &-tab-icon {
+      transition: none;
+    }
+  }
+}
+
+// Support pour focus visible (navigation clavier)
+.ecole-admin__stickyNav-tab:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+// Styles pour le mode sombre
+@media (prefers-color-scheme: dark) {
+  .ecole-admin__stickyNav {
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(52, 73, 94, 0.95));
+    border-color: #5a6c7d;
+    
+    &-tab {
+      background: linear-gradient(135deg, #34495e, #2c3e50);
+      color: #ecf0f1;
+      border-color: #5a6c7d;
+      
+      &:hover {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        border-color: var(--color-primary);
+      }
+      
+      &--active {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      }
+    }
+    
+    &-tab-badge {
+      background: rgba(236, 240, 241, 0.2);
+      color: #ecf0f1;
+    }
+  }
+}
+
+// Animation d'entrée pour les tabs
+@keyframes slideInFromTop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ecole-admin__stickyNav-tab {
+  animation: slideInFromTop 0.3s ease-out;
+  
+  // Délai progressif pour effet cascade
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+}

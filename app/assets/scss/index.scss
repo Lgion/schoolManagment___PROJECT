@@ -5,13 +5,12 @@
 @use 'layouts/headers' as *;
 @use 'components/MODALS/entityModal.scss';
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
-@use 'components/LISTS/classesList.scss';
-@use 'components/SCHEDULES/scheduling.scss';
-@use 'components/SCHEDULES/scheduleViewer.scss';
-@use 'components/SCHEDULES/scheduleManager.scss';
-@use 'components/SCHEDULES/scheduleHistory.scss';
-@use 'components/SCHEDULES/scheduleEditor.scss';
-@use "components/LOADERS/spinLoader.scss";
+@import "./main.scss";
+@import "./components/LOADERS/spinLoader.scss";
+@import "./components/DASHBOARDS/adminDashboard.scss";
+@import "./components/NAVIGATION/stickyNav.scss";
+@import "./components/CONTROLS/infosCardsControls.scss";
+@import "./components/CONTENT/homeContent.scss";
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);
@@ -1507,7 +1506,20 @@ section>div:has(.modal){
   border-radius: 16px;
   box-shadow: 0 2px 12px #e0e0e0cc;
   min-height: 100vh;
+  position: relative;
+  &:before{
+    content:"";
+    position:absolute;
+    // z-index: -1;
+    inset:0;
+    opacity:.5;
+    background:url("./fond_motif_ecole_a.jpg");
+  }
 
+  >*{
+    position: relative;
+    z-index: 1;
+  }
   &__header {
     display: flex;
     justify-content: space-between;
@@ -1515,6 +1527,8 @@ section>div:has(.modal){
     margin-bottom: 1.5em;
     flex-wrap: wrap;
     gap: 1em;
+    position: sticky;
+    z-index: 10;
   }
 
   &__title {
@@ -2007,7 +2021,13 @@ section>div:has(.modal){
     font-family: $font-secondary;
     color: $primary-color;
     font-size: 1.2em;
-
+    background: white;
+    padding: 1em;
+    background: white;
+    box-shadow: 0 0 10px 1px;
+    border: 1px solid;
+    border-radius: 3px;
+    
     &-icon {
       font-size: 1.5em;
       animation: pulse 1.5s infinite;
@@ -2309,17 +2329,26 @@ section>div:has(.modal){
     }
   }
 
+  // Styles pour __content maintenant dans components/CONTENT/homeContent.scss
   &__content {
-    margin-top: 32px;
-    >div{
-      >h1{
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: silver;
-        padding: 1em;
-        >button{
+    // Styles de base pour les autres pages (non-home)
+    &:not(.home) {
+      margin-top: 32px;
+      background: rgba(255, 255, 255, .9);
+      border: 1px solid;
+      border-width: 0 1px;
+      box-shadow: 0 5px 10px 1px black;
+      
+      >div{
+        >h1{
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: silver;
+          padding: 1em;
+          >button{
 
+          }
         }
       }
     }

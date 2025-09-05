@@ -19,7 +19,7 @@ function getScolarityProgress(fees) {
   };
 }
 
-export default function EleveCard({ classe, eleve, onEdit }) {
+export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) {
   const prenoms = Array.isArray(eleve.prenoms) ? eleve.prenoms.join(', ') : eleve.prenoms;
   const photoUrl = eleve.photo_$_file || eleve.photo || '/default-avatar.png';
   const isInterne = eleve.isInterne;
@@ -38,7 +38,7 @@ export default function EleveCard({ classe, eleve, onEdit }) {
 
   return (
     <div className="eleve-card-wrapper" style={{position:'relative'}}>
-      <Link href={`/eleves/${eleve._id}`} className="eleve-card" tabIndex={0} style={{backgroundColor: getBackgroundColor(eleve.sexe)}}>
+      <Link href={`/eleves/${eleve._id}`} className={`eleve-card ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`} tabIndex={0} style={{backgroundColor: getBackgroundColor(eleve.sexe)}}>
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
         <div className="eleve-card__infos">
           <div className="eleve-card__name">{eleve.nom} <span className="eleve-card__prenoms">{prenoms}</span></div>

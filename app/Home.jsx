@@ -102,6 +102,19 @@ export default ({children}) => {
   }, []);
 
   return <main className="ecole-admin">
+    {/* Bouton de réinitialisation des données */}
+    <PermissionGate role="admin">
+      <div className="ecole-admin__headerActions-reset">
+        <button 
+          onClick={clearAllAppData}
+          className="ecole-admin__headerActions-reset-btn"
+          title="Réinitialiser toutes les données de l'application"
+        >
+            <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
+          <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
+        </button>
+      </div>
+    </PermissionGate>
     <header className="ecole-admin__header">
       <div className="ecole-admin__header-container">
         <div className="ecole-admin__branding">
@@ -128,17 +141,6 @@ export default ({children}) => {
             </a>
           </div>
           
-          {/* Bouton de réinitialisation des données */}
-          <div className="ecole-admin__headerActions-reset">
-            <button 
-              onClick={clearAllAppData}
-              className="ecole-admin__headerActions-reset-btn"
-              title="Réinitialiser toutes les données de l'application"
-            >
-              <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
-              <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
-            </button>
-          </div>
           
           <div className="ecole-admin__authSection">
             <SignedOut>
@@ -179,65 +181,69 @@ export default ({children}) => {
     {/* Navigation sticky pour utilisateurs connectés */}
     <SignedIn>
       {!loading && (
-        <nav className="ecole-admin__stickyNav">
-          <div className="ecole-admin__stickyNav-container">
-            <div className="ecole-admin__stickyNav-tabs">
-              <PermissionGate role="admin">
-                <Link href="/classes" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">🏫</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Classes</span>
-                  <span className="ecole-admin__stickyNav-tab-badge">{classes?.length || 0}</span>
-                </Link>
-                <Link href="/eleves" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">👨‍🎓</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Élèves</span>
-                  <span className="ecole-admin__stickyNav-tab-badge">{eleves?.length || 0}</span>
-                </Link>
-                <Link href="/enseignants" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">👨‍🏫</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Enseignants</span>
-                  <span className="ecole-admin__stickyNav-tab-badge">{enseignants?.length || 0}</span>
-                </Link>
-                <Link href="/scheduling" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📅</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Planning</span>
-                </Link>
-                <Link href="/rapports" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📊</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Rapports</span>
-                </Link>
-              </PermissionGate>
-              
-              <PermissionGate role="prof">
-                <Link href="/prof/classes" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">🏫</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mes Classes</span>
-                </Link>
-                <Link href="/prof/eleves" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">👨‍🎓</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mes Élèves</span>
-                </Link>
-                <Link href="/prof/planning" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📅</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
-                </Link>
-              </PermissionGate>
-              
-              <PermissionGate role="eleve">
-                <Link href="/eleve/notes" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📝</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mes Notes</span>
-                </Link>
-                <Link href="/eleve/planning" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📅</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
-                </Link>
-                <Link href="/eleve/devoirs" className="ecole-admin__stickyNav-tab">
-                  <span className="ecole-admin__stickyNav-tab-icon">📚</span>
-                  <span className="ecole-admin__stickyNav-tab-text">Mes Devoirs</span>
-                </Link>
-              </PermissionGate>
-            </div>
+        <nav className="ecole-admin__stickyNav" role="navigation" aria-label="Navigation principale">
+          <div className="ecole-admin__stickyNav-tabs">
+            <PermissionGate role="admin">
+              <Link href="/classes" className="ecole-admin__stickyNav-tab" aria-label="Gérer les classes">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Classes">🏫</span>
+                <span className="ecole-admin__stickyNav-tab-text">Classes</span>
+                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${classes?.length || 0} classes`}>
+                  {classes?.length || 0}
+                </span>
+              </Link>
+              <Link href="/eleves" className="ecole-admin__stickyNav-tab" aria-label="Gérer les élèves">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
+                <span className="ecole-admin__stickyNav-tab-text">Élèves</span>
+                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${eleves?.length || 0} élèves`}>
+                  {eleves?.length || 0}
+                </span>
+              </Link>
+              <Link href="/enseignants" className="ecole-admin__stickyNav-tab" aria-label="Gérer les enseignants">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Enseignants">👨‍🏫</span>
+                <span className="ecole-admin__stickyNav-tab-text">Enseignants</span>
+                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${enseignants?.length || 0} enseignants`}>
+                  {enseignants?.length || 0}
+                </span>
+              </Link>
+              <Link href="/scheduling" className="ecole-admin__stickyNav-tab" aria-label="Gestion du planning">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
+                <span className="ecole-admin__stickyNav-tab-text">Planning</span>
+              </Link>
+              <Link href="/rapports" className="ecole-admin__stickyNav-tab" aria-label="Consulter les rapports">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Rapports">📊</span>
+                <span className="ecole-admin__stickyNav-tab-text">Rapports</span>
+              </Link>
+            </PermissionGate>
+            
+            <PermissionGate role="prof">
+              <Link href="/prof/classes" className="ecole-admin__stickyNav-tab" aria-label="Mes classes">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Classes">🏫</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mes Classes</span>
+              </Link>
+              <Link href="/prof/eleves" className="ecole-admin__stickyNav-tab" aria-label="Mes élèves">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mes Élèves</span>
+              </Link>
+              <Link href="/prof/planning" className="ecole-admin__stickyNav-tab" aria-label="Mon planning">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
+              </Link>
+            </PermissionGate>
+            
+            <PermissionGate role="eleve">
+              <Link href="/eleve/notes" className="ecole-admin__stickyNav-tab" aria-label="Consulter mes notes">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Notes">📝</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mes Notes</span>
+              </Link>
+              <Link href="/eleve/planning" className="ecole-admin__stickyNav-tab" aria-label="Mon planning de cours">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
+              </Link>
+              <Link href="/eleve/devoirs" className="ecole-admin__stickyNav-tab" aria-label="Consulter mes devoirs">
+                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Devoirs">📚</span>
+                <span className="ecole-admin__stickyNav-tab-text">Mes Devoirs</span>
+              </Link>
+            </PermissionGate>
           </div>
         </nav>
       )}
@@ -290,36 +296,26 @@ export default ({children}) => {
                 👑 Tableau de bord Administrateur
               </h2>
               
-              <nav className="ecole-admin__nav">
-                <Link href="/eleves">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👨‍🎓</span>
-                    <strong>Élèves</strong>
-                  </button>
+              <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
+                <Link href="/eleves" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
+                  <span role="img" aria-label="Élève">👨‍🎓</span>
+                  <strong>Gérer les élèves</strong>
                 </Link>
-                <Link href="/enseignants">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👨‍🏫</span>
-                    <strong>Enseignants</strong>
-                  </button>
+                <Link href="/enseignants" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
+                  <span role="img" aria-label="Enseignant">👨‍🏫</span>
+                  <strong>Gérer les enseignants</strong>
                 </Link>
-                <Link href="/classes">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>🏫</span>
-                    <strong>Classes</strong>
-                  </button>
+                <Link href="/classes" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
+                  <span role="img" aria-label="École">🏫</span>
+                  <strong>Gérer les classes</strong>
                 </Link>
-                <Link href="/admin/users">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>👥</span>
-                    <strong>Utilisateurs</strong>
-                  </button>
+                <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
+                  <span role="img" aria-label="Utilisateurs">👥</span>
+                  <strong>Gestion des utilisateurs</strong>
                 </Link>
-                <Link href="/admin/settings">
-                  <button className="ecole-admin__nav-btn ecole-admin__nav-btn--admin">
-                    <span>⚙️</span>
-                    <strong>Paramètres système</strong>
-                  </button>
+                <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
+                  <span role="img" aria-label="Paramètres">⚙️</span>
+                  <strong>Paramètres système</strong>
                 </Link>
               </nav>
 
@@ -337,7 +333,7 @@ export default ({children}) => {
         </>
       )}
     {/* </SignedIn> */}
-    <section className="ecole-admin__content">
+    <section className="ecole-admin__content home">
       {children}
     </section>
   </main>

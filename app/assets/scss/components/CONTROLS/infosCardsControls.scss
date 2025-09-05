@@ -1,0 +1,331 @@
+// Composant BEM pour les contrôles des cartes d'informations (filtres, tri, recherche)
+.infos_cards {
+  &__controls {
+    display: flex;
+    flex-flow: wrap;
+    gap: var(--spacing-md, 1rem);
+    padding: var(--spacing-md, 1rem);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--border-radius-lg, 12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: var(--spacing-lg, 1.5rem);
+    backdrop-filter: blur(8px);
+    
+    @media (max-width: 768px) {
+      // flex-direction: column;
+      gap: var(--spacing-sm, 0.75rem);
+      padding: var(--spacing-sm, 0.75rem);
+    }
+    
+    @media (max-width: 480px) {
+      gap: var(--spacing-xs, 0.5rem);
+      padding: var(--spacing-xs, 0.5rem);
+    }
+  }
+
+  // Groupe de contrôle (label + input/select)
+  &__control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs, 0.5rem);
+    min-width: 200px;
+    flex: 1;
+    
+    @media (max-width: 768px) {
+      min-width: 150px;
+    }
+    
+    @media (max-width: 480px) {
+      min-width: 100%;
+    }
+  }
+
+  // Labels des contrôles
+  &__label {
+    font-family: var(--font-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs, 0.25rem);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs, 0.25rem);
+    
+    @media (max-width: 480px) {
+      font-size: 0.8125rem;
+    }
+  }
+
+  // Select dropdown
+  &__select {
+    padding: var(--spacing-sm, 0.75rem);
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--border-radius-md, 8px);
+    background: #ffffff;
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
+    }
+    
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+    }
+    
+    // Flèche personnalisée
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    appearance: none;
+    
+    @media (max-width: 480px) {
+      padding: var(--spacing-xs, 0.5rem);
+      font-size: 0.8125rem;
+      padding-right: 2rem;
+      background-size: 0.875rem;
+    }
+    
+    // Options
+    option {
+      padding: var(--spacing-xs, 0.5rem);
+      background: #ffffff;
+      color: var(--color-text-primary);
+    }
+  }
+
+  // Input de recherche
+  &__search-input {
+    padding: var(--spacing-sm, 0.75rem);
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: var(--border-radius-md, 8px);
+    background: #ffffff;
+    font-family: var(--font-primary);
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    
+    &::placeholder {
+      color: var(--color-text-secondary);
+      opacity: 0.7;
+    }
+    
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
+    }
+    
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+      background: #ffffff;
+    }
+    
+    // Icône de recherche intégrée
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cpath d='m21 21-4.35-4.35'%3e%3c/path%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    
+    @media (max-width: 480px) {
+      padding: var(--spacing-xs, 0.5rem);
+      font-size: 0.8125rem;
+      padding-right: 2rem;
+      background-size: 0.875rem;
+    }
+  }
+}
+
+// Animation d'entrée pour les contrôles
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.infos_cards__control-group {
+  animation: slideInFromLeft 0.3s ease-out;
+  
+  // Délai progressif pour effet cascade
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+}
+
+// Styles pour améliorer l'accessibilité
+@media (prefers-reduced-motion: reduce) {
+  .infos_cards__control-group {
+    animation: none;
+  }
+  
+  .infos_cards__select,
+  .infos_cards__search-input {
+    transition: none;
+  }
+}
+
+// Support pour le mode sombre
+@media (prefers-color-scheme: dark) {
+  .infos_cards {
+    &__controls {
+      background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(52, 73, 94, 0.95));
+      border-color: #5a6c7d;
+    }
+    
+    &__label {
+      color: #ecf0f1;
+    }
+    
+    &__select,
+    &__search-input {
+      background: #34495e;
+      border-color: #5a6c7d;
+      color: #ecf0f1;
+      
+      &::placeholder {
+        color: #bdc3c7;
+      }
+      
+      &:hover {
+        border-color: var(--color-primary);
+        background: #2c3e50;
+      }
+      
+      &:focus {
+        background: #2c3e50;
+        border-color: var(--color-primary);
+      }
+    }
+    
+    &__select option {
+      background: #34495e;
+      color: #ecf0f1;
+    }
+  
+    // Bouton de basculement d'affichage
+    &__view-toggle {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs, 0.5rem);
+      padding: var(--spacing-sm, 0.75rem);
+      border: 2px solid var(--color-border, #e0e0e0);
+      border-radius: var(--border-radius-md, 8px);
+      background: #ffffff;
+      font-family: var(--font-primary);
+      font-size: 0.875rem;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+      
+      &:hover {
+        border-color: var(--color-primary);
+        box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
+        background: rgba(var(--color-primary), 0.05);
+      }
+      
+      &:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+      }
+      
+      &:active {
+        transform: translateY(1px);
+      }
+      
+      // État actif
+      &--active {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+        
+        &:hover {
+          background: var(--color-primary-dark);
+          border-color: var(--color-primary-dark);
+        }
+      }
+      
+      @media (max-width: 480px) {
+        padding: var(--spacing-xs, 0.5rem);
+        font-size: 0.8125rem;
+        gap: var(--spacing-xs, 0.25rem);
+      }
+    }
+  
+    &__view-toggle-icon {
+      font-size: 1.125rem;
+      
+      @media (max-width: 480px) {
+        font-size: 1rem;
+      }
+    }
+  
+    &__view-toggle-text {
+      font-weight: 600;
+      
+      @media (max-width: 480px) {
+        display: none; // Masquer le texte sur très petit écran
+      }
+    }
+  }
+}
+
+// États de validation et feedback
+.infos_cards {
+  &__search-input {
+    &--has-results {
+      border-color: #27ae60;
+      box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+    }
+    
+    &--no-results {
+      border-color: #e74c3c;
+      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    }
+  }
+}
+
+// Responsive breakpoints spécifiques
+@media (max-width: 1200px) {
+  .infos_cards__controls {
+    justify-content: center;
+  }
+  
+  .infos_cards__control-group {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 992px) {
+  .infos_cards__control-group {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 576px) {
+  .infos_cards__controls {
+    padding: var(--spacing-xs, 0.5rem);
+  }
+  
+  .infos_cards__control-group {
+    min-width: 100%;
+  }
+}

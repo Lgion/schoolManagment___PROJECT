@@ -8,6 +8,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
+    border-radius: 0 0 1em 1em;
     background: linear-gradient(135deg, 
       map.get($themeColors, primary) 0%, 
       color.adjust(map.get($themeColors, primary), $lightness: -10%) 100%
@@ -113,6 +114,8 @@
 
     // Section reset
     &-reset {
+      position: fixed;
+      top:0;right:0;
       display: flex;
       align-items: center;
 
