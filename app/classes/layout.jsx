@@ -4,25 +4,48 @@
 import { useContext, useState, useEffect } from 'react';
 import ClasseCard from './ClasseCard';
 import EntityModal from '../components/EntityModal';
+import DetailModal from '../../components/DetailModal';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 
 export default function ClassesPage({children}) {
   const ctx = useContext(AiAdminContext);
-  if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
+  if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
   const { classes = [], enseignants, eleves } = ctx;
   const [selected, setSelected] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailModalType, setDetailModalType] = useState(null);
+  const [detailModalEntityId, setDetailModalEntityId] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null); // null = toutes les années
-  // console.log("enseignants");
-  // console.log(enseignants);
-  // console.log("eleves");
-  // console.log(eleves);
-  
-  
 
-  return (
-    <div>
-      <h1>Liste des classes <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button></h1>
+  // Fonction pour ouvrir la modale de détail
+  const handleOpenDetailModal = (type, entityId) => {
+    setDetailModalType(type);
+    setDetailModalEntityId(entityId);
+    setShowDetailModal(true);
+  };
+
+  // Fonction pour fermer la modale de détail
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setDetailModalType(null);
+    setDetailModalEntityId(null);
+  };
+
+  // Fonction pour éditer depuis la modale de détail
+  const handleEditFromDetailModal = () => {
+    if (detailModalType === 'classe') {
+      const classe = classes.find(c => String(c._id) === String(detailModalEntityId));
+      if (classe) {
+        setSelected(classe);
+        setShowModal(true);
+        setShowDetailModal(false);
+      }
+    }
+  };
+
+  return (<>
+      <h2>Liste des classes <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button></h2>
               
               {/* Badges de filtrage par année */}
               {classes && (
@@ -102,6 +125,7 @@ export default function ClassesPage({children}) {
                                       enseignants={enseignants}
                                       eleves={eleves.filter(e => e.current_classe === classe._id)}
                                       onEdit={e => { setSelected(e); setShowModal(true); }}
+                                      onOpenModal={handleOpenDetailModal}
                                     />
                                   ))
                                 }
@@ -113,9 +137,21 @@ export default function ClassesPage({children}) {
                   :
                   <div style={{textAlign:'center',marginTop:'2em',fontSize:'1.3em'}}>Chargement...</div>
               }
+      
+      {/* Modale d'édition EntityModal */}
       {showModal && <EntityModal type="classe" entity={selected} onClose={() => setShowModal(false)} />}
+      
+      {/* Modale de détail DetailModal */}
+      {/* {showDetailModal && (
+        <DetailModal 
+          type={detailModalType}
+          entityId={detailModalEntityId}
+          onClose={handleCloseDetailModal}
+          onEdit={handleEditFromDetailModal}
+        />
+      )} */}
+      
       {children}
-    </div>
+    </>
   );
 }
-

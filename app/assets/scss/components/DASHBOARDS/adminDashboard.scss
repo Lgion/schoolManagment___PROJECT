@@ -82,6 +82,7 @@
     padding: var(--spacing-lg, 1.5rem);
     background: rgba(255, 255, 255, 0.7);
     border-radius: var(--border-radius-lg, 12px);
+    border-radius: 0 0 var(--border-radius-lg, 12px) var(--border-radius-lg, 12px);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     

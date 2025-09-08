@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useContext,useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {AiAdminContext} from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
 import PermissionGate, { RoleIndicator } from './components/PermissionGate';
@@ -14,6 +15,7 @@ import {
 } from '@clerk/nextjs';
 
 export default ({children}) => {
+  const router = useRouter();
   const { 
     eleves, 
     enseignants, 
@@ -31,6 +33,21 @@ export default ({children}) => {
     clerkUser,
     syncUser 
   } = useUserRole();
+
+  // Fonction pour gérer la navigation avec scroll automatique
+  const handleNavClick = (path) => {
+    router.push(path);
+    // Scroll vers le contenu après un délai pour permettre la navigation
+    setTimeout(() => {
+      const contentElement = document.querySelector('.ecole-admin__content');
+      if (contentElement) {
+        contentElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
+    }, 100);
+  };
 
   // Fonction pour vider toutes les données localStorage de l'app
   const clearAllAppData = () => {
@@ -118,7 +135,9 @@ export default ({children}) => {
     <header className="ecole-admin__header">
       <div className="ecole-admin__header-container">
         <div className="ecole-admin__branding">
-          <Link href={"/"} className="ecole-admin__branding-logo">🏠</Link>
+          <Link href={"/"} className="ecole-admin__branding-logo">
+            <img src="/logo.webp" alt="Logo ESMP" className="ecole-admin__branding-logo-img" />
+          </Link>
           <div>
             <h1 className="ecole-admin__branding-title">École Martin de Porres</h1>
             <p className="ecole-admin__branding-subtitle">Système de gestion scolaire</p>
@@ -127,127 +146,229 @@ export default ({children}) => {
         
         <div className="ecole-admin__headerActions">
           <div className="ecole-admin__headerActions-contact">
-            <a 
-              href="mailto:sanctuaire.rosaire.bolobi@gmail.com" 
-              className="ecole-admin__headerActions-contact-btn ecole-admin__headerActions-contact-btn--email"
-            >
-              sanctuaire.rosaire.bolobi@gmail.com
-            </a>
-            <a 
-              href="tel:+2250704763132" 
-              className="ecole-admin__headerActions-contact-btn ecole-admin__headerActions-contact-btn--phone"
-            >
-              +225 07 04 76 31 32
-            </a>
+            <div className="ecole-admin__headerActions-iconGroup">
+              <a 
+                href="mailto:sanctuaire.rosaire.bolobi@gmail.com" 
+                className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
+                data-tooltip="sanctuaire.rosaire.bolobi@gmail.com"
+              >
+                <i className="fas fa-envelope"></i>
+              </a>
+              <a 
+                href="tel:+2250704763132" 
+                className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
+                data-tooltip="+225 07 04 76 31 32"
+              >
+                <i className="fas fa-phone"></i>
+              </a>
+            </div>
           </div>
           
           
           <div className="ecole-admin__authSection">
             <SignedOut>
-              <div className="ecole-admin__authButtons">
+              <div className="ecole-admin__headerActions-iconGroup">
                 <SignInButton mode="modal">
-                  <button className="ecole-admin__authButton ecole-admin__authButton--signIn">
-                    <span className="ecole-admin__authButton-icon">🔐</span>
-                    <span className="ecole-admin__authButton-text">Se connecter</span>
+                  <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="Se connecter">
+                    <i className="fas fa-sign-in-alt"></i>
                   </button>
                 </SignInButton>
                 <SignUpButton mode="modal">
-                  <button className="ecole-admin__authButton ecole-admin__authButton--signUp">
-                    <span className="ecole-admin__authButton-icon">📝</span>
-                    <span className="ecole-admin__authButton-text">S'inscrire</span>
+                  <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="S'inscrire">
+                    <i className="fas fa-user-plus"></i>
                   </button>
                 </SignUpButton>
               </div>
             </SignedOut>
             
             <SignedIn>
-              <div className="ecole-admin__userSection">
-                <span className="ecole-admin__userSection-welcome">Bienvenue</span>
-                {!loading && userData && <RoleIndicator />}
-                <UserButton 
-                  appearance={{
-                    elements: {
-                      avatarBox: "ecole-admin__userAvatar"
-                    }
-                  }}
-                />
+              <div className="ecole-admin__headerActions-iconGroup">
+                <div className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--account" data-tooltip="Mon compte">
+                  <UserButton 
+                    appearance={{
+                      elements: {
+                        avatarBox: "ecole-admin__userAvatar"
+                      }
+                    }}
+                  />
+                </div>
+                {!loading && userData && (
+                  <div className="ecole-admin__headerActions-roleIndicator">
+                    <RoleIndicator />
+                  </div>
+                )}
               </div>
             </SignedIn>
           </div>
         </div>
       </div>
-    </header>
 
-    {/* Navigation sticky pour utilisateurs connectés */}
-    <SignedIn>
-      {!loading && (
-        <nav className="ecole-admin__stickyNav" role="navigation" aria-label="Navigation principale">
-          <div className="ecole-admin__stickyNav-tabs">
-            <PermissionGate role="admin">
-              <Link href="/classes" className="ecole-admin__stickyNav-tab" aria-label="Gérer les classes">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Classes">🏫</span>
-                <span className="ecole-admin__stickyNav-tab-text">Classes</span>
-                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${classes?.length || 0} classes`}>
-                  {classes?.length || 0}
-                </span>
-              </Link>
-              <Link href="/eleves" className="ecole-admin__stickyNav-tab" aria-label="Gérer les élèves">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
-                <span className="ecole-admin__stickyNav-tab-text">Élèves</span>
-                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${eleves?.length || 0} élèves`}>
-                  {eleves?.length || 0}
-                </span>
-              </Link>
-              <Link href="/enseignants" className="ecole-admin__stickyNav-tab" aria-label="Gérer les enseignants">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Enseignants">👨‍🏫</span>
-                <span className="ecole-admin__stickyNav-tab-text">Enseignants</span>
-                <span className="ecole-admin__stickyNav-tab-badge" aria-label={`${enseignants?.length || 0} enseignants`}>
-                  {enseignants?.length || 0}
-                </span>
-              </Link>
-              <Link href="/scheduling" className="ecole-admin__stickyNav-tab" aria-label="Gestion du planning">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
-                <span className="ecole-admin__stickyNav-tab-text">Planning</span>
-              </Link>
-              <Link href="/rapports" className="ecole-admin__stickyNav-tab" aria-label="Consulter les rapports">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Rapports">📊</span>
-                <span className="ecole-admin__stickyNav-tab-text">Rapports</span>
-              </Link>
-            </PermissionGate>
-            
-            <PermissionGate role="prof">
-              <Link href="/prof/classes" className="ecole-admin__stickyNav-tab" aria-label="Mes classes">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Classes">🏫</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mes Classes</span>
-              </Link>
-              <Link href="/prof/eleves" className="ecole-admin__stickyNav-tab" aria-label="Mes élèves">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mes Élèves</span>
-              </Link>
-              <Link href="/prof/planning" className="ecole-admin__stickyNav-tab" aria-label="Mon planning">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
-              </Link>
-            </PermissionGate>
-            
-            <PermissionGate role="eleve">
-              <Link href="/eleve/notes" className="ecole-admin__stickyNav-tab" aria-label="Consulter mes notes">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Notes">📝</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mes Notes</span>
-              </Link>
-              <Link href="/eleve/planning" className="ecole-admin__stickyNav-tab" aria-label="Mon planning de cours">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Planning">📅</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mon Planning</span>
-              </Link>
-              <Link href="/eleve/devoirs" className="ecole-admin__stickyNav-tab" aria-label="Consulter mes devoirs">
-                <span className="ecole-admin__stickyNav-tab-icon" role="img" aria-label="Devoirs">📚</span>
-                <span className="ecole-admin__stickyNav-tab-text">Mes Devoirs</span>
-              </Link>
-            </PermissionGate>
-          </div>
-        </nav>
-      )}
-    </SignedIn>
+      {/* Dashboard adaptatif selon le rôle */}
+      {/* <SignedIn> */}
+      {loading ? (
+          <section className="ecole-admin__loading">
+            <div className="ecole-admin__loader">
+              <span className="ecole-admin__loader-icon">⏳</span>
+              <span className="ecole-admin__loader-text">Chargement de votre espace...</span>
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* Dashboard ADMIN */}
+              <section className="ecole-admin__adminDashboard">                
+                <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
+                  <Link href="/eleves" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
+                    <span role="img" aria-label="Élève">👨‍🎓</span>
+                    <strong>Gérer les élèves</strong>
+                  </Link>
+                  <Link href="/enseignants" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
+                    <span role="img" aria-label="Enseignant">👨‍🏫</span>
+                    <strong>Gérer les enseignants</strong>
+                  </Link>
+                  <Link href="/classes" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
+                    <span role="img" aria-label="École">🏫</span>
+                    <strong>Gérer les classes</strong>
+                  </Link>
+                  <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
+                    <span role="img" aria-label="Utilisateurs">👥</span>
+                    <strong>Gestion des utilisateurs</strong>
+                  </Link>
+                  <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
+                    <span role="img" aria-label="Paramètres">⚙️</span>
+                    <strong>Paramètres système</strong>
+                  </Link>
+                </nav>
+
+                {/* <article className="ecole-admin__stats">
+                  <div className="ecole-admin__stats-row">
+                    <div className="ecole-admin__stats-col">
+                      <h2 className="ecole-admin__stats-title">Statistiques globales: </h2>
+                      <span className="ecole-admin__stats-value"><u>Nombre d'élèves:</u> {eleves?.length || 0}</span>
+                      <span className="ecole-admin__stats-value"><u>Nombre d'enseignants:</u> {enseignants?.length || 0}</span>
+                      <span className="ecole-admin__stats-value"><u>Nombre de classes:</u> {classes?.length || 0}</span>
+                    </div>
+                  </div>
+                </article> */}
+                
+              </section>
+          </>
+        )}
+      {/* </SignedIn> */}
+      {/* Navigation sticky intégrée dans le header */}
+      <SignedIn>
+        {!loading && (
+          <nav className="ecole-admin__header-nav" role="navigation" aria-label="Navigation principale">
+            <div className="ecole-admin__header-nav-tabs">
+                <PermissionGate role="admin">
+                  <button 
+                    onClick={() => handleNavClick('/classes')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Gérer les classes"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Classes">🏫</span>
+                    <span className="ecole-admin__header-nav-tab-text">Classes</span>
+                    <span className="ecole-admin__header-nav-tab-badge" aria-label={`${classes?.length || 0} classes`}>
+                      {classes?.length || 0}
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/eleves')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Gérer les élèves"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
+                    <span className="ecole-admin__header-nav-tab-text">Élèves</span>
+                    <span className="ecole-admin__header-nav-tab-badge" aria-label={`${eleves?.length || 0} élèves`}>
+                      {eleves?.length || 0}
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/enseignants')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Gérer les enseignants"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Enseignants">👨‍🏫</span>
+                    <span className="ecole-admin__header-nav-tab-text">Enseignants</span>
+                    <span className="ecole-admin__header-nav-tab-badge" aria-label={`${enseignants?.length || 0} enseignants`}>
+                      {enseignants?.length || 0}
+                    </span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/scheduling')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Gestion du planning"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Planning">📅</span>
+                    <span className="ecole-admin__header-nav-tab-text">Planning</span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/rapports')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Consulter les rapports"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Rapports">📊</span>
+                    <span className="ecole-admin__header-nav-tab-text">Rapports</span>
+                  </button>
+                </PermissionGate>
+                
+                <PermissionGate role="prof">
+                  <button 
+                    onClick={() => handleNavClick('/prof/classes')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Mes classes"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Classes">🏫</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mes Classes</span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/prof/eleves')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Mes élèves"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Élèves">👨‍🎓</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mes Élèves</span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/prof/planning')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Mon planning"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Planning">📅</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mon Planning</span>
+                  </button>
+                </PermissionGate>
+                
+                <PermissionGate role="eleve">
+                  <button 
+                    onClick={() => handleNavClick('/eleve/notes')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Consulter mes notes"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Notes">📝</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mes Notes</span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/eleve/planning')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Mon planning de cours"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Planning">📅</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mon Planning</span>
+                  </button>
+                  <button 
+                    onClick={() => handleNavClick('/eleve/devoirs')}
+                    className="ecole-admin__header-nav-tab" 
+                    aria-label="Consulter mes devoirs"
+                  >
+                    <span className="ecole-admin__header-nav-tab-icon" role="img" aria-label="Devoirs">📚</span>
+                    <span className="ecole-admin__header-nav-tab-text">Mes Devoirs</span>
+                  </button>
+                </PermissionGate>
+              </div>
+            </nav>
+          )}
+        </SignedIn>
+    </header>
 
     {/* Dashboard pour utilisateurs non connectés */}
     {/*
@@ -279,61 +400,10 @@ export default ({children}) => {
     </SignedOut>
     */}
 
-    {/* Dashboard adaptatif selon le rôle */}
-    {/* <SignedIn> */}
-      {loading ? (
-        <section className="ecole-admin__loading">
-          <div className="ecole-admin__loader">
-            <span className="ecole-admin__loader-icon">⏳</span>
-            <span className="ecole-admin__loader-text">Chargement de votre espace...</span>
-          </div>
-        </section>
-      ) : (
-        <>
-          {/* Dashboard ADMIN */}
-            <section className="ecole-admin__adminDashboard">
-              <h2 className="ecole-admin__dashboardTitle">
-                👑 Tableau de bord Administrateur
-              </h2>
-              
-              <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
-                <Link href="/eleves" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
-                  <span role="img" aria-label="Élève">👨‍🎓</span>
-                  <strong>Gérer les élèves</strong>
-                </Link>
-                <Link href="/enseignants" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
-                  <span role="img" aria-label="Enseignant">👨‍🏫</span>
-                  <strong>Gérer les enseignants</strong>
-                </Link>
-                <Link href="/classes" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
-                  <span role="img" aria-label="École">🏫</span>
-                  <strong>Gérer les classes</strong>
-                </Link>
-                <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
-                  <span role="img" aria-label="Utilisateurs">👥</span>
-                  <strong>Gestion des utilisateurs</strong>
-                </Link>
-                <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
-                  <span role="img" aria-label="Paramètres">⚙️</span>
-                  <strong>Paramètres système</strong>
-                </Link>
-              </nav>
-
-              <article className="ecole-admin__stats">
-                <div className="ecole-admin__stats-row">
-                  <div className="ecole-admin__stats-col">
-                    <h2 className="ecole-admin__stats-title">Statistiques globales: </h2>
-                    <span className="ecole-admin__stats-value"><u>Nombre d'élèves:</u> {eleves?.length || 0}</span>
-                    <span className="ecole-admin__stats-value"><u>Nombre d'enseignants:</u> {enseignants?.length || 0}</span>
-                    <span className="ecole-admin__stats-value"><u>Nombre de classes:</u> {classes?.length || 0}</span>
-                  </div>
-                </div>
-              </article>
-            </section>
-        </>
-      )}
-    {/* </SignedIn> */}
     <section className="ecole-admin__content home">
+      <h1 className="ecole-admin__dashboardTitle">
+        👑 Tableau de bord Administrateur
+      </h1>
       {children}
     </section>
   </main>

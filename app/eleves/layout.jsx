@@ -93,9 +93,9 @@ export default function EcoleAdminEleveLayout({ children }) {
         });
     }, [eleves])
     
-    return (<div>
-        <h1>Liste des élèves <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h1>
-        <div className="infos_cards" style={{position: 'relative', height: 200, display: "flex", alignItems: 'center', gap: '20px'}}>
+    return (<>
+        <h2>Liste des élèves <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h2>
+        <form className="infos_cards" style={{position: 'relative', height: 200, display: "flex", alignItems: 'center', gap: '20px'}}>
             <canvas ref={canvasRef} id="camembert"></canvas>
             <div className="infos_cards__controls">
                 {/* Recherche textuelle */}
@@ -194,11 +194,11 @@ export default function EcoleAdminEleveLayout({ children }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </form>
         
 
         {eleves ? 
-            <div className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
+            <ul className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
                 {eleves
                     .filter(eleve => {
                         // Filtre par classe
@@ -259,7 +259,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                         viewMode={viewMode}
                         />
                 ))}
-            </div>
+            </ul>
             :
             <div style={{textAlign:'center',marginTop:'2em',fontSize:'1.3em'}}>Chargement...</div>
         }
@@ -267,5 +267,5 @@ export default function EcoleAdminEleveLayout({ children }) {
         {showModal && <EntityModal type="eleve" entity={selected} onClose={() => setShowModal(false)} classes={ctx.classes || []} />}
 
         {children}
-    </div>)
+    </>)
 }

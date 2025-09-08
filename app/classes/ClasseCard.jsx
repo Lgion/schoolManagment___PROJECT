@@ -1,11 +1,13 @@
 // Carte d'affichage d'une classe (ClasseCard)
 import React from "react";
 import Link from "next/link";
+import { useDetailPortal } from '../../stores/useDetailPortal';
 import './ClasseCard.scss';
 import { getClasseImagePath } from '../../utils/imageUtils';
 
-export default function ClasseCard({ classe, enseignants, onEdit, onClick }) {
+export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal }) {
   if (!classe) return null;
+  const { openPortal } = useDetailPortal();
   
   // Gestion sécurisée du professeur principal
   let enseignantObj = null
@@ -47,13 +49,14 @@ export default function ClasseCard({ classe, enseignants, onEdit, onClick }) {
       }
     }
   }
-  
 
-  
-  
   return (
     <div className="person-card-wrapper" style={{position:'relative'}}>
-      <Link href={`/classes/${classe._id}`} className="classe-card" tabIndex={0}>
+      <Link 
+        href={`/classes/${classe._id}`}
+        className="classe-card" 
+        tabIndex={0}
+      >
         <div className="classe-card__header">
           <span className="classe-card__niveau">{classe.niveau}</span>
           <span className="classe-card__alias">{classe.alias}</span>

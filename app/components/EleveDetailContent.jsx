@@ -1,42 +1,39 @@
- "use client";
-import { useContext,useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { AiAdminContext } from '../../../stores/ai_adminContext';
-import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
-import Gmap from '../../_/Gmap_plus';
-import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
-import ClasseEnseignantDisplay from '../../components/ClasseEnseignantDisplay';
+"use client"
 
-export default function ElevePage() {
-  const { id } = useParams();
-  const router = useRouter();
+import { useContext, useEffect, useState } from "react";
+import { AiAdminContext } from '../../stores/ai_adminContext';
+import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
+import Gmap from '../_/Gmap_plus';
+import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
+import ClasseEnseignantDisplay from '../components/ClasseEnseignantDisplay';
+
+export default function EleveDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
-  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
+  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
+  
   const getDefaultSchoolYear = (compositions) => {
     const keys = Object.keys(compositions || {});
     if (keys.length > 0) return keys[0];
     const now = new Date();
     return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
   };
-    useEffect(() => { 
-        ctx.fetchEleves && ctx.fetchEleves(); 
-        ctx.fetchClasses && ctx.fetchClasses(); 
-    }, []);
   
-  // DEBUG : log ids pour comprendre le bug
-  console.log('params id:', id, 'eleves ids:', (ctx.eleves||[]).map(e=>e._id));
-  console.log(ctx.eleves);
+  useEffect(() => { 
+    ctx.fetchEleves && ctx.fetchEleves(); 
+    ctx.fetchClasses && ctx.fetchClasses(); 
+  }, []);
+  
   const { setSelected, showModal, setShowModal } = ctx;
-  
-  const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
-  const [gmapOpen, setGmapOpen] = useState(false)
+  const { entity: eleve, classe } = useEntityDetail(entityId, ctx, 'eleves');
+  const [gmapOpen, setGmapOpen] = useState(false);
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
+  
   if (!eleve) return <div style={{color:'red'}}>Élève introuvable</div>;
-
 
   // Récupère toutes les années de scolarité pour progression globale
   const allFees = eleve.scolarity_fees_$_checkbox || {};
   const onEdit = e => { setSelected(e); setShowModal(true); }
+  
   // Fusionne tous les dépôts pour une progression globale
   let totalArgent = 0, totalRiz = 0;
   Object.values(allFees).forEach(fees => {
@@ -45,24 +42,9 @@ export default function ElevePage() {
       if (v.riz) totalRiz += Number(v.riz);
     });
   });
-  console.log(eleve);
   
-  return !eleve ? <div>....loading.....</div>
-    : <main className="person-detail">
-      {/* <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        onClick={() => router.back()}
-      >✕</button> */}
-      <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        title="Réduire la fenêtre"
-        onClick={e => {
-          e.preventDefault();
-          e.target.parentNode.classList.toggle('--reduce')
-        }}
-      >_</button>
+  return (
+    <main className="person-detail">
       {onEdit && !showModal &&(
         <button
           type="button"
@@ -79,10 +61,6 @@ export default function ElevePage() {
       <img className="person-detail__photo" 
         src={eleve.photo_$_file} 
         alt="" 
-        title="Réduire la fenêtre"
-        onClick={e => {
-          e.target.parentNode.classList.toggle('--reduce')
-        }}
       />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
       <ClasseDisplay classe={classe} label="En classe de:" />
@@ -106,8 +84,6 @@ export default function ElevePage() {
       <Parent parents={eleve.parents} />
 
       <IsInterneBlock form={eleve} />
-
-      {/* <DocumentsBlock form={eleve} readOnly={true} /> */}
 
       <AbsencesBlock absences={eleve.absences} />
 
@@ -142,4 +118,5 @@ export default function ElevePage() {
         <CommentairesBlock commentaires={eleve.commentaires} />
       </div>
     </main>
+  );
 }

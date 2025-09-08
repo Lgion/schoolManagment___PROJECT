@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useNavigationWithLoading } from '../../stores/useNavigationWithLoading';
 import { useLoading } from '../../stores/useLoading';
+import { useDetailPortal } from '../../stores/useDetailPortal';
 
 /**
  * Composant pour intercepter les clics de navigation et gérer le loading
@@ -11,6 +12,7 @@ import { useLoading } from '../../stores/useLoading';
 const NavigationInterceptor = () => {
   const { navigateWithLoading } = useNavigationWithLoading();
   const { startLoading, stopLoading } = useLoading();
+  const { openPortal } = useDetailPortal();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -27,6 +29,33 @@ const NavigationInterceptor = () => {
       '.person-card__editbtn',
       '.person-detail__editbtn'
     ];
+
+    // Fonction pour détecter les routes de détail
+    const isDetailRoute = (url) => {
+      const detailPatterns = [
+        /^\/eleves\/[^\/]+$/,
+        /^\/enseignants\/[^\/]+$/,
+        /^\/classes\/[^\/]+$/
+      ];
+      return detailPatterns.some(pattern => pattern.test(url));
+    };
+
+    // Fonction pour extraire les infos de la route
+    const parseDetailRoute = (url) => {
+      if (url.match(/^\/eleves\/([^\/]+)$/)) {
+        const id = url.match(/^\/eleves\/([^\/]+)$/)[1];
+        return { type: 'eleve', id, icon: '👨‍🎓' };
+      }
+      if (url.match(/^\/enseignants\/([^\/]+)$/)) {
+        const id = url.match(/^\/enseignants\/([^\/]+)$/)[1];
+        return { type: 'enseignant', id, icon: '👨‍🏫' };
+      }
+      if (url.match(/^\/classes\/([^\/]+)$/)) {
+        const id = url.match(/^\/classes\/([^\/]+)$/)[1];
+        return { type: 'classe', id, icon: '🏫' };
+      }
+      return null;
+    };
 
     // Fonction pour gérer les clics interceptés
     const handleNavigationClick = async (event) => {
@@ -63,6 +92,29 @@ const NavigationInterceptor = () => {
 
       // Si on a trouvé une URL de navigation
       if (navigationUrl) {
+        // Vérifier si c'est une route de détail à intercepter
+        if (isDetailRoute(navigationUrl)) {
+          const routeInfo = parseDetailRoute(navigationUrl);
+          
+          if (routeInfo) {
+            // Empêcher la navigation par défaut
+            event.preventDefault();
+            event.stopPropagation();
+
+            console.log('🎯 Route de détail interceptée:', navigationUrl, '→ Portal');
+            
+            // Remplacer l'URL actuelle sans ajouter d'entrée dans l'historique
+            window.history.replaceState({}, '', navigationUrl);
+            
+            // Ouvrir dans le portal au lieu de naviguer
+            const title = `${routeInfo.type} ${routeInfo.id}`;
+            openPortal(routeInfo.type, routeInfo.id, title, routeInfo.icon);
+            
+            return;
+          }
+        }
+
+        // Pour les autres routes, navigation normale
         // Empêcher la navigation par défaut
         event.preventDefault();
         event.stopPropagation();

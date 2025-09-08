@@ -3,11 +3,13 @@
 
 import { useContext,useRef, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import { useDetailPortal } from '../../stores/useDetailPortal';
 import EntityModal from '../components/EntityModal';
 import PersonCard from '../components/PersonCard';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
+    const { openPortal } = useDetailPortal();
     if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
     const {enseignants, classes, selected, setSelected, showModal, setShowModal} = ctx
 
@@ -19,8 +21,8 @@ export default function EcoleAdminEleveLayout({ children }) {
 
     console.log(enseignants);
     console.log(enseignants);
-    return (<div>
-        <h1>Liste des enseignants <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button></h1>
+    return (<>
+        <h2>Liste des enseignants <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button></h2>
         
         {/* Contrôles de filtrage et tri */}
         <div className="infos_cards__controls">
@@ -141,5 +143,5 @@ export default function EcoleAdminEleveLayout({ children }) {
         }
         {showModal && <EntityModal type="enseignant" entity={selected} onClose={() => setShowModal(false)} classes={ctx.classes || []} />}
         {children}
-    </div>)
+    </>)
 }

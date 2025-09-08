@@ -833,7 +833,8 @@ section>div:has(.modal){
 
 .eleves-list,.enseignants-list,.classes-list {
   display: flex;
-  flex-wrap: wrap;
+  // flex-flow: nowrap;
+  overflow-x: scroll;
   gap: 1.3em 2.1em;
   justify-content: flex-start;
   margin: 2em 0 1em 0;
@@ -1529,6 +1530,7 @@ section>div:has(.modal){
     gap: 1em;
     position: sticky;
     z-index: 10;
+    padding-bottom: 2em;
   }
 
   &__title {
@@ -2054,6 +2056,15 @@ section>div:has(.modal){
   &__publicUserDashboard {
     padding: 2em 0;
   }
+  &__adminDashboard{
+    background:none;
+    position: absolute;
+    top: calc(100% - 1em);
+    left: 0;
+    padding:0;
+    margin: 0;
+    width: 100%;
+  }
 
   &__publicMessage {
     padding: 0 2em 2em;
@@ -2197,10 +2208,9 @@ section>div:has(.modal){
     flex-flow: wrap;
     justify-content: space-evenly;
     gap: 24px;
-    margin-top: 32px;
-    margin-bottom: 2.2em;
-    background: silver;
     padding: 1em;
+    margin:0;
+    background: transparent;
 
     &-btn {
       font-size: 1.1em;

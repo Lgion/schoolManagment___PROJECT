@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { useDetailPortal } from '../../stores/useDetailPortal';
 import './EleveCard.scss';
 
 // Utilitaire pour progression scolarité (argent/riz)
@@ -25,6 +26,7 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
   const progress = getScolarityProgress(fees);
+  const { openPortal } = useDetailPortal();
   
   // Couleur de fond selon le sexe
   const getBackgroundColor = (sexe) => {
@@ -37,8 +39,13 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
   };
 
   return (
-    <div className="eleve-card-wrapper" style={{position:'relative'}}>
-      <Link href={`/eleves/${eleve._id}`} className={`eleve-card ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`} tabIndex={0} style={{backgroundColor: getBackgroundColor(eleve.sexe)}}>
+    <li className="eleve-card-wrapper" style={{position:'relative'}}>
+      <Link 
+        href={`/eleves/${eleve._id}`} 
+        className={`eleve-card ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`} 
+        tabIndex={0} 
+        style={{backgroundColor: getBackgroundColor(eleve.sexe)}}
+      >
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
         <div className="eleve-card__infos">
           <div className="eleve-card__name">{eleve.nom} <span className="eleve-card__prenoms">{prenoms}</span></div>
@@ -68,6 +75,6 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
           >Éditer</button>
         )}
       </Link>
-    </div>
+    </li>
   );
 }

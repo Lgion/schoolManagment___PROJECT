@@ -1,5 +1,5 @@
 export default () => <section>
-    <h1>LISTE DES CHOSES ENCORE À RÉALISÉ SELON PROPOSITIONS GEMINI: </h1>
+    <h2>Liste DES CHOSES ENCORE À RÉALISÉ SELON PROPOSITIONS GEMINI: </h2>
     <a target='_blank' href="https://gemini.google.com/app/951a0c213d4a23a1?hl=fr">Conversation Gemini (athéna)</a>
     <ul>
     <li>Dans le layout des classes, on peut rajouter:
