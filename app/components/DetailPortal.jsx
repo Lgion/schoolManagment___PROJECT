@@ -8,9 +8,10 @@ import { useRouter } from 'next/navigation';
  * Composant Portal générique pour wrapper le contenu des pages /[id] dans une modale
  * Réutilise les styles existants de DetailModal
  */
-export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋" }) {
+export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", reduced = [false, () => {}]  }) {
   const [isClosing, setIsClosing] = useState(false);
   const router = useRouter();
+  const [isReduced,setIsReduced] = reduced
   
   // Gestion de la fermeture avec animation
   const handleClose = () => {
@@ -34,15 +35,14 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
         handleClose();
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden'; // Empêcher le scroll du body
+    document.body.style.overflow = !isReduced ? 'hidden' : "visible"; // Empêcher le scroll du body
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isOpen, isReduced]);
 
   // Gestion du clic sur l'overlay
   const handleOverlayClick = (e) => {
@@ -56,16 +56,26 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
 
   return createPortal(
     <div 
-      className={`detailModal ${isClosing ? 'detailModal--closing' : ''}`}
+      className={`detailModal ${isClosing ? 'detailModal--closing' : ''} ${isReduced ? 'off' : ''}`}
       onClick={handleOverlayClick}
     >
-      <div className="detailModal__overlay" />
-      <div className="detailModal__container">
-        <div className="detailModal__header">
+      <div className={"detailModal__overlay"+(isReduced ? ' off' : '')} />
+      <div className={"detailModal__container"+(isReduced ? ' off' : '')}>
+        <div className={"detailModal__header"+(isReduced ? ' off' : '')}>
           <h2 className="detailModal__title">
             <span className="detailModal__titleIcon">{icon}</span>
             {title}
           </h2>
+          <button
+            className="person-detail__reduce"
+            aria-label="Fermer"
+            title="Réduire la fenêtre"
+            onClick={e => {
+              e.preventDefault();
+              // e.target.parentNode.classList.toggle('--reduce')
+              setIsReduced(!isReduced)
+            }}
+          >_</button>
           <button 
             className="detailModal__closeBtn"
             onClick={handleClose}
@@ -75,7 +85,7 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
           </button>
         </div>
         
-        <div className="detailModal__content">
+        <div className={"detailModal__content"+(isReduced ? ' off' : '')}>
           {children}
         </div>
       </div>

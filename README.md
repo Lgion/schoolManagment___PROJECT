@@ -20,23 +20,35 @@ DONE
     - afficher une photo iconique  de ESMP à la place de l'icone, puis placer une photo de l'école en fond du header à la place de la couleur bleuatre actuelle
     - avoir une jolie animation pour le texte "École Martin de Porrès de Bolobi"
     - mettre icones de contact, signin/up/out, account, et créer un affichage au survol standardisé pour les 3 (jolies effets, positions définis, mais semblables pour les 3) 
+WIP 90% -- need to be customizable
 - correctifs mobile:
     - le menu de navigation doit etre dans le header (donc toujours accéssible en sticky)
-    - au clic sur menu navigation, le scroll doit basculer en bas jusqu'à le contenu
-    - la largeur de la modal d'affichage doit etre mieux géré, le scroll horizontale doit etre éliminé
+    DONE
+    - au clic sur m enu navigation, le scroll doit basculer en bas jusqu'au contenu fraichement affiché (.ecole-admin__content)
+    SOLVED
+    - la largeur de la modal d'affichage doit etre mieux géré (notamment pour le responsive), le scroll horizontale doit etre éliminé
+    SOLVED
     - la largeur de la modal d'édition doit etre mieux géré
+    SOLVED
     - un bouton fermé sur les modales doit etre réintégré
+    SOLVED
     - le contenu des modales de eleve, prof ou classe, doit etre du contenu fordable et foldé par défaut, et le toggle du fold doit etre au clic sur le titre concerné
+    DONE
     - qlq problemes css:
         - réduire une modale (eleve,prof ou classe) doit etre UX design ready (no css bug)
+        DONE
         - la modale doit s'afficher en fixed, et permettre le scroll vertical de son contenu
-    - l'affichage du filtre (eleve,rpof,classe) doit etre corrigé, le mode ligne/grille semble avoir un légé bug encore
+        DONE
+    - l'affichage du filtre (eleve,prof,classe) doit etre corrigé
+    DONE
+    - le mode ligne/grille du filtre semble avoir un légé bug encore
 
 - lors de l'enregistrement d'une classe, eleve ou prof, il faut que l'on puisse utiliser la caméra du péroiphérique pour persister la photo en base
 WIP
 - sur page Classes, mettre un tableau récapitulatif des notes (comme sur les feuille papier), il doit etre possible de filtrer alphébétioquement ou par moyenne. Ce doit etre un module qui avec boutons permettants de choisir la composition désirée.
 - le systeme de gestion et présentation des paiements des frais de scolarité et d'internat
 - la gestion et présentation des absence (abandon)
+- quand on clique et que le loading apparait, il faut aussi qu'en meme temps le contenu en cours prennent une opacity:0; en transition, où alors lui rajouter une propriété pointer-events:none; afin d'empecher toute intéraction pendant le loading
 
 
 

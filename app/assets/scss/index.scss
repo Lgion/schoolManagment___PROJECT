@@ -4,6 +4,7 @@
 @use 'variables' as *;
 @use 'layouts/headers' as *;
 @use 'components/MODALS/entityModal.scss';
+@use 'components/MODALS/detailModal.scss';
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
 @import "./main.scss";
 @import "./components/LOADERS/spinLoader.scss";
@@ -18,6 +19,9 @@ $secondary-color: map.get($themeColors, secondary);
 $font-primary: $primaryFont;
 $font-secondary: $secondaryFont;
 
+#camembert{
+  // background: white;
+}
 .person-detail {
   @extend %entityModal__container;
   position: relative;
@@ -29,6 +33,8 @@ $font-secondary: $secondaryFont;
     inset: 150px 0px 55% 85%;
     padding:0;
     overflow:hidden;
+    background: transparent;
+    box-shadow:none;
     &.--{
       inset:160px 0px 60% 90%;
     }
@@ -41,7 +47,7 @@ $font-secondary: $secondaryFont;
     display: none !important;
   }
   
-  &__close {
+  &__close,&__reduce {
     padding: .1em .45em;
     position:absolute;
     left:calc(50% + 3em);
@@ -100,7 +106,13 @@ $font-secondary: $secondaryFont;
     border-radius: 50%;
     border: 4px solid rgba(255,255,255,0.3);
     box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    object-fit: cover;
+  }
+  &.--reduce{
+    .person-detail__photo,.person-detail__header{
+      object-fit: cover;
+      border: solid red;
+      filter: drop-shadow(2px 4px 6px gold);
+    }
   }
 
   &__editbtn {
@@ -455,10 +467,13 @@ $font-secondary: $secondaryFont;
   &__container{
     box-shadow: 0 0 22px .1px !important;
   }
+  &.modal{
+    inset:0;
+  }
 }
 .modal {
   margin-bottom:3em;
-  z-index: 11;
+  z-index: 10000;
   &__container {
     max-width: 95vw;
     // max-height: 90vh;

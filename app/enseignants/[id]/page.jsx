@@ -5,11 +5,14 @@ import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../..//stores/ai_adminContext';
 import Gmap from '../../_/Gmap_plus';
 import { useEntityDetail, ClasseDisplay, MultiClasseDisplay } from '../../../utils/classeUtils';
+import DetailPortal from "../../components/DetailPortal";
 
 export default function EnseignantDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
+  const [isReduced, setIsReduced] = useState(false);
+  
   if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
   useEffect(() => {
     ctx.fetchEnseignants && ctx.fetchEnseignants();
@@ -17,9 +20,9 @@ export default function EnseignantDetailPage() {
     ctx.fetchEleves && ctx.fetchEleves();
   }, []);
 
-  const { setSelected, showModal, setShowModal } = ctx;
+  const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const { entity: enseignant, classe } = useEntityDetail(id, ctx, 'enseignants');
-  const [gmapOpen, setGmapOpen] = useState(false)
+  const [gmapOpen, setGmapOpen] = useState(false);
 
   if (!enseignant) return <div style={{color:'red'}}>Enseignant introuvable</div>;
 
@@ -34,27 +37,19 @@ export default function EnseignantDetailPage() {
   );
 
   return !enseignant ? <div>....loading.....</div>
-    : <div className="person-detail" style={{position:'relative'}}>
-      {/* <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        onClick={() => router.back()}
-      >✕</button> */}
-      <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        title="Réduire la fenêtre"
-        onClick={e => {
-          e.preventDefault();
-          e.target.parentNode.classList.toggle('--reduce')
-          e.target.parentNode.classList.toggle('--')
-        }}
-      >_</button>
+    : 
+    <DetailPortal
+      isOpen={true}
+      onClose={()=>router.back()}
+      title={`Enseignant ${enseignant.nom} ${enseignant.prenoms}`}
+      icon={"👨‍🏫"}
+      reduced={[isReduced,setIsReduced]}
+    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
       {setSelected && !showModal && (
         <button
           type="button"
           className="person-detail__editbtn"
-          onClick={e => { e.stopPropagation(); e.preventDefault(); setSelected(enseignant); setShowModal(true); }}
+          onClick={e => { e.stopPropagation(); e.preventDefault(); setSelected(enseignant); setEditType("enseignant"); setShowModal(true); }}
           tabIndex={0}
         >Éditer</button>
       )}
@@ -92,9 +87,10 @@ export default function EnseignantDetailPage() {
               }}
               onClick={e => {
                 e.preventDefault();
-                e.target.closest('.person-detail').classList.toggle('--reduce')
-                e.target.closest('.person-detail').classList.toggle('--')
-              }}
+                // e.target.closest('.person-detail').classList.toggle('--reduce')
+                // e.target.closest('.person-detail').classList.toggle('--')
+                setIsReduced(!isReduced)
+              }}  
             />
           </div>
         </div>
@@ -198,5 +194,6 @@ export default function EnseignantDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
+    </DetailPortal>
 }

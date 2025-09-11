@@ -59,7 +59,7 @@ export default function ClasseEnseignantDisplay({ classe, label = "Enseignant de
         </Link>
       ) : (
         <div className="classe-enseignant-display__empty">
-          Aucun enseignant attribué
+          Aucun enseignant attribué à cette classe (<b>{classe.niveau} - {classe.alias}</b>)
         </div>
       )}
     </div>

@@ -42,7 +42,7 @@ export default function EleveDetailContent({ entityId }) {
       if (v.riz) totalRiz += Number(v.riz);
     });
   });
-  
+  alert('okkkk')
   return (
     <main className="person-detail">
       {onEdit && !showModal &&(

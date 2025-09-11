@@ -3,14 +3,13 @@
 import Chart from "chart.js/auto"
 import { useContext, useRef, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import EntityModal from '../components/EntityModal';
 import EleveCard from './EleveCard';
 import './EleveCard.scss';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
     if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
-    const {eleves, selected, setSelected, showModal, setShowModal} = ctx
+    const {eleves, selected, setSelected, showModal, setShowModal, setEditType} = ctx
     const canvasRef = useRef();
     const chartInstance = useRef(null);
     const [filterByClasse, setFilterByClasse] = useState('toutes'); // 'toutes' ou niveau spécifique
@@ -94,8 +93,8 @@ export default function EcoleAdminEleveLayout({ children }) {
     }, [eleves])
     
     return (<>
-        <h2>Liste des élèves <button onClick={() => { setSelected(null); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h2>
-        <form className="infos_cards" style={{position: 'relative', height: 200, display: "flex", alignItems: 'center', gap: '20px'}}>
+        <h2>Liste des élèves <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h2>
+        <form className="infos_cards">
             <canvas ref={canvasRef} id="camembert"></canvas>
             <div className="infos_cards__controls">
                 {/* Recherche textuelle */}
@@ -196,6 +195,7 @@ export default function EcoleAdminEleveLayout({ children }) {
             </div>
         </form>
         
+        <hr />
 
         {eleves ? 
             <ul className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
@@ -255,7 +255,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                         key={eleve._id}
                         classe={(ctx.classes || []).find(c => c._id === eleve.current_classe) || {}}
                         eleve={eleve}
-                        onEdit={e => { setSelected(e); setShowModal(true); }}
+                        onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
                         viewMode={viewMode}
                         />
                 ))}
@@ -263,8 +263,6 @@ export default function EcoleAdminEleveLayout({ children }) {
             :
             <div style={{textAlign:'center',marginTop:'2em',fontSize:'1.3em'}}>Chargement...</div>
         }
-
-        {showModal && <EntityModal type="eleve" entity={selected} onClose={() => setShowModal(false)} classes={ctx.classes || []} />}
 
         {children}
     </>)
