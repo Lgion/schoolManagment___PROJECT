@@ -61,9 +61,8 @@ const NavigationInterceptor = () => {
     const handleNavigationClick = async (event) => {
       const target = event.target;
       const clickedElement = target.closest(targetSelectors.join(', '));
-      
       if (!clickedElement) return;
-
+      
       // Vérifier si c'est un lien ou un élément avec navigation
       let navigationUrl = null;
       
@@ -93,26 +92,26 @@ const NavigationInterceptor = () => {
       // Si on a trouvé une URL de navigation
       if (navigationUrl) {
         // Vérifier si c'est une route de détail à intercepter
-        if (isDetailRoute(navigationUrl)) {
-          const routeInfo = parseDetailRoute(navigationUrl);
+        // if (isDetailRoute(navigationUrl)) {
+        //   const routeInfo = parseDetailRoute(navigationUrl);
           
-          if (routeInfo) {
-            // Empêcher la navigation par défaut
-            event.preventDefault();
-            event.stopPropagation();
+        //   if (routeInfo) {
+        //     // Empêcher la navigation par défaut
+        //     event.preventDefault();
+        //     event.stopPropagation();
 
-            console.log('🎯 Route de détail interceptée:', navigationUrl, '→ Portal');
+        //     console.log('🎯 Route de détail interceptée:', navigationUrl, '→ Portal');
             
-            // Remplacer l'URL actuelle sans ajouter d'entrée dans l'historique
-            window.history.replaceState({}, '', navigationUrl);
+        //     // Remplacer l'URL actuelle sans ajouter d'entrée dans l'historique
+        //     window.history.replaceState({}, '', navigationUrl);
             
-            // Ouvrir dans le portal au lieu de naviguer
-            const title = `${routeInfo.type} ${routeInfo.id}`;
-            openPortal(routeInfo.type, routeInfo.id, title, routeInfo.icon);
+        //     // Ouvrir dans le portal au lieu de naviguer
+        //     const title = `${routeInfo.type} ${routeInfo.id}`;
+        //     openPortal(routeInfo.type, routeInfo.id, title, routeInfo.icon);
             
-            return;
-          }
-        }
+        //     return;
+        //   }
+        // }
 
         // Pour les autres routes, navigation normale
         // Empêcher la navigation par défaut

@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useLoading } from './useLoading';
+import { useParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 /**
  * Hook personnalisé pour navigation avec loading et ViewTransitions
@@ -10,6 +12,7 @@ import { useLoading } from './useLoading';
 export const useNavigationWithLoading = () => {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoading();
+  let params = useParams()
 
   /**
    * Navigation avec loading et ViewTransitions
@@ -41,15 +44,18 @@ export const useNavigationWithLoading = () => {
       }
 
       // Timeout de sécurité pour désactiver le loader
-      setTimeout(() => {
-        stopLoading();
-      }, 3000);
+      // setTimeout(() => {
+      //   stopLoading();
+      // }, 3000);
 
     } catch (error) {
       console.error('❌ Erreur de navigation:', error);
       stopLoading();
     }
   };
+  useEffect(() => {
+    stopLoading();
+  }, [params]);
 
   /**
    * Navigation de remplacement avec loading

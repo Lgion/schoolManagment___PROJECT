@@ -4,10 +4,12 @@
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   padding: 1.1em 1.2em 1.2em 1.2em;
-  min-width: 220px;
-  max-width: 320px;
+  // min-width: 220px;
+  // max-width: 320px;
   display: flex;
-  flex-direction: row;
+  flex-flow: column;
+  margin: 0;
+  padding: .75em;
   align-items: center;
   gap: 1.2em;
   margin: 1em 0.7em;

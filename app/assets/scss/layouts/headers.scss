@@ -42,7 +42,10 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    >div{display: flex;}
+    >div{
+      display: flex;
+      flex-flow: wrap;
+    }
     
     &-logo {
       display: flex;
@@ -75,6 +78,7 @@
     }
     
     &-title {
+      width: 100%;;
       font-family: $primaryFont;
       font-size: 1.5rem;
       font-weight: 700;
@@ -114,7 +118,7 @@
           rgba(255, 255, 255, 0.4),
           transparent
         );
-        animation: shine 4s infinite;
+        // animation: shine 4s infinite;
       }
       
       @media (max-width: 768px) {
@@ -206,7 +210,7 @@
       &::before {
         content: attr(data-tooltip);
         position: absolute;
-        bottom: -45px;
+        bottom: -20px;
         left: 50%;
         transform: translateX(-50%) translateY(10px);
         background: rgba(0, 0, 0, 0.9);
@@ -278,6 +282,7 @@
         &:hover {
           background: linear-gradient(135deg, #ffc107, #fd7e14);
           border-color: #ffc107;
+          +.ecole-admin__headerActions-roleIndicator{display: block;}
         }
       }
     }
@@ -292,6 +297,12 @@
     // Indicateur de rôle
     &-roleIndicator {
       margin-left: 0.5rem;
+      &:not(:hover){display: none;}
+      right: 5em;
+      top: 1em;
+      position: absolute;;
+      @media (max-width: 768px) {
+      }
     }
 
     // Section reset

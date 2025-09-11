@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 
 /**
@@ -97,13 +97,18 @@ const ScheduleViewer = ({
     fetchSchedule()
   }, [classeId])
 
+  // Créer une map des matières pour un accès optimisé O(1)
+  const subjectsMap = useMemo(() => {
+    if (!subjects || subjects.length === 0) {
+      return new Map()
+    }
+    return new Map(subjects.map(s => [s._id.toString(), s]))
+  }, [subjects])
+
   // Fonction pour obtenir les informations d'une matière
   const getSubjectInfo = (subjectId) => {
-    console.log('🔍 Looking for subject:', subjectId, 'Type:', typeof subjectId)
-    
     // Si subjectId est déjà un objet peuplé (populated), le retourner directement
     if (typeof subjectId === 'object' && subjectId !== null && subjectId.nom) {
-      console.log('✅ Subject already populated:', subjectId.nom)
       return {
         nom: subjectId.nom,
         couleur: subjectId.couleur || '#3498db',
@@ -111,27 +116,16 @@ const ScheduleViewer = ({
         ...subjectId
       }
     }
-    
-    // Sinon, chercher dans la liste des matières
-    console.log('📋 Available subjects:', subjects.map(s => ({ id: s._id, nom: s.nom, type: typeof s._id })))
-    
-    // Essayer de trouver par _id (string ou ObjectId)
-    let subject = subjects.find(s => s._id === subjectId)
-    
-    // Si pas trouvé, essayer avec toString() au cas où il y aurait un problème de type
-    if (!subject && subjectId) {
-      subject = subjects.find(s => s._id.toString() === subjectId.toString())
-    }
-    
+
+    const subject = subjectsMap.get(subjectId?.toString())
+
     if (!subject) {
-      console.warn('⚠️ Subject not found:', subjectId, 'Available IDs:', subjects.map(s => s._id))
+      console.warn('⚠️ Subject not found:', subjectId)
       return {
         nom: `Matière inconnue (${subjectId})`,
         couleur: '#95a5a6'
       }
     }
-    
-    console.log('✅ Subject found:', subject.nom)
     return subject
   }
 

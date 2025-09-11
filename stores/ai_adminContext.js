@@ -10,6 +10,7 @@ export const AdminContextProvider = ({ children }) => {
   const [enseignants, setEnseignants] = useState([]);
   const [classes, setClasses] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [editType, setEditType] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   // --- UTILS LOCALSTORAGE ---
@@ -186,7 +187,7 @@ export const AdminContextProvider = ({ children }) => {
         enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
         classes, fetchClasses, saveClasse, deleteClasse,
         uploadFile,
-        selected, setSelected, showModal, setShowModal
+        selected, setSelected, showModal, setShowModal, editType, setEditType
       }}
     >
       {children}

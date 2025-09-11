@@ -6,11 +6,15 @@ import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock,
 import Gmap from '../../_/Gmap_plus';
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../../components/ClasseEnseignantDisplay';
+import { useDetailPortal } from '../../../stores/useDetailPortal';
+import DetailPortal from "../../components/DetailPortal"
 
 export default function ElevePage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
+  const [isReduced, setIsReduced] = useState(false);
+  
   if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
   const getDefaultSchoolYear = (compositions) => {
     const keys = Object.keys(compositions || {});
@@ -26,7 +30,7 @@ export default function ElevePage() {
   // DEBUG : log ids pour comprendre le bug
   console.log('params id:', id, 'eleves ids:', (ctx.eleves||[]).map(e=>e._id));
   console.log(ctx.eleves);
-  const { setSelected, showModal, setShowModal } = ctx;
+  const { setSelected, showModal, setShowModal, setEditType } = ctx;
   
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
@@ -36,7 +40,7 @@ export default function ElevePage() {
 
   // Récupère toutes les années de scolarité pour progression globale
   const allFees = eleve.scolarity_fees_$_checkbox || {};
-  const onEdit = e => { setSelected(e); setShowModal(true); }
+  const onEdit = e => { setSelected(e); setEditType("eleve"); setShowModal(true); }
   // Fusionne tous les dépôts pour une progression globale
   let totalArgent = 0, totalRiz = 0;
   Object.values(allFees).forEach(fees => {
@@ -48,22 +52,21 @@ export default function ElevePage() {
   console.log(eleve);
   
   return !eleve ? <div>....loading.....</div>
-    : <main className="person-detail">
+    : 
+    <DetailPortal
+      isOpen={true}
+      onClose={()=>router.back()}
+      title={`Élève ${eleve.nom} ${eleve.prenoms}`}
+      icon={"📋"}
+      reduced={[isReduced,setIsReduced]}
+    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
       {/* <button
         className="person-detail__close"
         aria-label="Fermer"
         onClick={() => router.back()}
       >✕</button> */}
-      <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        title="Réduire la fenêtre"
-        onClick={e => {
-          e.preventDefault();
-          e.target.parentNode.classList.toggle('--reduce')
-        }}
-      >_</button>
-      {onEdit && !showModal &&(
+
+      {onEdit &&(
         <button
           type="button"
           className="person-detail__editbtn"
@@ -81,7 +84,8 @@ export default function ElevePage() {
         alt="" 
         title="Réduire la fenêtre"
         onClick={e => {
-          e.target.parentNode.classList.toggle('--reduce')
+          // e.target.parentNode.classList.toggle('--reduce')
+          setIsReduced(!isReduced)
         }}
       />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
@@ -141,5 +145,5 @@ export default function ElevePage() {
         <h2>Commentaires</h2>
         <CommentairesBlock commentaires={eleve.commentaires} />
       </div>
-    </main>
+    </main></DetailPortal>
 }

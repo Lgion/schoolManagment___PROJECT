@@ -8,19 +8,21 @@ import Link from 'next/link';
 import { getClasseImagePath } from '../../../utils/imageUtils';
 import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
+import DetailPortal from "../../components/DetailPortal";
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
   const { userRole } = useUserRole();
+  const [isReduced, setIsReduced] = useState(false);
   useEffect(() => {
     ctx.fetchClasses && ctx.fetchClasses();
     ctx.fetchEleves && ctx.fetchEleves();
     ctx.fetchEnseignants && ctx.fetchEnseignants();
   }, []);
   if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
-  const { setSelected, showModal, setShowModal } = ctx;
+  const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const classe = (ctx.classes || []).find(c => String(c._id) === String(id));
   if (!classe) return <div style={{color:'red'}}>Classe introuvable</div>;
   
@@ -44,7 +46,7 @@ export default function ClasseDetailPage() {
     : classe.professeur || []; // Snapshot historique
   // Prof principal (optionnel)
   const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
-  const onEdit = e => { setSelected(e); setShowModal(true); }
+  const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
 
   // console.log(ctx.eleves);
   // console.log(enseignants);
@@ -52,21 +54,14 @@ export default function ClasseDetailPage() {
   // console.log(classe);
   
   return !classe ? <div>....loading.....</div>
-    : <div className="person-detail" style={{position:'relative'}}>
-      {/* <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        onClick={() => router.back()}
-      >✕</button> */}
-      <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        title="Réduire la fenêtre"
-        onClick={e => {
-          e.preventDefault();
-          e.target.parentNode.classList.toggle('--reduce')
-        }}
-      >_</button>
+    : 
+    <DetailPortal
+      isOpen={true}
+      onClose={()=>router.back()}
+      title={`Classe ${classe.niveau} ${classe.alias}`}
+      icon={"🏦"}
+      reduced={[isReduced,setIsReduced]}
+    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
       {onEdit && !showModal &&(
         <button
           type="button"
@@ -74,7 +69,6 @@ export default function ClasseDetailPage() {
           onClick={e => { 
             e.stopPropagation(); 
             e.preventDefault(); 
-            alert("don't work yet")
             onEdit(classe); 
           }}
           tabIndex={0}
@@ -105,8 +99,7 @@ export default function ClasseDetailPage() {
               }}
               onClick={e => {
                 e.preventDefault();
-                e.target.closest('.person-detail').classList.toggle('--reduce')
-                e.target.closest('.person-detail').classList.toggle('--')
+                setIsReduced(!isReduced);
               }}
             />
           </div>
@@ -215,5 +208,6 @@ export default function ClasseDetailPage() {
           }}
         />
       </div>
-    </div>
+    </main>
+    </DetailPortal>
 }

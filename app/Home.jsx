@@ -13,16 +13,22 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs';
+import EntityModal from './components/EntityModal';
 
 export default ({children}) => {
   const router = useRouter();
   const { 
+    selected,
+    setSelected,
+    showModal,
+    setShowModal,
+    editType,
     eleves, 
     enseignants, 
     classes, 
     fetchEleves, 
     fetchEnseignants, 
-    fetchClasses 
+    fetchClasses,
   } = useContext(AiAdminContext)
 
   const { 
@@ -118,7 +124,8 @@ export default ({children}) => {
     fetchEnseignants()
   }, []);
 
-  return <main className="ecole-admin">
+  return <>
+  <main className="ecole-admin">
     {/* Bouton de réinitialisation des données */}
     <PermissionGate role="admin">
       <div className="ecole-admin__headerActions-reset">
@@ -136,7 +143,8 @@ export default ({children}) => {
       <div className="ecole-admin__header-container">
         <div className="ecole-admin__branding">
           <Link href={"/"} className="ecole-admin__branding-logo">
-            <img src="/logo.webp" alt="Logo ESMP" className="ecole-admin__branding-logo-img" />
+            {/* <img src="/logo.webp" alt="Logo ESMP" className="ecole-admin__branding-logo-img" /> */}
+            <img src="/logo.png" alt="Logo ESMP" className="ecole-admin__branding-logo-img" />
           </Link>
           <div>
             <h1 className="ecole-admin__branding-title">École Martin de Porres</h1>
@@ -229,14 +237,14 @@ export default ({children}) => {
                     <span role="img" aria-label="École">🏫</span>
                     <strong>Gérer les classes</strong>
                   </Link>
-                  <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
+                  {/* <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
                     <span role="img" aria-label="Utilisateurs">👥</span>
                     <strong>Gestion des utilisateurs</strong>
                   </Link>
                   <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
                     <span role="img" aria-label="Paramètres">⚙️</span>
                     <strong>Paramètres système</strong>
-                  </Link>
+                  </Link> */}
                 </nav>
 
                 {/* <article className="ecole-admin__stats">
@@ -255,7 +263,7 @@ export default ({children}) => {
         )}
       {/* </SignedIn> */}
       {/* Navigation sticky intégrée dans le header */}
-      <SignedIn>
+      {/* <SignedIn>
         {!loading && (
           <nav className="ecole-admin__header-nav" role="navigation" aria-label="Navigation principale">
             <div className="ecole-admin__header-nav-tabs">
@@ -367,7 +375,7 @@ export default ({children}) => {
               </div>
             </nav>
           )}
-        </SignedIn>
+        </SignedIn> */}
     </header>
 
     {/* Dashboard pour utilisateurs non connectés */}
@@ -405,6 +413,9 @@ export default ({children}) => {
         👑 Tableau de bord Administrateur
       </h1>
       {children}
+       
     </section>
   </main>
+  {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
+  </>
 }

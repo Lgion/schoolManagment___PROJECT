@@ -5,7 +5,7 @@ import {deepCompareEqualsForMaps,useDeepCompareEffectForMaps,useDeepCompareMemoi
 
 export default function Gmap({ 
     initialCenter = { lat: 5.748560, lng: -3.983372 }, // Default initial center
-    initialZoom = 13, // Default initial zoom
+    initialZoom = 10, // Default initial zoom
     onCoordinatesClick // Add prop for callback
 }) {
     const render = (status) => {
