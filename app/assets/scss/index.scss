@@ -5,15 +5,16 @@
 @use 'layouts/headers' as *;
 @use 'components/MODALS/detailModal.scss';
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
-@import 'components/MODALS/entityModal.scss';
-@import 'components/NOTES/notesBlock.scss';
-@import "./main.scss";
-@import "./components/LOADERS/spinLoader.scss";
-@import "./components/DASHBOARDS/adminDashboard.scss";
-@import "./components/NAVIGATION/stickyNav.scss";
-@import "./components/CONTROLS/infosCardsControls.scss";
-@import "./components/CONTENT/homeContent.scss";
-@import "./components/SCHEDULES/index";
+@use 'components/MODALS/entityModal.scss';
+@use 'components/MODALS/compositionsManager.scss';
+@use 'components/NOTES/notesBlock.scss';
+@use "./main.scss";
+@use "./components/LOADERS/spinLoader.scss";
+@use "./components/DASHBOARDS/adminDashboard.scss";
+@use "./components/NAVIGATION/stickyNav.scss";
+@use "./components/CONTROLS/infosCardsControls.scss";
+@use "./components/CONTENT/homeContent.scss";
+@use "./components/SCHEDULES/index";
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);

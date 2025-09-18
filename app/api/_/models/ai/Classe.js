@@ -17,7 +17,7 @@ const classeSchema = mongoose.Schema({
     // },
     homework: { default: {}, type: Object, required: true },
     // absences: { default: {}, type: Object, required: true },
-    compositions: { default: [], type: Object, required: true },
+    compositions: { default: [], type: Array, required: true },
     coefficients: { 
         default: {}, 
         type: Object, 

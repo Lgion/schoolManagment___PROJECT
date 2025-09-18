@@ -787,6 +787,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               dynamicSubjects={dynamicSubjects}
               subjectsLoaded={subjectsLoaded}
               classCoefficients={classCoefficients}
+              classes={classes}
             />
             <textarea readOnly name="compositions" value={form.compositions ? JSON.stringify(form.compositions) : ''}
             // onChange={e => setForm(f => ({ ...f, compositions: e.target.value ? JSON.parse(e.target.value) : {} }))} 
@@ -1185,6 +1186,19 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 subjectGroup={process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]'}
                 dynamicSubjects={dynamicSubjects}
                 subjectsLoaded={subjectsLoaded}
+              />
+            </div>
+            
+            {/* Section Gestion des compositions */}
+            <div className="modal__fieldGroup modal__fieldGroup--compositions">
+              <h3 className="modal__sectionTitle">Dates de compositions</h3>
+              <p className="modal__sectionDescription">
+                Définissez les dates de compositions pour cette classe. Ces dates seront disponibles lors de la saisie des notes d'élèves.
+              </p>
+              
+              <CompositionsManager 
+                compositions={form.compositions || []}
+                onChange={(newCompositions) => setForm(f => ({ ...f, compositions: newCompositions }))}
               />
             </div>
             
@@ -1681,7 +1695,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
 }
 
 // --- Bloc de gestion des compositions par trimestre ---
-function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, studentData, dynamicSubjects, subjectsLoaded, classCoefficients }) {
+function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, studentData, dynamicSubjects, subjectsLoaded, classCoefficients, classes = [] }) {
   // Format attendu : {"2025-2026": [[{"Mathématiques": 15}, {"Français": 12}], [{"Sciences": 14}], [{"Anglais": 18}]]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
@@ -1689,6 +1703,32 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
   const [selectedDenominateur, setSelectedDenominateur] = useState(COEFFICIENTS_MATIERES['Mathématiques'].toString());
   const [selectedDate, setSelectedDate] = useState('');
   const [isOfficiel, setIsOfficiel] = useState(true);
+  
+  // Récupérer les compositions disponibles pour la classe de l'élève selon l'année sélectionnée
+  const getAvailableCompositions = () => {
+    if (!studentData?._id || !classes || classes.length === 0) return [];
+    
+    // Trouver la classe de l'élève pour l'année sélectionnée
+    const eleveClasse = classes.find(classe => 
+      classe.annee === schoolYear && 
+      classe.eleves && 
+      classe.eleves.includes(studentData._id)
+    );
+    
+    if (!eleveClasse || !eleveClasse.compositions) return [];
+    
+    // Retourner les compositions triées par date
+    return eleveClasse.compositions
+      .map(([timestamp, officiel]) => ({
+        timestamp,
+        officiel,
+        dateStr: new Date(timestamp).toLocaleDateString('fr-FR'),
+        value: timestamp.toString()
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp);
+  };
+  
+  const availableCompositions = getAvailableCompositions();
   
   // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
   const getCoefficientForSubject = (matiere) => {
@@ -2062,13 +2102,26 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
             )}
             {adding === idx && (
               <div className="compositions-block__add-form">
-                <input
-                  type="date"
+                <select
                   className="compositions-block__date-input"
                   value={selectedDate}
-                  onChange={e => setSelectedDate(e.target.value)}
+                  onChange={e => {
+                    setSelectedDate(e.target.value);
+                    // Récupérer le statut officiel de la composition sélectionnée
+                    const selectedCompo = availableCompositions.find(c => c.value === e.target.value);
+                    if (selectedCompo) {
+                      setIsOfficiel(selectedCompo.officiel);
+                    }
+                  }}
                   required
-                />
+                >
+                  <option value="">Sélectionnez une date de composition</option>
+                  {availableCompositions.map(compo => (
+                    <option key={compo.value} value={compo.value}>
+                      {compo.dateStr} {compo.officiel ? '(Officiel)' : '(Non officiel)'}
+                    </option>
+                  ))}
+                </select>
                 
                 <select
                   className="compositions-block__matiere-select"
@@ -2144,13 +2197,19 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
                   <label className="compositions-block__group-date-label">
                     <strong>📅 Date de composition :</strong>
                   </label>
-                  <input
-                    type="date"
+                  <select
                     className="compositions-block__date-input compositions-block__group-date-input"
                     value={groupCommonDate}
                     onChange={e => setGroupCommonDate(e.target.value)}
                     required
-                  />
+                  >
+                    <option value="">Sélectionnez une date de composition</option>
+                    {availableCompositions.map(compo => (
+                      <option key={compo.value} value={compo.value}>
+                        {compo.dateStr} {compo.officiel ? '(Officiel)' : '(Non officiel)'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 {Object.entries(groupFormData).map(([matiere, data]) => (
@@ -2637,4 +2696,120 @@ function DocumentsBlock({ form, setForm, selectedDocuments = [], setSelectedDocu
   );
 }
 
-export {SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock } 
+// Composant pour gérer les compositions d'une classe
+function CompositionsManager({ compositions = [], onChange }) {
+  const [newDate, setNewDate] = useState('');
+  const [newOfficiel, setNewOfficiel] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const handleAdd = () => {
+    if (!newDate) return;
+    
+    const timestamp = new Date(newDate).getTime();
+    const newComposition = [timestamp, newOfficiel];
+    const updatedCompositions = [...compositions, newComposition];
+    
+    // Trier par date (timestamp croissant)
+    updatedCompositions.sort((a, b) => a[0] - b[0]);
+    
+    onChange(updatedCompositions);
+    setNewDate('');
+    setNewOfficiel(true);
+    setShowAddForm(false);
+  };
+
+  const handleRemove = (index) => {
+    const updatedCompositions = compositions.filter((_, i) => i !== index);
+    onChange(updatedCompositions);
+  };
+
+  return (
+    <div className="compositions-manager">
+      {/* Liste des compositions existantes */}
+      <div className="compositions-manager__list">
+        {compositions.length === 0 ? (
+          <p className="compositions-manager__empty">Aucune composition définie</p>
+        ) : (
+          compositions.map(([timestamp, officiel], index) => (
+            <div key={index} className="compositions-manager__item">
+              <span className="compositions-manager__date">
+                {new Date(timestamp).toLocaleDateString('fr-FR')}
+              </span>
+              <span className={`compositions-manager__badge ${officiel ? 'compositions-manager__badge--officiel' : 'compositions-manager__badge--non-officiel'}`}>
+                {officiel ? 'Officiel' : 'Non officiel'}
+              </span>
+              <button
+                type="button"
+                className="compositions-manager__remove-btn"
+                onClick={() => handleRemove(index)}
+                title="Supprimer cette composition"
+              >
+                ✕
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Bouton d'ajout */}
+      {!showAddForm && (
+        <button
+          type="button"
+          className="compositions-manager__add-btn"
+          onClick={() => setShowAddForm(true)}
+        >
+          ➕ Ajouter une composition
+        </button>
+      )}
+
+      {/* Formulaire d'ajout */}
+      {showAddForm && (
+        <div className="compositions-manager__add-form">
+          <div className="compositions-manager__form-row">
+            <input
+              type="date"
+              className="compositions-manager__date-input"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+              required
+            />
+            
+            <button
+              type="button"
+              className={`compositions-manager__officiel-toggle ${newOfficiel ? 'compositions-manager__officiel-toggle--active' : ''}`}
+              onClick={() => setNewOfficiel(!newOfficiel)}
+              title="Cliquer pour changer le type"
+            >
+              {newOfficiel ? 'Officiel' : 'Non officiel'}
+            </button>
+          </div>
+          
+          <div className="compositions-manager__form-actions">
+            <button
+              type="button"
+              className="compositions-manager__validate-btn"
+              onClick={handleAdd}
+              disabled={!newDate}
+            >
+              Valider
+            </button>
+            
+            <button
+              type="button"
+              className="compositions-manager__cancel-btn"
+              onClick={() => {
+                setShowAddForm(false);
+                setNewDate('');
+                setNewOfficiel(true);
+              }}
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export {SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock, CompositionsManager } 
