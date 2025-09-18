@@ -42,13 +42,14 @@ WIP 90% -- need to be customizable
     - l'affichage du filtre (eleve,prof,classe) doit etre corrigé
     DONE
     - le mode ligne/grille du filtre semble avoir un légé bug encore
+    DONE
 
 - lors de l'enregistrement d'une classe, eleve ou prof, il faut que l'on puisse utiliser la caméra du péroiphérique pour persister la photo en base
-WIP
+DONE
 - sur page Classes, mettre un tableau récapitulatif des notes (comme sur les feuille papier), il doit etre possible de filtrer alphébétioquement ou par moyenne. Ce doit etre un module qui avec boutons permettants de choisir la composition désirée.
 - le systeme de gestion et présentation des paiements des frais de scolarité et d'internat
 - la gestion et présentation des absence (abandon)
-
+- il faut un loading spinner quand je valide un formulaire (edit eleve, prof, classe)
 
 
 

@@ -96,7 +96,9 @@ export default function EnseignantDetailPage() {
         </div>
       </div>
 
-      {/* Statistiques rapides */}
+      {// Statistiques rapides 
+      }
+{/*
       <div className="person-detail__stats">
         <div className="person-detail__stat-card">
           <div className="person-detail__stat-icon">🏫</div>
@@ -120,6 +122,7 @@ export default function EnseignantDetailPage() {
           </div>
         </div>
       </div>
+*/}
 
       {/* Classes assignées */}
       <div className="person-detail__block person-detail__block--classes">

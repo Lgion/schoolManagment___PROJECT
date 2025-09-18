@@ -683,12 +683,26 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
                 ];
                 
-                return ctx.classes
-                  .filter(classe => relevantSchoolYears.includes(classe.annee))
+                // Filtrer les classes par années pertinentes
+                let filteredClasses = ctx.classes.filter(classe => relevantSchoolYears.includes(classe.annee));
+                
+                // Si on édite un élève et que sa classe actuelle n'est pas dans la liste, l'ajouter
+                if (entity && form.current_classe) {
+                  const currentClasseExists = filteredClasses.some(classe => classe._id === form.current_classe);
+                  if (!currentClasseExists) {
+                    const currentClasse = ctx.classes.find(classe => classe._id === form.current_classe);
+                    if (currentClasse) {
+                      filteredClasses = [currentClasse, ...filteredClasses];
+                    }
+                  }
+                }
+                
+                return filteredClasses
                   .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
                   .map(classe => (
                     <option key={classe._id} value={classe._id}>
                       {classe.niveau} {classe.alias} ({classe.annee})
+                      {entity && form.current_classe === classe._id ? ' (Actuelle)' : ''}
                     </option>
                   ));
               })()}
@@ -821,30 +835,66 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
 
           {type === 'enseignant' && <>
-            <label htmlFor="input-nom">Nom</label>
-            <input name="nom" value={form.nom || ''} onChange={handleChange} placeholder="Nom" required />
-            <label htmlFor="input-prenoms">Prénoms</label>
-            <input name="prenoms" value={Array.isArray(form.prenoms) ? form.prenoms.join(', ') : (form.prenoms || '')} onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} placeholder="Prénoms (séparés par des virgules)" required />            
-            <label htmlFor="input-sexe">Sexe</label>
-            <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez le sexe</option>
-              <option value="M">Masculin</option>
-              <option value="F">Féminin</option>
-            </select>
-            <label htmlFor="input-classes">Classes assignées</label>
-            <select 
-              id="input-classes" 
-              name="current_classes" 
-              multiple 
-              value={Array.isArray(form.current_classes) ? form.current_classes : []} 
-              onChange={e => {
-                const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
-                console.log('🔍 DEBUG SELECT - Classes sélectionnées:', selectedValues);
-                console.log('🔍 DEBUG SELECT - Type:', typeof selectedValues);
-                console.log('🔍 DEBUG SELECT - Est array?', Array.isArray(selectedValues));
-                setForm(f => ({ ...f, current_classes: selectedValues }));
-              }} 
-              required>
+            <div className="modal__fieldGroup modal__fieldGroup--grid">
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-nom" className="modal__label">Nom: </label>
+                <input 
+                  id="input-nom" 
+                  name="nom" 
+                  value={form.nom || ''} 
+                  onChange={handleChange} 
+                  placeholder="Nom" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+              
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-prenoms" className="modal__label">Prénoms: </label>
+                <input 
+                  id="input-prenoms"
+                  name="prenoms" 
+                  value={Array.isArray(form.prenoms) ? form.prenoms.join(', ') : (form.prenoms || '')} 
+                  onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} 
+                  placeholder="Prénoms (séparés par des virgules)" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+            </div>
+
+            <div className="modal__fieldGroup">
+              <label htmlFor="input-sexe" className="modal__label">Sexe: </label>
+              <select 
+                id="input-sexe" 
+                name="sexe" 
+                value={form.sexe || ''} 
+                onChange={handleChange} 
+                className="modal__select"
+                required
+              >
+                <option value="">Sélectionnez le sexe</option>
+                <option value="M">Masculin</option>
+                <option value="F">Féminin</option>
+              </select>
+            </div>
+            <div className="modal__fieldGroup">
+              <label htmlFor="input-classes" className="modal__label">Classes assignées: </label>
+              <select 
+                id="input-classes" 
+                name="current_classes" 
+                multiple 
+                value={Array.isArray(form.current_classes) ? form.current_classes : []} 
+                onChange={e => {
+                  const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
+                  console.log('🔍 DEBUG SELECT - Classes sélectionnées:', selectedValues);
+                  console.log('🔍 DEBUG SELECT - Type:', typeof selectedValues);
+                  console.log('🔍 DEBUG SELECT - Est array?', Array.isArray(selectedValues));
+                  setForm(f => ({ ...f, current_classes: selectedValues }));
+                }} 
+                className="modal__select"
+                required
+              >
               {ctx.classes && (() => {
                 // Logique dynamique : filtrer les classes des 2 dernières années scolaires
                 const currentDate = new Date();
@@ -869,41 +919,136 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                     </option>
                   ));
               })()}
-            </select>
-            <label htmlFor="input-naissance">Date de naissance</label>
-            <input id="input-naissance" type="date" name="naissance_$_date" value={form.naissance_$_date || ''} onChange={handleChange} required />
-            <label htmlFor="input-adresse">Adresse</label>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <input
-                id="input-adresse"
-                name="adresse_$_map"
-                value={form.adresse_$_map}
-                onChange={handleChange}
-                placeholder="Adresse"
-                required
-                style={{ flex: 1 }}
+              </select>
+            </div>
+
+            <div className="modal__fieldGroup">
+              <label htmlFor="input-naissance" className="modal__label">Date de naissance: </label>
+              <input 
+                id="input-naissance" 
+                type="date" 
+                name="naissance_$_date" 
+                value={form.naissance_$_date || ''} 
+                onChange={handleChange} 
+                className="modal__input"
+                required 
               />
-              <button type="button" onClick={() => setShowMap(true)} style={{ marginLeft: 8 }}>
-                📍
-              </button>
+            </div>
+
+            <div className="modal__fieldGroup">
+              <label htmlFor="input-adresse" className="modal__label">Adresse: </label>
+              <div className="modal__fieldGroup modal__fieldGroup--row">
+                <input
+                  id="input-adresse"
+                  name="adresse_$_map"
+                  value={form.adresse_$_map}
+                  onChange={handleChange}
+                  placeholder="Adresse"
+                  className="modal__input"
+                  required
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setShowMap(true)} 
+                  className="modal__btn modal__btn--secondary"
+                  title="Ouvrir la carte"
+                >
+                  📍
+                </button>
+              </div>
             </div>
             {showMap && (
-              <div style={{ margin: '10px 0' }}>
+              <div className="modal__map-container">
                 <Gmap
-                  // Pass initial center based on current state (which might be from datas)
-                  // initialCenter={{ lat: parseFloat(latitude) || 5.36, lng: parseFloat(longitude) || -4.00 }}
-                  onCoordinatesClick={handleMapClick} // Pass the callback function
+                  onCoordinatesClick={handleMapClick}
                 />
-                <button type="button" onClick={() => setShowMap(false)}>Fermer la carte</button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowMap(false)}
+                  className="modal__btn modal__btn--secondary"
+                >
+                  Fermer la carte
+                </button>
               </div>
             )}
-            <label htmlFor="input-tel">N° Téléphone</label>
-            <input id="input-tel" name="phone_$_tel" value={form.phone_$_tel || ''} onChange={handleChange} placeholder="Téléphone" required />
-            <label htmlFor="input-email">Email</label>
-            <input id="input-email" name="email_$_email" value={form.email_$_email || ''} onChange={handleChange} placeholder="Email" required />
-            <label htmlFor="input-photo">Photo de l'enseignant</label>
-            <input id="input-photo" type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo_$_file && !previewUrl} />
-            {(previewUrl || form.photo_$_file) && <img src={previewUrl || form.photo_$_file} alt="photo" className="previewImageAddForm" />}
+
+            <div className="modal__fieldGroup modal__fieldGroup--grid">
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-tel" className="modal__label">N° Téléphone: </label>
+                <input 
+                  id="input-tel" 
+                  name="phone_$_tel" 
+                  value={form.phone_$_tel || ''} 
+                  onChange={handleChange} 
+                  placeholder="Téléphone" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+              
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-email" className="modal__label">Email: </label>
+                <input 
+                  id="input-email" 
+                  name="email_$_email" 
+                  value={form.email_$_email || ''} 
+                  onChange={handleChange} 
+                  placeholder="Email" 
+                  className="modal__input"
+                  type="email"
+                  required 
+                />
+              </div>
+            </div>
+            <div className="modal__fieldGroup">
+              <label className="modal__label">Photo de l'enseignant: </label>
+              
+              <div className="modal__photo-controls">
+                <input 
+                  id="input-photo" 
+                  type="file" 
+                  ref={fileInput} 
+                  accept="image/*" 
+                  required={!form.photo_$_file && !previewUrl} 
+                  onChange={handleFile}
+                  className="modal__input modal__input--file"
+                />
+                
+                <button 
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="modal__camera-btn"
+                  title="Prendre une photo avec la caméra"
+                >
+                  <span className="modal__camera-btn-icon">📷</span>
+                  <span className="modal__camera-btn-text">Caméra</span>
+                </button>
+              </div>
+              
+              {(previewUrl || form.photo_$_file) && (
+                <div className="modal__photo-preview">
+                  <img 
+                    src={previewUrl || form.photo_$_file || "/school/prof.webp"} 
+                    alt="Photo de l'enseignant" 
+                    className="modal__preview-image"
+                  />
+                  {previewUrl && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setPreviewUrl('');
+                        setSelectedFile(null);
+                        if (fileInput.current) fileInput.current.value = '';
+                      }}
+                      className="modal__remove-photo-btn"
+                      title="Supprimer la photo"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
           </>}
 
@@ -916,39 +1061,115 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
 
           {type === 'classe' && <>
-            <label htmlFor="input-annee">Année scolaire</label>
-            <select id="input-annee" name="annee" value={form.annee || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez l'année scolaire</option>
-              {(() => {
-                const currentYear = new Date().getFullYear()
-                const currentMonth = new Date().getMonth() + 1
-                // Si nous sommes avant juillet, l'année scolaire actuelle a commencé l'année précédente
-                const schoolYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-                const years = []
-                // Générer 5 années (2 précédentes, actuelle, 2 suivantes)
-                for (let i = -2; i <= 2; i++) {
-                  const startYear = schoolYearStart + i
-                  const endYear = startYear + 1
-                  years.push(`${startYear}-${endYear}`)
-                }
-                return years.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))
-              })()}
-            </select>
+            <div className="modal__fieldGroup">
+              <label htmlFor="input-annee" className="modal__label">Année scolaire</label>
+              <select 
+                id="input-annee" 
+                name="annee" 
+                value={form.annee || ''} 
+                onChange={handleChange} 
+                className="modal__select"
+                required
+              >
+                <option value="">Sélectionnez l'année scolaire</option>
+                {(() => {
+                  const currentYear = new Date().getFullYear()
+                  const currentMonth = new Date().getMonth() + 1
+                  // Si nous sommes avant juillet, l'année scolaire actuelle a commencé l'année précédente
+                  const schoolYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+                  const years = []
+                  // Générer 5 années (2 précédentes, actuelle, 2 suivantes)
+                  for (let i = -2; i <= 2; i++) {
+                    const startYear = schoolYearStart + i
+                    const endYear = startYear + 1
+                    years.push(`${startYear}-${endYear}`)
+                  }
+                  return years.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))
+                })()}
+              </select>
+            </div>
+
+            <div className="modal__fieldGroup modal__fieldGroup--grid">
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-niveau" className="modal__label">Niveau de classe</label>
+                <select 
+                  id="input-niveau" 
+                  name="niveau" 
+                  value={form.niveau || ''} 
+                  onChange={handleChange} 
+                  className="modal__select"
+                  required
+                >
+                  <option value="">Sélectionnez le niveau</option>
+                  {["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"].map(n => <option key={n} value={n}>{n}</option>)}
+                </select>
+              </div>
+              
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-alias" className="modal__label">Alias de la classe</label>
+                <input 
+                  id="input-alias" 
+                  name="alias" 
+                  value={form.alias || ''} 
+                  onChange={handleChange} 
+                  placeholder="Alias (ex: 4B, A, Rouge...)" 
+                  className="modal__input"
+                  required 
+                />
+              </div>
+            </div>
             
-            <label htmlFor="input-niveau">Niveau de classe</label>
-            <select id="input-niveau" name="niveau" value={form.niveau || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez le niveau</option>
-              {["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"].map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-            
-            <label htmlFor="input-alias">Alias de la classe</label>
-            <input id="input-alias" name="alias" value={form.alias || ''} onChange={handleChange} placeholder="Alias (ex: 4B, A, Rouge...)" required />
-            
-            <label htmlFor="input-photo-classe">Photo de la classe</label>
-            <input id="input-photo-classe" type="file" ref={fileInput} accept="image/*" onChange={handleFile} required={!form.photo && !previewUrl} />
-            {(previewUrl || form.photo) && <img src={previewUrl || form.photo} alt="photo" className="previewImageAddForm" />}
+            <div className="modal__fieldGroup">
+              <label className="modal__label">Photo de la classe</label>
+              
+              <div className="modal__photo-controls">
+                <input 
+                  id="input-photo-classe" 
+                  type="file" 
+                  ref={fileInput} 
+                  accept="image/*" 
+                  required={!form.photo && !previewUrl} 
+                  onChange={handleFile}
+                  className="modal__input modal__input--file"
+                />
+                
+                <button 
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="modal__camera-btn"
+                  title="Prendre une photo avec la caméra"
+                >
+                  <span className="modal__camera-btn-icon">📷</span>
+                  <span className="modal__camera-btn-text">Caméra</span>
+                </button>
+              </div>
+              
+              {(previewUrl || form.photo) && (
+                <div className="modal__photo-preview">
+                  <img 
+                    src={previewUrl || form.photo || "/school/classe.webp"} 
+                    alt="Photo de la classe" 
+                    className="modal__preview-image"
+                  />
+                  {previewUrl && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setPreviewUrl('');
+                        setSelectedFile(null);
+                        if (fileInput.current) fileInput.current.value = '';
+                      }}
+                      className="modal__remove-photo-btn"
+                      title="Supprimer la photo"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             
             {/* Section Coefficients des matières */}
             <div className="modal__fieldGroup modal__fieldGroup--coefficients">
@@ -2379,11 +2600,11 @@ function DocumentsBlock({ form, setForm, selectedDocuments = [], setSelectedDocu
                 : <span className="doc-icon" title="Image">🖼️</span>}
               <span>{doc.name}</span>
             </div>
-            <a href={doc} target="_blank">
+            {doc&&<a href={doc} target="_blank">
               <span className="doc-icon" title="Télécharger"> Télécharger</span>
               <img className="docs_preview_img" src="" alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
               <iframe className="docs_preview_pdf" src="" alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
-            </a>
+            </a>}
           </Fragment>))}
         </div>
       )}

@@ -840,6 +840,12 @@ $entityModal: (
     position: relative;
     display: inline-block;
     margin-top: 0.75rem;
+    >img{
+      width: 100%;
+      padding: 1em;
+      box-sizing: border-box;
+      border: solid;
+    }
   }
 
   &__preview-image {

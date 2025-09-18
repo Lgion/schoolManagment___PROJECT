@@ -30,10 +30,10 @@ export const getClasseImagePath = (classe) => {
  */
 export const getEleveImagePath = (eleve) => {
   if (!eleve || !eleve.nom || !eleve.prenoms || !eleve.naissance_$_date) {
-    return '/school/default-student.webp';
+    return '/school/studentsNotHere.webp';
   }
   
-  const eleveFolder = `${eleve.nom}-${eleve.prenoms}-${eleve.naissance_$_date}`.replace(/--+/g, '-');
+  const eleveFolder = `${eleve.nom}-${eleve.prenoms}-${+new Date(eleve.naissance_$_date)}`.replace(/--+/g, '-');
   return `/school/students/${eleveFolder}/photo.webp`;
 };
 

@@ -5,10 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { useUserRole } from '../../../stores/useUserRole';
 import Link from 'next/link';
-import { getClasseImagePath } from '../../../utils/imageUtils';
+import { getClasseImagePath, getEleveImagePath, getEnseignantImagePath } from '../../../utils/imageUtils';
 import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
 import DetailPortal from "../../components/DetailPortal";
+import NotesBlock from '../../components/NotesBlock';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -148,9 +149,23 @@ export default function ClasseDetailPage() {
               console.log(student);
               
               
+              const imagePath = getEleveImagePath(student);
+              console.log('Image path for', student?.nom, student?.prenoms, ':', imagePath);
+              
               return (
                 <Link key={"eleves_"+student._id} href={`/eleves/${student._id}`} className="person-detail__card">
-                  <div className="person-detail__card-avatar">👨‍🎓</div>
+                  <div className="person-detail__card-avatar">
+                    <img 
+                      src={imagePath} 
+                      alt={`${student?.nom} ${student?.prenoms}`}
+                      data-ok={imagePath}
+                      onError={(e) => {
+                        console.log('Image failed to load:', imagePath, 'falling back to default');
+                        // e.target.src = student["photo_$_file"]
+                        e.target.src = '/school/student.webp';
+                      }}
+                    />
+                  </div>
                   <div className="person-detail__card-content">
                     <h3 className="person-detail__card-name">{student?.nom} {student?.prenoms}</h3>
                     <p className="person-detail__card-role">Élève</p>
@@ -160,6 +175,8 @@ export default function ClasseDetailPage() {
             })}
           </div>
         )}
+
+      </div>
       {/* Liste des enseignants */}
       <div className="person-detail__block person-detail__block--teachers">
         <h2 className="person-detail__subtitle">
@@ -179,7 +196,15 @@ export default function ClasseDetailPage() {
               
               return (
                 <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
-                  <div className="person-detail__card-avatar">👨‍🏫</div>
+                  <div className="person-detail__card-avatar">
+                    <img 
+                      src={getEnseignantImagePath(teacher)} 
+                      alt={`${teacher?.nom} ${teacher?.prenoms}`}
+                      onError={(e) => {
+                        e.target.src = '/school/default-teacher.webp';
+                      }}
+                    />
+                  </div>
                   <div className="person-detail__card-content">
                     <h3 className="person-detail__card-name">{teacher?.nom} {teacher?.prenoms}</h3>
                     <p className="person-detail__card-role">Enseignant</p>
@@ -191,6 +216,17 @@ export default function ClasseDetailPage() {
         )}
       </div>
 
+      {/* Section Notes et Compositions */}
+      <div className="person-detail__block person-detail__block--notes">
+        <h2 className="person-detail__subtitle">
+          <span className="person-detail__subtitle-icon">📊</span>
+          Notes et Compositions
+        </h2>
+        <NotesBlock 
+          eleves={eleves}
+          classeId={classe._id}
+          isCurrentYear={isCurrentYear}
+        />
       </div>
       
       {/* Section Emploi du temps */}

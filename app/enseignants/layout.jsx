@@ -25,8 +25,10 @@ export default function EcoleAdminEleveLayout({ children }) {
         <h2>Liste des enseignants <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button></h2>
         
         {/* Contrôles de filtrage et tri */}
+{/*
         <div className="infos_cards__controls">
-            {/* Recherche textuelle */}
+            {// Recherche textuelle 
+            }
             <div className="infos_cards__control-group">
                 <label htmlFor="search-input-enseignants" className="infos_cards__label">🔍 Rechercher :</label>
                 <input 
@@ -40,7 +42,8 @@ export default function EcoleAdminEleveLayout({ children }) {
                 />
             </div>
 
-            {/* Contrôles de tri */}
+            {// Contrôles de tri 
+            }
             <div className="infos_cards__control-group">
                 <label htmlFor="sort-by-enseignants" className="infos_cards__label">📊 Trier par :</label>
                 <select 
@@ -69,7 +72,8 @@ export default function EcoleAdminEleveLayout({ children }) {
                 </select>
             </div>
 
-            {/* Bouton de basculement d'affichage */}
+            {// Bouton de basculement d'affichage /
+            }
             <div className="infos_cards__control-group">
                 <label className="infos_cards__label">👁️ Affichage :</label>
                 <button 
@@ -87,6 +91,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 </button>
             </div>
         </div>
+*/}
         
         {enseignants ?
             <div className={`enseignants-list ${viewMode === 'inline' ? 'enseignants-list--inline' : ''}`}>

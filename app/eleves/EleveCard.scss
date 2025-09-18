@@ -1,4 +1,5 @@
 .eleve-card,.enseignant-card,.classe-card {
+  box-sizing: border-box;
   background: #f8f8fc;
   border: 2px solid #e0e0e0;
   border-radius: 16px;
@@ -73,6 +74,7 @@
     padding: 0.18em 0.7em;
     font-size: 0.98em;
     font-weight: 600;
+    border:1px solid;
     &--externe {
       background: #ffeaea;
       color: #b00;
@@ -91,7 +93,7 @@
 
   &__progress-bar {
     display: flex;
-    height: 12px;
+    height: 1em;
     width: 100%;
     background: #eee;
     border-radius: 6px;
@@ -150,6 +152,8 @@
     .eleve-card__name, &__name {
       min-width: 200px;
       flex-shrink: 0;
+      overflow: hidden;
+      height: 1em;
     }
     
     .eleve-card__classe, &__classe {
@@ -163,20 +167,33 @@
     }
     
     .eleve-card__progress, &__progress {
+      display: flex;
+      gap:1em;
       min-width: 150px;
       flex-shrink: 0;
       margin-top: 0;
     }
     
     .eleve-card__progress-bar, &__progress-bar {
-      width: 120px;
+      position: absolute;
+      bottom:0;
+      left:5%;
+      width:90%;
+      border:1px solid;
+      &:before{
+        content: attr(title);
+        text-align: center;
+        width: 100%;
+      }
     }
     
     @media (max-width: 768px) {
       .eleve-card__infos, &__infos {
-        flex-flow: row nowrap;
+        flex-flow: column;
         align-items: flex-start;
-        gap: 0.5em;
+        gap: 0.1em;
+        height: 75px;
+        overflow: hidden;
       }
       
       .eleve-card__name, &__name,
@@ -185,6 +202,12 @@
       .eleve-card__progress, &__progress {
         min-width: auto;
         width: 100%;
+      }
+      .eleve-card__isinterne{
+        width: 75px;
+        position: absolute;
+        bottom: 10px;
+        right: 0px;
       }
     }
   }
@@ -205,7 +228,9 @@
 .eleves-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 1em;
+  gap: .5em;
+  justify-content: space-evenly;
+  padding-left:0;
   
   &--inline {
     flex-direction: column;

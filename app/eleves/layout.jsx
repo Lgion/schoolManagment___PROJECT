@@ -14,6 +14,7 @@ export default function EcoleAdminEleveLayout({ children }) {
     const chartInstance = useRef(null);
     const [filterByClasse, setFilterByClasse] = useState('toutes'); // 'toutes' ou niveau spécifique
     const [filterByGender, setFilterByGender] = useState('tous'); // 'tous', 'M', 'F'
+    const [filterByInterne, setFilterByInterne] = useState('tous'); // 'tous', 'interne', 'externe'
     const [sortBy, setSortBy] = useState('nom'); // 'nom', 'classe'
     const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
@@ -174,6 +175,22 @@ export default function EcoleAdminEleveLayout({ children }) {
                         <option value="desc">Décroissant (Z→A)</option>
                     </select>
                 </div>
+                
+                {/* Filtre par statut interne/externe */}
+                <div className="infos_cards__control-group">
+                    <label htmlFor="interne-filter" className="infos_cards__label">🏠 Filtrer par statut :</label>
+                    <select 
+                        id="interne-filter"
+                        className="infos_cards__select"
+                        value={filterByInterne} 
+                        onChange={e => setFilterByInterne(e.target.value)}
+                        aria-label="Filtrer les élèves par statut interne/externe"
+                    >
+                        <option value="tous">Tous les élèves</option>
+                        <option value="interne">Internes uniquement</option>
+                        <option value="externe">Externes uniquement</option>
+                    </select>
+                </div>
 
                 {/* Bouton de basculement d'affichage */}
                 <div className="infos_cards__control-group">
@@ -215,6 +232,16 @@ export default function EcoleAdminEleveLayout({ children }) {
                             matchesGender = eleve.sexe === filterByGender;
                         }
                         
+                        // Filtre par statut interne/externe
+                        let matchesInterne = true;
+                        if (filterByInterne !== 'tous') {
+                            if (filterByInterne === 'interne') {
+                                matchesInterne = eleve.isInterne === true;
+                            } else if (filterByInterne === 'externe') {
+                                matchesInterne = eleve.isInterne === false;
+                            }
+                        }
+                        
                         // Filtre par recherche textuelle
                         let matchesSearch = true;
                         if (searchText.trim()) {
@@ -225,7 +252,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                             matchesSearch = nomComplet.includes(searchLower);
                         }
                         
-                        return matchesClasse && matchesGender && matchesSearch;
+                        return matchesClasse && matchesGender && matchesInterne && matchesSearch;
                     })
                     .sort((a, b) => {
                         let comparison = 0;

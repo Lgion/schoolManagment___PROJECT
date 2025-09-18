@@ -54,8 +54,8 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
             {isInterne ? <span className="eleve-card__isinterne-badge">Interne</span> : <span className="eleve-card__isinterne-badge eleve-card__isinterne-badge--externe">Externe</span>}
           </div>
           <div className="eleve-card__progress">
-            <div className="eleve-card__progress-label">Scolarité</div>
-            <div className="eleve-card__progress-bar">
+            <div className="eleve-card__progress-label">Frais Scolarité</div>
+            <div className="eleve-card__progress-bar" title={`Argent: ${progress.totalArgent} F / 20000 F ||| Riz: ${progress.totalRiz} kg / 50 kg`}>
               <div className="eleve-card__progress-argent" style={{width: progress.argent + '%'}} title={`Argent: ${progress.totalArgent} F / 20000 F`}></div>
               <div className="eleve-card__progress-riz" style={{width: progress.riz + '%'}} title={`Riz: ${progress.totalRiz} kg / 50 kg`}></div>
             </div>
