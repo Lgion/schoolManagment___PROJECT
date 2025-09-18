@@ -169,6 +169,12 @@ export const AdminContextProvider = ({ children }) => {
     return await res.json(); // { paths }
   }, []);
 
+  useEffect(() => {
+    
+    if(process.env.NEXT_PUBLIC_MODE === 'test') {
+      localStorage.clear()
+    }
+  }, [])
   // --- AUTO FETCH CLASSES AU MONTAGE ---
   useEffect(() => {
     if (classes.length === 0) fetchClasses();
