@@ -1694,15 +1694,108 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
   );
 }
 
+// Fonction de migration de l'ancien format vers le nouveau
+function migrateCompositionsFormat(oldCompositions) {
+  if (!oldCompositions || typeof oldCompositions !== 'object') return {};
+  
+  const migratedCompositions = {};
+  
+  Object.entries(oldCompositions).forEach(([year, trimestres]) => {
+    if (!Array.isArray(trimestres)) return;
+    
+    migratedCompositions[year] = trimestres.map(trimestreNotes => {
+      if (!Array.isArray(trimestreNotes)) return { officiel: {}, unOfficiel: {} };
+      
+      const result = { officiel: {}, unOfficiel: {} };
+      
+      trimestreNotes.forEach(note => {
+        if (typeof note !== 'object' || note === null) return;
+        
+        // Extraire les données de la note
+        const [matiere, noteData] = Object.entries(note)[0] || [null, null];
+        if (!matiere || !noteData) return;
+        
+        let noteValue, sur, date, officiel;
+        
+        if (typeof noteData === 'object' && noteData.note !== undefined) {
+          // Nouveau format avec objet {note, sur, date, officiel}
+          noteValue = noteData.note;
+          sur = noteData.sur || 20;
+          date = noteData.date;
+          officiel = noteData.officiel !== undefined ? noteData.officiel : true;
+        } else {
+          // Ancien format avec juste la valeur numérique
+          noteValue = noteData;
+          sur = 20;
+          date = new Date().toISOString().split('T')[0]; // Date par défaut
+          officiel = true;
+        }
+        
+        // Convertir la date en timestamp
+        let timestamp;
+        if (date) {
+          timestamp = new Date(date).getTime().toString();
+        } else {
+          timestamp = Date.now().toString();
+        }
+        
+        // Déterminer la catégorie (officiel/unOfficiel)
+        const category = officiel ? 'officiel' : 'unOfficiel';
+        
+        // Initialiser le timestamp s'il n'existe pas
+        if (!result[category][timestamp]) {
+          result[category][timestamp] = {};
+        }
+        
+        // Ajouter la note
+        result[category][timestamp][matiere] = {
+          note: noteValue,
+          sur: sur
+        };
+      });
+      
+      return result;
+    });
+  });
+  
+  console.log('🔄 Migration des compositions terminée:', migratedCompositions);
+  return migratedCompositions;
+}
+
 // --- Bloc de gestion des compositions par trimestre ---
 function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, studentData, dynamicSubjects, subjectsLoaded, classCoefficients, classes = [] }) {
-  // Format attendu : {"2025-2026": [[{"Mathématiques": 15}, {"Français": 12}], [{"Sciences": 14}], [{"Anglais": 18}]]}
+  // Nouveau format : {"2025-2026": [{officiel: {timestamp: {matiere: {note, sur}}}, unOfficiel: {...}}, ...]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
   const [selectedMatiere, setSelectedMatiere] = useState('Mathématiques');
   const [selectedDenominateur, setSelectedDenominateur] = useState(COEFFICIENTS_MATIERES['Mathématiques'].toString());
   const [selectedDate, setSelectedDate] = useState('');
   const [isOfficiel, setIsOfficiel] = useState(true);
+  
+  // Migration automatique si l'ancien format est détecté
+  const [migratedCompositions, setMigratedCompositions] = useState(() => {
+    // Détecter l'ancien format (array de notes directement)
+    const yearData = compositions[schoolYear];
+    if (Array.isArray(yearData) && yearData.length > 0) {
+      const firstTrimestre = yearData[0];
+      if (Array.isArray(firstTrimestre)) {
+        // Ancien format détecté, migration nécessaire
+        console.log('🔄 Ancien format détecté, migration en cours...');
+        const migrated = migrateCompositionsFormat(compositions);
+        // Note: onChange sera appelé dans useEffect après l'initialisation
+        return migrated;
+      }
+    }
+    return compositions;
+  });
+
+  // Effect pour sauvegarder la migration après l'initialisation
+  useEffect(() => {
+    if (onChange && migratedCompositions !== compositions) {
+      console.log('💾 Sauvegarde de la migration...');
+      onChange(migratedCompositions);
+    }
+  }, [migratedCompositions, onChange]);
   
   // Récupérer les compositions disponibles pour la classe de l'élève selon l'année sélectionnée
   const getAvailableCompositions = () => {
@@ -1729,6 +1822,27 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
   };
   
   const availableCompositions = getAvailableCompositions();
+  
+  // Fonction pour valider qu'un timestamp existe dans les compositions de classe
+  const validateTimestampWithClass = (timestamp) => {
+    if (!classes || !Array.isArray(classes)) return false;
+    
+    // Trouver la classe de l'élève pour l'année scolaire sélectionnée
+    const studentClass = classes.find(classe => 
+      classe.annee === schoolYear && 
+      classe.eleves && 
+      classe.eleves.includes(studentData._id)
+    );
+    
+    if (!studentClass || !studentClass.compositions || !Array.isArray(studentClass.compositions)) {
+      return false;
+    }
+    
+    // Vérifier si le timestamp existe dans les compositions de classe
+    return studentClass.compositions.some(([classTimestamp]) => 
+      classTimestamp.toString() === timestamp.toString()
+    );
+  };
   
   // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
   const getCoefficientForSubject = (matiere) => {
@@ -1764,6 +1878,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
   const [showingGroupForm, setShowingGroupForm] = useState(null); // trimestre en cours de saisie groupée
   const [groupFormData, setGroupFormData] = useState({}); // {matiere: {note, sur, officiel}}
   const [groupCommonDate, setGroupCommonDate] = useState(''); // Date commune pour toutes les notes du groupe
+  const [groupOfficielStatus, setGroupOfficielStatus] = useState(true); // Statut officiel/non-officiel pour le groupe
   
 
   
@@ -1775,41 +1890,44 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
     const start = currentYearStart - 10 + i;
     return `${start}-${start + 1}`;
   });
-  const yearsSet = new Set([...yearRange, ...Object.keys(compositions || {})]);
+  const yearsSet = new Set([...yearRange, ...Object.keys(migratedCompositions || {})]);
   const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
-  // On récupère le tableau pour l'année courante
-  const compoArr = compositions[schoolYear] || [[], [], []];
+  // On récupère le tableau pour l'année courante avec la nouvelle structure
+  const compoArr = migratedCompositions[schoolYear] || [
+    { officiel: {}, unOfficiel: {} },
+    { officiel: {}, unOfficiel: {} },
+    { officiel: {}, unOfficiel: {} }
+  ];
 
-  // Fonction pour calculer la moyenne d'un trimestre avec coefficients (sur = coefficient)
-  const calculateTrimestreMoyenne = (trimestreNotes) => {
-    if (!Array.isArray(trimestreNotes) || trimestreNotes.length === 0) return null;
+  // Fonction pour calculer la moyenne d'un trimestre avec la nouvelle structure
+  const calculateTrimestreMoyenne = (trimestreData) => {
+    if (!trimestreData || typeof trimestreData !== 'object') return null;
     
     let totalPoints = 0;
     let totalCoefficients = 0;
     
-    trimestreNotes.forEach(note => {
-      let noteValue, coefficient;
+    // Parcourir les compositions officielles et non-officielles
+    ['officiel', 'unOfficiel'].forEach(category => {
+      const categoryData = trimestreData[category] || {};
       
-      if (typeof note === 'number') {
-        noteValue = note;
-        coefficient = 2; // Coefficient par défaut pour ancien format
-      } else if (typeof note === 'object' && note !== null) {
-        const [, value] = Object.entries(note)[0] || [null, 0];
-        if (typeof value === 'object' && value.note !== undefined) {
-          noteValue = value.note;
-          coefficient = (value.sur || 20) / 10; // sur/10 = coefficient (sur:20 = coeff:2)
-        } else {
-          noteValue = value;
-          coefficient = 2; // Coefficient par défaut pour format intermédiaire
-        }
-      } else {
-        return; // Skip invalid notes
-      }
-      
-      // Convertir en note sur 20 pour uniformiser
-      const noteSur20 = (noteValue / (coefficient * 10)) * 20;
-      totalPoints += noteSur20 * coefficient;
-      totalCoefficients += coefficient;
+      Object.values(categoryData).forEach(compositionNotes => {
+        if (typeof compositionNotes !== 'object') return;
+        
+        Object.entries(compositionNotes).forEach(([matiere, noteData]) => {
+          if (!noteData || typeof noteData !== 'object') return;
+          
+          const noteValue = noteData.note;
+          const sur = noteData.sur || 20;
+          const coefficient = sur / 10; // sur/10 = coefficient (sur:20 = coeff:2)
+          
+          if (typeof noteValue === 'number' && noteValue >= 0) {
+            // Convertir en note sur 20 pour uniformiser
+            const noteSur20 = (noteValue / sur) * 20;
+            totalPoints += noteSur20 * coefficient;
+            totalCoefficients += coefficient;
+          }
+        });
+      });
     });
     
     return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : null;
@@ -1829,18 +1947,48 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
 
   const handleAdd = idx => {
     if (!onChange || newNote === '' || isNaN(Number(newNote)) || !selectedDate) return;
+    
     const noteNum = Number(newNote);
     const denominateur = Number(selectedDenominateur);
-    const noteObj = { 
-      [selectedMatiere]: { 
-        note: noteNum, 
-        sur: denominateur,
-        date: selectedDate,
-        officiel: isOfficiel
-      } 
+    const timestamp = selectedDate; // selectedDate contient déjà le timestamp
+    const category = isOfficiel ? 'officiel' : 'unOfficiel';
+    
+    // Validation: vérifier que le timestamp existe dans les compositions de classe
+    if (!validateTimestampWithClass(timestamp)) {
+      alert('Cette date de composition n\'existe pas dans la classe de l\'élève pour cette année scolaire.');
+      return;
+    }
+    
+    // Créer une copie de la structure actuelle
+    const newCompoArr = [...compoArr];
+    
+    // S'assurer que le trimestre existe avec la bonne structure
+    if (!newCompoArr[idx]) {
+      newCompoArr[idx] = { officiel: {}, unOfficiel: {} };
+    }
+    
+    // S'assurer que la catégorie existe
+    if (!newCompoArr[idx][category]) {
+      newCompoArr[idx][category] = {};
+    }
+    
+    // S'assurer que le timestamp existe
+    if (!newCompoArr[idx][category][timestamp]) {
+      newCompoArr[idx][category][timestamp] = {};
+    }
+    
+    // Ajouter la note
+    newCompoArr[idx][category][timestamp][selectedMatiere] = {
+      note: noteNum,
+      sur: denominateur
     };
-    const newArr = compoArr.map((arr, i) => i === idx ? [...arr, noteObj] : arr);
-    onChange({ ...compositions, [schoolYear]: newArr });
+    
+    // Sauvegarder avec la nouvelle structure
+    const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
+    onChange(newCompositions);
+    setMigratedCompositions(newCompositions);
+    
+    // Reset du formulaire
     setAdding(null); 
     setNewNote(''); 
     setSelectedMatiere('Mathématiques'); 
@@ -1918,15 +2066,15 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
     subjects.forEach(matiere => {
       initialFormData[matiere] = {
         note: '',
-        sur: getCoefficientForSubject(matiere),
-        officiel: true
+        sur: getCoefficientForSubject(matiere)
       };
     });
     
     setGroupFormData(initialFormData);
-    setGroupCommonDate(defaultDate); // Initialiser la date commune
+    setGroupCommonDate(''); // Initialiser avec une date vide
+    setGroupOfficielStatus(true); // Initialiser le statut
     setShowingGroupForm(idx);
-    console.log('Formulaire de groupe initialisé:', { formData: initialFormData, commonDate: defaultDate });
+    console.log('Formulaire de groupe initialisé:', { formData: initialFormData });
   };
   
   // Fonction pour valider le formulaire de groupe
@@ -1937,22 +2085,57 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
       return;
     }
     
-    const groupNotes = Object.entries(groupFormData).map(([matiere, data]) => ({
-      [matiere]: {
-        note: parseFloat(data.note) || 0,
-        sur: data.sur,
-        date: groupCommonDate, // Utiliser la date commune pour toutes les notes
-        officiel: data.officiel
-      }
-    }));
+    const timestamp = groupCommonDate; // groupCommonDate contient déjà le timestamp
     
-    const newArr = compoArr.map((arr, i) => i === showingGroupForm ? [...arr, ...groupNotes] : arr);
-    onChange({ ...compositions, [schoolYear]: newArr });
+    // Validation: vérifier que le timestamp existe dans les compositions de classe
+    if (!validateTimestampWithClass(timestamp)) {
+      alert('Cette date de composition n\'existe pas dans la classe de l\'élève pour cette année scolaire.');
+      return;
+    }
+    
+    // Créer une copie de la structure actuelle
+    const newCompoArr = [...compoArr];
+    const idx = showingGroupForm;
+    
+    // S'assurer que le trimestre existe avec la bonne structure
+    if (!newCompoArr[idx]) {
+      newCompoArr[idx] = { officiel: {}, unOfficiel: {} };
+    }
+    
+    // Traiter chaque matière du groupe
+    Object.entries(groupFormData).forEach(([matiere, data]) => {
+      const noteValue = parseFloat(data.note);
+      if (isNaN(noteValue) || noteValue < 0) return; // Ignorer les notes invalides
+      
+      const category = groupOfficielStatus ? 'officiel' : 'unOfficiel';
+      
+      // S'assurer que la catégorie existe
+      if (!newCompoArr[idx][category]) {
+        newCompoArr[idx][category] = {};
+      }
+      
+      // S'assurer que le timestamp existe
+      if (!newCompoArr[idx][category][timestamp]) {
+        newCompoArr[idx][category][timestamp] = {};
+      }
+      
+      // Ajouter la note
+      newCompoArr[idx][category][timestamp][matiere] = {
+        note: noteValue,
+        sur: data.sur
+      };
+    });
+    
+    // Sauvegarder avec la nouvelle structure
+    const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
+    onChange(newCompositions);
+    setMigratedCompositions(newCompositions);
     
     // Réinitialiser le formulaire
     setShowingGroupForm(null);
     setGroupFormData({});
     setGroupCommonDate(''); // Réinitialiser la date commune
+    setGroupOfficielStatus(true); // Réinitialiser le statut
     
     alert(`Groupe de ${Object.keys(groupFormData).length} notes créé avec succès pour le ${groupCommonDate} !`);
   };
@@ -1962,6 +2145,31 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
     setShowingGroupForm(null);
     setGroupFormData({});
     setGroupCommonDate(''); // Réinitialiser la date commune
+  };
+
+  // Fonction pour supprimer une note dans la nouvelle structure
+  const handleRemoveNew = (trimestreIdx, category, timestamp, matiere) => {
+    if (!onChange) return;
+    
+    const newCompoArr = [...compoArr];
+    
+    // Supprimer la matière spécifique
+    if (newCompoArr[trimestreIdx] && 
+        newCompoArr[trimestreIdx][category] && 
+        newCompoArr[trimestreIdx][category][timestamp]) {
+      
+      delete newCompoArr[trimestreIdx][category][timestamp][matiere];
+      
+      // Si le timestamp n'a plus de matières, le supprimer
+      if (Object.keys(newCompoArr[trimestreIdx][category][timestamp]).length === 0) {
+        delete newCompoArr[trimestreIdx][category][timestamp];
+      }
+    }
+    
+    // Sauvegarder
+    const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
+    onChange(newCompositions);
+    setMigratedCompositions(newCompositions);
   };
   
   // Fonction pour mettre à jour une donnée du formulaire de groupe
@@ -2000,8 +2208,8 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
       
       {/* Moyenne annuelle */}
       <div className="compositions-block__moyenne-annuelle">
-        <strong>Moyenne annuelle : </strong>
-        {moyenneAnnuelle !== null ? `${moyenneAnnuelle.toFixed(2)}/20` : 'Non calculée'}
+        <strong>Moyenne annuelle ({schoolYear}): </strong>
+        <span>{moyenneAnnuelle !== null ? `${moyenneAnnuelle.toFixed(2)}/20` : 'Non calculée'}</span>
       </div>
 
       {trimestres.map((tri, idx) => (
@@ -2033,70 +2241,63 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
             )}
           </div>
           <div className="compositions-block__notes">
-            {Array.isArray(compoArr[idx]) && compoArr[idx].length > 0 ? (
-              compoArr[idx].map((note, nidx) => {
-                // Support ancien format (nombre), format intermédiaire (objet simple) et nouveau format (objet avec note/sur)
-                let matiere, noteValue, denominateur;
+            {compoArr[idx] && typeof compoArr[idx] === 'object' && (compoArr[idx].officiel || compoArr[idx].unOfficiel) ? (
+              // Regrouper toutes les notes par timestamp (date)
+              (() => {
+                const notesByDate = {};
                 
-                // Debug: Log the note structure
-                console.log('Note structure debug:', { note, type: typeof note, entries: typeof note === 'object' ? Object.entries(note) : null });
+                // Collecter toutes les notes par timestamp
+                Object.entries(compoArr[idx]).forEach(([category, timestamps]) => {
+                  Object.entries(timestamps || {}).forEach(([timestamp, subjects]) => {
+                    if (!notesByDate[timestamp]) {
+                      notesByDate[timestamp] = {
+                        date: new Date(parseInt(timestamp)),
+                        isOfficiel: category === 'officiel',
+                        notes: []
+                      };
+                    }
+                    
+                    Object.entries(subjects || {}).forEach(([matiere, noteData]) => {
+                      notesByDate[timestamp].notes.push({
+                        matiere,
+                        noteValue: noteData.note,
+                        denominateur: noteData.sur || 20,
+                        category
+                      });
+                    });
+                  });
+                });
                 
-                if (typeof note === 'number') {
-                  // Ancien format : 15
-                  matiere = "Autre matière";
-                  noteValue = note;
-                  denominateur = 20;
-                } else if (typeof note === 'object' && note !== null) {
-                  const entries = Object.entries(note);
-                  console.log('Object entries:', entries);
-                  const [matiereKey, value] = entries[0] || [null, 0];
-                  matiere = matiereKey;
-                  
-                  if (typeof value === 'object' && value.note !== undefined) {
-                    // Nouveau format : {"Mathématiques": {note: 15, sur: 20}}
-                    noteValue = value.note;
-                    denominateur = value.sur || 20;
-                  } else {
-                    // Format intermédiaire : {"Mathématiques": 15}
-                    noteValue = value;
-                    denominateur = 20;
-                  }
-                } else {
-                  matiere = "Autre matière";
-                  noteValue = 0;
-                  denominateur = 20;
-                }
-                
-                return (
-                  <div key={nidx} className="compositions-block__note">
-                    <span className="compositions-block__note-matiere">{matiere}:</span>
-                    <span className="compositions-block__note-value">{noteValue}/{denominateur}</span>
-                    {/* Affichage de la date et du type */}
-                    {typeof note === 'object' && note !== null && typeof Object.values(note)[0] === 'object' && (
-                      <div className="compositions-block__note-details">
-                        {Object.values(note)[0].date && (
-                          <span className="compositions-block__note-date">
-                            {new Date(Object.values(note)[0].date).toLocaleDateString('fr-FR')}
-                          </span>
-                        )}
-                        {Object.values(note)[0].officiel !== undefined && (
-                          <span className={`compositions-block__note-badge ${Object.values(note)[0].officiel ? 'compositions-block__note-badge--officiel' : 'compositions-block__note-badge--non-officiel'}`}>
-                            {Object.values(note)[0].officiel ? 'Officiel' : 'Non officiel'}
-                          </span>
-                        )}
+                // Afficher les notes regroupées par date
+                return Object.entries(notesByDate)
+                  .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                  .map(([timestamp, dateGroup]) => (
+                    <div key={timestamp} className="compositions-block__notesDate">
+                      <div className="compositions-block__notesDetails">
+                        <span className="compositions-block__note-date">
+                          {dateGroup.date.toLocaleDateString('fr-FR')}
+                        </span>
+                        <span className={`compositions-block__note-badge ${dateGroup.isOfficiel ? 'compositions-block__note-badge--officiel' : 'compositions-block__note-badge--non-officiel'}`}>
+                          {dateGroup.isOfficiel ? 'Officiel' : 'Non officiel'}
+                        </span>
                       </div>
-                    )}
-                    {onChange && (
-                      <button
-                        type="button"
-                        className="compositions-block__remove-btn"
-                        title="Supprimer"
-                        onClick={() => handleRemove(idx, nidx)}
-                      >×</button>
-                    )}
-                  </div>
-                );
-              })
+                      {dateGroup.notes.map((note, noteIndex) => (
+                        <div key={`${timestamp}-${note.matiere}`} className="compositions-block__note">
+                          <span className="compositions-block__note-matiere">{note.matiere}:</span>
+                          <span className="compositions-block__note-value">{note.noteValue}/{note.denominateur}</span>
+                          {onChange && (
+                            <button
+                              type="button"
+                              className="compositions-block__remove-btn"
+                              title="Supprimer"
+                              onClick={() => handleRemoveNew(idx, note.category, timestamp, note.matiere)}
+                            >×</button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ));
+              })()
             ) : (
               <span className="compositions-block__no-compo">Aucune composition</span>
             )}
@@ -2200,7 +2401,14 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
                   <select
                     className="compositions-block__date-input compositions-block__group-date-input"
                     value={groupCommonDate}
-                    onChange={e => setGroupCommonDate(e.target.value)}
+                    onChange={e => {
+                      setGroupCommonDate(e.target.value);
+                      // Mettre à jour automatiquement le statut officiel/non-officiel
+                      const selectedCompo = availableCompositions.find(compo => compo.value === e.target.value);
+                      if (selectedCompo) {
+                        setGroupOfficielStatus(selectedCompo.officiel);
+                      }
+                    }}
                     required
                   >
                     <option value="">Sélectionnez une date de composition</option>
@@ -2210,6 +2418,14 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
                       </option>
                     ))}
                   </select>
+                  <button
+                    type="button"
+                    className={`compositions-block__officiel-badge ${groupOfficielStatus ? 'compositions-block__officiel-badge--active' : ''}`}
+                    disabled
+                    title="Statut déterminé automatiquement par la date sélectionnée"
+                  >
+                    {groupOfficielStatus ? 'Officiel' : 'Non officiel'}
+                  </button>
                 </div>
                 
                 {Object.entries(groupFormData).map(([matiere, data]) => (
@@ -2247,14 +2463,6 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
                       <option value="100">100</option>
                     </select>
                     
-                    <button
-                      type="button"
-                      className={`compositions-block__officiel-badge ${data.officiel ? 'compositions-block__officiel-badge--active' : ''}`}
-                      onClick={() => updateGroupFormData(matiere, 'officiel', !data.officiel)}
-                      title="Cliquer pour changer le type"
-                    >
-                      {data.officiel ? 'Officiel' : 'Non officiel'}
-                    </button>
                   </div>
                 ))}
                 
