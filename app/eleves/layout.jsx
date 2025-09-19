@@ -93,6 +93,11 @@ export default function EcoleAdminEleveLayout({ children }) {
         });
     }, [eleves])
     
+    // Calculer les statistiques pour les filtres
+    const totalEleves = eleves?.length || 0;
+    const internesCount = eleves?.filter(eleve => eleve.isInterne === true).length || 0;
+    const externesCount = totalEleves - internesCount;
+    
     return (<>
         <h2>Liste des élèves <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h2>
         <form className="infos_cards">
@@ -178,7 +183,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 
                 {/* Filtre par statut interne/externe */}
                 <div className="infos_cards__control-group">
-                    <label htmlFor="interne-filter" className="infos_cards__label">🏠 Filtrer par statut :</label>
+                    <label htmlFor="interne-filter" className="infos_cards__label">🏠 Interne({internesCount})/Externe({externesCount}) :</label>
                     <select 
                         id="interne-filter"
                         className="infos_cards__select"

@@ -319,6 +319,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     e.preventDefault();
     console.log(form);
     
+    // Activer le loading spinner dès le début de la soumission
+    setUploading(true);
+    
     let newForm = { ...form };
     // alert(type)
     // Si un fichier a été sélectionné, on l'upload maintenant
@@ -366,6 +369,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       console.log(paths);
       
       if (error || !paths) {
+        setUploading(false);
         setError("Erreur lors de l'upload du fichier : " + (error || 'aucun chemin de fichier retourné'));
         return;
       }
@@ -382,7 +386,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       }
     }
     if (type === 'eleve') {
-      if (!newForm.current_classe || !newForm.photo_$_file) return setError('Classe et photo obligatoires.');
+      if (!newForm.current_classe || !newForm.photo_$_file) {
+        setUploading(false);
+        return setError('Classe et photo obligatoires.');
+      }
       // Nettoyage du form pour Mongoose :
       if (newForm.current_classe === "") delete newForm.current_classe;
       // absences : toujours tableau d'objets
@@ -405,7 +412,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
       await ctx.saveEleve(newForm);
     } else if (type === 'enseignant') {
-      if (!newForm.nom || !newForm.photo_$_file) return setError('Nom et photo obligatoires.');
+      if (!newForm.nom || !newForm.photo_$_file) {
+        setUploading(false);
+        return setError('Nom et photo obligatoires.');
+      }
       setError('');
       if (typeof newForm['adresse_$_map'] === 'object' && newForm['adresse_$_map'] !== null) {
         if ('lat' in newForm['adresse_$_map'] && 'lng' in newForm['adresse_$_map']) {
@@ -436,7 +446,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     } else if (type === 'classe') {
       console.log('DEBUG SUBMIT CLASSE - Avant traitement:', newForm);
 
-      if (!newForm.niveau || !newForm.alias) return setError('Niveau et alias obligatoires.');
+      if (!newForm.niveau || !newForm.alias) {
+        setUploading(false);
+        return setError('Niveau et alias obligatoires.');
+      }
       
       // Si aucune photo personnalisée n'a été uploadée (utilise encore l'image par défaut)
       if (!newForm.photo || newForm.photo === '/school/classe.webp'|| newForm.photo === '/school/prof.webp') {
@@ -538,6 +551,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         }
       }
     }
+    
+    // Désactiver le loading spinner à la fin
+    setUploading(false);
     onClose();
   };
   const handleMapClick = (coords) => {
@@ -770,11 +786,11 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             <DocumentsBlock form={form} setForm={setForm} selectedDocuments={selectedDocuments} setSelectedDocuments={setSelectedDocuments} />
 
             <label>Notes</label>
-            <AddNoteForm
+            {/* <AddNoteForm
               notes={form.notes || {}}
               onAdd={noteObj => setForm(f => ({ ...f, notes: { ...f.notes, ...noteObj } }))}
               onRemove={timestamp => setForm(f => { const newNotes = { ...f.notes }; delete newNotes[timestamp]; return { ...f, notes: newNotes }; })}
-            />
+            /> */}
 
             <label>Compositions (JSON)</label>
             {/* Bloc de gestion des compositions par trimestre */}
@@ -806,6 +822,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 }
               }))}
               schoolYear={schoolYear}
+              isInterne={form.isInterne || false}
             />
             <textarea readOnly name="scolarity_fees_$_checkbox_" value={form.scolarity_fees_$_checkbox ? JSON.stringify(form.scolarity_fees_$_checkbox) : ''}
             // onChange={e => setForm(f => ({ ...f, scolarity_fees_$_checkbox: e.target.value ? JSON.parse(e.target.value) : {} }))} 
@@ -1437,7 +1454,7 @@ function SchoolHistoryBlock({ schoolHistory, onChange }) {
 }
 
 // --- Bloc de gestion des frais de scolarité par année ---
-function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
+function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   const [showForm, setShowForm] = useState(false);
   const [type, setType] = useState('argent');
   const [val, setVal] = useState('');
@@ -1445,11 +1462,44 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
     const now = new Date();
     return now.toISOString().slice(0, 10);
   });
-  // Liste des dépôts : tableau [{timestamp, argent, riz}]
-  const entries = Object.entries(fees || {}).map(([ts, v]) => ({ ts, ...v }));
+  // Fonction pour convertir l'ancien format vers le nouveau (migration automatique)
+  const migrateFeesFormat = (fees) => {
+    if (!fees || typeof fees !== 'object') return {};
+    
+    const migrated = {};
+    Object.entries(fees).forEach(([ts, value]) => {
+      if (Array.isArray(value)) {
+        // Nouveau format : déjà un array
+        migrated[ts] = value;
+      } else if (value && typeof value === 'object') {
+        // Ancien format : objet unique → convertir en array
+        migrated[ts] = [value];
+      }
+    });
+    return migrated;
+  };
+
+  // Migrer automatiquement les données
+  const migratedFees = migrateFeesFormat(fees);
+
+  // Liste des dépôts : aplatir tous les arrays de dépôts
+  const entries = Object.entries(migratedFees || {}).flatMap(([ts, deposits]) => 
+    deposits.map((deposit, index) => ({ ts, index, ...deposit }))
+  );
+  
+  // Récupérer les frais selon le statut interne/externe
+  const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
+  const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
+  
+  const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
+  const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
+  
+  const targetArgent = isInterne ? interneArgent : externeArgent;
+  const targetRiz = isInterne ? interneRiz : externeRiz;
+
   const totalArgent = entries.reduce((sum, e) => sum + (e.argent ? Number(e.argent) : 0), 0);
   const totalRiz = entries.reduce((sum, e) => sum + (e.riz ? Number(e.riz) : 0), 0);
-  const complete = totalArgent >= 20000 && totalRiz >= 50;
+  const complete = totalArgent >= targetArgent && totalRiz >= targetRiz;
 
   const handleAdd = () => {
     if (!val || isNaN(Number(val)) || Number(val) <= 0) return;
@@ -1457,34 +1507,60 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear }) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     const ts = d.getTime();
-    const newEntry = type === 'argent'
-      ? { argent: Number(val) }
-      : { riz: Number(val) };
-    onChange({ ...fees, [ts]: newEntry });
+    
+    const newDeposit = type === 'argent'
+      ? { argent: Number(val), timestamp: Date.now() }
+      : { riz: Number(val), timestamp: Date.now() };
+    
+    // Ajouter le nouveau dépôt à la liste existante pour ce jour
+    const existingDeposits = migratedFees[ts] || [];
+    const updatedFees = {
+      ...migratedFees,
+      [ts]: [...existingDeposits, newDeposit]
+    };
+    
+    onChange(updatedFees);
     setShowForm(false); setType('argent'); setVal(''); setDate(new Date().toISOString().slice(0, 10));
   };
-  const handleRemove = (ts) => {
-    const newFees = { ...fees };
-    delete newFees[ts];
-    onChange(newFees);
+  const handleRemove = (ts, depositIndex) => {
+    const updatedFees = { ...migratedFees };
+    if (updatedFees[ts] && updatedFees[ts].length > 1) {
+      // Supprimer seulement le dépôt spécifique
+      updatedFees[ts] = updatedFees[ts].filter((_, index) => index !== depositIndex);
+    } else {
+      // Supprimer toute la journée si c'est le dernier dépôt
+      delete updatedFees[ts];
+    }
+    onChange(updatedFees);
   };
+
   return (
     <div className={`scolarity-fees-block ${complete ? 'scolarity-fees-block--complete' : 'scolarity-fees-block--incomplete'}`}>
       <div className="scolarity-fees-block__header">
-        Frais de scolarité – {schoolYear}
+        Frais de scolarité – {schoolYear} ({isInterne ? 'Interne' : 'Externe'})
       </div>
       <div className="scolarity-fees-block__totals">
-        <span>Argent : <b>{totalArgent} F</b> / 20000 F</span>
-        <span>Riz : <b>{totalRiz} kg</b> / 50 kg</span>
+        <span>Argent : <b>{totalArgent} F</b> / {targetArgent} F</span>
+        <span>Riz : <b>{totalRiz} kg</b> / {targetRiz} kg</span>
       </div>
       <div className="scolarity-fees-block__list">
         {entries.length === 0 && <span className="scolarity-fees-block__empty">Aucun dépôt enregistré</span>}
-        {entries.sort((a, b) => a.ts - b.ts).map(e => (
-          <div className="scolarity-fees-block__entry" key={e.ts}>
+        {entries.sort((a, b) => Number(a.ts) - Number(b.ts)).map((e, globalIndex) => (
+          <div className="scolarity-fees-block__entry" key={`${e.ts}-${e.index}-${globalIndex}`}>
             <span className="scolarity-fees-block__entry-date">{new Date(Number(e.ts)).toLocaleDateString()}</span>
             {e.argent && <span className="scolarity-fees-block__entry-argent">{e.argent} F</span>}
             {e.riz && <span className="scolarity-fees-block__entry-riz">{e.riz} kg</span>}
-            <button type="button" className="scolarity-fees-block__remove-btn" title="Supprimer" onClick={() => handleRemove(e.ts)}>×</button>
+            <span className="scolarity-fees-block__entry-time">
+              {e.timestamp ? new Date(e.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
+            </span>
+            <button 
+              type="button" 
+              className="scolarity-fees-block__remove-btn" 
+              title="Supprimer ce dépôt" 
+              onClick={() => handleRemove(e.ts, e.index)}
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>
@@ -2582,18 +2658,40 @@ function BonusBlock({ bonus, setForm }) {
   const [showBonusForm, setShowBonusForm] = useState(false);
   const [bonusDate, setBonusDate] = useState('');
   const [bonusLabel, setBonusLabel] = useState('');
-  const items = bonus && typeof bonus === 'object' ? Object.entries(bonus) : [];
+  // Gérer les deux formats : objet direct ou array d'objets
+  const items = bonus && typeof bonus === 'object' 
+    ? (Array.isArray(bonus) 
+        ? bonus.flatMap(obj => Object.entries(obj)) 
+        : Object.entries(bonus))
+    : [];
 
   if (!setForm) {
+    // Groupement par mois pour l'affichage lecture seule
+    const groupedByMonth = items.reduce((acc, [ts, txt]) => {
+      const d = new Date(Number(ts));
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push([ts, txt]);
+      return acc;
+    }, {});
+
     return (
       <div className="bonus-block">
         <div className="bonus-header">
           <span>Bonus : <b>{items.length}</b></span>
         </div>
         <div className="bonus-list">
-          {items.map(([label, value]) => (
-            <div key={label} className="bonus-item">
-              <span>{label} : {value} F</span>
+          {Object.entries(groupedByMonth).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
+            <div key={month} className="bonus-month">
+              <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+              <div className="month-bonus">
+                {entries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
+                  <div className="bonus-entry" key={ts}>
+                    <span className="bonus-date">{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
+                    <span className="bonus-txt">{typeof txt === 'string' ? txt : (typeof txt === 'object' ? Object.values(txt)[0] || JSON.stringify(txt) : String(txt))}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -2616,7 +2714,20 @@ function BonusBlock({ bonus, setForm }) {
           <button type="button" onClick={() => {
             if (bonusDate && bonusLabel) {
               const ts = new Date(bonusDate).setHours(0,0,0,0);
-              setForm(f => ({ ...f, bonus: { ...(f.bonus||{}), [ts]: bonusLabel } }));
+              setForm(f => {
+                // Gérer les deux formats : array d'objets ou objet direct
+                const currentBonus = f.bonus || [];
+                if (Array.isArray(currentBonus)) {
+                  // Format array d'objets - ajouter un nouvel objet
+                  return { ...f, bonus: [...currentBonus, { [ts]: bonusLabel }] };
+                } else {
+                  // Format objet direct - convertir en array puis ajouter
+                  const bonusArray = Object.keys(currentBonus).length > 0 
+                    ? [currentBonus, { [ts]: bonusLabel }]
+                    : [{ [ts]: bonusLabel }];
+                  return { ...f, bonus: bonusArray };
+                }
+              });
               setShowBonusForm(false);
               setBonusDate('');
               setBonusLabel('');
@@ -2635,14 +2746,28 @@ function BonusBlock({ bonus, setForm }) {
           return acc;
         }, {})).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
           <div key={month} className="bonus-month">
-            <div className="month-title">{new Date(entries[0][0] * 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+            <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
             <div className="month-bonus">
               {entries.sort((a, b) => a[0] - b[0]).map(([ts, txt]) => (
                 <div className="bonus-entry" key={ts} style={{ position: 'relative', display: 'inline-block', margin: '0 6px 6px 0' }}>
                   <span>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
                   <span className="bonus-txt">{txt}</span>
                   <button type="button" className="remove-bonus-btn" title="Supprimer" onClick={() => {
-                    if (window.confirm('Supprimer ce bonus ?')) setForm(f => { const o = { ...f.bonus }; delete o[ts]; return { ...f, bonus: o }; });
+                    if (window.confirm('Supprimer ce bonus ?')) {
+                      setForm(f => {
+                        const currentBonus = f.bonus || [];
+                        if (Array.isArray(currentBonus)) {
+                          // Format array d'objets - filtrer l'objet qui contient ce timestamp
+                          const newBonus = currentBonus.filter(obj => !obj.hasOwnProperty(ts));
+                          return { ...f, bonus: newBonus };
+                        } else {
+                          // Format objet direct - supprimer la clé
+                          const o = { ...currentBonus };
+                          delete o[ts];
+                          return { ...f, bonus: o };
+                        }
+                      });
+                    }
                   }} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#b00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1em', lineHeight: '1em' }}>&times;</button>
                 </div>
               ))}
@@ -2659,18 +2784,40 @@ function ManusBlock({ manus, setForm }) {
   const [showManusForm, setShowManusForm] = useState(false);
   const [manusDate, setManusDate] = useState('');
   const [manusLabel, setManusLabel] = useState('');
-  const items = manus && typeof manus === 'object' ? Object.entries(manus) : [];
+  // Gérer les deux formats : objet direct ou array d'objets
+  const items = manus && typeof manus === 'object' 
+    ? (Array.isArray(manus) 
+        ? manus.flatMap(obj => Object.entries(obj)) 
+        : Object.entries(manus))
+    : [];
 
   if (!setForm) {
+    // Groupement par mois pour l'affichage lecture seule
+    const groupedByMonth = items.reduce((acc, [ts, txt]) => {
+      const d = new Date(Number(ts));
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push([ts, txt]);
+      return acc;
+    }, {});
+
     return (
       <div className="manus-block">
         <div className="manus-header">
           <span>Malus : <b>{items.length}</b></span>
         </div>
         <div className="manus-list">
-          {items.map(([label, value]) => (
-            <div key={label} className="manus-item">
-              <span>{label} : {value}</span>
+          {Object.entries(groupedByMonth).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
+            <div key={month} className="manus-month">
+              <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+              <div className="month-manus">
+                {entries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
+                  <div className="manus-entry" key={ts}>
+                    <span className="manus-date">{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
+                    <span className="manus-txt">{typeof txt === 'string' ? txt : (typeof txt === 'object' ? Object.values(txt)[0] || JSON.stringify(txt) : String(txt))}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -2693,7 +2840,20 @@ function ManusBlock({ manus, setForm }) {
           <button type="button" onClick={() => {
             if (manusDate && manusLabel) {
               const ts = new Date(manusDate).setHours(0,0,0,0);
-              setForm(f => ({ ...f, manus: { ...(f.manus||{}), [ts]: manusLabel } }));
+              setForm(f => {
+                // Gérer les deux formats : array d'objets ou objet direct
+                const currentManus = f.manus || [];
+                if (Array.isArray(currentManus)) {
+                  // Format array d'objets - ajouter un nouvel objet
+                  return { ...f, manus: [...currentManus, { [ts]: manusLabel }] };
+                } else {
+                  // Format objet direct - convertir en array puis ajouter
+                  const manusArray = Object.keys(currentManus).length > 0 
+                    ? [currentManus, { [ts]: manusLabel }]
+                    : [{ [ts]: manusLabel }];
+                  return { ...f, manus: manusArray };
+                }
+              });
               setShowManusForm(false);
               setManusDate('');
               setManusLabel('');
@@ -2712,14 +2872,28 @@ function ManusBlock({ manus, setForm }) {
           return acc;
         }, {})).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
           <div key={month} className="manus-month">
-            <div className="month-title">{new Date(entries[0][0] * 1).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+            <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
             <div className="month-manus">
               {entries.sort((a, b) => a[0] - b[0]).map(([ts, txt]) => (
                 <div className="manus-entry" key={ts} style={{ position: 'relative', display: 'inline-block', margin: '0 6px 6px 0' }}>
                   <span>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
                   <span className="manus-txt">{txt}</span>
                   <button type="button" className="remove-manus-btn" title="Supprimer" onClick={() => {
-                    if (window.confirm('Supprimer ce malus ?')) setForm(f => { const o = { ...f.manus }; delete o[ts]; return { ...f, manus: o }; });
+                    if (window.confirm('Supprimer ce malus ?')) {
+                      setForm(f => {
+                        const currentManus = f.manus || [];
+                        if (Array.isArray(currentManus)) {
+                          // Format array d'objets - filtrer l'objet qui contient ce timestamp
+                          const newManus = currentManus.filter(obj => !obj.hasOwnProperty(ts));
+                          return { ...f, manus: newManus };
+                        } else {
+                          // Format objet direct - supprimer la clé
+                          const o = { ...currentManus };
+                          delete o[ts];
+                          return { ...f, manus: o };
+                        }
+                      });
+                    }
                   }} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#b00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1em', lineHeight: '1em' }}>&times;</button>
                 </div>
               ))}
@@ -2869,8 +3043,8 @@ function DocumentsBlock({ form, setForm, selectedDocuments = [], setSelectedDocu
             </div>
             {doc&&<a href={doc} target="_blank">
               <span className="doc-icon" title="Télécharger"> Télécharger</span>
-              <img className="docs_preview_img" src="" alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
-              <iframe className="docs_preview_pdf" src="" alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
+              <img className="docs_preview_img" src={null} alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
+              <iframe className="docs_preview_pdf" src={null} alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
             </a>}
           </Fragment>))}
         </div>

@@ -32,6 +32,14 @@ $font-secondary: $secondaryFont;
   margin: 0;
   padding: 0;
 
+  >section{
+    display: flex;
+    gap:.5em;
+    div{flex:1;}
+    @media (max-width: 768px) {
+      display: block;
+    }
+  }
   &.--reduce{
     inset: 150px 0px 55% 85%;
     padding:0;
@@ -899,6 +907,7 @@ section>div:has(.modal){
   
   textarea {
     @extend %entityModal__textarea;
+    display: none;
   }
 
   label {
@@ -1249,6 +1258,7 @@ section>div:has(.modal){
     position: relative;
   }
   &__entry-date { color: #666; font-size: 0.95em; margin-right: 8px; }
+  &__entry-time { color: #999; font-size: 0.85em; margin-left: 4px; }
   &__entry-argent { color: #137c13; font-weight: 600; }
   &__entry-riz { color: #3466b8; font-weight: 600; }
   &__remove-btn {
@@ -1442,6 +1452,9 @@ section>div:has(.modal){
 // Spécialisation absences
 .absences-block {
   @extend .entry-block;
+  max-width: unset !important;
+  min-width: 0 !important;
+  padding:1em !important;
 }
 .absences-header {
   @extend .entry-header;
@@ -1468,54 +1481,54 @@ section>div:has(.modal){
   @extend .entry-picker-modal;
 }
 // Spécialisation bonus
-.bonus-block {
+.bonus-block, .manus-block {
   @extend .entry-block;
 }
-.bonus-header {
+.bonus-header,.manus-header {
   @extend .entry-header;
 }
-.bonus-list {
+.bonus-list,.manus-list {
   @extend .entry-list;
 }
-.bonus-month {
+.bonus-month,.manus-month {
   @extend .entry-month;
 }
-.month-bonus {
+.month-bonus,.month-manus {
   @extend .entry-dates;
 }
-.bonus-entry {
+.bonus-entry,.manus-entry {
   @extend .entry-entry;
 }
-.remove-bonus-btn {
+.remove-bonus-btn,.remove-manus-btn {
   @extend .remove-entry-btn;
 }
-.bonus-picker-modal {
+.bonus-picker-modal,.manus-picker-modal {
   @extend .entry-picker-modal;
+  flex-flow: column;
+  width: 75%;
+}
+.bonus-txt {
+  color: #28a745;
+  font-weight: 600;
+  margin-left: 8px;
+  font-style: italic;
+}
+.bonus-date {
+  color: #666;
+  font-size: 0.9em;
+  margin-right: 8px;
 }
 // Spécialisation manus
-.manus-block {
-  @extend .entry-block;
+.manus-txt {
+  color: #dc3545;
+  font-weight: 600;
+  margin-left: 8px;
+  font-style: italic;
 }
-.manus-header {
-  @extend .entry-header;
-}
-.manus-list {
-  @extend .entry-list;
-}
-.manus-month {
-  @extend .entry-month;
-}
-.month-manus {
-  @extend .entry-dates;
-}
-.manus-entry {
-  @extend .entry-entry;
-}
-.remove-manus-btn {
-  @extend .remove-entry-btn;
-}
-.manus-picker-modal {
-  @extend .entry-picker-modal;
+.manus-date {
+  color: #666;
+  font-size: 0.9em;
+  margin-right: 8px;
 }
 
 // Documents block BEM styles
@@ -2442,7 +2455,7 @@ section>div:has(.modal){
     }
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 768px) {
     padding: 10px;
     &__nav {
       // flex-direction: column;

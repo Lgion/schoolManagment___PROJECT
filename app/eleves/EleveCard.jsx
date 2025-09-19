@@ -4,19 +4,44 @@ import { useDetailPortal } from '../../stores/useDetailPortal';
 import './EleveCard.scss';
 
 // Utilitaire pour progression scolarité (argent/riz)
-function getScolarityProgress(fees) {
+function getScolarityProgress(fees, isInterne = false) {
+  // Récupérer les frais selon le statut interne/externe
+  const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
+  const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
+  
+  const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
+  const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
+  
+  const targetArgent = isInterne ? interneArgent : externeArgent;
+  const targetRiz = isInterne ? interneRiz : externeRiz;
+
   let totalArgent = 0, totalRiz = 0;
   if (fees && typeof fees === 'object') {
-    Object.values(fees).forEach(v => {
-      if (v.argent) totalArgent += Number(v.argent);
-      if (v.riz) totalRiz += Number(v.riz);
+    Object.values(fees).forEach(yearData => {
+      if (yearData && typeof yearData === 'object') {
+        Object.values(yearData).forEach(dayData => {
+          if (Array.isArray(dayData)) {
+            // Nouveau format : array de dépôts
+            dayData.forEach(deposit => {
+              if (deposit.argent) totalArgent += Number(deposit.argent);
+              if (deposit.riz) totalRiz += Number(deposit.riz);
+            });
+          } else if (dayData && typeof dayData === 'object') {
+            // Ancien format : objet unique (rétrocompatibilité)
+            if (dayData.argent) totalArgent += Number(dayData.argent);
+            if (dayData.riz) totalRiz += Number(dayData.riz);
+          }
+        });
+      }
     });
   }
   return {
-    argent: Math.min(100, Math.round((totalArgent / 20000) * 100)),
-    riz: Math.min(100, Math.round((totalRiz / 50) * 100)),
+    argent: Math.min(100, Math.round((totalArgent / targetArgent) * 100)),
+    riz: Math.min(100, Math.round((totalRiz / targetRiz) * 100)),
     totalArgent,
-    totalRiz
+    totalRiz,
+    targetArgent,
+    targetRiz
   };
 }
 
@@ -25,7 +50,7 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
   const photoUrl = eleve.photo_$_file || eleve.photo || '/default-avatar.png';
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
-  const progress = getScolarityProgress(fees);
+  const progress = getScolarityProgress(fees, isInterne);
   const { openPortal } = useDetailPortal();
   
   // Couleur de fond selon le sexe
@@ -55,13 +80,13 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
           </div>
           <div className="eleve-card__progress">
             <div className="eleve-card__progress-label">Frais Scolarité</div>
-            <div className="eleve-card__progress-bar" title={`Argent: ${progress.totalArgent} F / 20000 F ||| Riz: ${progress.totalRiz} kg / 50 kg`}>
-              <div className="eleve-card__progress-argent" style={{width: progress.argent + '%'}} title={`Argent: ${progress.totalArgent} F / 20000 F`}></div>
-              <div className="eleve-card__progress-riz" style={{width: progress.riz + '%'}} title={`Riz: ${progress.totalRiz} kg / 50 kg`}></div>
+            <div className="eleve-card__progress-bar" title={`Argent: ${progress.totalArgent} F / ${progress.targetArgent} F ||| Riz: ${progress.totalRiz} kg / ${progress.targetRiz} kg`} data-argent={progress.argent + '% argent versé'} data-riz={progress.riz + '% riz versé'}>
+              <div className="eleve-card__progress-argent" style={{width: progress.argent + '%'}} title={`Argent: ${progress.totalArgent} F / ${progress.targetArgent} F`}></div>
+              <div className="eleve-card__progress-riz" style={{width: progress.riz + '%'}} title={`Riz: ${progress.totalRiz} kg / ${progress.targetRiz} kg`}></div>
             </div>
             <div className="eleve-card__progress-values">
-              <span className="eleve-card__progress-value">{progress.totalArgent} F</span> |
-              <span className="eleve-card__progress-value">{progress.totalRiz} kg riz</span>
+              <span className="eleve-card__progress-valueArgent">{progress.totalArgent} F <span>({progress.argent + '%'})</span></span> |
+              <span className="eleve-card__progress-valueRiz">{progress.totalRiz} kg riz <span>({progress.riz + '%'})</span></span>
             </div>
           </div>
         </div>

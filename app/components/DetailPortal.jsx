@@ -68,7 +68,7 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
           </h2>
           <button
             // className="person-detail__reduce"
-            className="detailModal__closeBtn"
+            className="detailModal__closeBtn reduce"
             aria-label="Fermer"
             title="Réduire la fenêtre"
             onClick={e => {

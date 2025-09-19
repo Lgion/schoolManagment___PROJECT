@@ -122,7 +122,7 @@ export default function ElevePage() {
 
       <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} onChangeYear={setSchoolYear} />
               
-      <AddNoteForm notes={eleve.notes} />
+      {/* <AddNoteForm notes={eleve.notes} /> */}
 
       <div className="person-detail__block person-detail__block--history">
         <h2 className="person-detail__subtitle">Historique des écoles</h2>

@@ -99,17 +99,23 @@
     border-radius: 6px;
     overflow: hidden;
     margin-bottom: 0.13em;
+    position: relative;
+    border: 1px solid;
+    box-shadow: 0 0 3px 1px black;
   }
 
   &__progress-argent {
     background: #6c63ff;
-    height: 100%;
-    transition: width 0.25s;
+    top:0;
   }
-
   &__progress-riz {
     background: #f9b233;
-    height: 100%;
+    bottom:0;
+  }
+  &__progress-riz, &__progress-argent{
+    position: absolute;
+    left: 0;
+    height: 50%;
     transition: width 0.25s;
   }
 
@@ -117,10 +123,18 @@
     font-size: 0.93em;
     color: #666;
     margin-top: 0.1em;
+    display: flex;
+    justify-content: space-between; 
   }
 
-  &__progress-value {
+  &__progress-valueArgent{background:#6c63ff;color:white;}
+  &__progress-valueRiz {background:#f9b233;color:black;}
+  &__progress-valueArgent,&__progress-valueRiz {
     margin: 0 0.2em;
+    padding:2px;
+    border: 1px solid black;
+    border-radius: 0 0 5px 5px;
+    >span{font-size: 10px;color:red;font-weight: bold;}
   }
 
   // Modificateur pour affichage en ligne
@@ -180,10 +194,21 @@
       left:5%;
       width:90%;
       border:1px solid;
-      &:before{
-        content: attr(title);
+      &:before,&:after{
+        position: absolute;
         text-align: center;
-        width: 100%;
+        text-shadow: 0 0 3px BLACK,0 0 2px BLACK, 0 0 1px BLACK;
+      }
+      &:before{
+        content: attr(data-argent);
+        color:#6c63ff;
+        left:1em;
+        z-index: 1;
+      }
+      &:after{
+        content: attr(data-riz);
+        color:#f9b233;
+        right:1em;
       }
     }
     
@@ -212,7 +237,7 @@
     }
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 768px) {
     // flex-direction: column;
     align-items: flex-start;
     max-width: 98vw;
