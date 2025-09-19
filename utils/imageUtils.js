@@ -8,6 +8,11 @@
  * @returns {string} - Chemin vers l'image de classe
  */
 export const getClasseImagePath = (classe) => {
+  // Priorité : Cloudinary → Fichier local → Image par défaut
+  if (classe?.cloudinary?.url) {
+    return classe.cloudinary.url;
+  }
+  
   if (!classe || !classe.niveau || !classe.alias || !classe.annee) {
     return '/school/classe.webp'; // Image par défaut
   }
@@ -29,6 +34,11 @@ export const getClasseImagePath = (classe) => {
  * @returns {string} - Chemin vers l'image d'élève
  */
 export const getEleveImagePath = (eleve) => {
+  // Priorité : Cloudinary → Fichier local → Image par défaut
+  if (eleve?.cloudinary?.url) {
+    return eleve.cloudinary.url;
+  }
+  
   if (!eleve || !eleve.nom || !eleve.prenoms || !eleve.naissance_$_date) {
     return '/school/studentsNotHere.webp';
   }
@@ -43,6 +53,11 @@ export const getEleveImagePath = (eleve) => {
  * @returns {string} - Chemin vers l'image d'enseignant
  */
 export const getEnseignantImagePath = (enseignant) => {
+  // Priorité : Cloudinary → Fichier local → Image par défaut
+  if (enseignant?.cloudinary?.url) {
+    return enseignant.cloudinary.url;
+  }
+  
   if (!enseignant || !enseignant.nom || !enseignant.prenoms) {
     return '/school/default-teacher.webp';
   }

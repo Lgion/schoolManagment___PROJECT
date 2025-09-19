@@ -6,6 +6,7 @@ import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock,
 import Gmap from '../_/Gmap_plus';
 import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../components/ClasseEnseignantDisplay';
+import { getEleveImagePath } from '../../utils/imageUtils';
 
 export default function EleveDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
@@ -59,7 +60,7 @@ export default function EleveDetailContent({ entityId }) {
         >Fermer Édition</button>
       }
       <img className="person-detail__photo" 
-        src={eleve.photo_$_file} 
+        src={getEleveImagePath(eleve)} 
         alt="" 
       />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>

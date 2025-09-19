@@ -44,20 +44,27 @@ export async function PUT(request) {
     // Capturer l'ancienne valeur avant modification pour le middleware
     eleve._original = eleve.toObject();
     
-    // Mettre à jour les propriétés
+    // Mettre à jour les propriétés (maintenant que cloudinary est dans le schéma)
     Object.assign(eleve, body);
+    
+    // Log pour debug
+    if (body.cloudinary) {
+      console.log(' Objet cloudinary mis à jour');
+      console.log(' Nouveau:', eleve.cloudinary);
+    }
     
     // Forcer la détection de modification si current_classe a changé
     if (body.current_classe && body.current_classe !== eleve._original.current_classe?.toString()) {
       eleve.markModified('current_classe');
-      console.log('🔍 DEBUG API: current_classe marqué comme modifié');
-      console.log('🔍 DEBUG API: Ancienne classe:', eleve._original.current_classe);
-      console.log('🔍 DEBUG API: Nouvelle classe:', body.current_classe);
+      console.log(' DEBUG API: current_classe marqué comme modifié');
+      console.log(' DEBUG API: Ancienne classe:', eleve._original.current_classe);
+      console.log(' DEBUG API: Nouvelle classe:', body.current_classe);
     }
     
     // Sauvegarder (déclenche les middlewares)
-    console.log('🔍 DEBUG API: Avant save(), current_classe:', eleve.current_classe)
+    console.log(' DEBUG API: Avant save(), current_classe:', eleve.current_classe)
     const updated = await eleve.save()
+    console.log(' DEBUG API: Après save(), middleware devrait se déclencher')
     console.log('🔍 DEBUG API: Après save(), middleware devrait se déclencher')
     
     return NextResponse.json(updated);

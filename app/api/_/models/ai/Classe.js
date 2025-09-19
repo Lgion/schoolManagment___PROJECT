@@ -37,6 +37,12 @@ const classeSchema = mongoose.Schema({
     schedules: [{ type: ObjectId, ref: 'Schedule' }],
     currentScheduleId: { type: ObjectId, ref: 'Schedule' },
     createdAt: { default: +new Date(), type: String},
+    // Objet Cloudinary pour les images optimisées
+    cloudinary: {
+        type: Object,
+        default: null,
+        required: false
+    },
 
 })
 

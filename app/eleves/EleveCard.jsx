@@ -47,7 +47,8 @@ function getScolarityProgress(fees, isInterne = false) {
 
 export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) {
   const prenoms = Array.isArray(eleve.prenoms) ? eleve.prenoms.join(', ') : eleve.prenoms;
-  const photoUrl = eleve.photo_$_file || eleve.photo || '/default-avatar.png';
+  // Priorité : Cloudinary → Fichier local → Avatar par défaut
+  const photoUrl = eleve.cloudinary?.url || eleve.photo_$_file || eleve.photo || '/default-avatar.png';
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
   const progress = getScolarityProgress(fees, isInterne);

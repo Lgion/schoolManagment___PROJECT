@@ -150,18 +150,31 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
       // Attendre que la vidéo soit prête avec promesse
       await new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
-          reject(new Error('Timeout chargement métadonnées'));
-        }, 5000);
+          console.warn('⚠️ [CameraCapture] Timeout métadonnées - continuons quand même');
+          resolve(); // Résoudre au lieu de rejeter
+        }, 3000); // Réduire le timeout à 3s
         
-        videoRef.current.onloadedmetadata = () => {
+        if (videoRef.current) {
+          videoRef.current.onloadedmetadata = () => {
+            clearTimeout(timeoutId);
+            console.log('🎥 [CameraCapture] Métadonnées vidéo chargées');
+            console.log('🎥 [CameraCapture] Dimensions vidéo:', {
+              width: videoRef.current?.videoWidth || 0,
+              height: videoRef.current?.videoHeight || 0
+            });
+            resolve();
+          };
+          
+          // Fallback : si la vidéo est déjà prête
+          if (videoRef.current.readyState >= 1) {
+            clearTimeout(timeoutId);
+            console.log('🎥 [CameraCapture] Vidéo déjà prête');
+            resolve();
+          }
+        } else {
           clearTimeout(timeoutId);
-          console.log('🎥 [CameraCapture] Métadonnées vidéo chargées');
-          console.log('🎥 [CameraCapture] Dimensions vidéo:', {
-            width: videoRef.current?.videoWidth || 0,
-            height: videoRef.current?.videoHeight || 0
-          });
-          resolve();
-        };
+          reject(new Error('Référence vidéo non disponible'));
+        }
         
         // Si les métadonnées sont déjà chargées
         if (videoRef.current.readyState >= 1) {
@@ -171,10 +184,40 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
         }
       });
       
-      // Jouer la vidéo
-      await videoRef.current.play();
-      console.log('🎥 [CameraCapture] Lecture vidéo démarrée avec succès');
-      setIsVideoReady(true); // Marquer la vidéo comme prête
+      // Jouer la vidéo avec vérification et retry
+      let playAttempts = 0;
+      const maxAttempts = 3;
+      
+      while (playAttempts < maxAttempts) {
+        if (videoRef.current) {
+          try {
+            await videoRef.current.play();
+            console.log('🎥 [CameraCapture] Lecture vidéo démarrée avec succès');
+            setIsVideoReady(true); // Marquer la vidéo comme prête
+            break; // Sortir de la boucle si succès
+          } catch (playErr) {
+            console.warn(`⚠️ [CameraCapture] Tentative ${playAttempts + 1} échouée:`, playErr);
+            playAttempts++;
+            if (playAttempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 500)); // Attendre 500ms
+            }
+          }
+        } else {
+          console.warn(`⚠️ [CameraCapture] Référence vidéo null - tentative ${playAttempts + 1}`);
+          playAttempts++;
+          if (playAttempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 200)); // Attendre 200ms
+          }
+        }
+      }
+      
+      // Si toutes les tentatives ont échoué
+      if (playAttempts >= maxAttempts) {
+        console.warn('⚠️ [CameraCapture] Impossible de démarrer la vidéo après plusieurs tentatives');
+        setError('Impossible de démarrer la caméra. Veuillez réessayer.');
+        setIsVideoReady(false);
+        return; // Ne pas throw, juste retourner
+      }
       
     } catch (playError) {
       console.error('🎥 [CameraCapture] Erreur lecture vidéo:', playError);

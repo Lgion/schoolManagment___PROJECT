@@ -15,6 +15,7 @@
 @use "./components/CONTROLS/infosCardsControls.scss";
 @use "./components/CONTENT/homeContent.scss";
 @use "./components/SCHEDULES/index";
+@use "./components/MEDIA/mediaManager.scss";
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);

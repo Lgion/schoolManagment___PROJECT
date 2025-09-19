@@ -6,6 +6,7 @@ import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock,
 import Gmap from '../../_/Gmap_plus';
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../../components/ClasseEnseignantDisplay';
+import { getEleveImagePath } from '../../../utils/imageUtils';
 import { useDetailPortal } from '../../../stores/useDetailPortal';
 import DetailPortal from "../../components/DetailPortal"
 
@@ -80,7 +81,7 @@ export default function ElevePage() {
         >Fermer Édition</button>
       }
       <img className="person-detail__photo" 
-        src={eleve.photo_$_file} 
+        src={getEleveImagePath(eleve)} 
         alt="" 
         title="Réduire la fenêtre"
         onClick={e => {

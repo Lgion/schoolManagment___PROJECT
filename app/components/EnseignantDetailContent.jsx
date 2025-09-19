@@ -2,8 +2,10 @@
 
 import { useContext, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
 import Gmap from '../_/Gmap_plus';
-import { useEntityDetail } from '../../utils/classeUtils';
+import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
+import { getEnseignantImagePath } from '../../utils/imageUtils';
 
 export default function EnseignantDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
@@ -68,10 +70,10 @@ export default function EnseignantDetailContent({ entityId }) {
           <div className="person-detail__header-image">
             <img 
               className="person-detail__photo" 
-              src={enseignant.photo_$_file || '/default-photo.png'} 
+              src={getEnseignantImagePath(enseignant)} 
               alt={`${enseignant.nom} ${enseignant.prenoms}`}
               onError={(e) => {
-                e.target.src = '/default-photo.png';
+                e.target.src = '/school/default-teacher.webp';
               }}
             />
           </div>

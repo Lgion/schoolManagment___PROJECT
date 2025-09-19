@@ -2,9 +2,11 @@
 
 import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AiAdminContext } from '../../..//stores/ai_adminContext';
+import { AiAdminContext } from '../../../stores/ai_adminContext';
+import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
 import Gmap from '../../_/Gmap_plus';
-import { useEntityDetail, ClasseDisplay, MultiClasseDisplay } from '../../../utils/classeUtils';
+import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
+import { getEnseignantImagePath } from '../../../utils/imageUtils';
 import DetailPortal from "../../components/DetailPortal";
 
 export default function EnseignantDetailPage() {
@@ -80,10 +82,10 @@ export default function EnseignantDetailPage() {
           <div className="person-detail__header-image">
             <img 
               className="person-detail__photo" 
-              src={enseignant.photo_$_file || '/default-photo.png'} 
+              src={getEnseignantImagePath(enseignant)} 
               alt={`${enseignant.nom} ${enseignant.prenoms}`}
               onError={(e) => {
-                e.target.src = '/default-photo.png';
+                e.target.src = '/school/default-teacher.webp';
               }}
               onClick={e => {
                 e.preventDefault();

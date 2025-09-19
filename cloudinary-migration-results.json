@@ -1,0 +1,397 @@
+{
+  "date": "2025-09-19T18:24:00.130Z",
+  "migratedCount": 78,
+  "errorCount": 0,
+  "results": [
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Aby Kousso-Éna Murielle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297443/school/eleves/Aby%20Kousso-%C3%89na%20Murielle-1136073600000/photo.webp",
+      "publicId": "school/eleves/Aby Kousso-Éna Murielle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Adepo-Yapo Romuald-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297444/school/eleves/Adepo-Yapo%20Romuald-1136073600000/photo.webp",
+      "publicId": "school/eleves/Adepo-Yapo Romuald-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Ahonodja-Semon Morine-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297445/school/eleves/Ahonodja-Semon%20Morine-1136073600000/photo.webp",
+      "publicId": "school/eleves/Ahonodja-Semon Morine-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Aka-Yapi Bienvenue-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297446/school/eleves/Aka-Yapi%20Bienvenue-1136073600000/photo.webp",
+      "publicId": "school/eleves/Aka-Yapi Bienvenue-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Amon-Amon-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297447/school/eleves/Amon-Amon-1136073600000/photo.webp",
+      "publicId": "school/eleves/Amon-Amon-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Assi-Léon-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297448/school/eleves/Assi-L%C3%A9on-1136073600000/photo.webp",
+      "publicId": "school/eleves/Assi-Léon-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Assi-Yohane-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297449/school/eleves/Assi-Yohane-1136073600000/photo.webp",
+      "publicId": "school/eleves/Assi-Yohane-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Atsen-Christ Yvann-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297450/school/eleves/Atsen-Christ%20Yvann-1136073600000/photo.webp",
+      "publicId": "school/eleves/Atsen-Christ Yvann-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Babogou-Lardja-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297451/school/eleves/Babogou-Lardja-1136073600000/photo.webp",
+      "publicId": "school/eleves/Babogou-Lardja-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Babogou-Yendou-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297452/school/eleves/Babogou-Yendou-1136073600000/photo.webp",
+      "publicId": "school/eleves/Babogou-Yendou-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Badini-Walildye-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297453/school/eleves/Badini-Walildye-1136073600000/photo.webp",
+      "publicId": "school/eleves/Badini-Walildye-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Bonou-Gnassa-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297454/school/eleves/Bonou-Gnassa-1136073600000/photo.webp",
+      "publicId": "school/eleves/Bonou-Gnassa-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Dagolo-Ibrahim-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297455/school/eleves/Dagolo-Ibrahim-1136073600000/photo.webp",
+      "publicId": "school/eleves/Dagolo-Ibrahim-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Dah-Dieudonné-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297456/school/eleves/Dah-Dieudonn%C3%A9-1136073600000/photo.webp",
+      "publicId": "school/eleves/Dah-Dieudonné-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Dah-Tawiya-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297458/school/eleves/Dah-Tawiya-1136073600000/photo.webp",
+      "publicId": "school/eleves/Dah-Tawiya-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Hien-Germain-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297459/school/eleves/Hien-Germain-1136073600000/photo.webp",
+      "publicId": "school/eleves/Hien-Germain-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Hien-Nathanaelle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297460/school/eleves/Hien-Nathanaelle-1136073600000/photo.webp",
+      "publicId": "school/eleves/Hien-Nathanaelle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Hien-Rachelle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297461/school/eleves/Hien-Rachelle-1136073600000/photo.webp",
+      "publicId": "school/eleves/Hien-Rachelle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Hien-Véronique-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297462/school/eleves/Hien-V%C3%A9ronique-1136073600000/photo.webp",
+      "publicId": "school/eleves/Hien-Véronique-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Idou-Prospère-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297463/school/eleves/Idou-Prosp%C3%A8re-1136073600000/photo.webp",
+      "publicId": "school/eleves/Idou-Prospère-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Joama-Adon-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297464/school/eleves/Joama-Adon-1136073600000/photo.webp",
+      "publicId": "school/eleves/Joama-Adon-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Anita-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297465/school/eleves/Kambire-Anita-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Anita-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Aïcha-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297466/school/eleves/Kambire-A%C3%AFcha-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Aïcha-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Christine-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297467/school/eleves/Kambire-Christine-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Christine-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Hirhir Anita-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297468/school/eleves/Kambire-Hirhir%20Anita-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Hirhir Anita-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Pascaline-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297469/school/eleves/Kambire-Pascaline-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Pascaline-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kambire-Évelyne-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297470/school/eleves/Kambire-%C3%89velyne-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kambire-Évelyne-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kassin-Prince-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297471/school/eleves/Kassin-Prince-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kassin-Prince-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kienou-Vancelas-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297472/school/eleves/Kienou-Vancelas-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kienou-Vancelas-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kimou-Christ-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297473/school/eleves/Kimou-Christ-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kimou-Christ-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kimou-Kousso-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297474/school/eleves/Kimou-Kousso-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kimou-Kousso-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kimou-Marie-Chancelle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297475/school/eleves/Kimou-Marie-Chancelle-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kimou-Marie-Chancelle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Koffi-Kan K-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297476/school/eleves/Koffi-Kan%20K-1136073600000/photo.webp",
+      "publicId": "school/eleves/Koffi-Kan K-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Koffi-Yao Roméo-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297477/school/eleves/Koffi-Yao%20Rom%C3%A9o-1136073600000/photo.webp",
+      "publicId": "school/eleves/Koffi-Yao Roméo-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Koissi-Kobenan-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297478/school/eleves/Koissi-Kobenan-1136073600000/photo.webp",
+      "publicId": "school/eleves/Koissi-Kobenan-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Koissi-Kouadjo Énock-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297479/school/eleves/Koissi-Kouadjo%20%C3%89nock-1136073600000/photo.webp",
+      "publicId": "school/eleves/Koissi-Kouadjo Énock-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kouame-Kobenan-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297480/school/eleves/Kouame-Kobenan-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kouame-Kobenan-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Kouame-Merveille-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297481/school/eleves/Kouame-Merveille-1136073600000/photo.webp",
+      "publicId": "school/eleves/Kouame-Merveille-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Loukou-Koffi-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297482/school/eleves/Loukou-Koffi-1136073600000/photo.webp",
+      "publicId": "school/eleves/Loukou-Koffi-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Mambo-Amon Reine-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297483/school/eleves/Mambo-Amon%20Reine-1136073600000/photo.webp",
+      "publicId": "school/eleves/Mambo-Amon Reine-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Mambo-Ored Abi-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297484/school/eleves/Mambo-Ored%20Abi-1136073600000/photo.webp",
+      "publicId": "school/eleves/Mambo-Ored Abi-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Money-Chia Isabelle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297486/school/eleves/Money-Chia%20Isabelle-1136073600000/photo.webp",
+      "publicId": "school/eleves/Money-Chia Isabelle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Monnet-Christ Yao-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297487/school/eleves/Monnet-Christ%20Yao-1136073600000/photo.webp",
+      "publicId": "school/eleves/Monnet-Christ Yao-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Aba Ftanislas-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297489/school/eleves/N%27cho-Aba%20Ftanislas-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Aba Ftanislas-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Adico Samuel-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297490/school/eleves/N%27cho-Adico%20Samuel-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Adico Samuel-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Anne Sarah-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297491/school/eleves/N%27cho-Anne%20Sarah-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Anne Sarah-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Apie Chancelle-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297493/school/eleves/N%27cho-Apie%20Chancelle-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Apie Chancelle-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Prince-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297494/school/eleves/N%27cho-Prince-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Prince-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'cho-Yoël Andres-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297495/school/eleves/N%27cho-Yo%C3%ABl%20Andres-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'cho-Yoël Andres-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/N'choh-Koty Martial-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297496/school/eleves/N%27choh-Koty%20Martial-1136073600000/photo.webp",
+      "publicId": "school/eleves/N'choh-Koty Martial-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palenfo-Christophe-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297498/school/eleves/Palenfo-Christophe-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palenfo-Christophe-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palenfo-Mathieu-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758306212/school/eleves/Palenfo-Mathieu-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palenfo-Mathieu-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palenfo-Pascaline-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297499/school/eleves/Palenfo-Pascaline-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palenfo-Pascaline-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palenfo-Samuel-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297500/school/eleves/Palenfo-Samuel-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palenfo-Samuel-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palenfo-Étienne-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297501/school/eleves/Palenfo-%C3%89tienne-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palenfo-Étienne-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Palé-Sié-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297501/school/eleves/Pal%C3%A9-Si%C3%A9-1136073600000/photo.webp",
+      "publicId": "school/eleves/Palé-Sié-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Som-Alimata-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297503/school/eleves/Som-Alimata-1136073600000/photo.webp",
+      "publicId": "school/eleves/Som-Alimata-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Som-Fatoumata-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297504/school/eleves/Som-Fatoumata-1136073600000/photo.webp",
+      "publicId": "school/eleves/Som-Fatoumata-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Séka-Chinan-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297505/school/eleves/S%C3%A9ka-Chinan-1136073600000/photo.webp",
+      "publicId": "school/eleves/Séka-Chinan-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Tchimbiandja-Ismael-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297506/school/eleves/Tchimbiandja-Ismael-1136073600000/photo.webp",
+      "publicId": "school/eleves/Tchimbiandja-Ismael-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Tchimbiandja-Soulemane-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297507/school/eleves/Tchimbiandja-Soulemane-1136073600000/photo.webp",
+      "publicId": "school/eleves/Tchimbiandja-Soulemane-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Tchinbiandja-Kouame-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297508/school/eleves/Tchinbiandja-Kouame-1136073600000/photo.webp",
+      "publicId": "school/eleves/Tchinbiandja-Kouame-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yao-Koissi-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297509/school/eleves/Yao-Koissi-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yao-Koissi-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapi-Eunice-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758306226/school/eleves/Yapi-Eunice-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapi-Eunice-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapi-Kouaho Salomon-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297511/school/eleves/Yapi-Kouaho%20Salomon-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapi-Kouaho Salomon-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapo-Alan N'cho-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297512/school/eleves/Yapo-Alan%20N%27cho-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapo-Alan N'cho-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapo-Atse-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297513/school/eleves/Yapo-Atse-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapo-Atse-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapo-Obin-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297514/school/eleves/Yapo-Obin-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapo-Obin-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/students/Yapo-Yapi Bandone-1136073600000/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297515/school/eleves/Yapo-Yapi%20Bandone-1136073600000/photo.webp",
+      "publicId": "school/eleves/Yapo-Yapi Bandone-1136073600000/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/teachers/Ake-Donald/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297517/school/enseignants/Ake-Donald/photo.webp",
+      "publicId": "school/enseignants/Ake-Donald/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/teachers/akesse-Jean/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297518/school/enseignants/akesse-Jean/photo.webp",
+      "publicId": "school/enseignants/akesse-Jean/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/ce1-a/2024-2025/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297519/school/classes/ce1-a/2024-2025/photo.webp",
+      "publicId": "school/classes/ce1-a/2024-2025/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/ce2-a/2024-2025/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297521/school/classes/ce2-a/2024-2025/photo.webp",
+      "publicId": "school/classes/ce2-a/2024-2025/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/ce2-a/2025-2026/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297522/school/classes/ce2-a/2025-2026/photo.webp",
+      "publicId": "school/classes/ce2-a/2025-2026/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/cm1-a/2024-2025/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297523/school/classes/cm1-a/2024-2025/photo.webp",
+      "publicId": "school/classes/cm1-a/2024-2025/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/cm1-a/2025-2026/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297525/school/classes/cm1-a/2025-2026/photo.webp",
+      "publicId": "school/classes/cm1-a/2025-2026/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/cp1-a/2024-2025/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297526/school/classes/cp1-a/2024-2025/photo.webp",
+      "publicId": "school/classes/cp1-a/2024-2025/photo"
+    },
+    {
+      "localPath": "/home/nihongo/Bureau/schoolManagment___PROJECT/public/school/classes/cp2-a/2024-2025/photo.webp",
+      "cloudinaryUrl": "https://res.cloudinary.com/dfpxi9ywm/image/upload/v1758297528/school/classes/cp2-a/2024-2025/photo.webp",
+      "publicId": "school/classes/cp2-a/2024-2025/photo"
+    }
+  ]
+}

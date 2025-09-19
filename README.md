@@ -63,6 +63,7 @@ DONE
 - il faut un loading spinner quand je valide un formulaire (edit eleve, prof, classe)
 FAILED
 - trouver un moyen pour persister et récupérer les fichiers dans le cloud
+DONE
 - dans la page Classe, permettre de créer la liste des 6 classes en un clic
 - dans la page d'une classe, il faut mettre le select de la date du block composition dans le header. Utiliser un Portal, ou voir si l'IA propose une meilleur solution.
 - dans la page d'une classe, il faut un bouton dans le header permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doit vérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"

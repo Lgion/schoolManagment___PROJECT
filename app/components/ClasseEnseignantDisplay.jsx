@@ -1,7 +1,8 @@
 "use client";
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import { getEnseignantImagePath } from '../../utils/imageUtils';
 import Link from 'next/link';
 
 export default function ClasseEnseignantDisplay({ classe, label = "Enseignant de la classe:" }) {
@@ -44,7 +45,7 @@ export default function ClasseEnseignantDisplay({ classe, label = "Enseignant de
           <div className="classe-enseignant-display__card">
             <img 
               className="classe-enseignant-display__photo" 
-              src={enseignant.photo_$_file} 
+              src={getEnseignantImagePath(enseignant)} 
               alt={`${enseignant.nom} ${enseignant.prenoms}`}
             />
             <div className="classe-enseignant-display__info">

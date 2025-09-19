@@ -45,6 +45,12 @@ const studentSchema = mongoose.Schema({
     commentaires: { default: [], type: [Object], required: true },
     documents: { default: [], type: [String], required: true },
     createdAt: { default: +new Date(), type: String},
+    // Objet Cloudinary pour les images optimisées
+    cloudinary: {
+        type: Object,
+        default: null,
+        required: false
+    },
 
 })
 

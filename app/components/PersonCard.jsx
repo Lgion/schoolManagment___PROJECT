@@ -1,11 +1,16 @@
 // Carte générique pour élève ou enseignant
 import React from 'react';
 import Link from "next/link";
-import { useDetailPortal } from '../../stores/useDetailPortal';
+import { useDetailPortal } from '../../hooks/useDetailPortal';
+import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
 import './PersonCard.scss';
 
 export default function PersonCard({ person, classes, onClick, onEdit, type, viewMode = 'grid' }) {
-  const photoUrl = person.photo_$_file || '/default-photo.png';
+  const photoUrl = type === 'eleve' 
+    ? getEleveImagePath(person) 
+    : type === 'enseignant' 
+    ? getEnseignantImagePath(person) 
+    : person.photo_$_file || '/default-photo.png';
   const { openPortal } = useDetailPortal();
   
   // Couleur de fond selon le sexe

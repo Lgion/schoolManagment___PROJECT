@@ -356,33 +356,78 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
       }
       const uploadRes = await ctx.uploadFile(uploadPayload);
-      console.log('UPLOAD RESULT', uploadRes);
-      const { paths, error } = uploadRes;
-      console.log(paths);
-      
-      console.log("\n\n\nkkkkkkkkkkkkkkkk");
-      
-      console.log(uploadRes);
+      console.log('🎉 UPLOAD RESULT:', uploadRes);
+      console.log('🎉 UPLOAD RESULT - cloudinaryResults:', uploadRes.cloudinaryResults);
+      console.log('🎉 UPLOAD RESULT - success:', uploadRes.success);
+      const { paths, error, cloudinaryResults, success } = uploadRes;
       
       setUploading(false);
-      console.log(error);
-      console.log(paths);
       
       if (error || !paths) {
-        setUploading(false);
         setError("Erreur lors de l'upload du fichier : " + (error || 'aucun chemin de fichier retourné'));
         return;
       }
+      
+      // 🚀 NOUVEAU : Si upload Cloudinary réussi, ajouter l'objet cloudinary
+      console.log('🔍 DEBUG EntityModal - uploadRes:', uploadRes);
+      console.log('🔍 DEBUG EntityModal - success:', success);
+      console.log('🔍 DEBUG EntityModal - cloudinaryResults:', cloudinaryResults);
+      
+      if (success && cloudinaryResults && cloudinaryResults.length > 0) {
+        console.log('🔍 DEBUG EntityModal - cloudinaryResults[0]:', cloudinaryResults[0]);
+        console.log('🔍 DEBUG EntityModal - cloudinaryResults length:', cloudinaryResults.length);
+        console.log('🔍 DEBUG EntityModal - cloudinaryResults full:', JSON.stringify(cloudinaryResults, null, 2));
+        
+        const cloudinaryData = cloudinaryResults[0]; // Premier fichier uploadé
+        console.log('🔍 DEBUG EntityModal - cloudinaryData:', cloudinaryData);
+        
+        // Vérifier que les données Cloudinary sont valides
+        if (cloudinaryData && cloudinaryData.url && typeof cloudinaryData.url === 'string') {
+          // FORCER le remplacement complet de l'objet cloudinary
+          // D'abord supprimer l'ancien objet
+          delete newForm.cloudinary;
+          
+          // Puis créer le nouvel objet cloudinary complet
+          newForm.cloudinary = {
+            url: cloudinaryData.url,
+            publicId: cloudinaryData.publicId,
+            thumbnail: cloudinaryData.url.replace('/upload/', '/upload/c_thumb,w_150,h_150,f_auto,q_auto/'),
+            medium: cloudinaryData.url.replace('/upload/', '/upload/c_scale,w_400,f_auto,q_auto/'),
+            large: cloudinaryData.url.replace('/upload/', '/upload/c_scale,w_800,f_auto,q_auto/'),
+            migratedAt: new Date()
+          };
+          
+          console.log('🔄 Ancien objet cloudinary supprimé et remplacé');
+          
+          console.log('☁️ Objet Cloudinary ajouté:', newForm.cloudinary);
+        } else {
+          console.warn('⚠️ Données Cloudinary invalides:', cloudinaryData);
+        }
+      }
       if (type === 'classe') {
-        newForm.photo = paths.find(p => p.endsWith('photo.webp'));
+        // Filtrer les paths valides avant de chercher
+        const validPaths = paths.filter(p => p && typeof p === 'string');
+        newForm.photo = validPaths.find(p => p.endsWith('photo.webp'));
+        
+        console.log('📁 Paths classe traités:', { paths, validPaths, photo: newForm.photo });
         
         uploadPayload.annee = form.annee;
         uploadPayload.niveau = form.niveau;
         uploadPayload.alias = form.alias;
       }
       if (type === 'eleve' || type === 'enseignant') {
-        newForm.photo_$_file = paths.find(p => p.endsWith('photo.webp'));
-        newForm.documents = paths.filter(p => p.endsWith('photo.webp'));
+        // Filtrer les paths valides avant de chercher
+        const validPaths = paths.filter(p => p && typeof p === 'string');
+        // Accepter tous les formats d'image, pas seulement .webp
+        newForm.photo_$_file = validPaths.find(p => 
+          p.includes('photo') || 
+          p.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||
+          validPaths.length === 1 // Si un seul fichier, c'est probablement la photo
+        ) || validPaths[0]; // Fallback vers le premier fichier
+        
+        newForm.documents = validPaths;
+        
+        console.log('📁 Paths traités:', { paths, validPaths, photo: newForm.photo_$_file });
       }
     }
     if (type === 'eleve') {
@@ -408,9 +453,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         }
       }
       setError('');
-      console.log(newForm);
+      console.log('💾 DEBUG EntityModal - newForm avant saveEleve:', newForm);
+      console.log('💾 DEBUG EntityModal - newForm.cloudinary:', newForm.cloudinary);
 
       await ctx.saveEleve(newForm);
+      console.log('✅ Élève sauvegardé avec succès');
+      setUploading(false);
+      onClose();
+      return; // Sortir de la fonction
     } else if (type === 'enseignant') {
       if (!newForm.nom || !newForm.photo_$_file) {
         setUploading(false);

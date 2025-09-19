@@ -18,6 +18,12 @@ const teacherSchema = mongoose.Schema({
     phone_$_tel: { default: "+2250102030455", type: String, required:true },
     email_$_email: { default: "email@exemple.com", type: String, required:true },
     createdAt: { default: +new Date(), type: String},
+    // Objet Cloudinary pour les images optimisées
+    cloudinary: {
+        type: Object,
+        default: null,
+        required: false
+    },
 })
 
 // Middleware pour capturer l'ancienne valeur avant modification

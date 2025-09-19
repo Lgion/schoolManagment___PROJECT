@@ -1,8 +1,9 @@
-// API RESTful pour les médias
+// API RESTful pour les médias avec support Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
+import cloudinaryService from '../../../../services/cloudinaryService';
 
 const BASE_PATH = path.join(process.cwd(), 'public/school');
 const CLASSES_PATH = path.join(process.cwd(), 'public/school/classes');
@@ -45,7 +46,7 @@ export async function POST(request) {
     const entityType = formData.get('entityType');
     const files = formData.getAll('file');
     
-    console.log("\n🚀 === DÉBUT UPLOAD MEDIA ===");
+    console.log("\n🚀 === DÉBUT UPLOAD MEDIA (CLOUDINARY) ===");
     console.log('📝 FormData reçue:');
     console.log('   - type:', type);
     console.log('   - entityType:', entityType);
@@ -56,6 +57,95 @@ export async function POST(request) {
     if (!type || !files.length) {
       return NextResponse.json({ error: 'Champs requis manquants (type, file)' }, { status: 400 });
     }
+
+    // 🚀 NOUVEAU : Upload direct vers Cloudinary
+    const cloudinaryResults = [];
+    
+    for (const file of files) {
+      try {
+        console.log(`☁️ Upload vers Cloudinary: ${file.name}`);
+        
+        // Convertir le fichier en buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
+        
+        // Déterminer le dossier Cloudinary selon le type d'entité
+        let folder = 'school';
+        let tags = [entityType || type];
+        
+        if (entityType === 'eleve') {
+          folder = 'school/eleves';
+          // Créer un nom de fichier basé sur les données de l'élève
+          const eleveFolder = `${payload.nom}-${payload.prenoms}-${payload['naissance_$_date'] || Date.now()}`;
+          folder = `school/eleves/${eleveFolder}`;
+          tags.push('student', payload.nom);
+        } else if (entityType === 'enseignant') {
+          folder = 'school/enseignants';
+          const profFolder = `${payload.nom}-${payload.prenoms}`;
+          folder = `school/enseignants/${profFolder}`;
+          tags.push('teacher', payload.nom);
+        } else if (entityType === 'classe') {
+          folder = 'school/classes';
+          const classeFolder = `${payload.niveau?.toLowerCase()}-${payload.alias}/${payload.annee}`;
+          folder = `school/classes/${classeFolder}`;
+          tags.push('class', payload.niveau, payload.annee);
+        }
+        
+        // Upload vers Cloudinary (initialiser d'abord le service)
+        cloudinaryService.init();
+        
+        const uploadResult = await new Promise((resolve, reject) => {
+          const stream = cloudinaryService.cloudinary.uploader.upload_stream({
+            folder,
+            resource_type: 'auto',
+            tags,
+            transformation: [{ width: 800, height: 800, crop: 'limit', quality: 'auto', format: 'webp' }]
+          }, (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          });
+          stream.end(buffer);
+        });
+        
+        console.log(`✅ Upload Cloudinary réussi:`, {
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+          folder
+        });
+        
+        cloudinaryResults.push({
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+          folder,
+          originalName: file.name
+        });
+        
+      } catch (uploadError) {
+        console.error(`❌ Erreur upload Cloudinary pour ${file.name}:`, uploadError);
+        // Fallback vers stockage local en cas d'erreur Cloudinary
+        return await handleLocalUpload(type, payload, entityType, files);
+      }
+    }
+    
+    // Retourner les URLs Cloudinary
+    const paths = cloudinaryResults.map(result => result.url);
+    
+    console.log('🎉 Upload Cloudinary terminé avec succès:', paths);
+    return NextResponse.json({ 
+      paths,
+      cloudinaryResults,
+      success: true 
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur générale upload:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// Fonction de fallback pour le stockage local
+async function handleLocalUpload(type, payload, entityType, files) {
+  try {
+    console.log('📁 Fallback vers stockage local...');
 
     const targetDir = getTargetDir(type, payload);
     await fs.promises.mkdir(targetDir, { recursive: true });
@@ -93,7 +183,7 @@ export async function POST(request) {
       await fs.promises.mkdir(destDir, { recursive: true });
 
       let paths = [];
-      const customNames = JSON.parse(formData.get('documentsMeta') || '[]');
+      const customNames = []; // Pas d'accès à formData dans cette fonction
       let docIdx = 0;
 
       for (let file of files) {
@@ -146,7 +236,7 @@ export async function POST(request) {
     }
     
   } catch (error) {
-    console.error('Erreur upload:', error);
-    return NextResponse.json({ error: 'Erreur lors de l\'upload' }, { status: 500 });
+    console.error('❌ Erreur upload local:', error);
+    return NextResponse.json({ error: 'Erreur lors de l\'upload local' }, { status: 500 });
   }
 }
