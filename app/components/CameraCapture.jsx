@@ -24,20 +24,11 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Démarrage automatique de la caméra au montage
-  useEffect(() => {
-    startCamera();
-    
-    // Nettoyage au démontage
-    return () => {
-      stopCamera();
-    };
-  }, [currentFacingMode]);
-
   /**
    * Démarre la caméra avec getUserMedia
    */
   const startCamera = async () => {
+    console.log(' [CameraCapture] Démarrage de la caméra...');
     setIsLoading(true);
     setError('');
     
@@ -47,30 +38,51 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
         throw new Error('Votre navigateur ne supporte pas l\'accès à la caméra');
       }
 
-      // Configuration de la caméra
-      const constraints = {
-        video: {
-          facingMode: currentFacingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      };
+      console.log(' [CameraCapture] Navigator.mediaDevices disponible');
+      console.log(' [CameraCapture] Contexte sécurisé:', window.isSecureContext);
+      console.log(' [CameraCapture] Protocol:', window.location.protocol);
 
-      // Demander l'accès à la caméra
-      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      let mediaStream;
+      
+      try {
+        // Tentative avec contraintes avancées
+        const constraints = {
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+
+        console.log(' [CameraCapture] Contraintes avancées:', constraints);
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log(' [CameraCapture] Stream avancé obtenu');
+        
+      } catch (constraintError) {
+        console.warn(' [CameraCapture] Contraintes avancées échouées, fallback...');
+        
+        // Fallback avec contraintes simples
+        const simpleConstraints = { video: true, audio: false };
+        console.log(' [CameraCapture] Contraintes fallback:', simpleConstraints);
+        mediaStream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+        console.log(' [CameraCapture] Stream fallback obtenu');
+      }
+      
+      console.log(' [CameraCapture] Stream final:', mediaStream);
+      console.log(' [CameraCapture] Tracks vidéo:', mediaStream.getVideoTracks());
       
       setStream(mediaStream);
       setHasPermission(true);
       
-      // Attacher le flux à l'élément vidéo
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        videoRef.current.play();
-      }
+      // Attacher le flux à l'élément vidéo avec retry
+      await attachStreamToVideo(mediaStream);
       
     } catch (err) {
-      console.error('Erreur accès caméra:', err);
+      console.error(' [CameraCapture] Erreur accès caméra:', err);
+      console.error(' [CameraCapture] Nom erreur:', err.name);
+      console.error(' [CameraCapture] Message erreur:', err.message);
+      
       setHasPermission(false);
       
       // Messages d'erreur spécifiques
@@ -80,11 +92,52 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
         setError('Aucune caméra trouvée sur cet appareil.');
       } else if (err.name === 'NotReadableError') {
         setError('La caméra est déjà utilisée par une autre application.');
+      } else if (err.name === 'OverconstrainedError') {
+        setError('Les paramètres de caméra demandés ne sont pas supportés.');
+      } else if (err.name === 'SecurityError') {
+        setError('Erreur de sécurité. Vérifiez que vous utilisez HTTPS.');
       } else {
         setError(err.message || 'Erreur inconnue lors de l\'accès à la caméra');
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * Attache le stream à l'élément vidéo avec retry
+   */
+  const attachStreamToVideo = async (mediaStream, retryCount = 0) => {
+    const maxRetries = 5;
+    
+    if (!videoRef.current) {
+      if (retryCount < maxRetries) {
+        console.log(` [CameraCapture] videoRef null, retry ${retryCount + 1}/${maxRetries}...`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return attachStreamToVideo(mediaStream, retryCount + 1);
+      } else {
+        console.error(' [CameraCapture] videoRef.current toujours null après tous les retries !');
+        return;
+      }
+    }
+
+    console.log(' [CameraCapture] Attachement du stream à la vidéo...');
+    videoRef.current.srcObject = mediaStream;
+    
+    // Attendre que la vidéo soit prête
+    videoRef.current.onloadedmetadata = () => {
+      console.log(' [CameraCapture] Métadonnées vidéo chargées');
+      console.log(' [CameraCapture] Dimensions vidéo:', {
+        width: videoRef.current.videoWidth,
+        height: videoRef.current.videoHeight
+      });
+    };
+    
+    try {
+      await videoRef.current.play();
+      console.log(' [CameraCapture] Lecture vidéo démarrée avec succès');
+    } catch (playError) {
+      console.error(' [CameraCapture] Erreur lecture vidéo:', playError);
     }
   };
 
@@ -162,6 +215,16 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
     onClose();
   };
 
+  // Démarrage automatique de la caméra au montage
+  useEffect(() => {
+    startCamera();
+    
+    // Nettoyage au démontage
+    return () => {
+      stopCamera();
+    };
+  }, [currentFacingMode]);
+
   return (
     <div className="camera-capture">
       <div className="camera-capture__overlay" onClick={onClose}></div>
@@ -169,13 +232,13 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
       <div className="camera-capture__modal">
         {/* Header */}
         <div className="camera-capture__header">
-          <h3 className="camera-capture__title">📷 Prendre une photo</h3>
+          <h3 className="camera-capture__title"> Prendre une photo</h3>
           <button 
             className="camera-capture__close-btn"
             onClick={onClose}
             type="button"
           >
-            ✕
+            
           </button>
         </div>
 
@@ -192,7 +255,7 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
           {/* Zone d'erreur */}
           {error && (
             <div className="camera-capture__error">
-              <div className="camera-capture__error-icon">⚠️</div>
+              <div className="camera-capture__error-icon"></div>
               <div className="camera-capture__error-content">
                 <h4>Erreur d'accès à la caméra</h4>
                 <p>{error}</p>
@@ -201,7 +264,7 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
                   onClick={startCamera}
                   type="button"
                 >
-                  🔄 Réessayer
+                  
                 </button>
               </div>
             </div>
@@ -257,7 +320,7 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
                     type="button"
                     title="Changer de caméra"
                   >
-                    🔄
+                    
                   </button>
                   
                   <button
@@ -286,7 +349,7 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
                 onClick={retakePhoto}
                 type="button"
               >
-                🔄 Reprendre
+                
               </button>
               
               <button
@@ -294,7 +357,7 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
                 onClick={confirmPhoto}
                 type="button"
               >
-                ✅ Confirmer
+                
               </button>
             </>
           )}

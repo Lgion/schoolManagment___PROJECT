@@ -112,12 +112,13 @@ export default function ElevePage() {
       <IsInterneBlock form={eleve} />
 
       {/* <DocumentsBlock form={eleve} readOnly={true} /> */}
+      <section>
+        <AbsencesBlock absences={eleve.absences} />
 
-      <AbsencesBlock absences={eleve.absences} />
+        <BonusBlock bonus={eleve.bonus} />
 
-      <BonusBlock bonus={eleve.bonus} />
-
-      <ManusBlock manus={eleve.manus} />
+        <ManusBlock manus={eleve.manus} />
+      </section>
 
       <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} onChangeYear={setSchoolYear} />
               
