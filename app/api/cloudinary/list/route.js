@@ -1,6 +1,6 @@
 // API Route pour lister les fichiers dans Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
-import cloudinaryService from '@/services/cloudinaryService';
+import cloudinaryService from '../../../../services/cloudinaryService';
 import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request) {

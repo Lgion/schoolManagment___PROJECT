@@ -1,6 +1,6 @@
 // API Route pour supprimer des fichiers de Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
-import cloudinaryService from '@/services/cloudinaryService';
+import cloudinaryService from '../../../../services/cloudinaryService';
 import { auth } from '@clerk/nextjs/server';
 
 export async function DELETE(request) {

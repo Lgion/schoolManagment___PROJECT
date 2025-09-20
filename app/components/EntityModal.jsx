@@ -30,6 +30,11 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const ctx = useContext(AiAdminContext);
   const fileInput = useRef();
   
+  // État pour la duplication de classe
+  const [duplicateYear, setDuplicateYear] = useState('');
+  const [duplicating, setDuplicating] = useState(false);
+  const [availableYears, setAvailableYears] = useState([]);
+  
   // Fonction utilitaire pour convertir timestamp en format YYYY-MM-DD
   const timestampToDateString = (timestamp) => {
     if (!timestamp) return '';
@@ -59,6 +64,116 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [form, setForm] = useState(initializeForm(entity));
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+
+  // Charger les années disponibles pour la duplication
+  useEffect(() => {
+    if (type === 'classe' && entity) {
+      loadAvailableYears();
+    }
+  }, [type, entity]);
+
+  const loadAvailableYears = async () => {
+    try {
+      // Récupérer toutes les classes existantes
+      const res = await fetch('/api/school_ai/classes');
+      if (!res.ok) throw new Error('Erreur lors du chargement des classes');
+      
+      const allClasses = await res.json();
+      
+      // Générer la plage d'années (±10 ans de l'année courante)
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      
+      for (let i = -10; i <= 10; i++) {
+        const startYear = currentYear + i;
+        const endYear = startYear + 1;
+        const yearString = `${startYear}-${endYear}`;
+        years.push(yearString);
+      }
+      
+      // Filtrer les années où cette classe existe déjà
+      const existingYears = allClasses
+        .filter(c => c.niveau === entity.niveau && c.alias === entity.alias)
+        .map(c => c.annee);
+      
+      const available = years.filter(year => !existingYears.includes(year));
+      
+      console.log('🔍 Debug années disponibles:', {
+        classeNiveau: entity.niveau,
+        classeAlias: entity.alias,
+        classeAnneeActuelle: entity.annee,
+        existingYears,
+        availableYears: available
+      });
+      
+      setAvailableYears(available);
+      
+    } catch (error) {
+      console.error('Erreur lors du chargement des années:', error);
+    }
+  };
+
+  // Fonction pour dupliquer une classe
+  const handleDuplicateClass = async () => {
+    if (!duplicateYear) {
+      alert('Veuillez sélectionner une année pour la duplication');
+      return;
+    }
+
+    console.log('🔍 Duplication classe:', {
+      selectedYear: duplicateYear,
+      currentClassYear: entity.annee
+    });
+
+    if (duplicateYear === entity.annee) {
+      alert('Impossible de dupliquer vers la même année scolaire');
+      return;
+    }
+
+    const confirmMessage = `Dupliquer la classe ${entity.niveau} ${entity.alias} vers l'année ${duplicateYear} ?\n\nLa nouvelle classe aura les mêmes informations mais aucun élève ni enseignant.`;
+    
+    if (!confirm(confirmMessage)) return;
+
+    setDuplicating(true);
+    
+    try {
+      const res = await fetch(`/api/classes/${entity._id}/duplicate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          targetYear: duplicateYear
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Erreur lors de la duplication');
+      }
+
+      const result = await res.json();
+      
+      alert(`✅ Classe dupliquée avec succès pour l'année ${duplicateYear} !`);
+      
+      // Rafraîchir les données
+      if (ctx.fetchClasses) {
+        ctx.fetchClasses();
+      }
+      
+      // Recharger les années disponibles
+      loadAvailableYears();
+      
+      // Réinitialiser la sélection
+      setDuplicateYear('');
+      
+    } catch (error) {
+      console.error('❌ Erreur lors de la duplication:', error);
+      alert(`❌ Erreur: ${error.message}`);
+    } finally {
+      setDuplicating(false);
+    }
+  };
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [showMap, setShowMap] = useState(false);
@@ -646,6 +761,37 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   });
                 })()}
               </select>
+            </div>
+          )}
+          
+          {/* Contrôles du header pour les classes - Duplication */}
+          {type === 'classe' && entity && (
+            <div className="modal__headerControls">
+              <div className="modal__duplicateControls">
+                <select
+                  className="modal__duplicateDate"
+                  value={duplicateYear}
+                  onChange={(e) => setDuplicateYear(e.target.value)}
+                  disabled={duplicating}
+                  title="Sélectionner une année pour dupliquer la classe"
+                >
+                  <option value="">-- Choisir une année --</option>
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="modal__duplicateBtn"
+                  onClick={handleDuplicateClass}
+                  disabled={duplicating || !duplicateYear || availableYears.length === 0}
+                  title="Dupliquer la classe pour l'année scolaire sélectionnée"
+                >
+                  {duplicating ? '⏳' : '📋'}
+                </button>
+              </div>
             </div>
           )}
           

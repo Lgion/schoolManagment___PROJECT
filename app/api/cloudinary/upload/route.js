@@ -1,6 +1,6 @@
 // API Route pour upload de fichiers vers Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
-import cloudinaryService from '@/services/cloudinaryService';
+import cloudinaryService from '../../../../services/cloudinaryService';
 import { auth } from '@clerk/nextjs/server';
 
 export async function POST(request) {

@@ -1,7 +1,7 @@
 // Carte générique pour élève ou enseignant
 import React from 'react';
 import Link from "next/link";
-import { useDetailPortal } from '../../hooks/useDetailPortal';
+import { useDetailPortal } from '../../stores/useDetailPortal';
 import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
 import './PersonCard.scss';
 

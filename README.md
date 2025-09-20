@@ -61,15 +61,18 @@ WIP ALMOST DONE
 DONE
 - il faut un loading spinner quand je valide un formulaire (edit eleve, prof, classe)
 FAILED
+- Sur la page d'édition d'un eleve, il faut mettre le select.compositions-block__year-select dans le header.modal__header de la modal. Que proposes-tu, utiliser un Portal, ou as-tu une meilleur solution/proposition ?.
+DONE
+- dans la page d'une classe, il faut
+    + un bouton dans le div.person-detail__block.person-detail__block--students>h2.person-detail__subtitle: permettant de rajouter à la volé, 1 ou plusieurs élèves à cette classe. Il faut en plus de update le modele Classe, il faut dans un middleware mongodb aussi update le modele Eleve pour tous les élèves updated par le formulaire d'édition de la classe.
+    DONE
+    + un bouton permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doit vérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"
+    ==>> Ce bouton devrait plutot etre dans div.classe-card à coté de button.classe-card__editbtn
+    WIP
+- dans la page Classe, permettre de créer la liste des 6 classes en un clic
 - trouver un moyen pour persister et récupérer les fichiers dans le cloud
 DONE
     + qu'en est-il des documents, sont-ils eux aussi bien persistés, comment sont ils rangés, etc ?
-- dans la page Classe, permettre de créer la liste des 6 classes en un clic
-- Sur la page d'édition d'un eleve, il faut mettre le select.compositions-block__year-select dans le header.modal__header de la modal. Que proposes-tu, utiliser un Portal, ou as-tu une meilleur solution/proposition ?.
-DONE
-- dans la page d'une classe, il faut 2 boutons dans le header de son form d'édition:
-    + un bouton permettant de rajouter à la volé, 1 ou plusieurs élèves à cette classe. Il faut en plus de update le modele Classe, il faut dans un middleware mongodb aussi update le modele Eleve pour tous les élèves updated par le formulaire d'édition de la classe.
-    + un bouton permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doit vérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"
 
 je susi sur cette page: http://localhost:3000/classes/68af5275d342e26caa995bcc
 je veux accomplir la tache suivante:
@@ -81,4 +84,4 @@ je veux accomplir la tache suivante:
 - avoir une page administration, où un formulaire de configuration permet de facilement voir les informations concernant les 3 schéma principaux: eleves, enseignants, classes
 - avoir des permissions d'action plus modulaire (pour admin, prof, eleve, public). Définir l'ensemble des actions possibles, puis appliquer des restrictions/permissions à chacune
 - assainir le code le plus possible, et optimiser la vitesse d'affichage. Commencer par le scss, puis clore par le jsx
-
+- vérifier quand je crée un eleve prof ou classe si un dossier est bien créé dans /public/school/
