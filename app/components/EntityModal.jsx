@@ -623,6 +623,32 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             {type === 'enseignant' && (entity ? 'Modifier l\'enseignant' : 'Ajouter un enseignant')}
             {type === 'classe' && (entity ? 'Modifier la classe' : 'Ajouter une classe')}
           </h2>
+          
+          {/* Contrôles du header pour les élèves */}
+          {type === 'eleve' && (
+            <div className="modal__headerControls">
+              <select
+                className="modal__yearSelect"
+                value={schoolYear}
+                onChange={e => setSchoolYear(e.target.value)}
+              >
+                {(() => {
+                  // Utilise la même logique que CompositionsBlock
+                  const { years, currentYearStart } = generateSchoolYears(entity?.compositions);
+                  
+                  return years.map(y => {
+                    const start = parseInt(y.split('-')[0], 10);
+                    let color = '';
+                    if (start === currentYearStart) color = 'green';
+                    else if (start < currentYearStart) color = 'red';
+                    else color = 'blue';
+                    return <option key={y} value={y} className={"option_" + color}>{y}</option>;
+                  });
+                })()}
+              </select>
+            </div>
+          )}
+          
           <button type="button" className="modal__closeBtn" onClick={onClose} aria-label="Fermer">
             ✕
           </button>
@@ -848,7 +874,6 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               compositions={form.compositions || {}}
               schoolYear={schoolYear}
               onChange={newCompo => setForm(f => ({ ...f, compositions: newCompo }))}
-              onChangeYear={setSchoolYear}
               studentData={form}
               dynamicSubjects={dynamicSubjects}
               subjectsLoaded={subjectsLoaded}
@@ -1888,8 +1913,26 @@ function migrateCompositionsFormat(oldCompositions) {
   return migratedCompositions;
 }
 
+// Fonction utilitaire pour générer la liste des années scolaires
+function generateSchoolYears(existingCompositions = {}) {
+  const now = new Date();
+  const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
+  
+  // Génère la liste des années disponibles (de N-10 à N+10)
+  const yearRange = Array.from({ length: 21 }, (_, i) => {
+    const start = currentYearStart - 10 + i;
+    return `${start}-${start + 1}`;
+  });
+  
+  // Fusionne avec les années existantes dans les compositions
+  const yearsSet = new Set([...yearRange, ...Object.keys(existingCompositions || {})]);
+  const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
+  
+  return { years, currentYearStart };
+}
+
 // --- Bloc de gestion des compositions par trimestre ---
-function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, studentData, dynamicSubjects, subjectsLoaded, classCoefficients, classes = [] }) {
+function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dynamicSubjects, subjectsLoaded, classCoefficients, classes = [] }) {
   // Nouveau format : {"2025-2026": [{officiel: {timestamp: {matiere: {note, sur}}}, unOfficiel: {...}}, ...]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
@@ -2009,15 +2052,9 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
 
   
   const trimestres = ["1er trimestre", "2e trimestre", "3e trimestre"];
-  // Génère la liste des années disponibles (de N-10 à N+10, + toutes années trouvées dans les données)
-  const now = new Date();
-  const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
-  const yearRange = Array.from({ length: 21 }, (_, i) => {
-    const start = currentYearStart - 10 + i;
-    return `${start}-${start + 1}`;
-  });
-  const yearsSet = new Set([...yearRange, ...Object.keys(migratedCompositions || {})]);
-  const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
+  
+  // Génère la liste des années disponibles (utilise la fonction utilitaire)
+  const { years, currentYearStart } = generateSchoolYears(migratedCompositions);
   // On récupère le tableau pour l'année courante avec la nouvelle structure
   const compoArr = migratedCompositions[schoolYear] || [
     { officiel: {}, unOfficiel: {} },
@@ -2317,20 +2354,6 @@ function CompositionsBlock({ compositions, schoolYear, onChange, onChangeYear, s
   return (
     <div className="compositions-block">
       <div className="compositions-block__header">Compositions</div>
-      <select
-        className="compositions-block__year-select"
-        value={schoolYear}
-        onChange={e => onChangeYear(e.target.value)}
-      >
-        {years.map(y => {
-          const start = parseInt(y.split('-')[0], 10);
-          let color = '';
-          if (start === currentYearStart) color = 'green';
-          else if (start < currentYearStart) color = 'red';
-          else color = 'blue';
-          return <option key={y} value={y} className={"option_" + color}>{y}</option>;
-        })}
-      </select>
       
       {/* Moyenne annuelle */}
       <div className="compositions-block__moyenne-annuelle">

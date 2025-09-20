@@ -52,14 +52,53 @@ export default function ElevePage() {
   });
   console.log(eleve);
   
+  // Créer le select d'année scolaire pour le header
+  const yearSelectControl = (
+    <select
+      className="detailModal__yearSelect"
+      value={schoolYear}
+      onChange={e => setSchoolYear(e.target.value)}
+    >
+      {(() => {
+        // Utilise la même logique que CompositionsBlock
+        const generateSchoolYears = (existingCompositions = {}) => {
+          const now = new Date();
+          const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
+          
+          const yearRange = Array.from({ length: 21 }, (_, i) => {
+            const start = currentYearStart - 10 + i;
+            return `${start}-${start + 1}`;
+          });
+          
+          const yearsSet = new Set([...yearRange, ...Object.keys(existingCompositions || {})]);
+          const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
+          
+          return { years, currentYearStart };
+        };
+        
+        const { years, currentYearStart } = generateSchoolYears(eleve?.compositions);
+        
+        return years.map(y => {
+          const start = parseInt(y.split('-')[0], 10);
+          let color = '';
+          if (start === currentYearStart) color = 'green';
+          else if (start < currentYearStart) color = 'red';
+          else color = 'blue';
+          return <option key={y} value={y} className={"option_" + color}>{y}</option>;
+        });
+      })()}
+    </select>
+  );
+
   return !eleve ? <div>....loading.....</div>
     : 
     <DetailPortal
       isOpen={true}
       onClose={()=>router.back()}
       title={`Élève ${eleve.nom} ${eleve.prenoms}`}
-      icon={"📋"}
-      reduced={[isReduced,setIsReduced]}
+      icon="🎓"
+      reduced={[isReduced, setIsReduced]}
+      headerControls={yearSelectControl}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
       {/* <button
         className="person-detail__close"
@@ -121,7 +160,7 @@ export default function ElevePage() {
         <ManusBlock manus={eleve.manus} />
       </section>
 
-      <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} onChangeYear={setSchoolYear} />
+      <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} />
               
       {/* <AddNoteForm notes={eleve.notes} /> */}
 

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
  * Composant Portal générique pour wrapper le contenu des pages /[id] dans une modale
  * Réutilise les styles existants de DetailModal
  */
-export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", reduced = [false, () => {}]  }) {
+export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", reduced = [false, () => {}], headerControls  }) {
   const [isClosing, setIsClosing] = useState(false);
   const router = useRouter();
   const [isReduced,setIsReduced] = reduced
@@ -66,6 +66,14 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
             <span className="detailModal__titleIcon">{icon}</span>
             {title}
           </h2>
+          
+          {/* Contrôles personnalisés du header */}
+          {headerControls && (
+            <div className="detailModal__headerControls">
+              {headerControls}
+            </div>
+          )}
+          
           <button
             // className="person-detail__reduce"
             className="detailModal__closeBtn reduce"

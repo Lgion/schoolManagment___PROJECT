@@ -57,12 +57,23 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
     z-index: 10;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 
     @media (max-width: 768px) {
       padding: 1rem 1.5rem;
     }
+  }
+
+  &__headerControls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__yearSelect {
+    @extend %entityModal__yearSelect;
   }
 
   &__title {

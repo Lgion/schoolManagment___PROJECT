@@ -3,9 +3,7 @@
 @use 'sass:color';
 @use 'variables' as *;
 @use 'layouts/headers' as *;
-@use 'components/MODALS/detailModal.scss';
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
-@use 'components/MODALS/entityModal.scss';
 @use 'components/MODALS/compositionsManager.scss';
 @use 'components/NOTES/notesBlock.scss';
 @use "./main.scss";
@@ -16,6 +14,8 @@
 @use "./components/CONTENT/homeContent.scss";
 @use "./components/SCHEDULES/index";
 @use "./components/MEDIA/mediaManager.scss";
+@import 'components/MODALS/entityModal.scss';
+@import 'components/MODALS/detailModal.scss';
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);
@@ -514,6 +514,9 @@ $font-secondary: $secondaryFont;
       font-size: 1.5rem;
       font-weight: 600;
     }
+  }
+  &__yearSelect{
+    @extend %entityModal__yearSelect;
   }
     
   // Corps de la modale
@@ -1412,12 +1415,6 @@ section>div:has(.modal){
     input[type='number'] {
       width: 60px;
     }
-  }
-  &__year-select{
-    .option_blue{background: blue;}
-    .option_green{background: green;font-size:2em;}
-    .option_red{background: red;}
-    option:checked{color:gold;font-size:1.5em;}
   }
     
 }

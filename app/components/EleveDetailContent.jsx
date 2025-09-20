@@ -92,7 +92,7 @@ export default function EleveDetailContent({ entityId }) {
 
       <ManusBlock manus={eleve.manus} />
 
-      <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} onChangeYear={setSchoolYear} />
+      <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} />
               
       <AddNoteForm notes={eleve.notes} />
 

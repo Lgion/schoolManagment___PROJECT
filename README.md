@@ -49,8 +49,7 @@ DONE
 - lors de l'enregistrement d'une classe, eleve ou prof, il faut que l'on puisse utiliser la caméra du péroiphérique pour persister la photo en base
 DONE
 - sur page Classes, mettre un tableau récapitulatif des notes (comme sur les feuille papier), il doit etre possible de filtrer alphébétioquement ou par moyenne. Ce doit etre un module qui avec boutons permettants de choisir la composition désirée.
-WIP ALMOST DONE => vérifier si la moyenne générale peut s'afficher, et la moyenne par (choix du) trimestre
-WIP ALMOST DONE => VÉRIFIER SI LA MOYENNE GÉNÉRALE PEUT S'AFFICHER, ET LA MOYENNE PAR (CHOIX DU) TRIMESTRE AUSSI.
+WIP ALMOST DONE =>  VÉRIFIER SI LA MOYENNE GÉNÉRALE PEUT S'AFFICHER, ET LA MOYENNE PAR (CHOIX DU) TRIMESTRE AUSSI.
 - le systeme de gestion et présentation des paiements des frais de scolarité et d'internat
 DONE
 - la gestion et présentation des absence, bonus, e malus (abandon). Voir s'il n'est pas nécessaire de rajouter des champs comme: 
@@ -64,10 +63,16 @@ DONE
 FAILED
 - trouver un moyen pour persister et récupérer les fichiers dans le cloud
 DONE
+    + qu'en est-il des documents, sont-ils eux aussi bien persistés, comment sont ils rangés, etc ?
 - dans la page Classe, permettre de créer la liste des 6 classes en un clic
-- dans la page d'une classe, il faut mettre le select de la date du block composition dans le header. Utiliser un Portal, ou voir si l'IA propose une meilleur solution.
-- dans la page d'une classe, il faut un bouton dans le header permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doit vérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"
+- Sur la page d'édition d'un eleve, il faut mettre le select.compositions-block__year-select dans le header.modal__header de la modal. Que proposes-tu, utiliser un Portal, ou as-tu une meilleur solution/proposition ?.
+DONE
+- dans la page d'une classe, il faut 2 boutons dans le header de son form d'édition:
+    + un bouton permettant de rajouter à la volé, 1 ou plusieurs élèves à cette classe. Il faut en plus de update le modele Classe, il faut dans un middleware mongodb aussi update le modele Eleve pour tous les élèves updated par le formulaire d'édition de la classe.
+    + un bouton permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doit vérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"
 
+je susi sur cette page: http://localhost:3000/classes/68af5275d342e26caa995bcc
+je veux accomplir la tache suivante:
 
 
 
