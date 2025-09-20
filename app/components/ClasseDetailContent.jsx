@@ -1,15 +1,17 @@
 "use client"
 
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useUserRole } from '../../stores/useUserRole';
 import Link from 'next/link';
 import { getClasseImagePath } from '../../utils/imageUtils';
 import ScheduleViewer from './ScheduleViewer';
+import AddStudentsModal from './AddStudentsModal';
 
 export default function ClasseDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
   const { userRole } = useUserRole();
+  const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
   
   if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
   
@@ -23,6 +25,15 @@ export default function ClasseDetailContent({ entityId }) {
     : `${currentYear}-${currentYear + 1}`;
   
   const isCurrentYear = classe.annee === currentSchoolYear;
+  
+  // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
+  console.log('🔍 Debug bouton ajout élèves:', {
+    userRole,
+    isCurrentYear,
+    classeAnnee: classe.annee,
+    currentSchoolYear,
+    condition: userRole === 'admin' && isCurrentYear
+  });
   
   // Liste des élèves selon le contexte (actuel vs historique)
   const eleves = isCurrentYear 
@@ -90,7 +101,18 @@ export default function ClasseDetailContent({ entityId }) {
       <div className="person-detail__block person-detail__block--students">
         <h2 className="person-detail__subtitle">
           <span className="person-detail__subtitle-icon">👨‍🎓</span>
-          Liste des élèves
+          Liste des élèvess
+          {/* Bouton visible si admin ET année courante OU mode dev */}
+          {//((userRole === 'admin' && isCurrentYear) || true /* TEMPORAIRE: forcer l'affichage */) && (
+          }
+            <button
+              className="person-detail__addBtn"
+              onClick={() => setShowAddStudentsModal(true)}
+              title="Ajouter des élèves à cette classe"
+            >
+              + Ajouter
+            </button>
+          {/* )} */}
         </h2>
         {eleves.length === 0 ? (
           <div className="person-detail__empty">
@@ -159,6 +181,20 @@ export default function ClasseDetailContent({ entityId }) {
           }}
         />
       </div>
+
+      {/* Modal d'ajout d'élèves */}
+      <AddStudentsModal
+        isOpen={showAddStudentsModal}
+        onClose={() => setShowAddStudentsModal(false)}
+        classeId={classe._id}
+        classeName={`${classe.niveau} ${classe.alias}`}
+        currentStudents={eleves.map(e => e._id || e)}
+        onSuccess={() => {
+          // Rafraîchir les données
+          ctx.fetchEleves && ctx.fetchEleves();
+          ctx.fetchClasses && ctx.fetchClasses();
+        }}
+      />
     </div>
   );
 }

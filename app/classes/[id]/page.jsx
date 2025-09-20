@@ -10,6 +10,7 @@ import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
 import DetailPortal from "../../components/DetailPortal";
 import NotesBlock from '../../components/NotesBlock';
+import AddStudentsModal from '../../components/AddStudentsModal';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function ClasseDetailPage() {
   const ctx = useContext(AiAdminContext);
   const { userRole } = useUserRole();
   const [isReduced, setIsReduced] = useState(false);
+  const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
   useEffect(() => {
     ctx.fetchClasses && ctx.fetchClasses();
     ctx.fetchEleves && ctx.fetchEleves();
@@ -34,6 +36,23 @@ export default function ClasseDetailPage() {
     : `${currentYear}-${currentYear + 1}`;
   
   const isCurrentYear = classe.annee === currentSchoolYear;
+  
+  // Vérifier si c'est une classe de l'année courante ou future
+  const isCurrentOrFutureYear = () => {
+    if (!classe.annee) return false;
+    const [startYear] = classe.annee.split('-').map(y => parseInt(y));
+    const [currentStartYear] = currentSchoolYear.split('-').map(y => parseInt(y));
+    return startYear >= currentStartYear;
+  };
+  
+  // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
+  console.log('🔍 Debug bouton ajout élèves:', {
+    userRole,
+    isCurrentYear,
+    classeAnnee: classe.annee,
+    currentSchoolYear,
+    condition: userRole === 'admin' && isCurrentYear
+  });
   
   // Liste des élèves selon le contexte (actuel vs historique)
   const eleves = isCurrentYear 
@@ -59,7 +78,7 @@ export default function ClasseDetailPage() {
     <DetailPortal
       isOpen={true}
       onClose={()=>router.back()}
-      title={`Classe ${classe.niveau} ${classe.alias}`}
+      title={`Classe ${classe.niveau} ${classe.alias} (${classe.annee})`}
       icon={"🏦"}
       reduced={[isReduced,setIsReduced]}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
@@ -136,6 +155,16 @@ export default function ClasseDetailPage() {
         <h2 className="person-detail__subtitle">
           <span className="person-detail__subtitle-icon">👨‍🎓</span>
           Liste des élèves
+          {/* Bouton visible si admin ET année courante */}
+          {(userRole === 'admin' && isCurrentYear) && (
+            <button
+              className="person-detail__addBtn"
+              onClick={() => setShowAddStudentsModal(true)}
+              title="Ajouter des élèves à cette classe"
+            >
+              + Ajouter
+            </button>
+          )}
         </h2>
         {eleves.length === 0 ? (
           <div className="person-detail__empty">
@@ -244,6 +273,21 @@ export default function ClasseDetailPage() {
           }}
         />
       </div>
+
+      {/* Modal d'ajout d'élèves */}
+      <AddStudentsModal
+        isOpen={showAddStudentsModal}
+        onClose={() => setShowAddStudentsModal(false)}
+        classeId={classe._id}
+        classeName={`${classe.niveau} ${classe.alias}`}
+        classeAnnee={classe.annee}
+        currentStudents={eleves.map(e => e._id || e)}
+        onSuccess={() => {
+          // Rafraîchir les données
+          ctx.fetchEleves && ctx.fetchEleves();
+          ctx.fetchClasses && ctx.fetchClasses();
+        }}
+      />
     </main>
     </DetailPortal>
 }

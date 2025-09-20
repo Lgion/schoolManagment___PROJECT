@@ -5,6 +5,7 @@
 @use 'layouts/headers' as *;
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
 @use 'components/MODALS/compositionsManager.scss';
+@use 'components/MODALS/addStudentsModal.scss';
 @use 'components/NOTES/notesBlock.scss';
 @use "./main.scss";
 @use "./components/LOADERS/spinLoader.scss";
