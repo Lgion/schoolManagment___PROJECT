@@ -17,10 +17,14 @@ export async function POST(request) {
   try {
     await dbConnect();
     const body = await request.json();
+    console.log('📝 POST /api/school_ai/classes - Body reçu:', body);
     const created = await Classe.create(body);
+    console.log('✅ Classe créée avec succès:', created);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Erreur lors de la création de la classe' }, { status: 500 });
+    console.error('❌ Erreur lors de la création de la classe:', error);
+    console.error('❌ Stack trace:', error.stack);
+    return NextResponse.json({ error: 'Erreur lors de la création de la classe', details: error.message }, { status: 500 });
   }
 }
 

@@ -64,7 +64,7 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
         <div className={"detailModal__header"+(isReduced ? ' off' : '')}>
           <h2 className="detailModal__title">
             <span className="detailModal__titleIcon">{icon}</span>
-            {title}
+            <span className="detailModal__titleFullName">{title}</span>
           </h2>
           
           {/* Contrôles personnalisés du header */}

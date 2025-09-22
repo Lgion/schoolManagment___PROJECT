@@ -13,26 +13,77 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/school
 // Arguments
 const args = process.argv.slice(2);
 const isDryRun = args.includes('--dry-run');
+const forceOverwrite = args.includes('--force');
 const limitMatch = args.find(arg => arg.startsWith('--limit='));
 const limit = limitMatch ? parseInt(limitMatch.split('=')[1]) : null;
 
 console.log('🚀 === TRAITEMENT DES FALLBACKS CLOUDINARY ===');
 console.log(`📋 Mode: ${isDryRun ? 'DRY RUN' : 'TRAITEMENT RÉEL'}`);
 console.log(`📊 Limite: ${limit || 'Aucune'}`);
+console.log(`🔄 Écrasement: ${forceOverwrite ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`);
 console.log('===============================================\n');
 
-function downloadImage(url) {
+function downloadImage(url, retries = 3) {
   return new Promise((resolve, reject) => {
-    https.get(url, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`HTTP ${response.statusCode}`));
-        return;
-      }
-      const chunks = [];
-      response.on('data', (chunk) => chunks.push(chunk));
-      response.on('end', () => resolve(Buffer.concat(chunks)));
-      response.on('error', reject);
-    }).on('error', reject);
+    const attempt = (attemptNumber) => {
+      console.log(`   🌐 Tentative ${attemptNumber}/${retries + 1}: ${url}`);
+      
+      const request = https.get(url, (response) => {
+        console.log(`   📊 Status HTTP: ${response.statusCode}`);
+        
+        if (response.statusCode !== 200) {
+          const error = new Error(`HTTP ${response.statusCode} - ${response.statusMessage}`);
+          if (attemptNumber <= retries) {
+            console.log(`   🔄 Retry dans 2 secondes...`);
+            setTimeout(() => attempt(attemptNumber + 1), 2000);
+            return;
+          }
+          reject(error);
+          return;
+        }
+        
+        const chunks = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          console.log(`   📦 Taille téléchargée: ${buffer.length} bytes`);
+          resolve(buffer);
+        });
+        response.on('error', (err) => {
+          console.error(`   🔴 Erreur de réponse: ${err.message}`);
+          if (attemptNumber <= retries) {
+            console.log(`   🔄 Retry dans 2 secondes...`);
+            setTimeout(() => attempt(attemptNumber + 1), 2000);
+            return;
+          }
+          reject(err);
+        });
+      });
+
+      // Timeout de 10 secondes par tentative
+      request.setTimeout(10000, () => {
+        request.destroy();
+        const error = new Error('Timeout de 10 secondes dépassé');
+        if (attemptNumber <= retries) {
+          console.log(`   ⏰ Timeout - Retry dans 2 secondes...`);
+          setTimeout(() => attempt(attemptNumber + 1), 2000);
+          return;
+        }
+        reject(error);
+      });
+
+      request.on('error', (err) => {
+        console.error(`   🔴 Erreur de requête: ${err.message}`);
+        if (attemptNumber <= retries) {
+          console.log(`   🔄 Retry dans 2 secondes...`);
+          setTimeout(() => attempt(attemptNumber + 1), 2000);
+          return;
+        }
+        reject(err);
+      });
+    };
+
+    attempt(1);
   });
 }
 
@@ -74,13 +125,23 @@ async function processFallback(fallbackDoc) {
   try {
     const { destDir, fileName, fullPath } = getTargetPath(entityType, entityPayload, originalFileName);
     
-    // Vérifier si le fichier existe déjà
-    try {
-      await fs.access(fullPath);
-      console.log(`   ⚠️  Fichier existe déjà, passage au suivant`);
-      return { status: 'skipped', reason: 'file_exists' };
-    } catch {
-      // Le fichier n'existe pas, on peut continuer
+    // Vérifier si le fichier existe déjà (sauf si --force est utilisé)
+    if (!forceOverwrite) {
+      try {
+        await fs.access(fullPath);
+        console.log(`   ⚠️  Fichier existe déjà, passage au suivant`);
+        return { status: 'skipped', reason: 'file_exists' };
+      } catch {
+        // Le fichier n'existe pas, on peut continuer
+      }
+    } else {
+      // Mode force : vérifier si le fichier existe pour le signaler
+      try {
+        await fs.access(fullPath);
+        console.log(`   🔄 Fichier existant sera écrasé (mode --force)`);
+      } catch {
+        // Le fichier n'existe pas
+      }
     }
     
     if (isDryRun) {
@@ -116,8 +177,12 @@ async function processFallback(fallbackDoc) {
     return { status: 'success', localPath: fullPath };
     
   } catch (error) {
-    console.error(`   ❌ Erreur: ${error.message}`);
-    return { status: 'error', error: error.message };
+    console.error(`   ❌ Erreur détaillée:`);
+    console.error(`   📄 Fichier: ${originalFileName}`);
+    console.error(`   🔗 URL Cloudinary: ${cloudinaryUrl}`);
+    console.error(`   💥 Message: ${error.message}`);
+    console.error(`   📚 Stack: ${error.stack}`);
+    return { status: 'error', error: error.message, details: { originalFileName, cloudinaryUrl } };
   }
 }
 

@@ -49,6 +49,6 @@ datasSchema.statics.removeByKey = function(key) {
     return this.deleteMany({ key: key });
 };
 
-const Datas = mongoose.model('Datas', datasSchema);
+const Datas = mongoose.models.Datas || mongoose.model('Datas', datasSchema);
 
 module.exports = { Datas, schema: datasSchema };

@@ -8,6 +8,7 @@
 @use 'components/MODALS/addStudentsModal.scss';
 @use 'components/NOTES/notesBlock.scss';
 @use "./main.scss";
+@use "./components/LISTS/classesList.scss";
 @use "./components/LOADERS/spinLoader.scss";
 @use "./components/DASHBOARDS/adminDashboard.scss";
 @use "./components/NAVIGATION/stickyNav.scss";
@@ -486,7 +487,7 @@ $font-secondary: $secondaryFont;
   }
 }
 .modal {
-  margin-bottom:3em;
+  // margin-bottom:3em;
   z-index: 10000;
   overflow: hidden;
   &__container {
@@ -958,6 +959,10 @@ section>div:has(.modal){
   // width: 100%;
   font-family: $primaryFont;
   transition: all 0.2s ease;
+
+  @media (max-width: 768px) {
+    flex-flow:column;
+  }
 
   &:hover {
     border-color: map.get($themeColors, primary);

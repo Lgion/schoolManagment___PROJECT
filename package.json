@@ -9,7 +9,8 @@
     "lint": "next lint",
     "process-fallbacks": "node scripts/process-cloudinary-fallbacks.js",
     "process-fallbacks:dry": "node scripts/process-cloudinary-fallbacks.js --dry-run",
-    "process-fallbacks:limit": "node scripts/process-cloudinary-fallbacks.js --limit=10"
+    "process-fallbacks:limit": "node scripts/process-cloudinary-fallbacks.js --limit=10",
+    "process-fallbacks:force": "node scripts/process-cloudinary-fallbacks.js --force"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",

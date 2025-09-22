@@ -4,20 +4,20 @@ const ObjectId = Schema.Types.ObjectId;
 
 const classeSchema = mongoose.Schema({
     // Listes synchronisées automatiquement via les middlewares des modèles Eleve et Teacher
-    professeur: { default: [], type: [ObjectId], ref: 'ai_Profs_Ecole_St_Martin', required: true },
-    eleves: { default: [], type: [ObjectId], ref: 'ai_Eleves_Ecole_St_Martin', required: true },
+    professeur: { default: [], type: [ObjectId], ref: 'ai_Profs_Ecole_St_Martin', required: false },
+    eleves: { default: [], type: [ObjectId], ref: 'ai_Eleves_Ecole_St_Martin', required: false },
     
     annee: { default: "", type: String, required: true },
     niveau: { default: "", type: String, required: true },
     alias: { default: "", type: String, required: true },
-    photo: { default: "", type: String, required: true },
+    photo: { default: "/school/classe.webp", type: String, required: false },
     // photo: {
     //   data: Buffer,
     //   contentType: String,
     // },
-    homework: { default: {}, type: Object, required: true },
+    homework: { default: {}, type: Object, required: false },
     // absences: { default: {}, type: Object, required: true },
-    compositions: { default: [], type: Array, required: true },
+    compositions: { default: [], type: Array, required: false },
     coefficients: { 
         default: {}, 
         type: Object, 
@@ -33,7 +33,7 @@ const classeSchema = mongoose.Schema({
             message: 'Le champ "eleves" doit contenir exactement 3 valeurs.',
         },
     },
-    commentaires: { default: [], type: [Object], required: true },
+    commentaires: { default: [], type: [Object], required: false },
     schedules: [{ type: ObjectId, ref: 'Schedule' }],
     currentScheduleId: { type: ObjectId, ref: 'Schedule' },
     createdAt: { default: +new Date(), type: String},

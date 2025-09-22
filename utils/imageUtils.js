@@ -8,24 +8,16 @@
  * @returns {string} - Chemin vers l'image de classe
  */
 export const getClasseImagePath = (classe) => {
-  // Priorité : Cloudinary → Fichier local → Image par défaut
+  // Priorité : Cloudinary → photo → Image par défaut
   if (classe?.cloudinary?.url) {
     return classe.cloudinary.url;
   }
   
-  if (!classe || !classe.niveau || !classe.alias || !classe.annee) {
-    return '/school/classe.webp'; // Image par défaut
+  if (classe?.photo && classe.photo !== "") {
+    return classe.photo;
   }
   
-  // Normalisation selon la logique API
-  const niveau = String(classe.niveau).toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
-  const alias = String(classe.alias).toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
-  const annee = String(classe.annee).replace(/[^a-zA-Z0-9-]/g, '');
-  
-  const classeFolder = `${niveau}-${alias}`;
-  const imagePath = `/school/classes/${classeFolder}/${annee}/photo.webp`;
-  
-  return imagePath;
+  return '/school/classe.webp'; // Image par défaut pour classes
 };
 
 /**
@@ -34,17 +26,16 @@ export const getClasseImagePath = (classe) => {
  * @returns {string} - Chemin vers l'image d'élève
  */
 export const getEleveImagePath = (eleve) => {
-  // Priorité : Cloudinary → Fichier local → Image par défaut
+  // Priorité : Cloudinary → photo_$_file → Image par défaut
   if (eleve?.cloudinary?.url) {
     return eleve.cloudinary.url;
   }
   
-  if (!eleve || !eleve.nom || !eleve.prenoms || !eleve.naissance_$_date) {
-    return '/school/studentsNotHere.webp';
+  if (eleve?.photo_$_file && eleve.photo_$_file !== "") {
+    return eleve.photo_$_file;
   }
   
-  const eleveFolder = `${eleve.nom}-${eleve.prenoms}-${+new Date(eleve.naissance_$_date)}`.replace(/--+/g, '-');
-  return `/school/students/${eleveFolder}/photo.webp`;
+  return '/school/student.webp'; // Image par défaut pour élèves
 };
 
 /**
@@ -53,15 +44,14 @@ export const getEleveImagePath = (eleve) => {
  * @returns {string} - Chemin vers l'image d'enseignant
  */
 export const getEnseignantImagePath = (enseignant) => {
-  // Priorité : Cloudinary → Fichier local → Image par défaut
+  // Priorité : Cloudinary → photo_$_file → Image par défaut
   if (enseignant?.cloudinary?.url) {
     return enseignant.cloudinary.url;
   }
   
-  if (!enseignant || !enseignant.nom || !enseignant.prenoms) {
-    return '/school/default-teacher.webp';
+  if (enseignant?.photo_$_file && enseignant.photo_$_file !== "") {
+    return enseignant.photo_$_file;
   }
   
-  const enseignantFolder = `${enseignant.nom}-${enseignant.prenoms}`.replace(/--+/g, '-').replace(',', '-');
-  return `/school/teachers/${enseignantFolder}/photo.webp`;
+  return '/school/prof.webp'; // Image par défaut pour enseignants
 };
