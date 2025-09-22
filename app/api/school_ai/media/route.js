@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import cloudinaryService from '../../../../services/cloudinaryService';
+import { Datas } from '../../_/models/Datas';
+import dbConnect from '../../lib/dbConnect';
 
 const BASE_PATH = path.join(process.cwd(), 'public/school');
 const CLASSES_PATH = path.join(process.cwd(), 'public/school/classes');
@@ -214,7 +216,7 @@ export async function POST(request) {
           originalName: file.name
         });
 
-        // 🏠 NOUVEAU : Upload local en parallèle si localhost
+        // 🏠 NOUVEAU : Upload local en parallèle si localhost, sinon sauvegarde MongoDB
         if (!isVercel && !isProduction) {
           console.log('🏠 Localhost détecté - sauvegarde locale en parallèle...');
           try {
@@ -223,6 +225,39 @@ export async function POST(request) {
             console.log(`✅ Sauvegarde locale réussie: ${localResult.path}`);
           } catch (localError) {
             console.warn(`⚠️ Erreur sauvegarde locale (non bloquante): ${localError.message}`);
+          }
+        } else {
+          // 💾 NOUVEAU : Sauvegarde des infos dans MongoDB pour traitement ultérieur
+          console.log('☁️ Production détectée - sauvegarde des infos dans MongoDB...');
+          try {
+            await dbConnect();
+            
+            const fallbackData = {
+              cloudinaryUrl: uploadResult.secure_url,
+              cloudinaryPublicId: uploadResult.public_id,
+              originalFileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              entityType,
+              entityPayload: payload,
+              uploadType: type,
+              uploadedAt: new Date(),
+              processed: false
+            };
+            
+            await Datas.create({
+              key: 'cloudinaryFallback',
+              value: fallbackData,
+              option: {
+                targetPath: getTargetDir(type, payload),
+                needsLocalPersistence: true,
+                priority: 'high'
+              }
+            });
+            
+            console.log(`💾 Infos sauvegardées dans MongoDB pour traitement ultérieur`);
+          } catch (mongoError) {
+            console.warn(`⚠️ Erreur sauvegarde MongoDB (non bloquante): ${mongoError.message}`);
           }
         }
         

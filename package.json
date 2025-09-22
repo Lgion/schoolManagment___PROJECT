@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "process-fallbacks": "node scripts/process-cloudinary-fallbacks.js",
+    "process-fallbacks:dry": "node scripts/process-cloudinary-fallbacks.js --dry-run",
+    "process-fallbacks:limit": "node scripts/process-cloudinary-fallbacks.js --limit=10"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",

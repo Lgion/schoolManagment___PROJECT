@@ -519,7 +519,12 @@ $font-secondary: $secondaryFont;
   &__yearSelect{
     @extend %entityModal__yearSelect;
   }
-    
+  &__loadingOverlay {
+    @extend %entityModal__loadingOverlay;
+  }
+  &__loadingSpinner {
+    @extend %entityModal__loadingSpinner;
+  }
   // Corps de la modale
   &__body {
     padding: 2rem;

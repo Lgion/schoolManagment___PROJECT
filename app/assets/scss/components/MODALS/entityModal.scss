@@ -55,6 +55,32 @@ $entityModal: (
     animation: modalSlideIn 0.3s ease-out;
   }
 
+  &__loadingOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    font-size: 1.2rem;
+    font-weight: 600;
+    gap: 1rem;
+    border-radius: map.get($entityModal, borderRadius);
+  }
+  &__loadingSpinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+  }
+
   &__header {
     background: map.get($entityModal, headerBackground);
     color: map.get($entityModal, headerColor);
@@ -426,23 +452,6 @@ $entityModal: (
     }
   }
 
-  &__loadingOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    font-size: 1.2rem;
-    font-weight: 600;
-    gap: 1rem;
-    border-radius: map.get($entityModal, borderRadius);
-  }
 
   &__errorMessage {
     background: #fff5f5;
@@ -454,14 +463,6 @@ $entityModal: (
     margin-bottom: 1rem;
   }
 
-  &__loadingSpinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #ffffff;
-    border-top-color: transparent;
-    animation: spin 1s ease-in-out infinite;
-  }
 
   &__spinner {
     width: 20px;

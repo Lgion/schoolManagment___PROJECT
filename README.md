@@ -74,8 +74,6 @@ DONE
 DONE
     + qu'en est-il des documents, sont-ils eux aussi bien persistés, comment sont ils rangés, etc ?
 
-je susi sur cette page: http://localhost:3000/classes/68af5275d342e26caa995bcc
-je veux accomplir la tache suivante:
 
 
 
