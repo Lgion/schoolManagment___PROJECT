@@ -8,6 +8,100 @@ import cloudinaryService from '../../../../services/cloudinaryService';
 const BASE_PATH = path.join(process.cwd(), 'public/school');
 const CLASSES_PATH = path.join(process.cwd(), 'public/school/classes');
 
+// Fonction pour sauvegarder un fichier localement
+const saveFileLocally = async (file, type, payload, entityType) => {
+  const targetDir = getTargetDir(type, payload);
+  await fs.promises.mkdir(targetDir, { recursive: true });
+
+  if (entityType === 'classe') {
+    // Conversion webp obligatoire
+    const destPath = path.join(targetDir, 'photo.webp');
+    
+    console.log('🖼️ === TRAITEMENT PHOTO CLASSE LOCAL ===');
+    console.log('   - targetDir:', targetDir);
+    console.log('   - destPath:', destPath);
+    console.log('   - file.name:', file.name);
+    console.log('   - file.size:', file.size);
+    
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await sharp(buffer).webp().toFile(destPath);
+    
+    let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
+    
+    console.log('✅ === PHOTO CLASSE SAUVÉE LOCALEMENT ===');
+    console.log('   - Fichier créé à:', destPath);
+    console.log('   - URL publique:', publicPath);
+    console.log('   - Dossier existe:', fs.existsSync(targetDir));
+    console.log('   - Fichier existe:', fs.existsSync(destPath));
+    console.log("=================================");
+    
+    return { path: publicPath, type: 'classe' };
+    
+  } else if (entityType === 'eleve') {
+    // --- Cas élève ---
+    const { prenoms, nom, naissance_$_date } = payload;
+    const eleveFolder = `${nom}-${prenoms}-${naissance_$_date}`.replace(/--+/g, '-');
+    const destDir = path.join(BASE_PATH, 'students', eleveFolder);
+    await fs.promises.mkdir(destDir, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const isImage = file.type.startsWith('image/');
+    
+    if (isImage) {
+      const destPath = path.join(destDir, 'photo.webp');
+      await sharp(buffer).webp().toFile(destPath);
+      let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
+      console.log(`✅ Photo élève sauvée localement: ${publicPath}`);
+      return { path: publicPath, type: 'eleve' };
+    } else {
+      const ext = path.extname(file.name || '');
+      let destName = file.name || ('document' + Date.now() + ext);
+      const destPath = path.join(destDir, destName);
+      await fs.promises.writeFile(destPath, buffer);
+      let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
+      console.log(`✅ Document élève sauvé localement: ${publicPath}`);
+      return { path: publicPath, type: 'eleve' };
+    }
+    
+  } else if (entityType === 'enseignant') {
+    // --- Cas enseignant ---
+    const { prenoms, nom } = payload;
+    const enseignantFolder = `${nom}-${prenoms}`.replace(/--+/g, '-').replace(",", '-');
+    const destDir = path.join(BASE_PATH, 'teachers', enseignantFolder);
+    await fs.promises.mkdir(destDir, { recursive: true });
+    
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const destPath = path.join(destDir, 'photo.webp');
+    await sharp(buffer).webp().toFile(destPath);
+    
+    let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
+    console.log(`✅ Photo enseignant sauvée localement: ${publicPath}`);
+    return { path: publicPath, type: 'enseignant' };
+    
+  } else {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const ext = path.extname(file.name || '');
+    const destPath = path.join(targetDir, 'photo' + ext);
+    await fs.promises.writeFile(destPath, buffer);
+    let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
+    console.log(`✅ Fichier générique sauvé localement: ${publicPath}`);
+    return { path: publicPath, type: 'generic' };
+  }
+};
+
+// 🔍 DÉTECTION D'ENVIRONNEMENT
+const isProduction = process.env.NODE_ENV === 'production';
+const isVercel = process.env.VERCEL === '1';
+const isLocalhost = !isProduction && !isVercel;
+
+console.log('🌍 ENVIRONNEMENT DÉTECTÉ:', {
+  NODE_ENV: process.env.NODE_ENV,
+  VERCEL: process.env.VERCEL,
+  isProduction,
+  isVercel,
+  isLocalhost
+});
+
 const getTargetDir = (type, payload) => {
   console.log('🔍 DEBUG getTargetDir - type:', type);
   console.log('🔍 DEBUG getTargetDir - type[0]:', type[0]);
@@ -60,6 +154,7 @@ export async function POST(request) {
 
     // 🚀 NOUVEAU : Upload direct vers Cloudinary
     const cloudinaryResults = [];
+    const localResults = [];
     
     for (const file of files) {
       try {
@@ -118,26 +213,64 @@ export async function POST(request) {
           folder,
           originalName: file.name
         });
+
+        // 🏠 NOUVEAU : Upload local en parallèle si localhost
+        if (!isVercel && !isProduction) {
+          console.log('🏠 Localhost détecté - sauvegarde locale en parallèle...');
+          try {
+            const localResult = await saveFileLocally(file, type, payload, entityType);
+            localResults.push(localResult);
+            console.log(`✅ Sauvegarde locale réussie: ${localResult.path}`);
+          } catch (localError) {
+            console.warn(`⚠️ Erreur sauvegarde locale (non bloquante): ${localError.message}`);
+          }
+        }
         
       } catch (uploadError) {
         console.error(`❌ Erreur upload Cloudinary pour ${file.name}:`, uploadError);
-        // Fallback vers stockage local en cas d'erreur Cloudinary
+        
+        // 🚨 NOUVEAU : Éviter le fallback local sur Vercel
+        if (isVercel || isProduction) {
+          console.error('🚫 Environnement de production détecté - pas de fallback local possible');
+          return NextResponse.json({ 
+            error: `Erreur upload Cloudinary: ${uploadError.message}. Le stockage local n'est pas disponible en production.`,
+            cloudinaryError: true,
+            environment: 'production'
+          }, { status: 500 });
+        }
+        
+        // Fallback vers stockage local seulement en localhost
+        console.log('🏠 Localhost détecté - tentative de fallback local...');
         return await handleLocalUpload(type, payload, entityType, files);
       }
     }
     
-    // Retourner les URLs Cloudinary
+    // Retourner les URLs Cloudinary (priorité) + infos locales
     const paths = cloudinaryResults.map(result => result.url);
     
     console.log('🎉 Upload Cloudinary terminé avec succès:', paths);
+    if (localResults.length > 0) {
+      console.log('🏠 Sauvegardes locales:', localResults.map(r => r.path));
+    }
+    
     return NextResponse.json({ 
       paths,
       cloudinaryResults,
+      localResults: localResults.length > 0 ? localResults : undefined,
       success: true 
     });
 
   } catch (error) {
     console.error('❌ Erreur générale upload:', error);
+    
+    // 🚨 NOUVEAU : Message d'erreur spécifique selon l'environnement
+    if (isVercel || isProduction) {
+      return NextResponse.json({ 
+        error: `Erreur upload en production: ${error.message}. Vérifiez la configuration Cloudinary.`,
+        environment: 'production'
+      }, { status: 500 });
+    }
+    
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

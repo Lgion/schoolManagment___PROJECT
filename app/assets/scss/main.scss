@@ -1,28 +1,28 @@
 
-@import "./utils/variables";
-@import "./utils/functions";
-@import "./utils/mixins";
-@import "./utils/extensions";
+@use "./utils/variables" as *;
+@use "./utils/functions" as *;
+@use "./utils/mixins" as *;
+@use "./utils/extensions" as *;
 
-@import "./themes/template";
+@use "./themes/template" as *;
 
-@import "./base/base";
-@import "./base/normalize";
-@import "./base/typography";
-// @import "./vendors/";
+@use "./base/base" as *;
+@use "./base/normalize" as *;
+@use "./base/typography" as *;
+// @use "./vendors/" as *;
 
-@import "./components/buttons";
-@import "./components/lists";
-@import "./components/cards";
-@import "./components/POSTS/_post";
-@import "./components/SCHEDULES/scheduleViewer";
-@import "./components/FORMS/cameraCapture";
+@use "./components/buttons" as *;
+@use "./components/lists" as *;
+@use "./components/cards" as *;
+@use "./components/POSTS/_post" as *;
+@use "./components/SCHEDULES/scheduleViewer" as *;
+@use "./components/FORMS/cameraCapture" as *;
 
-@import "./layouts/headers";
-@import "./layouts/navs";
-@import "./layouts/mains";
-@import "./layouts/footers";
+@use "./layouts/headers" as *;
+@use "./layouts/navs" as *;
+@use "./layouts/mains" as *;
+@use "./layouts/footers" as *;
 
-@import "./pages/all";
-@import "./pages/home";
-@import "./pages/menus";
+@use "./pages/all" as *;
+@use "./pages/home" as *;
+@use "./pages/menus" as *;

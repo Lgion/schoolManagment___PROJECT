@@ -50,7 +50,7 @@ export default function ElevePage() {
       if (v.riz) totalRiz += Number(v.riz);
     });
   });
-  console.log(eleve);
+  // console.log(eleve);
   
   // Créer le select d'année scolaire pour le header
   const yearSelectControl = (

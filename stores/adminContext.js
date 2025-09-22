@@ -42,9 +42,9 @@ export const AdminContextProvider = ({children}) => {
     // , [showModal, setShowModal] = useState(false)
     , [models, setModels] = useState({})
     , { user } = useUser()
-    console.log(eleves);
-    console.log(profs);
-    console.log(school);
+    // console.log(eleves);
+    // console.log(profs);
+    // console.log(school);
     
     
     
@@ -170,7 +170,7 @@ export const AdminContextProvider = ({children}) => {
     }, [role])
     
     useEffect(() => { 
-        console.log(eleves);
+        // console.log(eleves);
 
     }, [eleves])
     // Add useEffect to calculate years after classes is available
@@ -210,9 +210,9 @@ export const AdminContextProvider = ({children}) => {
     }, [])
     useEffect(() => {
         console.log("ookokokk");
-        console.log(profs);
-        console.log(eleves);
-        console.log(classe);
+        // console.log(profs);
+        // console.log(eleves);
+        // console.log(classe);
         
         const tmp_prof = classe.professeur ? "professeur" : "professeur_$_ref_µ_teachers"
         const tmp_eleves = classe.eleves ? "eleves" : "eleves_$_ref_µ_eleves"
@@ -222,7 +222,7 @@ export const AdminContextProvider = ({children}) => {
         
         
         let tmp = Object.keys(classe).map(elt => {
-            console.log(elt);
+            // console.log(elt);
             switch (elt) {
                 case tmp_prof:
                     return <tr>

@@ -2,16 +2,16 @@
 // Import de tous les composants de gestion des emplois du temps
 
 // Composant de visualisation des emplois du temps
-@import 'scheduling';
+@use 'scheduling';
 
 // Composant de visualisation des emplois du temps
-@import 'scheduleViewer';
+@use 'scheduleViewer';
 
 // Composant de gestion/overview des emplois du temps
-@import 'scheduleManager';
+@use 'scheduleManager';
 
 // Composant d'historique des emplois du temps
-@import 'scheduleHistory';
+@use 'scheduleHistory';
 
 // Composant d'édition des emplois du temps
-@import 'scheduleEditor';
+@use 'scheduleEditor';

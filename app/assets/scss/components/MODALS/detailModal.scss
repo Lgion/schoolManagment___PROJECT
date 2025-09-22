@@ -1,4 +1,6 @@
 // DetailModal - Modale avec portal pour affichage des pages de détail
+@use './entityModal.scss' as *;
+
 .detailModal {
   &.off{width:0;height:0;}
   position: fixed;

@@ -9,8 +9,10 @@ $L: 30px;
 $XL: 50px;
 $XXL: 60px;
 
-$titres: 'typography des titre';
-$contenus: 'typography des contenus';
+@use '../_variables' as *;
+
+$titres: $secondaryFont;
+$contenus: $primaryFont;
 
 $primary: #111;
 $secondary: #222;

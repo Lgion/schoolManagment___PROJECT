@@ -15,8 +15,8 @@
 @use "./components/CONTENT/homeContent.scss";
 @use "./components/SCHEDULES/index";
 @use "./components/MEDIA/mediaManager.scss";
-@import 'components/MODALS/entityModal.scss';
-@import 'components/MODALS/detailModal.scss';
+@use 'components/MODALS/entityModal.scss';
+@use 'components/MODALS/detailModal.scss';
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);
@@ -694,12 +694,12 @@ $font-secondary: $secondaryFont;
       
       // Modificateurs BEM pour les types de boutons
       &--primary {
-        background: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+        background: linear-gradient(135deg, $primary-color 0%, color.scale($primary-color, $lightness: -14.406779661%) 100%);
         color: white;
         box-shadow: 0 4px 12px rgba($primary-color, 0.3);
         
         &:hover {
-          background: linear-gradient(135deg, darken($primary-color, 5%) 0%, darken($primary-color, 15%) 100%);
+          background: linear-gradient(135deg, color.scale($primary-color, $lightness: -7.2033898305%) 0%, color.scale($primary-color, $lightness: -21.6101694915%) 100%);
           box-shadow: 0 6px 16px rgba($primary-color, 0.4);
           transform: translateY(-2px);
         }
@@ -711,12 +711,12 @@ $font-secondary: $secondaryFont;
       }
       
       &--secondary {
-        background: linear-gradient(135deg, $secondary-color 0%, darken($secondary-color, 10%) 100%);
+        background: linear-gradient(135deg, $secondary-color 0%, color.scale($secondary-color, $lightness: -14.406779661%) 100%);
         color: white;
         box-shadow: 0 4px 12px rgba($secondary-color, 0.3);
         
         &:hover {
-          background: linear-gradient(135deg, darken($secondary-color, 5%) 0%, darken($secondary-color, 15%) 100%);
+          background: linear-gradient(135deg, color.scale($secondary-color, $lightness: -7.2033898305%) 0%, color.scale($secondary-color, $lightness: -21.6101694915%) 100%);
           box-shadow: 0 6px 16px rgba($secondary-color, 0.4);
           transform: translateY(-2px);
         }
@@ -2378,9 +2378,11 @@ section>div:has(.modal){
         }
       }
 
-      display: flex;
-      justify-content: center;
-      position: relative;
+      & {
+        display: flex;
+        justify-content: center;
+        position: relative;
+      }
       >span{
         font-size:1.4em;
       }

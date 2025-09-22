@@ -669,6 +669,105 @@ $entityModal: (
   }
 }
 
+// Placeholders pour les éléments de formulaire
+%entityModal__container {
+  background: map.get($entityModal, background);
+  border-radius: map.get($entityModal, borderRadius);
+  box-shadow: map.get($entityModal, boxShadow);
+  position: relative;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+%entityModal__form {
+  padding: map.get($entityModal, padding);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+%entityModal__input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: white;
+  
+  &:focus {
+    outline: none;
+    border-color: map.get($themeColors, primary);
+    box-shadow: 0 0 0 3px rgba(map.get($themeColors, primary), 0.1);
+  }
+}
+
+%entityModal__select {
+  @extend %entityModal__input;
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  padding-right: 2.5rem;
+}
+
+%entityModal__textarea {
+  @extend %entityModal__input;
+  min-height: 100px;
+  resize: vertical;
+}
+
+%entityModal__label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+%entityModal__btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+%entityModal__btn--primary {
+  background: linear-gradient(135deg, map.get($themeColors, primary), color.scale(map.get($themeColors, primary), $lightness: -10%));
+  color: white;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
+  }
+}
+
+%entityModal__yearSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 0.9rem;
+  min-width: 120px;
+  backdrop-filter: blur(4px);
+  
+  option {
+    background: #2c3e50;
+    color: white;
+  }
+}
+
 /************************************************************/
 /**************************MIXIN**************************/
 /************************************************************/
@@ -677,7 +776,7 @@ $entityModal: (
   $background: map.get($entityModal, background),
   $borderRadius: map.get($entityModal, borderRadius)
 ) {
-  $paramMixi: entityModal(map-merge($entityModal, $paramMixi_));
+  $paramMixi: entityModal(map.merge($entityModal, $paramMixi_));
 
   @extend %entityModal;
   
@@ -691,10 +790,10 @@ $entityModal: (
 /**************************FUNCTION**************************/
 /************************************************************/
 @function entityModal($defaultValues) {
-  @return map-merge(
+  @return map.merge(
     $defaultValues,
     (
-      // background-contrast: darken(map.get($defaultValues, background), 12%),
+      // background-contrast: color.scale(map.get($defaultValues, background), $lightness: -17.2881355932%),
     )
   );
 }
