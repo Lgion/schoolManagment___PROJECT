@@ -230,7 +230,7 @@ $entityModal: (
   }
 
   &__body {
-    padding: map.get($entityModal, padding);
+    // padding: map.get($entityModal, padding);
   }
 
   &__form {

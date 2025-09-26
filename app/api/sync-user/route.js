@@ -96,19 +96,31 @@ export async function POST(request) {
       existingUser.role = role;
       existingUser.firstName = firstName;
       existingUser.lastName = lastName;
-      
-      if (ref) {
-        existingUser.roleData = ref;
+
+      // Mettre à jour les références selon le rôle (schéma actuel)
+      // Assainir les anciens documents où roleData pourrait être un ObjectId ou autre type
+      if (!existingUser.roleData || typeof existingUser.roleData !== 'object' || Array.isArray(existingUser.roleData)) {
+        existingUser.roleData = {};
       }
-      
+      if (role === 'prof' && ref) {
+        existingUser.roleData.teacherRef = ref;
+        if (existingUser.roleData.eleveRef) delete existingUser.roleData.eleveRef;
+      } else if (role === 'eleve' && ref) {
+        existingUser.roleData.eleveRef = ref;
+        if (existingUser.roleData.teacherRef) delete existingUser.roleData.teacherRef;
+      } else {
+        // Rôles admin/public: nettoyer les refs spécifiques
+        if (existingUser.roleData.teacherRef) delete existingUser.roleData.teacherRef;
+        if (existingUser.roleData.eleveRef) delete existingUser.roleData.eleveRef;
+      }
+
       await existingUser.save();
       
-      // Populer les références
-      if (existingUser.role === 'prof') {
-        await existingUser.populate('roleData');
-      } else if (existingUser.role === 'eleve') {
-        await existingUser.populate('roleData');
-      }
+      // Peupler les références
+      await existingUser.populate([
+        { path: 'roleData.teacherRef' },
+        { path: 'roleData.eleveRef' }
+      ]);
       
       return NextResponse.json({
         success: true,
@@ -121,36 +133,34 @@ export async function POST(request) {
     console.log('Creating new user...');
     const { role, ref } = await determineUserRole(email);
 
-    // Préparer les données roleData selon le rôle
-    let roleData = null;
+    // Préparer les données roleData selon le rôle (schéma actuel)
+    let roleData = {};
     if (role === 'prof' && ref) {
-      roleData = ref;
+      roleData.teacherRef = ref;
     } else if (role === 'eleve' && ref) {
-      roleData = ref;
+      roleData.eleveRef = ref;
+    } else if (role === 'admin') {
+      roleData.adminLevel = 'standard';
     }
 
     const newUser = new User({
       clerkId,
       email,
-      firstName,
-      lastName,
+      firstName: firstName || '',
+      lastName: lastName || '',
       role,
       roleData,
-      metadata: {
-        createdAt: new Date(),
-        lastLogin: new Date(),
-        source: 'manual_sync'
-      }
+      lastLogin: new Date(),
+      loginCount: 1
     });
 
     await newUser.save();
 
     // Populer les références pour la réponse
-    if (newUser.role === 'prof') {
-      await newUser.populate('roleData');
-    } else if (newUser.role === 'eleve') {
-      await newUser.populate('roleData');
-    }
+    await newUser.populate([
+      { path: 'roleData.teacherRef' },
+      { path: 'roleData.eleveRef' }
+    ]);
 
     console.log('User created successfully:', newUser);
 

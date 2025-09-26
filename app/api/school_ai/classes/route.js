@@ -9,7 +9,7 @@ export async function GET() {
     const classes = await Classe.find();
     return NextResponse.json(classes);
   } catch (error) {
-    return NextResponse.json({ error: 'Erreur lors de la récupération des classes' }, { status: 500 });
+    return NextResponse.json({ error: 'Erreur lors de la récupération des classes', error }, { status: 500 });
   }
 }
 

@@ -252,7 +252,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                         if (searchText.trim()) {
                             const searchLower = searchText.toLowerCase().trim();
                             const nom = eleve.nom || '';
-                            const prenom = eleve.prenom || '';
+                            const prenom = eleve.prenoms.join('').normalize('NFD').replace(/[\u0300-\u036f]/g, "") || '';
                             const nomComplet = `${nom} ${prenom}`.toLowerCase();
                             matchesSearch = nomComplet.includes(searchLower);
                         }

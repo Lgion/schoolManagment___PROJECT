@@ -528,7 +528,7 @@ $font-secondary: $secondaryFont;
   }
   // Corps de la modale
   &__body {
-    padding: 2rem;
+    // padding: 2rem;
     flex: 1;
     overflow-y: auto;
     padding-bottom: 100px; // Espace pour le footer
@@ -1300,6 +1300,10 @@ section>div:has(.modal){
     align-items: center;
     gap: 8px;
     margin-top: 4px;
+    flex-flow: wrap;
+    background:silver;
+    padding:.5em;
+    box-shadow: 0 0 3px 1px black inset;
     select, input[type='number'] { font-size: 1em; }
   }
   &__add-cancel {
@@ -1425,6 +1429,18 @@ section>div:has(.modal){
     gap: 4px;
     input[type='number'] {
       width: 60px;
+    }
+  }
+  &__group-form {
+    width: 100%;
+    margin-inline: -1rem;
+    padding: 1em;
+    &:not(:empty){background:silver;}
+    >*{
+      width: 90%;
+      >*{
+        width: 100%;
+      }
     }
   }
     
