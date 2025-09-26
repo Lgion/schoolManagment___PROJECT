@@ -19,6 +19,14 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
+    const classOrderPriority = {
+        CP1: 0,
+        CP2: 1,
+        CE1: 2,
+        CE2: 3,
+        CM1: 4,
+        CM2: 5,
+    };
     
 
     useEffect(()=>{
@@ -35,7 +43,7 @@ export default function EcoleAdminEleveLayout({ children }) {
         const labels = Object.keys(data).map(el=>el+": "+data[el]);
         const values = Object.values(data);
         chartInstance.current = new Chart(canvaCtx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels,
             datasets: [{
@@ -88,7 +96,9 @@ export default function EcoleAdminEleveLayout({ children }) {
             onHover: (event, elements) => {
             // Changer le curseur au survol
             event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
-            }
+            },
+            responsive: false,
+            maintainAspectRatio: false,
         }
         });
     }, [eleves])
@@ -99,9 +109,13 @@ export default function EcoleAdminEleveLayout({ children }) {
     const externesCount = totalEleves - internesCount;
     
     return (<>
-        <h2>Liste des élèves <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button></h2>
+        <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+        <h2>Liste des élèves</h2>
+        <canvas ref={canvasRef} id="camembert"
+            width={320}
+            height={320}
+        ></canvas>
         <form className="infos_cards">
-            <canvas ref={canvasRef} id="camembert"></canvas>
             <div className="infos_cards__controls">
                 {/* Recherche textuelle */}
                 <div className="infos_cards__control-group">
@@ -270,14 +284,16 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const prenomB = b.prenom || '';
                             comparison = nomA.localeCompare(nomB) || prenomA.localeCompare(prenomB);
                         } else if (sortBy === 'classe') {
-                            // Tri par classe (niveau)
+                            // Tri par classe (niveau) selon ordre défini
                             const classeA = (ctx.classes || []).find(c => c._id === a.current_classe);
                             const classeB = (ctx.classes || []).find(c => c._id === b.current_classe);
                             const niveauA = classeA?.niveau || '';
                             const niveauB = classeB?.niveau || '';
+                            const priorityA = classOrderPriority?.[niveauA] ?? Number.MAX_SAFE_INTEGER;
+                            const priorityB = classOrderPriority?.[niveauB] ?? Number.MAX_SAFE_INTEGER;
                             const nomA = a.nom || '';
                             const nomB = b.nom || '';
-                            comparison = niveauA.localeCompare(niveauB) || nomA.localeCompare(nomB);
+                            comparison = priorityA - priorityB || nomA.localeCompare(nomB);
                         }
                         
                         // Inverser l'ordre si décroissant

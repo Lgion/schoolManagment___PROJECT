@@ -54,23 +54,13 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
   const progress = getScolarityProgress(fees, isInterne);
   const { openPortal } = useDetailPortal();
   
-  // Couleur de fond selon le sexe
-  const getBackgroundColor = (sexe) => {
-    if (sexe === 'Garçon' || sexe === 'garcon' || sexe === 'M' || sexe === 'Masculin') {
-      return 'rgba(54, 162, 235, 0.1)'; // Bleu très léger
-    } else if (sexe === 'Fille' || sexe === 'fille' || sexe === 'F' || sexe === 'Féminin') {
-      return 'rgba(255, 99, 132, 0.1)'; // Rose très léger
-    }
-    return 'transparent';
-  };
 
   return (
-    <li className="eleve-card-wrapper" style={{position:'relative'}}>
+    <li className={"eleve-card-wrapper "+eleve.sexe.toLowerCase()} style={{position:'relative'}}>
       <Link 
         href={`/eleves/${eleve._id}`} 
         className={`eleve-card ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`} 
         tabIndex={0} 
-        style={{backgroundColor: getBackgroundColor(eleve.sexe)}}
       >
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
         <div className="eleve-card__infos">

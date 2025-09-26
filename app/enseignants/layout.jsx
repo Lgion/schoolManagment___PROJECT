@@ -22,7 +22,8 @@ export default function EcoleAdminEleveLayout({ children }) {
     console.log(enseignants);
     console.log(enseignants);
     return (<>
-        <h2>Liste des enseignants <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button></h2>
+        <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
+        <h2>Liste des enseignants </h2>
         
         {/* Contrôles de filtrage et tri */}
 {/*

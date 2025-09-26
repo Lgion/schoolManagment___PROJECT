@@ -876,7 +876,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               </div>
             </div>
 
-            <label htmlFor="input-adresse">Adresse</label>
+            <label htmlFor="input-adresse">Adresse (facultatif): </label>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <input
                 id="input-adresse"
@@ -1175,7 +1175,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             </div>
 
             <div className="modal__fieldGroup">
-              <label htmlFor="input-adresse" className="modal__label">Adresse: </label>
+              <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif): </label>
               <div className="modal__fieldGroup modal__fieldGroup--row">
                 <input
                   id="input-adresse"
@@ -1189,7 +1189,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 <button 
                   type="button" 
                   onClick={() => setShowMap(true)} 
-                  className="modal__btn modal__btn--secondary"
+                  className="modal__btn modal__btn--secondary input-adresseBtn"
                   title="Ouvrir la carte"
                 >
                   📍

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link';
-import { useContext,useEffect } from 'react';
+import { useContext,useEffect,Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import {AiAdminContext} from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
@@ -125,7 +125,7 @@ export default ({children}) => {
   }, []);
 
   return <>
-  <main className="ecole-admin">
+  <>
     {/* Bouton de réinitialisation des données */}
     <PermissionGate role="admin">
       <div className="ecole-admin__headerActions-reset">
@@ -408,14 +408,14 @@ export default ({children}) => {
     </SignedOut>
     */}
 
-    <section className="ecole-admin__content home">
+    <main className="ecole-admin__content home">
       <h1 className="ecole-admin__dashboardTitle">
         👑 Tableau de bord Administrateur
       </h1>
       {children}
        
-    </section>
-  </main>
+    </main>
+  </>
   {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
   </>
 }

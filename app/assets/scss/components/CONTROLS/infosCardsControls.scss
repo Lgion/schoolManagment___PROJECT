@@ -1,13 +1,13 @@
 // Composant BEM pour les contrôles des cartes d'informations (filtres, tri, recherche)
 .infos_cards {
   position: relative;
-  height: 200px;
+  // height: 200px;
   display: flex;
   align-items: center;
   gap: 20px;
   flex-flow: wrap;
   justify-content: center;
-  margin-bottom: 200px;
+  // margin-bottom: 200px;
   &__controls {
     display: flex;
     flex-flow: wrap;
