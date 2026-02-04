@@ -109,7 +109,6 @@ export default function EcoleAdminEleveLayout({ children }) {
     const externesCount = totalEleves - internesCount;
     
     return (<>
-        <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
         <h2>Liste des élèves</h2>
         <canvas ref={canvasRef} id="camembert"
             width={320}
@@ -230,6 +229,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                     </button>
                 </div>
             </div>
+            <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
         </form>
         
         <hr />

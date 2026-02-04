@@ -7,6 +7,7 @@ import EntityModal from '../components/EntityModal';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 
 export default function ClassesPage({children}) {
+  
   const ctx = useContext(AiAdminContext);
   if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
   const { classes = [], enseignants, eleves, setSelected, setShowModal, setEditType } = ctx;
@@ -14,6 +15,7 @@ export default function ClassesPage({children}) {
   const [detailModalType, setDetailModalType] = useState(null);
   const [detailModalEntityId, setDetailModalEntityId] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null); // null = toutes les années
+  console.log(classes);
 
   {/*
   // Fonction pour ouvrir la modale de détail

@@ -2,13 +2,13 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 // const classeSchema = require("./Classe")
-const {schema} = require("./Classe")
-console.log(schema);
+const {schema: schemaClasseForTeacher} = require("./Classe")
+console.log(schemaClasseForTeacher);
 
 const teacherSchema = mongoose.Schema({
     // current_classes: { default: "", type: Object, required:true },
     // current_classes_$_ref_µ_classes: { default: "", type: ObjectId, ref: Object.keys(schema.obj)[0], required:true },
-    current_classes: { default: [], type: [ObjectId], ref: Object.keys(schema.obj)[0], required:true },
+    current_classes: { default: [], type: [ObjectId], ref: Object.keys(schemaClasseForTeacher.obj)[0], required:true },
     nom: { default: "", type: String, required:true },
     prenoms: { default: [], type: [String], required:true },
     sexe: { default: "", type: String, required:true }, // M ou F

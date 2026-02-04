@@ -61,6 +61,13 @@
     margin-bottom: 0.2em;
     font-size: 1em;
   }
+  &__classe,&__name {
+    background: silver;
+    margin: -4px -7%;
+    display: block;
+    padding: 5px 5px;
+    border-radius: 5px;
+  }
 
   &__isinterne {
     margin-bottom: 0.25em;
