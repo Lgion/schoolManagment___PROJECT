@@ -3,6 +3,7 @@
 import Chart from "chart.js/auto"
 import { useContext, useRef, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import PermissionGate from '../components/PermissionGate';
 import EleveCard from './EleveCard';
 import './EleveCard.scss';
 
@@ -229,7 +230,10 @@ export default function EcoleAdminEleveLayout({ children }) {
                     </button>
                 </div>
             </div>
-            <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+
+            <PermissionGate roles={['admin', 'prof']}>
+                <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+            </PermissionGate>
         </form>
         
         <hr />

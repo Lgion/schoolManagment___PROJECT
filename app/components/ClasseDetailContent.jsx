@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useUserRole } from '../../stores/useUserRole';
 import Link from 'next/link';
+import PermissionGate from "../components/PermissionGate";
 import { getClasseImagePath } from '../../utils/imageUtils';
 import ScheduleViewer from './ScheduleViewer';
 import AddStudentsModal from './AddStudentsModal';
@@ -12,20 +13,20 @@ export default function ClasseDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
   const { userRole } = useUserRole();
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
-  
-  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
-  
+
+  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
+
   const classe = (ctx.classes || []).find(c => String(c._id) === String(entityId));
-  if (!classe) return <div style={{color:'red'}}>Classe introuvable</div>;
-  
+  if (!classe) return <div style={{ color: 'red' }}>Classe introuvable</div>;
+
   // Déterminer si c'est une classe de l'année actuelle ou historique
   const currentYear = new Date().getFullYear();
-  const currentSchoolYear = (new Date().getMonth() + 1) < 7 
-    ? `${currentYear - 1}-${currentYear}` 
+  const currentSchoolYear = (new Date().getMonth() + 1) < 7
+    ? `${currentYear - 1}-${currentYear}`
     : `${currentYear}-${currentYear + 1}`;
-  
+
   const isCurrentYear = classe.annee === currentSchoolYear;
-  
+
   // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
   console.log('🔍 Debug bouton ajout élèves:', {
     userRole,
@@ -34,16 +35,16 @@ export default function ClasseDetailContent({ entityId }) {
     currentSchoolYear,
     condition: userRole === 'admin' && isCurrentYear
   });
-  
+
   // Liste des élèves selon le contexte (actuel vs historique)
-  const eleves = isCurrentYear 
+  const eleves = isCurrentYear
     ? (ctx.eleves || []).filter(e => e.current_classe === classe._id) // Relations dynamiques
     : classe.eleves || []; // Snapshot historique
-    
+
   const enseignants = isCurrentYear
-    ? (ctx.enseignants || []).filter(e => 
-        Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
-      ) // Relations dynamiques
+    ? (ctx.enseignants || []).filter(e =>
+      Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
+    ) // Relations dynamiques
     : classe.professeur || []; // Snapshot historique
 
   return (
@@ -60,9 +61,9 @@ export default function ClasseDetailContent({ entityId }) {
             </p>
           </div>
           <div className="person-detail__header-image">
-            <img 
-              className="person-detail__photo" 
-              src={getClasseImagePath(classe)} 
+            <img
+              className="person-detail__photo"
+              src={getClasseImagePath(classe)}
               alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
               onError={(e) => {
                 e.target.src = '/school/classe.webp';
@@ -102,9 +103,7 @@ export default function ClasseDetailContent({ entityId }) {
         <h2 className="person-detail__subtitle">
           <span className="person-detail__subtitle-icon">👨‍🎓</span>
           Liste des élèvess
-          {/* Bouton visible si admin ET année courante OU mode dev */}
-          {//((userRole === 'admin' && isCurrentYear) || true /* TEMPORAIRE: forcer l'affichage */) && (
-          }
+          <PermissionGate roles={['admin', 'prof']}>
             <button
               className="person-detail__addBtn"
               onClick={() => setShowAddStudentsModal(true)}
@@ -112,7 +111,7 @@ export default function ClasseDetailContent({ entityId }) {
             >
               + Ajouter
             </button>
-          {/* )} */}
+          </PermissionGate>
         </h2>
         {eleves.length === 0 ? (
           <div className="person-detail__empty">
@@ -165,10 +164,10 @@ export default function ClasseDetailContent({ entityId }) {
           </div>
         )}
       </div>
-      
+
       {/* Section Emploi du temps */}
       <div className="person-detail__block person-detail__block--schedule">
-        <ScheduleViewer 
+        <ScheduleViewer
           classeId={classe._id}
           isEditable={userRole === 'admin'}
           onEditSchedule={(data) => {

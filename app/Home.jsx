@@ -1,9 +1,9 @@
 "use client"
 
 import Link from 'next/link';
-import { useContext,useEffect,Fragment } from 'react';
+import { useContext, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
-import {AiAdminContext} from '../stores/ai_adminContext';
+import { AiAdminContext } from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
 import PermissionGate, { RoleIndicator } from './components/PermissionGate';
 import {
@@ -15,29 +15,29 @@ import {
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
 
-export default ({children}) => {
+export default ({ children }) => {
   const router = useRouter();
-  const { 
+  const {
     selected,
     setSelected,
     showModal,
     setShowModal,
     editType,
-    eleves, 
-    enseignants, 
-    classes, 
-    fetchEleves, 
-    fetchEnseignants, 
+    eleves,
+    enseignants,
+    classes,
+    fetchEleves,
+    fetchEnseignants,
     fetchClasses,
   } = useContext(AiAdminContext)
 
-  const { 
-    userRole, 
-    loading, 
-    isAuthenticated, 
+  const {
+    userRole,
+    loading,
+    isAuthenticated,
     userData,
     clerkUser,
-    syncUser 
+    syncUser
   } = useUserRole();
 
   // Fonction pour gérer la navigation avec scroll automatique
@@ -47,9 +47,9 @@ export default ({children}) => {
     setTimeout(() => {
       const contentElement = document.querySelector('.ecole-admin__content');
       if (contentElement) {
-        contentElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        contentElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         });
       }
     }, 100);
@@ -66,7 +66,7 @@ export default ({children}) => {
       '• Contenu blog et carousel\n\n' +
       'Êtes-vous sûr de vouloir continuer ?'
     );
-    
+
     if (!confirmReset) return;
 
     try {
@@ -74,17 +74,17 @@ export default ({children}) => {
       localStorage.removeItem('eleves');
       localStorage.removeItem('enseignants');
       localStorage.removeItem('classes');
-      
+
       // 📚 Données pédagogiques
       localStorage.removeItem('app_subjects');
-      
+
       // Coefficients par classe (pattern dynamique)
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('app_class_coefficients_')) {
           localStorage.removeItem(key);
         }
       });
-      
+
       // 👤 Données utilisateur
       localStorage.removeItem('user');
       Object.keys(localStorage).forEach(key => {
@@ -92,8 +92,8 @@ export default ({children}) => {
           localStorage.removeItem(key);
         }
       });
-      
-      
+
+
       console.log('🗑️ Toutes les données de l\'application ont été supprimées du localStorage');
       alert('✅ Toutes les données ont été supprimées ! La page va se recharger.');
       window.location.reload();
@@ -125,95 +125,95 @@ export default ({children}) => {
   }, []);
 
   return <>
-  <>
-    {/* Bouton de réinitialisation des données */}
-    <PermissionGate role="admin">
-      <div className="ecole-admin__headerActions-reset">
-        <button 
-          onClick={clearAllAppData}
-          className="ecole-admin__headerActions-reset-btn"
-          title="Réinitialiser toutes les données de l'application"
-        >
+    <>
+      {/* Bouton de réinitialisation des données */}
+      <PermissionGate role="admin">
+        <div className="ecole-admin__headerActions-reset">
+          <button
+            onClick={clearAllAppData}
+            className="ecole-admin__headerActions-reset-btn"
+            title="Réinitialiser toutes les données de l'application"
+          >
             <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
-          <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
-        </button>
-      </div>
-    </PermissionGate>
-    <header className="ecole-admin__header">
-      <div className="ecole-admin__header-container">
-        <div className="ecole-admin__branding">
-          <Link href={"/"} className="ecole-admin__branding-logo">
-            {/* <img src="/logo.webp" alt="Logo ESMP" className="ecole-admin__branding-logo-img" /> */}
-            <img src="/logo.png" alt="Logo ESMP" className="ecole-admin__branding-logo-img" />
-          </Link>
-          <div>
-            <h1 className="ecole-admin__branding-title">École Martin de Porres</h1>
-            <p className="ecole-admin__branding-subtitle">Système de gestion scolaire</p>
-          </div>
+            <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
+          </button>
         </div>
-        
-        <div className="ecole-admin__headerActions">
-          <div className="ecole-admin__headerActions-contact">
-            <div className="ecole-admin__headerActions-iconGroup">
-              <a 
-                href="mailto:sanctuaire.rosaire.bolobi@gmail.com" 
-                className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
-                data-tooltip="sanctuaire.rosaire.bolobi@gmail.com"
-              >
-                <i className="fas fa-envelope"></i>
-              </a>
-              <a 
-                href="tel:+2250704763132" 
-                className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
-                data-tooltip="+225 07 04 76 31 32"
-              >
-                <i className="fas fa-phone"></i>
-              </a>
+      </PermissionGate>
+      <header className="ecole-admin__header">
+        <div className="ecole-admin__header-container">
+          <div className="ecole-admin__branding">
+            <Link href={"/"} className="ecole-admin__branding-logo">
+              {/* <img src="/logo.webp" alt="Logo ESMP" className="ecole-admin__branding-logo-img" /> */}
+              <img src="/logo.png" alt="Logo ESMP" className="ecole-admin__branding-logo-img" />
+            </Link>
+            <div>
+              <h1 className="ecole-admin__branding-title">École Martin de Porres</h1>
+              <p className="ecole-admin__branding-subtitle">Système de gestion scolaire</p>
             </div>
           </div>
-          
-          
-          <div className="ecole-admin__authSection">
-            <SignedOut>
+
+          <div className="ecole-admin__headerActions">
+            <div className="ecole-admin__headerActions-contact">
               <div className="ecole-admin__headerActions-iconGroup">
-                <SignInButton mode="modal">
-                  <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="Se connecter">
-                    <i className="fas fa-sign-in-alt"></i>
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="S'inscrire">
-                    <i className="fas fa-user-plus"></i>
-                  </button>
-                </SignUpButton>
+                <a
+                  href="mailto:sanctuaire.rosaire.bolobi@gmail.com"
+                  className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
+                  data-tooltip="sanctuaire.rosaire.bolobi@gmail.com"
+                >
+                  <i className="fas fa-envelope"></i>
+                </a>
+                <a
+                  href="tel:+2250704763132"
+                  className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
+                  data-tooltip="+225 07 04 76 31 32"
+                >
+                  <i className="fas fa-phone"></i>
+                </a>
               </div>
-            </SignedOut>
-            
-            <SignedIn>
-              <div className="ecole-admin__headerActions-iconGroup">
-                <div className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--account" data-tooltip="Mon compte">
-                  <UserButton 
-                    appearance={{
-                      elements: {
-                        avatarBox: "ecole-admin__userAvatar"
-                      }
-                    }}
-                  />
+            </div>
+
+
+            <div className="ecole-admin__authSection">
+              <SignedOut>
+                <div className="ecole-admin__headerActions-iconGroup">
+                  <SignInButton mode="modal">
+                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="Se connecter">
+                      <i className="fas fa-sign-in-alt"></i>
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="S'inscrire">
+                      <i className="fas fa-user-plus"></i>
+                    </button>
+                  </SignUpButton>
                 </div>
-                {!loading && userData && (
-                  <div className="ecole-admin__headerActions-roleIndicator">
-                    <RoleIndicator />
+              </SignedOut>
+
+              <SignedIn>
+                <div className="ecole-admin__headerActions-iconGroup">
+                  <div className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--account" data-tooltip="Mon compte">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: "ecole-admin__userAvatar"
+                        }
+                      }}
+                    />
                   </div>
-                )}
-              </div>
-            </SignedIn>
+                  {!loading && userData && (
+                    <div className="ecole-admin__headerActions-roleIndicator">
+                      <RoleIndicator />
+                    </div>
+                  )}
+                </div>
+              </SignedIn>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Dashboard adaptatif selon le rôle */}
-      {/* <SignedIn> */}
-      {loading ? (
+        {/* Dashboard adaptatif selon le rôle */}
+        {/* <SignedIn> */}
+        {loading ? (
           <section className="ecole-admin__loading">
             <div className="ecole-admin__loader">
               <span className="ecole-admin__loader-icon">⏳</span>
@@ -223,31 +223,33 @@ export default ({children}) => {
         ) : (
           <>
             {/* Dashboard ADMIN */}
-              <section className="ecole-admin__adminDashboard">                
-                <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
-                  <Link href="/eleves" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
-                    <span role="img" aria-label="Élève">👨‍🎓</span>
-                    <strong>Gérer les élèves</strong>
-                  </Link>
-                  <Link href="/enseignants" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
-                    <span role="img" aria-label="Enseignant">👨‍🏫</span>
-                    <strong>Gérer les enseignants</strong>
-                  </Link>
-                  <Link href="/classes" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
-                    <span role="img" aria-label="École">🏫</span>
-                    <strong>Gérer les classes</strong>
-                  </Link>
-                  {/* <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
-                    <span role="img" aria-label="Utilisateurs">👥</span>
-                    <strong>Gestion des utilisateurs</strong>
-                  </Link>
-                  <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
-                    <span role="img" aria-label="Paramètres">⚙️</span>
-                    <strong>Paramètres système</strong>
-                  </Link> */}
-                </nav>
+            <section className="ecole-admin__adminDashboard">
+              {/* <PermissionGate roles={['admin', 'prof']}> */}
+              <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
+                <Link href="/eleves" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
+                  <span role="img" aria-label="Élève">👨‍🎓</span>
+                  <strong>Gérer les élèves</strong>
+                </Link>
+                <Link href="/enseignants" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
+                  <span role="img" aria-label="Enseignant">👨‍🏫</span>
+                  <strong>Gérer les enseignants</strong>
+                </Link>
+                <Link href="/classes" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
+                  <span role="img" aria-label="École">🏫</span>
+                  <strong>Gérer les classes</strong>
+                </Link>
+                {/* <Link href="/admin/users" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gestion des utilisateurs">
+                      <span role="img" aria-label="Utilisateurs">👥</span>
+                      <strong>Gestion des utilisateurs</strong>
+                    </Link>
+                    <Link href="/admin/settings" className="ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Paramètres système">
+                      <span role="img" aria-label="Paramètres">⚙️</span>
+                      <strong>Paramètres système</strong>
+                    </Link> */}
+              </nav>
+              {/* </PermissionGate> */}
 
-                {/* <article className="ecole-admin__stats">
+              {/* <article className="ecole-admin__stats">
                   <div className="ecole-admin__stats-row">
                     <div className="ecole-admin__stats-col">
                       <h2 className="ecole-admin__stats-title">Statistiques globales: </h2>
@@ -257,13 +259,13 @@ export default ({children}) => {
                     </div>
                   </div>
                 </article> */}
-                
-              </section>
+
+            </section>
           </>
         )}
-      {/* </SignedIn> */}
-      {/* Navigation sticky intégrée dans le header */}
-      {/* <SignedIn>
+        {/* </SignedIn> */}
+        {/* Navigation sticky intégrée dans le header */}
+        {/* <SignedIn>
         {!loading && (
           <nav className="ecole-admin__header-nav" role="navigation" aria-label="Navigation principale">
             <div className="ecole-admin__header-nav-tabs">
@@ -376,10 +378,10 @@ export default ({children}) => {
             </nav>
           )}
         </SignedIn> */}
-    </header>
+      </header>
 
-    {/* Dashboard pour utilisateurs non connectés */}
-    {/*
+      {/* Dashboard pour utilisateurs non connectés */}
+      {/*
     <SignedOut>
       <section className="ecole-admin__publicDashboard">
         <div className="ecole-admin__welcomeCard">
@@ -408,14 +410,18 @@ export default ({children}) => {
     </SignedOut>
     */}
 
-    <main className="ecole-admin__content home">
-      <h1 className="ecole-admin__dashboardTitle">
-        👑 Tableau de bord Administrateur
-      </h1>
-      {children}
-       
-    </main>
-  </>
-  {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
+      <main className="ecole-admin__content home">
+        <h1 className={"ecole-admin__dashboardTitle role___"+userRole}>
+          {userRole==="admin"&&"👑 "}
+          {userRole==="prof"&&"🎩 "}
+           Tableau de bord 
+          {userRole==="admin"&&" Administrateur"}
+          {userRole==="prof"&&" Enseignant"}
+        </h1>
+        {children}
+
+      </main>
+    </>
+    {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
   </>
 }

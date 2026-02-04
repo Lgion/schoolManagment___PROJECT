@@ -9,6 +9,7 @@ import { getClasseImagePath, getEleveImagePath, getEnseignantImagePath } from '.
 import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
 import DetailPortal from "../../components/DetailPortal";
+import PermissionGate from "../../components/PermissionGate";
 import NotesBlock from '../../components/NotesBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 
@@ -24,19 +25,19 @@ export default function ClasseDetailPage() {
     ctx.fetchEleves && ctx.fetchEleves();
     ctx.fetchEnseignants && ctx.fetchEnseignants();
   }, []);
-  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
+  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const classe = (ctx.classes || []).find(c => String(c._id) === String(id));
-  if (!classe) return <div style={{color:'red'}}>Classe introuvable</div>;
-  
+  if (!classe) return <div style={{ color: 'red' }}>Classe introuvable</div>;
+
   // Déterminer si c'est une classe de l'année actuelle ou historique
   const currentYear = new Date().getFullYear();
-  const currentSchoolYear = (new Date().getMonth() + 1) < 7 
-    ? `${currentYear - 1}-${currentYear}` 
+  const currentSchoolYear = (new Date().getMonth() + 1) < 7
+    ? `${currentYear - 1}-${currentYear}`
     : `${currentYear}-${currentYear + 1}`;
-  
+
   const isCurrentYear = classe.annee === currentSchoolYear;
-  
+
   // Vérifier si c'est une classe de l'année courante ou future
   const isCurrentOrFutureYear = () => {
     if (!classe.annee) return false;
@@ -44,7 +45,7 @@ export default function ClasseDetailPage() {
     const [currentStartYear] = currentSchoolYear.split('-').map(y => parseInt(y));
     return startYear >= currentStartYear;
   };
-  
+
   // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
   console.log('🔍 Debug bouton ajout élèves:', {
     userRole,
@@ -53,16 +54,16 @@ export default function ClasseDetailPage() {
     currentSchoolYear,
     condition: userRole === 'admin' && isCurrentYear
   });
-  
+
   // Liste des élèves selon le contexte (actuel vs historique)
-  const eleves = isCurrentYear 
+  const eleves = isCurrentYear
     ? (ctx.eleves || []).filter(e => e.current_classe === classe._id) // Relations dynamiques
     : classe.eleves || []; // Snapshot historique
-    
+
   const enseignants = isCurrentYear
-    ? (ctx.enseignants || []).filter(e => 
-        Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
-      ) // Relations dynamiques
+    ? (ctx.enseignants || []).filter(e =>
+      Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
+    ) // Relations dynamiques
     : classe.professeur || []; // Snapshot historique
   // Prof principal (optionnel)
   const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
@@ -72,222 +73,223 @@ export default function ClasseDetailPage() {
   // console.log(enseignants);
   // console.log(ctx.enseignants);
   // console.log(classe);
-  
+
   return !classe ? <div>....loading.....</div>
-    : 
+    :
     <DetailPortal
       isOpen={true}
-      onClose={()=>router.back()}
+      onClose={() => router.back()}
       title={`Classe ${classe.niveau} ${classe.alias} (${classe.annee})`}
       icon={"🏦"}
-      reduced={[isReduced,setIsReduced]}
+      reduced={[isReduced, setIsReduced]}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
-      {onEdit && !showModal &&(
-        <button
-          type="button"
-          className="person-detail__editbtn"
-          onClick={e => { 
-            e.stopPropagation(); 
-            e.preventDefault(); 
-            onEdit(classe); 
-          }}
-          tabIndex={0}
-        >Éditer</button>
-      )}
-      {showModal && <button
-        className="person-detail__editbtn"
-        onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
-      >Fermer Édition</button>}
-      {/* En-tête de la classe */}
-      <div className="person-detail__header">
-        <div className="person-detail__header-content">
-          <div className="person-detail__header-info">
-            <h1 className="person-detail__title">
-              {classe.niveau} {classe.alias}
-            </h1>
-            <p className="person-detail__subtitle-text">
-              Année scolaire {classe.annee}
-            </p>
-          </div>
-          <div className="person-detail__header-image">
-            <img 
-              className="person-detail__photo" 
-              src={getClasseImagePath(classe)} 
-              alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
-              onError={(e) => {
-                e.target.src = '/school/classe.webp';
-              }}
-              onClick={e => {
-                e.preventDefault();
-                setIsReduced(!isReduced);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Statistiques rapides */}
-      <div className="person-detail__stats">
-        <div className="person-detail__stat-card">
-          <div className="person-detail__stat-icon">👨‍🎓</div>
-          <div className="person-detail__stat-content">
-            <span className="person-detail__stat-number">{eleves.length}</span>
-            <span className="person-detail__stat-label">Élèves</span>
-          </div>
-        </div>
-        <div className="person-detail__stat-card">
-          <div className="person-detail__stat-icon">👨‍🏫</div>
-          <div className="person-detail__stat-content">
-            <span className="person-detail__stat-number">{enseignants.length}</span>
-            <span className="person-detail__stat-label">Enseignants</span>
-          </div>
-        </div>
-        <div className="person-detail__stat-card">
-          <div className="person-detail__stat-icon">📚</div>
-          <div className="person-detail__stat-content">
-            <span className="person-detail__stat-number">{classe.niveau}</span>
-            <span className="person-detail__stat-label">Niveau</span>
-          </div>
-        </div>
-      </div>
-      {/* Liste des élèves */}
-      <div className="person-detail__block person-detail__block--students">
-        <h2 className="person-detail__subtitle">
-          <span className="person-detail__subtitle-icon">👨‍🎓</span>
-          Liste des élèves
-          {/* Bouton visible si admin ET année courante */}
-          {(userRole === 'admin' && isCurrentYear) && (
+        <PermissionGate roles={['admin', 'prof']}>
+          {onEdit && !showModal && (
             <button
-              className="person-detail__addBtn"
-              onClick={() => setShowAddStudentsModal(true)}
-              title="Ajouter des élèves à cette classe"
-            >
-              + Ajouter
-            </button>
+              type="button"
+              className="person-detail__editbtn"
+              onClick={e => {
+                e.stopPropagation();
+                e.preventDefault();
+                onEdit(classe);
+              }}
+              tabIndex={0}
+            >Éditer</button>
           )}
-        </h2>
-        {eleves.length === 0 ? (
-          <div className="person-detail__empty">
-            <div className="person-detail__empty-icon">📚</div>
-            <p className="person-detail__empty-text">Aucun élève dans cette classe</p>
+          {showModal && <button
+            className="person-detail__editbtn"
+            onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
+          >Fermer Édition</button>}
+        </PermissionGate>
+        {/* En-tête de la classe */}
+        <div className="person-detail__header">
+          <div className="person-detail__header-content">
+            <div className="person-detail__header-info">
+              <h1 className="person-detail__title">
+                {classe.niveau} {classe.alias}
+              </h1>
+              <p className="person-detail__subtitle-text">
+                Année scolaire {classe.annee}
+              </p>
+            </div>
+            <div className="person-detail__header-image">
+              <img
+                className="person-detail__photo"
+                src={getClasseImagePath(classe)}
+                alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
+                onError={(e) => {
+                  e.target.src = '/school/classe.webp';
+                }}
+                onClick={e => {
+                  e.preventDefault();
+                  setIsReduced(!isReduced);
+                }}
+              />
+            </div>
           </div>
-        ) : (
-          <div className="person-detail__grid">
-            {eleves.map(eleve => {
-              const student = ctx.eleves.find(el=>el._id===(eleve._id||eleve))
-              console.log(student);
-              
-              
-              const imagePath = getEleveImagePath(student);
-              console.log('Image path for', student?.nom, student?.prenoms, ':', imagePath);
-              
-              return (
-                <Link key={"eleves_"+student._id} href={`/eleves/${student._id}`} className="person-detail__card">
-                  <div className="person-detail__card-avatar">
-                    <img 
-                      src={imagePath} 
-                      alt={`${student?.nom} ${student?.prenoms}`}
-                      data-ok={imagePath}
-                      onError={(e) => {
-                        console.log('Image failed to load:', imagePath, 'falling back to default');
-                        // e.target.src = student["photo_$_file"]
-                        e.target.src = '/school/student.webp';
-                      }}
-                    />
-                  </div>
-                  <div className="person-detail__card-content">
-                    <h3 className="person-detail__card-name">{student?.nom} {student?.prenoms}</h3>
-                    <p className="person-detail__card-role">Élève</p>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        </div>
 
-      </div>
-      {/* Liste des enseignants */}
-      <div className="person-detail__block person-detail__block--teachers">
-        <h2 className="person-detail__subtitle">
-          <span className="person-detail__subtitle-icon">👨‍🏫</span>
-          Enseignants attitrés
-        </h2>
-        {enseignants.length === 0 ? (
-          <div className="person-detail__empty">
-            <div className="person-detail__empty-icon">👨‍🏫</div>
-            <p className="person-detail__empty-text">Aucun enseignant attitré</p>
+        {/* Statistiques rapides */}
+        <div className="person-detail__stats">
+          <div className="person-detail__stat-card">
+            <div className="person-detail__stat-icon">👨‍🎓</div>
+            <div className="person-detail__stat-content">
+              <span className="person-detail__stat-number">{eleves.length}</span>
+              <span className="person-detail__stat-label">Élèves</span>
+            </div>
           </div>
-        ) : (
-          <div className="person-detail__grid">
-            {enseignants.map(enseignant => {
-              const teacher = ctx.enseignants.find(el=>el._id===enseignant._id||enseignant)
-              console.log(teacher);
-              
-              return (
-                <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
-                  <div className="person-detail__card-avatar">
-                    <img 
-                      src={getEnseignantImagePath(teacher)} 
-                      alt={`${teacher?.nom} ${teacher?.prenoms}`}
-                      onError={(e) => {
-                        e.target.src = '/school/default-teacher.webp';
-                      }}
-                    />
-                  </div>
-                  <div className="person-detail__card-content">
-                    <h3 className="person-detail__card-name">{teacher?.nom} {teacher?.prenoms}</h3>
-                    <p className="person-detail__card-role">Enseignant</p>
-                  </div>
-                </Link>
-              )
-            })}
+          <div className="person-detail__stat-card">
+            <div className="person-detail__stat-icon">👨‍🏫</div>
+            <div className="person-detail__stat-content">
+              <span className="person-detail__stat-number">{enseignants.length}</span>
+              <span className="person-detail__stat-label">Enseignants</span>
+            </div>
           </div>
-        )}
-      </div>
+          <div className="person-detail__stat-card">
+            <div className="person-detail__stat-icon">📚</div>
+            <div className="person-detail__stat-content">
+              <span className="person-detail__stat-number">{classe.niveau}</span>
+              <span className="person-detail__stat-label">Niveau</span>
+            </div>
+          </div>
+        </div>
+        {/* Liste des élèves */}
+        <div className="person-detail__block person-detail__block--students">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">👨‍🎓</span>
+            Liste des élèves
+            <PermissionGate roles={['admin', 'prof']}>
+              <button
+                className="person-detail__addBtn"
+                onClick={() => setShowAddStudentsModal(true)}
+                title="Ajouter des élèves à cette classe"
+              >
+                + Ajouter
+              </button>
+            </PermissionGate>
+          </h2>
+          {eleves.length === 0 ? (
+            <div className="person-detail__empty">
+              <div className="person-detail__empty-icon">📚</div>
+              <p className="person-detail__empty-text">Aucun élève dans cette classe</p>
+            </div>
+          ) : (
+            <div className="person-detail__grid">
+              {eleves.map(eleve => {
+                const student = ctx.eleves.find(el => el._id === (eleve._id || eleve))
+                console.log(student);
 
-      {/* Section Notes et Compositions */}
-      <div className="person-detail__block person-detail__block--notes">
-        <h2 className="person-detail__subtitle">
-          <span className="person-detail__subtitle-icon">📊</span>
-          Notes et Compositions
-        </h2>
-        <NotesBlock 
-          eleves={eleves}
+
+                const imagePath = getEleveImagePath(student);
+                console.log('Image path for', student?.nom, student?.prenoms, ':', imagePath);
+
+                return (
+                  <Link key={"eleves_" + student._id} href={`/eleves/${student._id}`} className="person-detail__card">
+                    <div className="person-detail__card-avatar">
+                      <img
+                        src={imagePath}
+                        alt={`${student?.nom} ${student?.prenoms}`}
+                        data-ok={imagePath}
+                        onError={(e) => {
+                          console.log('Image failed to load:', imagePath, 'falling back to default');
+                          // e.target.src = student["photo_$_file"]
+                          e.target.src = '/school/student.webp';
+                        }}
+                      />
+                    </div>
+                    <div className="person-detail__card-content">
+                      <h3 className="person-detail__card-name">{student?.nom} {student?.prenoms}</h3>
+                      <p className="person-detail__card-role">Élève</p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+
+        </div>
+        {/* Liste des enseignants */}
+        <div className="person-detail__block person-detail__block--teachers">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">👨‍🏫</span>
+            Enseignants attitrés
+          </h2>
+          {enseignants.length === 0 ? (
+            <div className="person-detail__empty">
+              <div className="person-detail__empty-icon">👨‍🏫</div>
+              <p className="person-detail__empty-text">Aucun enseignant attitré</p>
+            </div>
+          ) : (
+            <div className="person-detail__grid">
+              {enseignants.map(enseignant => {
+                const teacher = ctx.enseignants.find(el => el._id === enseignant._id || enseignant)
+                console.log(teacher);
+
+                return (
+                  <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
+                    <div className="person-detail__card-avatar">
+                      <img
+                        src={getEnseignantImagePath(teacher)}
+                        alt={`${teacher?.nom} ${teacher?.prenoms}`}
+                        onError={(e) => {
+                          e.target.src = '/school/default-teacher.webp';
+                        }}
+                      />
+                    </div>
+                    <div className="person-detail__card-content">
+                      <h3 className="person-detail__card-name">{teacher?.nom} {teacher?.prenoms}</h3>
+                      <p className="person-detail__card-role">Enseignant</p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Section Notes et Compositions */}
+        <div className="person-detail__block person-detail__block--notes">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">📊</span>
+            Notes et Compositions
+          </h2>
+          <NotesBlock
+            eleves={eleves}
+            classeId={classe._id}
+            isCurrentYear={isCurrentYear}
+          />
+        </div>
+
+        {/* Section Emploi du temps */}
+        <div className="person-detail__block person-detail__block--schedule">
+          {/* <h2 className="person-detail__subtitle">Emploi du temps</h2> */}
+          <ScheduleViewer
+            classeId={classe._id}
+            isEditable={userRole === 'admin'}
+            onEditSchedule={(data) => {
+              if (data.action === 'create' || data.action === 'edit') {
+                router.push(`/scheduling?classeId=${classe._id}`);
+              } else if (data.action === 'history') {
+                router.push(`/scheduling?classeId=${classe._id}&view=history`);
+              }
+            }}
+          />
+        </div>
+
+        {/* Modal d'ajout d'élèves */}
+        <AddStudentsModal
+          isOpen={showAddStudentsModal}
+          onClose={() => setShowAddStudentsModal(false)}
           classeId={classe._id}
-          isCurrentYear={isCurrentYear}
-        />
-      </div>
-      
-      {/* Section Emploi du temps */}
-      <div className="person-detail__block person-detail__block--schedule">
-        {/* <h2 className="person-detail__subtitle">Emploi du temps</h2> */}
-        <ScheduleViewer 
-          classeId={classe._id}
-          isEditable={userRole === 'admin'}
-          onEditSchedule={(data) => {
-            if (data.action === 'create' || data.action === 'edit') {
-              router.push(`/scheduling?classeId=${classe._id}`);
-            } else if (data.action === 'history') {
-              router.push(`/scheduling?classeId=${classe._id}&view=history`);
-            }
+          classeName={`${classe.niveau} ${classe.alias}`}
+          classeAnnee={classe.annee}
+          currentStudents={eleves.map(e => e._id || e)}
+          onSuccess={() => {
+            // Rafraîchir les données
+            ctx.fetchEleves && ctx.fetchEleves();
+            ctx.fetchClasses && ctx.fetchClasses();
           }}
         />
-      </div>
-
-      {/* Modal d'ajout d'élèves */}
-      <AddStudentsModal
-        isOpen={showAddStudentsModal}
-        onClose={() => setShowAddStudentsModal(false)}
-        classeId={classe._id}
-        classeName={`${classe.niveau} ${classe.alias}`}
-        classeAnnee={classe.annee}
-        currentStudents={eleves.map(e => e._id || e)}
-        onSuccess={() => {
-          // Rafraîchir les données
-          ctx.fetchEleves && ctx.fetchEleves();
-          ctx.fetchClasses && ctx.fetchClasses();
-        }}
-      />
-    </main>
+      </main>
     </DetailPortal>
 }

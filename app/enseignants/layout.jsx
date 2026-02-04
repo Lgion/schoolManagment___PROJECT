@@ -4,6 +4,7 @@
 import { useContext,useRef, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useDetailPortal } from '../../stores/useDetailPortal';
+import PermissionGate from '../components/PermissionGate';
 import EntityModal from '../components/EntityModal';
 import PersonCard from '../components/PersonCard';
 
@@ -22,7 +23,9 @@ export default function EcoleAdminEleveLayout({ children }) {
     console.log(enseignants);
     console.log(enseignants);
     return (<>
-        <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
+        <PermissionGate roles={['admin', 'prof']}>
+            <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
+        </PermissionGate>
         <h2>Liste des enseignants </h2>
         
         {/* Contrôles de filtrage et tri */}

@@ -4,41 +4,42 @@ import { useContext, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
 import Gmap from '../_/Gmap_plus';
+import PermissionGate from "../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../components/ClasseEnseignantDisplay';
 import { getEleveImagePath } from '../../utils/imageUtils';
 
 export default function EleveDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
-  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
-  
+  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
+
   const getDefaultSchoolYear = (compositions) => {
     const keys = Object.keys(compositions || {});
     if (keys.length > 0) return keys[0];
     const now = new Date();
     return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
   };
-  
-  useEffect(() => { 
-    ctx.fetchEleves && ctx.fetchEleves(); 
-    ctx.fetchClasses && ctx.fetchClasses(); 
+
+  useEffect(() => {
+    ctx.fetchEleves && ctx.fetchEleves();
+    ctx.fetchClasses && ctx.fetchClasses();
   }, []);
-  
+
   const { setSelected, showModal, setShowModal } = ctx;
   const { entity: eleve, classe } = useEntityDetail(entityId, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false);
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
-  
-  if (!eleve) return <div style={{color:'red'}}>Élève introuvable</div>;
+
+  if (!eleve) return <div style={{ color: 'red' }}>Élève introuvable</div>;
 
   // Récupère toutes les années de scolarité pour progression globale
   const allFees = eleve.scolarity_fees_$_checkbox || {};
   const onEdit = e => { setSelected(e); setShowModal(true); }
-  
+
   // Fusionne tous les dépôts pour une progression globale
   let totalArgent = 0, totalRiz = 0;
   Object.values(allFees).forEach(fees => {
-    Object.values(fees||{}).forEach(v => {
+    Object.values(fees || {}).forEach(v => {
       if (v.argent) totalArgent += Number(v.argent);
       if (v.riz) totalRiz += Number(v.riz);
     });
@@ -46,27 +47,29 @@ export default function EleveDetailContent({ entityId }) {
   alert('okkkk')
   return (
     <main className="person-detail">
-      {onEdit && !showModal &&(
-        <button
-          type="button"
-          className="person-detail__editbtn"
-          onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(eleve); }}
-          tabIndex={0}
-        >Éditer</button>
-      )}
-      {showModal && <button
+      <PermissionGate roles={['admin', 'prof']}>
+        {onEdit && !showModal && (
+          <button
+            type="button"
+            className="person-detail__editbtn"
+            onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(eleve); }}
+            tabIndex={0}
+          >Éditer</button>
+        )}
+        {showModal && <button
           className="person-detail__editbtn"
           onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
         >Fermer Édition</button>
-      }
-      <img className="person-detail__photo" 
-        src={getEleveImagePath(eleve)} 
-        alt="" 
+        }
+      </PermissionGate>
+      <img className="person-detail__photo"
+        src={getEleveImagePath(eleve)}
+        alt=""
       />
       <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
       <ClasseDisplay classe={classe} label="En classe de:" />
       <ClasseEnseignantDisplay classe={classe} label="Enseignant de la classe:" />
-       
+
       <div className="person-detail__gmap">
         <u>Domicilié (coordonées gmap): </u>
         <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>
@@ -74,8 +77,8 @@ export default function EleveDetailContent({ entityId }) {
         </button>
         {gmapOpen && (
           <div className="person-detail__gmap-map">
-            <Gmap 
-              initialPosition={[eleve.adresse_$_map?.lat, eleve.adresse_$_map?.lng]} 
+            <Gmap
+              initialPosition={[eleve.adresse_$_map?.lat, eleve.adresse_$_map?.lng]}
               zoom={16}
             />
           </div>
@@ -93,7 +96,7 @@ export default function EleveDetailContent({ entityId }) {
       <ManusBlock manus={eleve.manus} />
 
       <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} />
-              
+
       <AddNoteForm notes={eleve.notes} />
 
       <div className="person-detail__block person-detail__block--history">
@@ -104,17 +107,17 @@ export default function EleveDetailContent({ entityId }) {
         <h2 className="person-detail__subtitle">Frais de scolarité</h2>
         {Object.keys(allFees).length === 0 ? <div>Aucun dépôt enregistré</div> :
           Object.entries(allFees).map(([year, fees]) => (
-            <div key={year} style={{marginBottom:'1.3em'}}>
-              <div style={{fontWeight:600,marginBottom:4}}>{year}</div>
+            <div key={year} style={{ marginBottom: '1.3em' }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
               <ScolarityFeesBlock fees={fees} schoolYear={year} />
             </div>
           ))
         }
-        <div style={{marginTop:'1em',fontSize:'0.97em',color:'#444'}}>
+        <div style={{ marginTop: '1em', fontSize: '0.97em', color: '#444' }}>
           <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
         </div>
       </div>
-      <div style={{margin:'2em 0 1em 0'}}>
+      <div style={{ margin: '2em 0 1em 0' }}>
         <h2>Commentaires</h2>
         <CommentairesBlock commentaires={eleve.commentaires} />
       </div>

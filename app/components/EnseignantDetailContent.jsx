@@ -4,13 +4,14 @@ import { useContext, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
 import Gmap from '../_/Gmap_plus';
+import PermissionGate from "../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
 import { getEnseignantImagePath } from '../../utils/imageUtils';
 
 export default function EnseignantDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
-  if (!ctx) return <div style={{color:'red'}}>Erreur : contexte non trouvé</div>;
-  
+  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
+
   useEffect(() => {
     ctx.fetchEnseignants && ctx.fetchEnseignants();
     ctx.fetchClasses && ctx.fetchClasses();
@@ -21,33 +22,35 @@ export default function EnseignantDetailContent({ entityId }) {
   const { entity: enseignant } = useEntityDetail(entityId, ctx, 'enseignants');
   const [gmapOpen, setGmapOpen] = useState(false);
 
-  if (!enseignant) return <div style={{color:'red'}}>Enseignant introuvable</div>;
+  if (!enseignant) return <div style={{ color: 'red' }}>Enseignant introuvable</div>;
 
   // Récupérer les classes assignées à cet enseignant
-  const classesAssignees = (ctx.classes || []).filter(c => 
+  const classesAssignees = (ctx.classes || []).filter(c =>
     Array.isArray(enseignant.current_classes) && enseignant.current_classes.includes(c._id)
   );
 
   // Récupérer tous les élèves des classes de cet enseignant
-  const elevesEnseignes = (ctx.eleves || []).filter(e => 
+  const elevesEnseignes = (ctx.eleves || []).filter(e =>
     classesAssignees.some(c => e.current_classe === c._id)
   );
 
   return (
-    <div className="person-detail" style={{position:'relative'}}>
-      {setSelected && !showModal && (
-        <button
-          type="button"
-          className="person-detail__editbtn"
-          onClick={e => { e.stopPropagation(); e.preventDefault(); setSelected(enseignant); setShowModal(true); }}
-          tabIndex={0}
-        >Éditer</button>
-      )}
-      {showModal && <button
+    <div className="person-detail" style={{ position: 'relative' }}>
+      <PermissionGate roles={['admin', 'prof']}>
+        {setSelected && !showModal && (
+          <button
+            type="button"
+            className="person-detail__editbtn"
+            onClick={e => { e.stopPropagation(); e.preventDefault(); setSelected(enseignant); setShowModal(true); }}
+            tabIndex={0}
+          >Éditer</button>
+        )}
+        {showModal && <button
           className="person-detail__editbtn"
           onClick={e => { e.stopPropagation(); e.preventDefault(); setShowModal(false); }}
         >Fermer Édition</button>
-      }
+        }
+      </PermissionGate>
 
       {/* En-tête de l'enseignant */}
       <div className="person-detail__header">
@@ -61,16 +64,16 @@ export default function EnseignantDetailContent({ entityId }) {
             </p>
             {enseignant.naissance_$_date && (
               <p className="person-detail__subtitle-text">
-                Né(e) le {new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', { 
-                  year: 'numeric', month: 'long', day: 'numeric' 
+                Né(e) le {new Date(enseignant.naissance_$_date).toLocaleDateString('fr-FR', {
+                  year: 'numeric', month: 'long', day: 'numeric'
                 })}
               </p>
             )}
           </div>
           <div className="person-detail__header-image">
-            <img 
-              className="person-detail__photo" 
-              src={getEnseignantImagePath(enseignant)} 
+            <img
+              className="person-detail__photo"
+              src={getEnseignantImagePath(enseignant)}
               alt={`${enseignant.nom} ${enseignant.prenoms}`}
               onError={(e) => {
                 e.target.src = '/school/default-teacher.webp';
@@ -141,13 +144,13 @@ export default function EnseignantDetailContent({ entityId }) {
           <div className="person-detail__contact-item">
             <span className="person-detail__contact-label">Téléphone :</span>
             <span className="person-detail__contact-value">
-              {enseignant.phone_$_tel || <span style={{color:'grey'}}>Non renseigné</span>}
+              {enseignant.phone_$_tel || <span style={{ color: 'grey' }}>Non renseigné</span>}
             </span>
           </div>
           <div className="person-detail__contact-item">
             <span className="person-detail__contact-label">Email :</span>
             <span className="person-detail__contact-value">
-              {enseignant.email_$_email || <span style={{color:'grey'}}>Non renseigné</span>}
+              {enseignant.email_$_email || <span style={{ color: 'grey' }}>Non renseigné</span>}
             </span>
           </div>
         </div>
@@ -161,16 +164,16 @@ export default function EnseignantDetailContent({ entityId }) {
             Localisation
           </h2>
           <div className="person-detail__location">
-            <button 
-              className="person-detail__location-btn" 
+            <button
+              className="person-detail__location-btn"
               onClick={() => setGmapOpen(o => !o)}
             >
               {gmapOpen ? '🔼 Masquer la carte' : '🔽 Afficher sur la carte'}
             </button>
             {gmapOpen && (
               <div className="person-detail__location-map">
-                <Gmap 
-                  initialPosition={[enseignant.adresse_$_map?.lat, enseignant.adresse_$_map?.lng]} 
+                <Gmap
+                  initialPosition={[enseignant.adresse_$_map?.lat, enseignant.adresse_$_map?.lng]}
                   zoom={16}
                 />
               </div>

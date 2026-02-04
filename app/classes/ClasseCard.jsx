@@ -4,32 +4,33 @@ import Link from "next/link";
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import './ClasseCard.scss';
 import { getClasseImagePath } from '../../utils/imageUtils';
+import PermissionGate from "../components/PermissionGate";
 
 export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal }) {
   if (!classe) return null;
   const { openPortal } = useDetailPortal();
-  
+
   // Gestion sécurisée du professeur principal
   let enseignantObj = null
   let enseignantNom = '—' // Tiret par défaut
-  
+
   if (enseignants && enseignants.length > 0 && classe.professeur && classe.professeur.length > 0) {
     // Nouvelle logique : récupérer l'enseignant à partir du champ professeur de la classe
     const premierProfId = classe.professeur[0]
     enseignantObj = enseignants.find(enseignant => enseignant._id === premierProfId)
-    
+
     if (enseignantObj) {
       const nom = enseignantObj.nom || ''
-      const prenoms = Array.isArray(enseignantObj.prenoms) 
-        ? enseignantObj.prenoms.join(' ') 
+      const prenoms = Array.isArray(enseignantObj.prenoms)
+        ? enseignantObj.prenoms.join(' ')
         : enseignantObj.prenoms || ''
       enseignantNom = `${nom} ${prenoms}`.trim()
     }
-    
+
     // Fallback : ancienne logique pour compatibilité avec les anciennes classes
     if (!enseignantObj && classe.professeur && classe.professeur.length > 0) {
       const premierProf = classe.professeur[0]
-      
+
       if (typeof premierProf === 'string') {
         enseignantObj = enseignants.find(el => el._id === premierProf)
       } else if (typeof premierProf === 'object' && premierProf !== null) {
@@ -39,11 +40,11 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
           enseignantNom = `${premierProf.nom || ''} ${Array.isArray(premierProf.prenoms) ? premierProf.prenoms.join(' ') : premierProf.prenoms || ''}`.trim()
         }
       }
-      
+
       if (enseignantObj && enseignantNom === '—') {
         const nom = enseignantObj.nom || ''
-        const prenoms = Array.isArray(enseignantObj.prenoms) 
-          ? enseignantObj.prenoms.join(' ') 
+        const prenoms = Array.isArray(enseignantObj.prenoms)
+          ? enseignantObj.prenoms.join(' ')
           : enseignantObj.prenoms || ''
         enseignantNom = `${nom} ${prenoms}`.trim()
       }
@@ -51,10 +52,10 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
   }
 
   return (
-    <div className="person-card-wrapper" style={{position:'relative'}}>
-      <Link 
+    <div className="person-card-wrapper" style={{ position: 'relative' }}>
+      <Link
         href={`/classes/${classe._id}`}
-        className="classe-card" 
+        className="classe-card"
         tabIndex={0}
       >
         <div className="classe-card__header">
@@ -63,9 +64,9 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
           <span className="classe-card__annee">{classe.annee}</span>
         </div>
         <div className="classe-card__infos">
-          <img 
-            className="classe-card__photo" 
-            src={getClasseImagePath(classe)} 
+          <img
+            className="classe-card__photo"
+            src={getClasseImagePath(classe)}
             alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
             onError={(e) => {
               e.target.src = '/school/classe.webp';
@@ -76,13 +77,15 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
             <div><b>Professeur principal :</b> {enseignantNom}</div>
           </div>
         </div>
-        {onEdit && (
-          <button
-            type="button"
-            className="classe-card__editbtn"
-            onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(classe); }}
-          >Éditer</button>
-        )}
+        <PermissionGate roles={['admin', 'prof']}>
+          {onEdit && (
+            <button
+              type="button"
+              className="classe-card__editbtn"
+              onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(classe); }}
+            >Éditer</button>
+          )}
+        </PermissionGate>
       </Link>
     </div>
   );

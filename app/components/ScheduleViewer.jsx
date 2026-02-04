@@ -2,16 +2,17 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
+import PermissionGate from "./PermissionGate";
 
 /**
  * Composant BEM ScheduleViewer
  * Affiche l'emploi du temps hebdomadaire d'une classe
  */
-const ScheduleViewer = ({ 
-  classeId, 
-  isEditable = false, 
+const ScheduleViewer = ({
+  classeId,
+  isEditable = false,
   compact = false,
-  onEditSchedule = null 
+  onEditSchedule = null
 }) => {
   const { user } = useUser()
   const [schedule, setSchedule] = useState(null)
@@ -21,7 +22,7 @@ const ScheduleViewer = ({
 
   const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi']
   const heures = [
-    '08:00-09:00', '09:00-10:00', '10:00-10:30', '10:30-12:00', 
+    '08:00-09:00', '09:00-10:00', '10:00-10:30', '10:30-12:00',
     '12:00-14:00', '14:00-15:00', '15:00-16:00'
   ]
 
@@ -35,7 +36,7 @@ const ScheduleViewer = ({
 
       try {
         setLoading(true)
-        
+
         // Récupération de l'emploi du temps actif
         const scheduleResponse = await fetch(
           `/api/schedules?classeId=${classeId}&activeOnly=true`
@@ -46,7 +47,7 @@ const ScheduleViewer = ({
           const activeSchedule = scheduleData.data[0]
           console.log('📅 Active schedule loaded:', activeSchedule)
           console.log('📋 Schedule planning structure:', activeSchedule.planning)
-          
+
           // Log des subjectIds trouvés dans le planning
           const subjectIds = []
           Object.keys(activeSchedule.planning || {}).forEach(jour => {
@@ -59,7 +60,7 @@ const ScheduleViewer = ({
             }
           })
           console.log('🔗 SubjectIds in schedule:', subjectIds)
-          
+
           setSchedule(activeSchedule)
         } else {
           console.log('❌ No active schedule found for classe:', classeId)
@@ -136,7 +137,7 @@ const ScheduleViewer = ({
     }
 
     const [heureDebut] = heures[heureIndex].split('-')
-    return schedule.planning[jour].find(slot => 
+    return schedule.planning[jour].find(slot =>
       slot.heureDebut === heureDebut
     )
   }
@@ -158,9 +159,9 @@ const ScheduleViewer = ({
   const isBreakTime = (heureIndex, hasSlot) => {
     // Ne marquer comme pause que si le créneau est vide ET correspond aux heures de pause
     if (hasSlot) return false
-    
-    return heures[heureIndex].includes('10:00-10:30') || 
-           heures[heureIndex].includes('12:00-14:00')
+
+    return heures[heureIndex].includes('10:00-10:30') ||
+      heures[heureIndex].includes('12:00-14:00')
   }
 
   // Rendu du composant de chargement
@@ -196,16 +197,18 @@ const ScheduleViewer = ({
             <h3 className="scheduleViewer__header-title">Emploi du temps</h3>
             <p className="scheduleViewer__header-subtitle">Aucun emploi du temps défini</p>
           </div>
-          {isEditable && (
-            <div className="scheduleViewer__actions">
-              <button 
-                className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
-                onClick={() => onEditSchedule && onEditSchedule({ action: 'create' })}
-              >
-                Créer un emploi du temps
-              </button>
-            </div>
-          )}
+          <PermissionGate roles={['admin', 'prof']}>
+            {isEditable && (
+              <div className="scheduleViewer__actions">
+                <button
+                  className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
+                  onClick={() => onEditSchedule && onEditSchedule({ action: 'create' })}
+                >
+                  Créer un emploi du temps
+                </button>
+              </div>
+            )}
+          </PermissionGate>
         </div>
         <div className="scheduleViewer__empty">
           <div className="scheduleViewer__empty-icon">📅</div>
@@ -225,22 +228,24 @@ const ScheduleViewer = ({
         <div>
           <h3 className="scheduleViewer__header-title">{schedule.label}</h3>
         </div>
-        {isEditable && (
-          <div className="scheduleViewer__actions">
-            <button 
-              className="scheduleViewer__actions-button"
-              onClick={() => onEditSchedule && onEditSchedule({ action: 'history', scheduleId: schedule._id })}
-            >
-              Historique
-            </button>
-            <button 
-              className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
-              onClick={() => onEditSchedule && onEditSchedule({ action: 'edit', schedule })}
-            >
-              Modifier
-            </button>
-          </div>
-        )}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isEditable && (
+            <div className="scheduleViewer__actions">
+              <button
+                className="scheduleViewer__actions-button"
+                onClick={() => onEditSchedule && onEditSchedule({ action: 'history', scheduleId: schedule._id })}
+              >
+                Historique
+              </button>
+              <button
+                className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
+                onClick={() => onEditSchedule && onEditSchedule({ action: 'edit', schedule })}
+              >
+                Modifier
+              </button>
+            </div>
+          )}
+        </PermissionGate>
       </div>
 
       {/* Grille de l'emploi du temps */}
@@ -264,17 +269,16 @@ const ScheduleViewer = ({
             {heures.map((heure, heureIndex) => {
               const slot = getTimeSlot(jour, heureIndex)
               const isBreak = isBreakTime(heureIndex, !!slot)
-              
+
               return (
                 <div
                   key={`${jour}-${heureIndex}`}
-                  className={`scheduleViewer__timeSlot ${
-                    !slot ? 'scheduleViewer__timeSlot--empty' : ''
-                  } ${isBreak ? 'scheduleViewer__timeSlot--break' : ''}`}
+                  className={`scheduleViewer__timeSlot ${!slot ? 'scheduleViewer__timeSlot--empty' : ''
+                    } ${isBreak ? 'scheduleViewer__timeSlot--break' : ''}`}
                   onClick={() => handleSlotClick(jour, heureIndex)}
                 >
                   {slot ? (
-                    <div 
+                    <div
                       className="scheduleViewer__subject"
                       style={{ backgroundColor: getSubjectInfo(slot.subjectId).couleur }}
                     >
@@ -292,7 +296,7 @@ const ScheduleViewer = ({
                     </div>
                   ) : isBreak ? (
                     <div className="scheduleViewer__subject">
-                      <span className={`scheduleViewer__subject-name ${heure === '10:00-10:30' ? 'scheduleViewer__subject-name--break' : ''}`}>Pause {heure === '10:00-10:30' ? "goûté" :"midi"}</span>
+                      <span className={`scheduleViewer__subject-name ${heure === '10:00-10:30' ? 'scheduleViewer__subject-name--break' : ''}`}>Pause {heure === '10:00-10:30' ? "goûté" : "midi"}</span>
                     </div>
                   ) : null}
                 </div>

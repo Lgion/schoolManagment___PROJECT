@@ -265,6 +265,12 @@ export function RoleBasedNavigation({ className = "" }) {
   );
 }
 
+// 
+export function getRole(){
+  const { userRole } = useUserRole();
+  return userRole
+}
+
 // Fonction utilitaire pour formater les labels de permissions
 function formatPermissionLabel(permission) {
   const labels = {

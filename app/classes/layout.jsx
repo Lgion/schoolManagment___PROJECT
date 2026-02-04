@@ -5,6 +5,7 @@ import { useContext, useState, useEffect } from 'react';
 import ClasseCard from './ClasseCard';
 import EntityModal from '../components/EntityModal';
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import PermissionGate from '../components/PermissionGate';
 
 export default function ClassesPage({children}) {
   
@@ -46,7 +47,11 @@ export default function ClassesPage({children}) {
   */}
 
   return (<>
-      <h2>Liste des classes <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button></h2>
+      <h2>Liste des classes 
+        <PermissionGate roles={['admin', 'prof']}>
+          <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button>
+        </PermissionGate>
+      </h2>
               
       {/* Badges de filtrage par année */}
       {classes && (

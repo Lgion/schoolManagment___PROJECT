@@ -3,16 +3,17 @@ import React from 'react';
 import Link from "next/link";
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
+import PermissionGate from "../components/PermissionGate";
 import './PersonCard.scss';
 
 export default function PersonCard({ person, classes, onClick, onEdit, type, viewMode = 'grid' }) {
-  const photoUrl = type === 'eleve' 
-    ? getEleveImagePath(person) 
-    : type === 'enseignant' 
-    ? getEnseignantImagePath(person) 
-    : person.photo_$_file || '/default-photo.png';
+  const photoUrl = type === 'eleve'
+    ? getEleveImagePath(person)
+    : type === 'enseignant'
+      ? getEnseignantImagePath(person)
+      : person.photo_$_file || '/default-photo.png';
   const { openPortal } = useDetailPortal();
-  
+
   // Couleur de fond selon le sexe
   const getBackgroundColor = (sexe) => {
     if (sexe === 'Garçon' || sexe === 'garcon' || sexe === 'M' || sexe === 'Masculin') {
@@ -25,20 +26,20 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
 
   console.log(person.nom);
   console.log(classes);
-  
+
   return (
-    <div className="person-card-wrapper" style={{position:'relative'}}>
-      <Link 
+    <div className="person-card-wrapper" style={{ position: 'relative' }}>
+      <Link
         href={`/${type}s/${person._id}`}
-        className={`person-card ${viewMode === 'inline' ? 'person-card--inline' : ''}`} 
-        tabIndex={0} 
-        style={{backgroundColor: getBackgroundColor(person.sexe)}}
+        className={`person-card ${viewMode === 'inline' ? 'person-card--inline' : ''}`}
+        tabIndex={0}
+        style={{ backgroundColor: getBackgroundColor(person.sexe) }}
       >
         <img className="person-card__photo" src={photoUrl} alt={person.nom + ' ' + person.prenoms} />
         <div className="person-card__infos">
           <div className="person-card__name">{person.nom} <span className="person-card__prenoms">{person.prenoms}</span></div>
           <div className="person-card__sexe">Sexe : {person.sexe === 'M' ? 'Masculin' : person.sexe === 'F' ? 'Féminin' : '-'}</div>
-          <div className="person-card__classe">{classes.map(el=>el?.niveau+" - "+el?.alias)}</div>
+          <div className="person-card__classe">{classes.map(el => el?.niveau + " - " + el?.alias)}</div>
           {/* Badge ou champ spécifique selon le type */}
           {type === 'eleve' && (
             <div className="person-card__isinterne">
@@ -49,15 +50,17 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
             </div>
           )}
         </div>
-        {onEdit && (
-          <button
-            type="button"
-            className="person-card__editbtn"
-            style={{position:'absolute',top:8,right:8,zIndex:2}}
-            onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(person); }}
-            tabIndex={0}
-          >Éditer</button>
-        )}
+        <PermissionGate roles={['admin', 'prof']}>
+          {onEdit && (
+            <button
+              type="button"
+              className="person-card__editbtn"
+              style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}
+              onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(person); }}
+              tabIndex={0}
+            >Éditer</button>
+          )}
+        </PermissionGate>
       </Link>
     </div>
   );
