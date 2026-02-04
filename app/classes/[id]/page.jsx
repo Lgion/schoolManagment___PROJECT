@@ -2,9 +2,9 @@
 
 import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from 'next/link';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { useUserRole } from '../../../stores/useUserRole';
-import Link from 'next/link';
 import { getClasseImagePath, getEleveImagePath, getEnseignantImagePath } from '../../../utils/imageUtils';
 import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
@@ -12,14 +12,16 @@ import DetailPortal from "../../components/DetailPortal";
 import PermissionGate from "../../components/PermissionGate";
 import NotesBlock from '../../components/NotesBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
+import TeacherReportModule from '../../components/TeacherReportModule';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
-  const { userRole } = useUserRole();
+  const { userRole, userData, isProf } = useUserRole();
   const [isReduced, setIsReduced] = useState(false);
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
+
   useEffect(() => {
     ctx.fetchClasses && ctx.fetchClasses();
     ctx.fetchEleves && ctx.fetchEleves();
@@ -245,6 +247,9 @@ export default function ClasseDetailPage() {
               })}
             </div>
           )}
+
+          {/* Module de rapport si l'utilisateur est un enseignant de cette classe */}
+          <TeacherReportModule initialClasseId={classe._id} />
         </div>
 
         {/* Section Notes et Compositions */}

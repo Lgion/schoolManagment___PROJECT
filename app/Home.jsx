@@ -14,6 +14,7 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
+import TeacherReportModule from './components/TeacherReportModule';
 
 export default ({ children }) => {
   const router = useRouter();
@@ -411,13 +412,16 @@ export default ({ children }) => {
     */}
 
       <main className="ecole-admin__content home">
-        <h1 className={"ecole-admin__dashboardTitle role___"+userRole}>
-          {userRole==="admin"&&"👑 "}
-          {userRole==="prof"&&"🎩 "}
-           Tableau de bord 
-          {userRole==="admin"&&" Administrateur"}
-          {userRole==="prof"&&" Enseignant"}
+        <h1 className={"ecole-admin__dashboardTitle role___" + userRole}>
+          {userRole === "admin" && "👑 "}
+          {userRole === "prof" && "🎩 "}
+          Tableau de bord
+          {userRole === "admin" && " Administrateur"}
+          {userRole === "prof" && " Enseignant"}
         </h1>
+
+        <TeacherReportModule />
+
         {children}
 
       </main>

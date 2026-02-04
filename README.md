@@ -82,6 +82,7 @@ DONE
 - avoir des permissions d'action plus modulaire (pour admin, prof, eleve, public). Définir l'ensemble des actions possibles, puis appliquer des restrictions/permissions à chacune
 WIP almost DONE
 - Les professeurs doivent pouvoir poser un rapport ecrit hebdomadaire.
+WIP mise en page à revoir, et encore quelque fonctionnalités à ajouter je pense 
 - assainir le code le plus possible, et optimiser la vitesse d'affichage. Commencer par le scss, puis clore par le jsx
 - vérifier quand je crée un eleve prof ou classe si un dossier est bien créé dans /public/school/
 - avoir une page administration, où un formulaire de configuration permet de facilement voir les informations concernant les 3 schéma principaux: eleves, enseignants, classes

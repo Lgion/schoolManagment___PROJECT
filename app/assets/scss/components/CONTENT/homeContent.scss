@@ -94,6 +94,7 @@
         text-align: justify;
         position: relative;
         padding-left: var(--spacing-md, 1rem);
+
         
         // Bordure gauche décorative
         &::before {
@@ -271,7 +272,7 @@
     }
     
     p {
-      color: #ecf0f1;
+      // color: #ecf0f1;
       
       &::before {
         background: linear-gradient(180deg, #3498db, rgba(52, 152, 219, 0.3));
