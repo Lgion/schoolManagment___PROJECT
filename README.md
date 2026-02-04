@@ -69,7 +69,7 @@ DONE
     + un bouton permettant de dupliquer la classe pour l'année en cours. Le callback de ce bouton doitmavérifier d'abord si une classe existe déjà pour l'année en cours, puis ne la dupliquer que si la classe pour l'année en cours n'existe pas, sinon déclencher un tooltip disant "Une classe pour l'année en cours existe déjà"
     ==>> Ce bouton devrait plutot etre dans div.classe-card à coté de button.classe-card__editbtn
     WIP
-- dans la page Classe, permettre de créer la liste des 6 classes en un clic
+- dans la page Classe, permettre de créer la liste des 6 classes en un clic, seulement si aucune classe de l'année scolaire en cours n'existe (on considère que l'année scolaire suivante commence toujours en juillet)
 - trouver un moyen pour persister et récupérer les fichiers dans le cloud
 DONE
     + qu'en est-il des documents, sont-ils eux aussi bien persistés, comment sont ils rangés, etc ?
@@ -79,10 +79,11 @@ DONE
 
 
 
+- avoir une page administration, où un formulaire de configuration permet de facilement voir et éditer les informations concernant les 3 schéma principaux: eleves, enseignants, classes
+WIP fonctionnalités scanner image pour extraire données (ex: composition)
 - avoir des permissions d'action plus modulaire (pour admin, prof, eleve, public). Définir l'ensemble des actions possibles, puis appliquer des restrictions/permissions à chacune
 WIP almost DONE
 - Les professeurs doivent pouvoir poser un rapport ecrit hebdomadaire.
 WIP mise en page à revoir, et encore quelque fonctionnalités à ajouter je pense 
 - assainir le code le plus possible, et optimiser la vitesse d'affichage. Commencer par le scss, puis clore par le jsx
 - vérifier quand je crée un eleve prof ou classe si un dossier est bien créé dans /public/school/
-- avoir une page administration, où un formulaire de configuration permet de facilement voir les informations concernant les 3 schéma principaux: eleves, enseignants, classes
