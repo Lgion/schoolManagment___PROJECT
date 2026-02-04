@@ -83,14 +83,18 @@
 
   &__progress {
     margin-top: 0.2em;
+    padding: .25em .35em;
+    background: silver;
+    box-shadow: 0 0 3px 1px black inset;
+    border-radius: 3px;
+    border: 1px solid black;  
   }
 
   &__progress-label {
     font-size: 0.95em;
-    color: #444;
+    color: black;
     margin-bottom: 0.1em;
-    color: white;
-    text-shadow: 0 0 1px black, 0 0 3px black, 0 0 4px black, 0 0 5px black;
+    // text-shadow: 0 0 1px black, 0 0 3px black, 0 0 4px black, 0 0 5px black;
     font-weight: 900;
   }
 
