@@ -85,5 +85,7 @@ WIP fonctionnalités scanner image pour extraire données (ex: composition)
 WIP almost DONE
 - Les professeurs doivent pouvoir poser un rapport ecrit hebdomadaire.
 WIP mise en page à revoir, et encore quelque fonctionnalités à ajouter je pense 
+- fonctionnalités d'anniversaire
+WIP, almost DONE
 - assainir le code le plus possible, et optimiser la vitesse d'affichage. Commencer par le scss, puis clore par le jsx
 - vérifier quand je crée un eleve prof ou classe si un dossier est bien créé dans /public/school/

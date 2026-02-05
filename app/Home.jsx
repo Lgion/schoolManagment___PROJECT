@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link';
-import { useContext, useEffect, Fragment } from 'react';
+import { useContext, useEffect, Fragment, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiAdminContext } from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
@@ -55,6 +55,35 @@ export default ({ children }) => {
       }
     }, 100);
   };
+
+  // --- LOGIQUE ANNIVERSAIRES ---
+  const birthdayMessage = useMemo(() => {
+    if (!eleves || !enseignants) return null;
+
+    const today = new Date();
+    const tDay = today.getDate();
+    const tMonth = today.getMonth();
+
+    const celebrate = [];
+
+    const check = (person, roleLabel) => {
+      const birthDate = person.naissance_$_date ? new Date(person.naissance_$_date) : null;
+      if (birthDate && birthDate.getDate() === tDay && birthDate.getMonth() === tMonth) {
+        const pName = Array.isArray(person.prenoms) ? person.prenoms.join(' ') : (person.prenoms || '');
+        celebrate.push(`${roleLabel} ${person.nom} ${pName}`);
+      }
+    };
+
+    eleves.forEach(e => check(e, 'élève'));
+    enseignants.forEach(e => check(e, 'professeur'));
+
+    if (celebrate.length === 0) return null;
+
+    if (celebrate.length === 1) return `Joyeux anniversaire ${celebrate[0]}`;
+
+    const last = celebrate.pop();
+    return `Joyeux anniversaire ${celebrate.join(', ')} et ${last}`;
+  }, [eleves, enseignants]);
 
   // Fonction pour vider toutes les données localStorage de l'app
   const clearAllAppData = () => {
@@ -418,6 +447,12 @@ export default ({ children }) => {
     */}
 
       <main className="ecole-admin__content home">
+        {birthdayMessage && (
+          <div className="ecole-admin__birthday-banner">
+            <span className="ecole-admin__birthday-icon">🎂</span>
+            <p className="ecole-admin__birthday-text">{birthdayMessage}</p>
+          </div>
+        )}
         <h1 className={"ecole-admin__dashboardTitle role___" + userRole}>
           {userRole === "admin" && "👑 "}
           {userRole === "prof" && "🎩 "}
@@ -430,6 +465,33 @@ export default ({ children }) => {
 
         {children}
 
+        <style jsx>{`
+          .ecole-admin__birthday-banner {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+            animation: slideInDown 0.5s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+          }
+          .ecole-admin__birthday-icon {
+            font-size: 1.8rem;
+          }
+          .ecole-admin__birthday-text {
+            color: #d84315;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.1rem;
+          }
+          @keyframes slideInDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+        `}</style>
       </main>
     </>
     {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
