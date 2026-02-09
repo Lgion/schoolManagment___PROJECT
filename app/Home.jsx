@@ -14,7 +14,6 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
-import TeacherReportModule from './components/TeacherReportModule';
 
 export default ({ children }) => {
   const router = useRouter();
@@ -461,7 +460,6 @@ export default ({ children }) => {
           {userRole === "prof" && " Enseignant"}
         </h1>
 
-        <TeacherReportModule />
 
         {children}
 
