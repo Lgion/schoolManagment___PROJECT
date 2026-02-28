@@ -9,8 +9,8 @@ import './EleveCard.scss';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
-    if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
-    const {eleves, selected, setSelected, showModal, setShowModal, setEditType} = ctx
+    if (!ctx) return <div style={{ color: 'red' }}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
+    const { eleves, selected, setSelected, showModal, setShowModal, setEditType } = ctx
     const canvasRef = useRef();
     const chartInstance = useRef(null);
     const [filterByClasse, setFilterByClasse] = useState('toutes'); // 'toutes' ou niveau spécifique
@@ -28,87 +28,91 @@ export default function EcoleAdminEleveLayout({ children }) {
         CM1: 4,
         CM2: 5,
     };
-    
 
-    useEffect(()=>{
+
+    useEffect(() => {
+        if (!Array.isArray(eleves)) return;
+
         const canvaCtx = document.getElementById('camembert').getContext('2d');
         // Détruit le graphique précédent si présent
         if (chartInstance.current) {
-        chartInstance.current.destroy();
+            chartInstance.current.destroy();
         }
-        const data = eleves.reduce((acc, {sexe}) => {
-        acc[sexe] = (acc[sexe] || 0) + 1;
-        return acc;
+        const data = eleves.reduce((acc, { sexe }) => {
+            acc[sexe] = (acc[sexe] || 0) + 1;
+            return acc;
         }, {});
-        
-        const labels = Object.keys(data).map(el=>el+": "+data[el]);
+
+        const labels = Object.keys(data).map(el => el + ": " + data[el]);
         const values = Object.values(data);
         chartInstance.current = new Chart(canvaCtx, {
-        type: 'doughnut',
-        data: {
-            labels,
-            datasets: [{
-            label: 'Nombre d\'élèves',
-            data: values,
-            backgroundColor: [
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 99, 132, 0.2)',
-            ],
-            borderColor: [
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 99, 132, 1)',
-            ],
-            borderWidth: 1,
-            hoverBackgroundColor: [
-                'rgba(54, 162, 235, 0.4)',
-                'rgba(255, 99, 132, 0.4)',
-            ],
-            hoverBorderWidth: 3
-            }]
-        },
-        options: {
-            plugins: {
-            title: {
-                display: true,
-                text: 'Nombre d\'élèves: '+JSON.parse(localStorage.getItem('eleves'))?.length
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Nombre d\'élèves',
+                    data: values,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                    ],
+                    borderWidth: 1,
+                    hoverBackgroundColor: [
+                        'rgba(54, 162, 235, 0.4)',
+                        'rgba(255, 99, 132, 0.4)',
+                    ],
+                    hoverBorderWidth: 3
+                }]
             },
-            legend: {
-                onClick: (e, legendItem, legend) => {
-                // Empêcher le comportement par défaut de masquer les sections
-                e.stopPropagation();
-                // Récupérer le genre cliqué
-                const clickedGender = Object.keys(data)[legendItem.index];
-                setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
-                }
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Nombre d\'élèves: ' + JSON.parse(localStorage.getItem('eleves'))?.length
+                    },
+                    legend: {
+                        onClick: (e, legendItem, legend) => {
+                            // Empêcher le comportement par défaut de masquer les sections
+                            e.stopPropagation();
+                            // Récupérer le genre cliqué
+                            const clickedGender = Object.keys(data)[legendItem.index];
+                            setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
+                        }
+                    }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        // Récupérer l'index de la section cliquée
+                        const clickedElementIndex = elements[0].index;
+                        const clickedGender = Object.keys(data)[clickedElementIndex];
+
+                        // Basculer le filtre par genre
+                        setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
+
+                        console.log(`Clic sur la section: ${clickedGender}`);
+                    }
+                },
+                onHover: (event, elements) => {
+                    // Changer le curseur au survol
+                    event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                },
+                responsive: false,
+                maintainAspectRatio: false,
             }
-            },
-            onClick: (event, elements) => {
-            if (elements.length > 0) {
-                // Récupérer l'index de la section cliquée
-                const clickedElementIndex = elements[0].index;
-                const clickedGender = Object.keys(data)[clickedElementIndex];
-                
-                // Basculer le filtre par genre
-                setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
-                
-                console.log(`Clic sur la section: ${clickedGender}`);
-            }
-            },
-            onHover: (event, elements) => {
-            // Changer le curseur au survol
-            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
-            },
-            responsive: false,
-            maintainAspectRatio: false,
-        }
         });
     }, [eleves])
-    
+
     // Calculer les statistiques pour les filtres
-    const totalEleves = eleves?.length || 0;
-    const internesCount = eleves?.filter(eleve => eleve.isInterne === true).length || 0;
+    const totalEleves = Array.isArray(eleves) ? eleves.length : 0;
+    const internesCount = Array.isArray(eleves)
+        ? eleves.filter(eleve => eleve.isInterne === true).length
+        : 0;
     const externesCount = totalEleves - internesCount;
-    
+
     return (<>
         <h2>Liste des élèves</h2>
         <canvas ref={canvasRef} id="camembert"
@@ -120,7 +124,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 {/* Recherche textuelle */}
                 <div className="infos_cards__control-group">
                     <label htmlFor="search-input" className="infos_cards__label">🔍 Rechercher :</label>
-                    <input 
+                    <input
                         id="search-input"
                         type="text"
                         className="infos_cards__search-input"
@@ -134,10 +138,10 @@ export default function EcoleAdminEleveLayout({ children }) {
                 {/* Filtres existants */}
                 <div className="infos_cards__control-group">
                     <label htmlFor="filter-select" className="infos_cards__label">🏫 Filtrer par classe :</label>
-                    <select 
+                    <select
                         id="filter-select"
                         className="infos_cards__select"
-                        value={filterByClasse} 
+                        value={filterByClasse}
                         onChange={e => setFilterByClasse(e.target.value)}
                         aria-label="Filtrer les élèves par classe"
                     >
@@ -150,13 +154,13 @@ export default function EcoleAdminEleveLayout({ children }) {
                         <option value="CM2">CM2</option>
                     </select>
                 </div>
-                
+
                 <div className="infos_cards__control-group">
                     <label htmlFor="gender-filter" className="infos_cards__label">👥 Filtrer par genre :</label>
-                    <select 
+                    <select
                         id="gender-filter"
                         className="infos_cards__select"
-                        value={filterByGender} 
+                        value={filterByGender}
                         onChange={e => setFilterByGender(e.target.value)}
                         aria-label="Filtrer les élèves par genre"
                     >
@@ -169,7 +173,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 {/* Contrôles de tri */}
                 <div className="infos_cards__control-group">
                     <label htmlFor="sort-by" className="infos_cards__label">📊 Trier par :</label>
-                    <select 
+                    <select
                         id="sort-by"
                         className="infos_cards__select"
                         value={sortBy}
@@ -183,7 +187,7 @@ export default function EcoleAdminEleveLayout({ children }) {
 
                 <div className="infos_cards__control-group">
                     <label htmlFor="sort-order" className="infos_cards__label">🔄 Ordre :</label>
-                    <select 
+                    <select
                         id="sort-order"
                         className="infos_cards__select"
                         value={sortOrder}
@@ -194,14 +198,14 @@ export default function EcoleAdminEleveLayout({ children }) {
                         <option value="desc">Décroissant (Z→A)</option>
                     </select>
                 </div>
-                
+
                 {/* Filtre par statut interne/externe */}
                 <div className="infos_cards__control-group">
                     <label htmlFor="interne-filter" className="infos_cards__label">🏠 Interne({internesCount})/Externe({externesCount}) :</label>
-                    <select 
+                    <select
                         id="interne-filter"
                         className="infos_cards__select"
-                        value={filterByInterne} 
+                        value={filterByInterne}
                         onChange={e => setFilterByInterne(e.target.value)}
                         aria-label="Filtrer les élèves par statut interne/externe"
                     >
@@ -214,7 +218,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 {/* Bouton de basculement d'affichage */}
                 <div className="infos_cards__control-group">
                     <label className="infos_cards__label">👁️ Affichage :</label>
-                    <button 
+                    <button
                         type="button"
                         className={`infos_cards__view-toggle ${viewMode === 'grid' ? 'infos_cards__view-toggle--active' : ''}`}
                         onClick={() => setViewMode(viewMode === 'grid' ? 'inline' : 'grid')}
@@ -235,10 +239,10 @@ export default function EcoleAdminEleveLayout({ children }) {
                 <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
             </PermissionGate>
         </form>
-        
+
         <hr />
 
-        {eleves ? 
+        {Array.isArray(eleves) ?
             <ul className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
                 {eleves
                     .filter(eleve => {
@@ -248,13 +252,13 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const classe = (ctx.classes || []).find(c => c._id === eleve.current_classe);
                             matchesClasse = classe?.niveau === filterByClasse;
                         }
-                        
+
                         // Filtre par genre
                         let matchesGender = true;
                         if (filterByGender !== 'tous') {
                             matchesGender = eleve.sexe === filterByGender;
                         }
-                        
+
                         // Filtre par statut interne/externe
                         let matchesInterne = true;
                         if (filterByInterne !== 'tous') {
@@ -264,7 +268,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                                 matchesInterne = eleve.isInterne === false;
                             }
                         }
-                        
+
                         // Filtre par recherche textuelle
                         let matchesSearch = true;
                         if (searchText.trim()) {
@@ -274,12 +278,12 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const nomComplet = `${nom} ${prenom}`.toLowerCase();
                             matchesSearch = nomComplet.includes(searchLower);
                         }
-                        
+
                         return matchesClasse && matchesGender && matchesInterne && matchesSearch;
                     })
                     .sort((a, b) => {
                         let comparison = 0;
-                        
+
                         if (sortBy === 'nom') {
                             // Tri par nom de famille puis prénom (avec vérifications de sécurité)
                             const nomA = a.nom || '';
@@ -299,22 +303,22 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const nomB = b.nom || '';
                             comparison = priorityA - priorityB || nomA.localeCompare(nomB);
                         }
-                        
+
                         // Inverser l'ordre si décroissant
                         return sortOrder === 'desc' ? -comparison : comparison;
                     })
                     .map(eleve => (
                         <EleveCard
-                        key={eleve._id}
-                        classe={(ctx.classes || []).find(c => c._id === eleve.current_classe) || {}}
-                        eleve={eleve}
-                        onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
-                        viewMode={viewMode}
+                            key={eleve._id}
+                            classe={(ctx.classes || []).find(c => c._id === eleve.current_classe) || {}}
+                            eleve={eleve}
+                            onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
+                            viewMode={viewMode}
                         />
-                ))}
+                    ))}
             </ul>
             :
-            <div style={{textAlign:'center',marginTop:'2em',fontSize:'1.3em'}}>Chargement...</div>
+            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
         }
 
         {children}
