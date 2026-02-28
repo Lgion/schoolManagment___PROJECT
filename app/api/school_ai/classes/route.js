@@ -9,15 +9,13 @@ import User from '../../_/models/ai/User';
 
 export async function GET() {
   try {
-    // Single auth() call to avoid redundant Clerk round-trips
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
-    const isAdmin = userRole === Roles.ADMIN;
-    const isTeacher = userRole === Roles.TEACHER;
+    const isAdmin = await checkRole(Roles.ADMIN);
+    const isTeacher = await checkRole(Roles.TEACHER);
 
     if (!isAdmin && !isTeacher) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });

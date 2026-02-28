@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
     }
 
     await dbConnect();
-    const { clerkId } = params;
+    const { clerkId } = await params;
 
     // Récupération des données utilisateur avec références
     const user = await User.findOne({ clerkId })
@@ -69,7 +69,7 @@ export async function PATCH(request, { params }) {
     }
 
     await dbConnect();
-    const { clerkId } = params;
+    const { clerkId } = await params;
     const body = await request.json();
 
     // Vérification des permissions pour modification (seuls les admins peuvent modifier les rôles)
