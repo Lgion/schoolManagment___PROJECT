@@ -8,6 +8,7 @@ import PermissionGate from "../components/PermissionGate";
 import { getClasseImagePath } from '../../utils/imageUtils';
 import ScheduleViewer from './ScheduleViewer';
 import AddStudentsModal from './AddStudentsModal';
+import ImageScanner from './ui/ImageScanner';
 
 export default function ClasseDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
@@ -97,6 +98,11 @@ export default function ClasseDetailContent({ entityId }) {
           </div>
         </div>
       </div>
+
+      {/* Actions Enseignant / Saisie Magique */}
+      <PermissionGate roles={['admin', 'prof']}>
+        <ImageScanner classeId={classe._id} onScanComplete={(result) => console.log('Scan completed', result)} />
+      </PermissionGate>
 
       {/* Liste des élèves */}
       <div className="person-detail__block person-detail__block--students">

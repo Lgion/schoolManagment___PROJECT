@@ -12,6 +12,8 @@
 @use "./main.scss";
 @use "./components/LISTS/classesList.scss";
 @use "./components/LOADERS/spinLoader.scss";
+@use "./components/LOADERS/processLoader.scss";
+@use "./components/FORMS/imageScanner.scss";
 @use "./components/DASHBOARDS/adminDashboard.scss";
 @use "./components/NAVIGATION/stickyNav.scss";
 @use "./components/CONTROLS/infosCardsControls.scss";
