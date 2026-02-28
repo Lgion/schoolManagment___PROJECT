@@ -33,7 +33,7 @@ export default function TeacherReportModule({ className = "", initialClasseId = 
 
     // Classes pour le formulaire (Uniquement l'année en cours)
     const managedClasses = useMemo(() => {
-        if (!classes || !teacherId) return [];
+        if (!Array.isArray(classes) || !teacherId) return [];
 
         const currentYearClasses = classes.filter(c => c.annee === currentSchoolYear);
 
@@ -47,7 +47,7 @@ export default function TeacherReportModule({ className = "", initialClasseId = 
 
     // Récupérer tous les rapports (Filtrés par classe si initialClasseId est fourni)
     const allReports = useMemo(() => {
-        if (!classes) return [];
+        if (!Array.isArray(classes)) return [];
         let reports = [];
 
         const targetClasses = initialClasseId
