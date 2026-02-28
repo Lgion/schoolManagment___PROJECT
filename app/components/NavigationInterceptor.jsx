@@ -22,7 +22,7 @@ const NavigationInterceptor = () => {
       '.ecole-admin__nav > a',
       '.ecole-admin__content h1 > .ecole-admin__nav-btn',
       '.classe-card',
-      '.eleve-card', 
+      '.eleve-card',
       '.person-card',
       '.classe-card__editbtn',
       '.eleve-card__editbtn',
@@ -62,10 +62,10 @@ const NavigationInterceptor = () => {
       const target = event.target;
       const clickedElement = target.closest(targetSelectors.join(', '));
       if (!clickedElement) return;
-      
+
       // Vérifier si c'est un lien ou un élément avec navigation
       let navigationUrl = null;
-      
+
       // Si c'est un lien <a>
       if (clickedElement.tagName === 'A' && clickedElement.href) {
         navigationUrl = clickedElement.getAttribute('href');
@@ -80,12 +80,12 @@ const NavigationInterceptor = () => {
         // On laisse passer et on active juste le loading
         console.log('🔄 Navigation détectée via onclick - activation du loader');
         startLoading();
-        
+
         // Désactiver le loader après un délai (au cas où la navigation échoue)
         setTimeout(() => {
           stopLoading();
         }, 5000);
-        
+
         return;
       }
 
@@ -94,21 +94,21 @@ const NavigationInterceptor = () => {
         // Vérifier si c'est une route de détail à intercepter
         // if (isDetailRoute(navigationUrl)) {
         //   const routeInfo = parseDetailRoute(navigationUrl);
-          
+
         //   if (routeInfo) {
         //     // Empêcher la navigation par défaut
         //     event.preventDefault();
         //     event.stopPropagation();
 
         //     console.log('🎯 Route de détail interceptée:', navigationUrl, '→ Portal');
-            
+
         //     // Remplacer l'URL actuelle sans ajouter d'entrée dans l'historique
         //     window.history.replaceState({}, '', navigationUrl);
-            
+
         //     // Ouvrir dans le portal au lieu de naviguer
         //     const title = `${routeInfo.type} ${routeInfo.id}`;
         //     openPortal(routeInfo.type, routeInfo.id, title, routeInfo.icon);
-            
+
         //     return;
         //   }
         // }
@@ -119,14 +119,14 @@ const NavigationInterceptor = () => {
         event.stopPropagation();
 
         console.log('🔄 Navigation interceptée vers:', navigationUrl);
-        
+
         // Activer le loader
         startLoading();
 
         try {
           // Naviguer avec loading et ViewTransitions
           await navigateWithLoading(navigationUrl);
-          
+
         } catch (error) {
           console.error('❌ Erreur de navigation:', error);
           stopLoading();
@@ -147,14 +147,16 @@ const NavigationInterceptor = () => {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    history.pushState = function(...args) {
+    history.pushState = function (...args) {
       originalPushState.apply(history, args);
-      handleUrlChange();
+      // Defer state update to avoid 'useInsertionEffect must not schedule updates'
+      setTimeout(handleUrlChange, 0);
     };
 
-    history.replaceState = function(...args) {
+    history.replaceState = function (...args) {
       originalReplaceState.apply(history, args);
-      handleUrlChange();
+      // Defer state update to avoid 'useInsertionEffect must not schedule updates'
+      setTimeout(handleUrlChange, 0);
     };
 
     window.addEventListener('popstate', handleUrlChange);
@@ -163,7 +165,7 @@ const NavigationInterceptor = () => {
     return () => {
       document.removeEventListener('click', handleNavigationClick, true);
       window.removeEventListener('popstate', handleUrlChange);
-      
+
       // Restaurer les méthodes originales
       history.pushState = originalPushState;
       history.replaceState = originalReplaceState;
