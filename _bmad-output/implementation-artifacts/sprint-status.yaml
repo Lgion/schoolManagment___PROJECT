@@ -50,7 +50,7 @@ development_status:
 
   epic-2: in-progress
   2-1-prototype-dimport-dimage-et-skeletons: done
-  2-2-integration-de-lintelligence-artificielle-gemini-vision: in-progress
+  2-2-integration-de-lintelligence-artificielle-gemini-vision: review
   2-3-interface-de-validation-split-screen-reviewmodal: backlog
   2-4-gestion-des-incertitudes-soft-warnings-et-edition-de-cellule-reviewcell: backlog
   2-5-eleves-fantomes-et-fusion-de-lignes: backlog

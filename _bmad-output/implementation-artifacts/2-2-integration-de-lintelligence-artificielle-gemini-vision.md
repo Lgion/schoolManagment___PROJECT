@@ -1,6 +1,6 @@
 # Story 2.2: Intégration de l'Intelligence Artificielle (Gemini Vision)
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -21,19 +21,19 @@ so that le travail humain de saisie soit remplacé par la machine en moins de 10
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create Secure Hub API Endpoint (`/api/school_ai/extract-notes`) (AC: 1, 2)
-  - [ ] Implement `checkRole` server validation using Clerk to restrict access to authenticated Teachers/Admins.
-  - [ ] Implement image parsing (base64 or file upload) from the API request.
-  - [ ] Connect to Google Gemini Vision API and pass the image along with a structured prompt.
-- [ ] Task 2: Implement Robust AI Data Validation (AC: 1)
-  - [ ] Define the strict JSON schema required from Gemini (Student name/ID, Grade, Confidence Score).
-  - [ ] Parse and sanitize the response, ensuring grades are valid bounds (e.g., 0-20) and confidence scores are mapped correctly for frontend Soft Warnings.
-- [ ] Task 3: Ensure Security and Data Privacy (NFR-SEC-2) (AC: 2)
-  - [ ] Delete or nullify the image buffer immediately after successful or failed extraction. Ensure the image is NEVER saved to a persistent database or permanent disk location.
-- [ ] Task 4: Frontend Integration
-  - [ ] Hook up the existing `ImageScanner` component (created in Story 2.1) to send the captured image payload to the new `/api/school_ai/extract-notes` endpoint.
-  - [ ] Handle the async transition state using the existing `<ProcessLoader />` component.
-  - [ ] Resolve the data into a state that will be used by the Split-Screen reviewer (Story 2.3).
+- [x] Task 1: Create Secure Hub API Endpoint (`/api/school_ai/extract-notes`) (AC: 1, 2)
+  - [x] Implement `checkRole` server validation using Clerk to restrict access to authenticated Teachers/Admins.
+  - [x] Implement image parsing (base64 or file upload) from the API request.
+  - [x] Connect to Google Gemini Vision API and pass the image along with a structured prompt.
+- [x] Task 2: Implement Robust AI Data Validation (AC: 1)
+  - [x] Define the strict JSON schema required from Gemini (Student name/ID, Grade, Confidence Score).
+  - [x] Parse and sanitize the response, ensuring grades are valid bounds (e.g., 0-20) and confidence scores are mapped correctly for frontend Soft Warnings.
+- [x] Task 3: Ensure Security and Data Privacy (NFR-SEC-2) (AC: 2)
+  - [x] Delete or nullify the image buffer immediately after successful or failed extraction. Ensure the image is NEVER saved to a persistent database or permanent disk location.
+- [x] Task 4: Frontend Integration
+  - [x] Hook up the existing `ImageScanner` component (created in Story 2.1) to send the captured image payload to the new `/api/school_ai/extract-notes` endpoint.
+  - [x] Handle the async transition state using the existing `<ProcessLoader />` component.
+  - [x] Resolve the data into a state that will be used by the Split-Screen reviewer (Story 2.3).
 
 ## Dev Notes
 
