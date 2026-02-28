@@ -63,18 +63,36 @@ export default function ImageScanner({ classeId, onScanComplete }) {
         setIsScanning(true);
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            const formData = new FormData();
+            formData.append('image', file);
 
-            console.log("Image envoyée à l'API pour analyse.");
+            const response = await fetch('/api/school_ai/extract-notes', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Erreur lors de l\'analyse de l\'image par l\'IA');
+            }
+
+            const result = await response.json();
 
             if (onScanComplete && isMounted.current) {
                 onScanComplete({
                     success: true,
-                    message: "Analyse simulée terminée"
+                    data: result.data,
+                    message: "Analyse IA terminée avec succès"
                 });
             }
         } catch (error) {
             console.error("Erreur de scan", error);
+            if (onScanComplete && isMounted.current) {
+                onScanComplete({
+                    success: false,
+                    error: error.message || "Impossible de contacter l'IA"
+                });
+            }
         } finally {
             if (isMounted.current) {
                 setIsScanning(false);
