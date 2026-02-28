@@ -1,5 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { cookies, headers } from 'next/headers';
+import dbConnect from '../lib/dbConnect';
+import User from '../_/models/ai/User';
 
 export const Roles = {
     ADMIN: 'admin',
@@ -28,11 +30,28 @@ export const checkRole = async (role) => {
             }
         }
 
-        const { sessionClaims } = await auth();
+        const { userId, sessionClaims } = await auth();
+
+        if (!userId) {
+            return false;
+        }
 
         // Clerk custom claims often reside in publicMetadata
         const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
-        return userRole === role;
+
+        if (userRole) {
+            return userRole === role;
+        }
+
+        // Fallback: If sessionClaims doesn't have the role yet (e.g. before token refresh),
+        // check the database directly.
+        await dbConnect();
+        const mongoUser = await User.findOne({ clerkId: userId }).select('role');
+        if (mongoUser) {
+            return mongoUser.role === role;
+        }
+
+        return false;
     } catch (error) {
         console.error('Error in checkRole:', error);
         return false;

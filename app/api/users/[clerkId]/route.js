@@ -8,11 +8,12 @@ import Eleve from '../../_/models/ai/Eleve';
 export async function GET(request, { params }) {
   try {
     // Vérification de l'authentification Clerk
-    const { userId } = auth();
-    
+    const { userId } = await auth();
+
     if (!userId) {
+      console.warn(`⚠️ [API users/:clerkId] Unauthorized access attempt detected (userId: ${userId})`);
       return NextResponse.json(
-        { error: 'Non autorisé' }, 
+        { error: 'Non autorisé - Token manquant ou expiré.' },
         { status: 401 }
       );
     }
@@ -27,7 +28,7 @@ export async function GET(request, { params }) {
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Utilisateur non trouvé' }, 
+        { error: 'Utilisateur non trouvé' },
         { status: 404 }
       );
     }
@@ -35,10 +36,11 @@ export async function GET(request, { params }) {
     // Vérification des permissions (un utilisateur ne peut voir que ses propres données sauf admin)
     if (userId !== clerkId) {
       const currentUser = await User.findOne({ clerkId: userId });
-      
+
       if (!currentUser || currentUser.role !== 'admin') {
+        console.warn(`🔒 [API users/:clerkId] Access denied for ${userId} trying to read ${clerkId}`);
         return NextResponse.json(
-          { error: 'Accès refusé' }, 
+          { error: 'Accès refusé - Droits administrateur requis.' },
           { status: 403 }
         );
       }
@@ -49,7 +51,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error('Error fetching user:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur' }, 
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   }
@@ -58,10 +60,10 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const { userId } = auth();
-    
+
     if (!userId) {
       return NextResponse.json(
-        { error: 'Non autorisé' }, 
+        { error: 'Non autorisé' },
         { status: 401 }
       );
     }
@@ -75,7 +77,7 @@ export async function PATCH(request, { params }) {
 
     if (!currentUser || (userId !== clerkId && currentUser.role !== 'admin')) {
       return NextResponse.json(
-        { error: 'Accès refusé' }, 
+        { error: 'Accès refusé' },
         { status: 403 }
       );
     }
@@ -98,7 +100,7 @@ export async function PATCH(request, { params }) {
   } catch (error) {
     console.error('Error updating user:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur' }, 
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   }

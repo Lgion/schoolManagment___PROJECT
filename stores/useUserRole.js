@@ -19,8 +19,10 @@ export function UserRoleProvider({ children }) {
     try {
       const response = await fetch(`/api/users/${clerkId}`);
       if (response.ok) {
-        const data = await response.json();
-        return data;
+        return await response.json();
+      } else if (response.status === 401 || response.status === 403) {
+        console.warn(`⚠️ Fetch user data returned ${response.status}. Session might be invalid or role missing.`);
+        // Don't just return null, maybe we need to force a sync if it's 404/403
       }
       return null;
     } catch (error) {
@@ -49,7 +51,7 @@ export function UserRoleProvider({ children }) {
   const getPermissionsByRole = (role) => {
     const rolePermissions = {
       admin: [
-        'manage_users', 'manage_classes', 'manage_students', 
+        'manage_users', 'manage_classes', 'manage_students',
         'manage_teachers', 'view_reports', 'manage_settings',
         'delete_data', 'export_data'
       ],
@@ -65,7 +67,7 @@ export function UserRoleProvider({ children }) {
         'view_public_info', 'contact_school'
       ]
     };
-    
+
     return rolePermissions[role] || [];
   };
 
@@ -78,17 +80,17 @@ export function UserRoleProvider({ children }) {
       }
 
       const userStorageKey = `user_${clerkUser.id}`;
-      
+
       // 1. PRIORITÉ ABSOLUE : récupérer depuis localStorage
       let storedUserData = getFromLocalStorage(userStorageKey);
-      
+
       if (storedUserData) {
         // Données trouvées dans localStorage
         setUserData(storedUserData);
         setUserRole(storedUserData.role);
         setPermissions(getPermissionsByRole(storedUserData.role));
         setLoading(false);
-        
+
         // Vérification en arrière-plan pour mise à jour
         const freshData = await fetchUserData(clerkUser.id);
         if (freshData && JSON.stringify(freshData) !== JSON.stringify(storedUserData)) {
@@ -97,11 +99,29 @@ export function UserRoleProvider({ children }) {
           setUserRole(freshData.role);
           setPermissions(getPermissionsByRole(freshData.role));
           saveToLocalStorage(userStorageKey, freshData);
+        } else if (!freshData) {
+          // If fetch fails but we have storage data, we might want to try to sync-user
+          // just in case the db was wiped but localstorage remained.
+          console.log('⚠️ Re-syncing user due to empty fresh data from API...');
+          try {
+            await fetch('/api/sync-user', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                clerkId: clerkUser.id,
+                email: clerkUser.emailAddresses[0]?.emailAddress,
+                firstName: clerkUser.firstName,
+                lastName: clerkUser.lastName
+              })
+            });
+          } catch (e) {
+            console.error('Background sync failed:', e);
+          }
         }
       } else {
         // 2. Fallback : récupérer depuis MongoDB puis sauvegarder dans localStorage
         const freshData = await fetchUserData(clerkUser.id);
-        
+
         if (freshData) {
           setUserData(freshData);
           setUserRole(freshData.role);
@@ -110,21 +130,21 @@ export function UserRoleProvider({ children }) {
         } else {
           // 3. Fallback final : synchroniser automatiquement l'utilisateur
           console.log('🔄 Aucune donnée trouvée, synchronisation automatique...');
-          
+
           const userData = {
             clerkId: clerkUser.id,
             email: clerkUser.emailAddresses[0]?.emailAddress,
             firstName: clerkUser.firstName,
             lastName: clerkUser.lastName
           };
-          
+
           try {
             const syncResponse = await fetch('/api/sync-user', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(userData)
             });
-            
+
             if (syncResponse.ok) {
               const result = await syncResponse.json();
               if (result.success && result.user) {
@@ -155,7 +175,7 @@ export function UserRoleProvider({ children }) {
             saveToLocalStorage(userStorageKey, defaultUserData);
           }
         }
-        
+
         setLoading(false);
       }
     };
@@ -203,12 +223,12 @@ export function UserRoleProvider({ children }) {
     if (!clerkUser?.id) {
       throw new Error('Aucun utilisateur Clerk connecté');
     }
-    
+
     setLoading(true);
     try {
       // Définir la clé de stockage
       const userStorageKey = `user_${clerkUser.id}`;
-      
+
       // Préparer les données utilisateur depuis Clerk
       const userData = {
         clerkId: clerkUser.id,
@@ -224,7 +244,7 @@ export function UserRoleProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
-      
+
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.user) {
@@ -236,7 +256,7 @@ export function UserRoleProvider({ children }) {
           return result;
         }
       }
-      
+
       // Essayer de récupérer l'erreur détaillée
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.details || `HTTP ${response.status}`);
@@ -275,10 +295,10 @@ export function UserRoleProvider({ children }) {
 // Hook pour utiliser le contexte utilisateur
 export function useUserRole() {
   const context = useContext(UserRoleContext);
-  
+
   if (!context) {
     throw new Error('useUserRole must be used within a UserRoleProvider');
   }
-  
+
   return context;
 }
