@@ -49,7 +49,7 @@ development_status:
   epic-1-retrospective: done
 
   epic-2: in-progress
-  2-1-prototype-dimport-dimage-et-skeletons: ready-for-dev
+  2-1-prototype-dimport-dimage-et-skeletons: done
   2-2-integration-de-lintelligence-artificielle-gemini-vision: backlog
   2-3-interface-de-validation-split-screen-reviewmodal: backlog
   2-4-gestion-des-incertitudes-soft-warnings-et-edition-de-cellule-reviewcell: backlog

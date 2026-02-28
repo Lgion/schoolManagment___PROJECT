@@ -1,6 +1,6 @@
 # Story 2.1: Prototype d'Import d'Image et Skeletons
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -21,15 +21,15 @@ so that je puisse initier la Saisie Magique en toute confiance, même sur mobile
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implémenter l'interface d'Import/Upload d'image (Mobile First) (AC: 1)
-  - [ ] Créer le bouton "Scanner une classe" utilisant la couleur Accent Orange
-  - [ ] Gérer la sélection de fichier avec support de la caméra sur mobile (`capture="environment"`)
-- [ ] Task 2: Créer le composant isolé `<ProcessLoader />` (AC: 1)
-  - [ ] Implémenter le composant dans `app/components/ui/ProcessLoader.jsx` (ou similaire)
-  - [ ] Utiliser des animations CSS basées sur le Design Token "Classic Premium" (shimmer effect, pas de spinner bloquant)
-- [ ] Task 3: Mise en place de la tolérance hors-ligne basique (AC: 2)
-  - [ ] Gérer l'état réseau du navigateur pour détecter les coupures
-  - [ ] Mettre en cache localement (simulé ou via localStorage/IndexedDB pour une PoC) l'image avant l'envoi
+- [x] Task 1: Implémenter l'interface d'Import/Upload d'image (Mobile First) (AC: 1)
+  - [x] Créer le bouton "Scanner une classe" utilisant la couleur Accent Orange
+  - [x] Gérer la sélection de fichier avec support de la caméra sur mobile (`capture="environment"`)
+- [x] Task 2: Créer le composant isolé `<ProcessLoader />` (AC: 1)
+  - [x] Implémenter le composant dans `app/components/ui/ProcessLoader.jsx` (ou similaire)
+  - [x] Utiliser des animations CSS basées sur le Design Token "Classic Premium" (shimmer effect, pas de spinner bloquant)
+- [x] Task 3: Mise en place de la tolérance hors-ligne basique (AC: 2)
+  - [x] Gérer l'état réseau du navigateur pour détecter les coupures
+  - [x] Mettre en cache localement (simulé ou via localStorage/IndexedDB pour une PoC) l'image avant l'envoi
 
 ## Dev Notes
 
@@ -71,7 +71,19 @@ antigravity-1.0
 - Git history checked showing recent epic 1 completion and module updates. No previous story learnings found for Epic 2 (this is the first story).
 
 ### Completion Notes List
-- Ultimate context engine analysis completed - comprehensive developer guide created
+- ✅ Implemented ImageScanner and ProcessLoader components with mobile-first approach.
+- ✅ Added 'Scanner une classe' button with camera support.
+- ✅ Integrated offline fallback UI with mock caching.
+- ✅ Applied Classic Premium Design token styles.
+- ✅ Resolved code review findings (Memory leaks, synchronous alert block, mock local storage).
+- ✅ Added unit test files.
 
 ### File List
-- _bmad-output/implementation-artifacts/2-1-prototype-dimport-dimage-et-skeletons.md
+- `app/components/ui/ProcessLoader.jsx`
+- `app/assets/scss/components/LOADERS/processLoader.scss`
+- `app/components/ui/ImageScanner.jsx`
+- `app/assets/scss/components/FORMS/imageScanner.scss`
+- `app/components/ClasseDetailContent.jsx`
+- `app/assets/scss/index.scss`
+- `app/components/ui/__tests__/ProcessLoader.test.jsx`
+- `app/components/ui/__tests__/ImageScanner.test.jsx`
