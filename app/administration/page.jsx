@@ -251,8 +251,9 @@ export default function AdministrationPage() {
                     }
                     .admin-page__title {
                         font-size: 2rem;
-                        color: #2c3e50;
+                        color: #1E3A8A;
                         margin: 0;
+                        font-weight: 700;
                     }
                     .admin-page__stats-row {
                         display: flex;
@@ -309,7 +310,7 @@ export default function AdministrationPage() {
                         transition: all 0.3s;
                     }
                     .admin-page__tab-btn.--active {
-                        color: #3498db;
+                        color: #1E3A8A;
                     }
                     .admin-page__tab-btn.--active::after {
                         content: '';
@@ -318,7 +319,7 @@ export default function AdministrationPage() {
                         left: 0;
                         right: 0;
                         height: 3px;
-                        background: #3498db;
+                        background: #F97316;
                         border-radius: 3px;
                     }
                     .admin-page__controls {
@@ -340,7 +341,7 @@ export default function AdministrationPage() {
                         font-size: 1rem;
                     }
                     .admin-page__add-btn {
-                        background: #27ae60;
+                        background: #F97316;
                         color: white;
                         border: none;
                         padding: 0.8rem 1.5rem;
@@ -350,8 +351,9 @@ export default function AdministrationPage() {
                         transition: all 0.2s;
                     }
                     .admin-page__add-btn:hover {
-                        background: #219150;
+                        background: #ea580c;
                         transform: translateY(-2px);
+                        box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
                     }
                     .admin-page__table-container {
                         background: white;
@@ -369,7 +371,7 @@ export default function AdministrationPage() {
                         background: #f8f9fa;
                         padding: 1.2rem;
                         font-weight: 600;
-                        color: #2c3e50;
+                        color: #1E3A8A;
                         border-bottom: 2px solid #eee;
                     }
                     .admin-page__table td {
@@ -408,13 +410,13 @@ export default function AdministrationPage() {
                         transition: all 0.2s;
                     }
                     .admin-page__action-btn.--edit {
-                        background: #eef7ff;
-                        color: #3498db;
-                        border: 1px solid #3498db;
+                        background: white;
+                        color: #1E3A8A;
+                        border: 1px solid #1E3A8A;
                     }
                     .admin-page__action-btn.--view {
                         background: #f8f9fa;
-                        color: #2c3e50;
+                        color: #4b5563;
                         border: 1px solid #ddd;
                     }
                     .admin-page__action-btn:hover {

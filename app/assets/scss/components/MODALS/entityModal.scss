@@ -12,11 +12,11 @@ $entityModal: (
   boxShadow: 0 8px 32px rgba(0, 0, 0, 0.12),
   maxWidth: 800px,
   padding: 2rem,
-  headerBackground: linear-gradient(135deg, #6c63ff, #4c46d6),
+  headerBackground: #1E3A8A,
   headerColor: #ffffff,
   inputBorder: #e1e5e9,
-  inputFocus: #6c63ff,
-  buttonPrimary: #6c63ff,
+  inputFocus: #1E3A8A,
+  buttonPrimary: #F97316,
   buttonDanger: #ff4757,
   buttonSuccess: #2ed573,
   primaryFont: 'Inter, Segoe UI, sans-serif',
@@ -274,7 +274,7 @@ $entityModal: (
     &:focus {
       outline: none;
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
     }
 
     &--error {
@@ -415,7 +415,7 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
       }
     }
 
@@ -534,7 +534,7 @@ $entityModal: (
   }
 
   &__createGroup-btn {
-    background: linear-gradient(135deg, map.get($entityModal, buttonPrimary), #4c46d6);
+    background: map.get($entityModal, buttonPrimary);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -549,7 +549,7 @@ $entityModal: (
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      background: linear-gradient(135deg, #8a6bb1, #9b7bc2);
+      background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
     }
 
     &:active {

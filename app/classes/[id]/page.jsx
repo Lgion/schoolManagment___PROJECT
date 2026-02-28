@@ -11,6 +11,7 @@ import EntityModal from '../../components/EntityModal';
 import DetailPortal from "../../components/DetailPortal";
 import PermissionGate from "../../components/PermissionGate";
 import NotesBlock from '../../components/NotesBlock';
+import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 import TeacherReportModule from '../../components/TeacherReportModule';
 
@@ -40,41 +41,19 @@ export default function ClasseDetailPage() {
 
   const isCurrentYear = classe.annee === currentSchoolYear;
 
-  // Vérifier si c'est une classe de l'année courante ou future
-  const isCurrentOrFutureYear = () => {
-    if (!classe.annee) return false;
-    const [startYear] = classe.annee.split('-').map(y => parseInt(y));
-    const [currentStartYear] = currentSchoolYear.split('-').map(y => parseInt(y));
-    return startYear >= currentStartYear;
-  };
-
-  // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
-  console.log('🔍 Debug bouton ajout élèves:', {
-    userRole,
-    isCurrentYear,
-    classeAnnee: classe.annee,
-    currentSchoolYear,
-    condition: userRole === 'admin' && isCurrentYear
-  });
-
   // Liste des élèves selon le contexte (actuel vs historique)
   const eleves = isCurrentYear
-    ? (ctx.eleves || []).filter(e => e.current_classe === classe._id) // Relations dynamiques
-    : classe.eleves || []; // Snapshot historique
+    ? (ctx.eleves || []).filter(e => e.current_classe === classe._id)
+    : classe.eleves || [];
 
   const enseignants = isCurrentYear
     ? (ctx.enseignants || []).filter(e =>
       Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
-    ) // Relations dynamiques
-    : classe.professeur || []; // Snapshot historique
-  // Prof principal (optionnel)
+    )
+    : classe.professeur || [];
+
   const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
   const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
-
-  // console.log(ctx.eleves);
-  // console.log(enseignants);
-  // console.log(ctx.enseignants);
-  // console.log(classe);
 
   return !classe ? <div>....loading.....</div>
     :
@@ -179,11 +158,7 @@ export default function ClasseDetailPage() {
             <div className="person-detail__grid">
               {eleves.map(eleve => {
                 const student = ctx.eleves.find(el => el._id === (eleve._id || eleve))
-                console.log(student);
-
-
                 const imagePath = getEleveImagePath(student);
-                console.log('Image path for', student?.nom, student?.prenoms, ':', imagePath);
 
                 return (
                   <Link key={"eleves_" + student._id} href={`/eleves/${student._id}`} className="person-detail__card">
@@ -193,8 +168,6 @@ export default function ClasseDetailPage() {
                         alt={`${student?.nom} ${student?.prenoms}`}
                         data-ok={imagePath}
                         onError={(e) => {
-                          console.log('Image failed to load:', imagePath, 'falling back to default');
-                          // e.target.src = student["photo_$_file"]
                           e.target.src = '/school/student.webp';
                         }}
                       />
@@ -225,7 +198,6 @@ export default function ClasseDetailPage() {
             <div className="person-detail__grid">
               {enseignants.map(enseignant => {
                 const teacher = ctx.enseignants.find(el => el._id === enseignant._id || enseignant)
-                console.log(teacher);
 
                 return (
                   <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
@@ -258,11 +230,26 @@ export default function ClasseDetailPage() {
             <span className="person-detail__subtitle-icon">📊</span>
             Notes et Compositions
           </h2>
+          {/* Affichage en lecture seule des notes existantes */}
           <NotesBlock
             eleves={eleves}
             classeId={classe._id}
             isCurrentYear={isCurrentYear}
           />
+          {/* Saisie manuelle des notes — Story 1.4 */}
+          <PermissionGate roles={['admin', 'prof']}>
+            <div className="person-detail__block person-detail__block--entry">
+              <h3 className="person-detail__subtitle person-detail__subtitle--sm">
+                <span className="person-detail__subtitle-icon">✏️</span>
+                Saisir de nouvelles notes
+              </h3>
+              <NotesEntryBlock
+                eleves={eleves}
+                classeId={classe._id}
+                isCurrentYear={isCurrentYear}
+              />
+            </div>
+          </PermissionGate>
         </div>
 
         {/* Section Emploi du temps */}

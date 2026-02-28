@@ -7,6 +7,8 @@
 @use 'components/MODALS/compositionsManager.scss';
 @use 'components/MODALS/addStudentsModal.scss';
 @use 'components/NOTES/notesBlock.scss';
+@use 'components/NOTES/notesEntry.scss';
+@use 'components/NOTES/historiqueBlock.scss';
 @use "./main.scss";
 @use "./components/LISTS/classesList.scss";
 @use "./components/LOADERS/spinLoader.scss";
@@ -25,7 +27,7 @@ $secondary-color: map.get($themeColors, secondary);
 $font-primary: $primaryFont;
 $font-secondary: $secondaryFont;
 
-#camembert{
+#camembert {
   // background: white;
   // width: 200px !important;
   // height: 200px !important;
@@ -34,6 +36,7 @@ $font-secondary: $secondaryFont;
   background: black;
   padding-bottom: 1em;
 }
+
 .person-detail {
   @extend %entityModal__container;
   position: relative;
@@ -41,46 +44,56 @@ $font-secondary: $secondaryFont;
   margin: 0;
   padding: 0;
 
-  >section{
+  >section {
     display: flex;
-    gap:.5em;
-    div{flex:1;}
+    gap: .5em;
+
+    div {
+      flex: 1;
+    }
+
     @media (max-width: 768px) {
       display: block;
     }
   }
-  &.--reduce{
+
+  &.--reduce {
     inset: 150px 0px 55% 85%;
-    padding:0;
-    overflow:hidden;
+    padding: 0;
+    overflow: hidden;
     background: transparent;
-    box-shadow:none;
-    &.--{
-      inset:160px 0px 60% 90%;
+    box-shadow: none;
+
+    &.-- {
+      inset: 160px 0px 60% 90%;
     }
-    .person-detail__header{
-      padding:0;
+
+    .person-detail__header {
+      padding: 0;
     }
   }
-  &.--reduce>*:not(.person-detail__photo):not(.person-detail__header)
-  , &.--reduce .person-detail__header-info{
+
+  &.--reduce>*:not(.person-detail__photo):not(.person-detail__header),
+  &.--reduce .person-detail__header-info {
     display: none !important;
   }
-  
-  &__close,&__reduce {
+
+  &__close,
+  &__reduce {
     padding: .1em .45em;
-    position:absolute;
-    left:calc(50% + 3em);
-    top:0px;
+    position: absolute;
+    left: calc(50% + 3em);
+    top: 0px;
     // left: 50%;
-    color:red;
-    background:black;
-    border:none;
-    border-radius:5px;
-    font-size:2em;
-    cursor:pointer;
-    z-index:10
+    color: red;
+    background: black;
+    border: none;
+    border-radius: 5px;
+    font-size: 2em;
+    cursor: pointer;
+    z-index: 10
   }
+
   // En-tête moderne de la classe
   &__header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -88,7 +101,7 @@ $font-secondary: $secondaryFont;
     padding: 2rem;
     border-radius: 16px 16px 0 0;
     margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
     &-content {
       display: flex;
@@ -110,7 +123,7 @@ $font-secondary: $secondaryFont;
     font-size: 2.5rem;
     font-weight: 700;
     margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   &__subtitle-text {
@@ -124,11 +137,14 @@ $font-secondary: $secondaryFont;
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    border: 4px solid rgba(255,255,255,0.3);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
-  &.--reduce{
-    .person-detail__photo,.person-detail__header{
+
+  &.--reduce {
+
+    .person-detail__photo,
+    .person-detail__header {
       object-fit: cover;
       border: solid red;
       filter: drop-shadow(2px 4px 6px gold);
@@ -136,23 +152,24 @@ $font-secondary: $secondaryFont;
   }
 
   &__editbtn {
-    position:absolute;
-    right:calc(50% - 3em);
-    top:0px;
+    position: absolute;
+    right: calc(50% - 3em);
+    top: 0px;
     // left: 50%;
-    z-index:2;
-    padding:0.3em 0.7em;
-    font-size:1.5em;
-    background:#fff;
-    border:1px solid #bbb;
-    border-radius:6px;
-    cursor:pointer;
-    box-shadow:0 1px 4px #0001;
-    
+    z-index: 2;
+    padding: 0.3em 0.7em;
+    font-size: 1.5em;
+    background: #fff;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 4px #0001;
+
     &:hover {
-      background:#f5f5f5;
+      background: #f5f5f5;
     }
   }
+
   &__title {
     margin-bottom: 0;
     font-size: 1.6em;
@@ -171,6 +188,7 @@ $font-secondary: $secondaryFont;
     margin-bottom: 1em;
     text-align: center;
   }
+
   &__gmap-btn {
     background: transparent;
     border: none;
@@ -180,6 +198,7 @@ $font-secondary: $secondaryFont;
     margin-left: 0.5em;
     font-weight: 500;
   }
+
   &__gmap-map {
     height: 300px;
     width: 100%;
@@ -201,13 +220,13 @@ $font-secondary: $secondaryFont;
     display: flex;
     align-items: center;
     gap: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border: 1px solid #f0f0f0;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
   }
 
@@ -245,7 +264,7 @@ $font-secondary: $secondaryFont;
 
   &__block {
     margin: 2em 0 1em 0;
-    
+
     // Bloc spécifique pour l'emploi du temps
     &--schedule {
       background: #f8f9fa;
@@ -253,35 +272,47 @@ $font-secondary: $secondaryFont;
       padding: 1.5rem;
       margin: 2.5em 0;
       border: 1px solid #e9ecef;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
       // Le ScheduleViewer à l'intérieur
       .scheduleViewer__container {
         margin: 0;
         border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
       }
     }
 
     // Blocs pour élèves et enseignants
-    &--students, &--teachers {
+    &--students,
+    &--teachers {
       background: white;
       border-radius: 12px;
       padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       border: 1px solid #f0f0f0;
     }
+
+    // Bloc saisie de notes (Story 1.4 — Fix #6: replaces inline style)
+    &--entry {
+      margin-top: var(--spacing-xl);
+    }
   }
-  
+
   &__subtitle {
     font-size: 1.4rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
     color: #2c3e50;
     display: flex;
+
+    // Fix #6: Sous-titre plus petit (replaces inline style)
+    &--sm {
+      font-size: 1.2rem;
+    }
+
     align-items: center;
     gap: 0.5rem;
-    
+
     // Style spécifique pour le titre emploi du temps
     .person-detail__block--schedule & {
       color: #6c63ff;
@@ -313,11 +344,11 @@ $font-secondary: $secondaryFont;
     text-decoration: none;
     color: inherit;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
       border-color: #667eea;
     }
 
@@ -331,7 +362,10 @@ $font-secondary: $secondaryFont;
       justify-content: center;
       font-size: 1.5rem;
       flex-shrink: 0;
-      >img{width: 100%;}
+
+      >img {
+        width: 100%;
+      }
     }
 
     &-content {
@@ -377,53 +411,54 @@ $font-secondary: $secondaryFont;
   // Responsive
   @media (max-width: 768px) {
     padding: 1rem;
-    
+
     &__header {
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      
+
       &-content {
         flex-direction: column;
         text-align: center;
         gap: 1.5rem;
       }
     }
-    
+
     &__title {
       font-size: 2rem;
     }
-    
+
     &__photo {
       width: 100px;
       height: 100px;
     }
-    
+
     &__stats {
       grid-template-columns: 1fr;
       gap: 1rem;
     }
-    
+
     &__stat-card {
       padding: 1rem;
     }
-    
+
     &__grid {
       grid-template-columns: 1fr;
     }
-    
+
     &__block {
       margin: 1.5rem 0;
-      
+
       &--schedule {
         padding: 1rem;
         margin: 1.5rem 0;
       }
-      
-      &--students, &--teachers {
+
+      &--students,
+      &--teachers {
         padding: 1rem;
       }
     }
-    
+
     &__subtitle {
       font-size: 1.2rem;
       margin-bottom: 1rem;
@@ -435,48 +470,76 @@ $font-secondary: $secondaryFont;
       padding: 1rem;
       border-radius: 12px;
     }
-    
+
     &__title {
       font-size: 1.8rem;
     }
-    
+
     &__stat-card {
       flex-direction: column;
       text-align: center;
       gap: 0.5rem;
     }
-    
+
     &__stat-icon {
       width: 50px;
       height: 50px;
       font-size: 1.5rem;
     }
-    
+
     &__card {
       padding: 0.75rem;
-      
+
       &-avatar {
         width: 40px;
         height: 40px;
         font-size: 1.2rem;
       }
-      
+
       &-name {
         font-size: 0.9rem;
       }
-      
+
       &-role {
         font-size: 0.75rem;
       }
     }
+  }
+
+  &__error {
+    color: var(--color-error);
+    padding: var(--spacing-md);
+    background: var(--color-error-light);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-error);
+    margin: var(--spacing-md) 0;
+  }
+
+  &__fees-year {
+    margin-bottom: 1.3em;
+  }
+
+  &__fees-year-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--color-text-primary);
+  }
+
+  &__fees-total {
+    margin-top: 1em;
+    font-size: 0.97em;
+    color: var(--color-text-secondary);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-gray-200);
   }
 }
 
 
 
 // Styles pour les modales de listes (classes et enseignants)
-.person-detail,.modal{
-  position:fixed !important;
+.person-detail,
+.modal {
+  position: fixed !important;
   top: 150px;
   left: 1.5em;
   right: 1.5em;
@@ -485,17 +548,21 @@ $font-secondary: $secondaryFont;
   overflow-y: scroll;
   box-shadow: 0 0 22px .1px;
   padding: 1em;
-  &__container{
+
+  &__container {
     box-shadow: 0 0 22px .1px !important;
   }
-  &.modal{
-    inset:0;
+
+  &.modal {
+    inset: 0;
   }
 }
+
 .modal {
   // margin-bottom:3em;
   z-index: 10000;
   overflow: hidden;
+
   &__container {
     max-width: 95vw;
     width: auto;
@@ -508,6 +575,7 @@ $font-secondary: $secondaryFont;
     display: flex;
     flex-direction: column;
   }
+
   // En-tête de la modale
   &__header {
     background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
@@ -515,7 +583,7 @@ $font-secondary: $secondaryFont;
     padding: 1.5rem 2rem;
     margin: 0;
     border-radius: 16px 16px 0 0;
-    
+
     h2 {
       margin: 0;
       font-family: $font-primary;
@@ -523,22 +591,26 @@ $font-secondary: $secondaryFont;
       font-weight: 600;
     }
   }
-  &__yearSelect{
+
+  &__yearSelect {
     @extend %entityModal__yearSelect;
   }
+
   &__loadingOverlay {
     @extend %entityModal__loadingOverlay;
   }
+
   &__loadingSpinner {
     @extend %entityModal__loadingSpinner;
   }
+
   // Corps de la modale
   &__body {
     // padding: 2rem;
     flex: 1;
     overflow-y: auto;
     padding-bottom: 100px; // Espace pour le footer
-    
+
     // Grille des cartes
     .entities-grid {
       display: grid;
@@ -546,7 +618,7 @@ $font-secondary: $secondaryFont;
       gap: 1.5rem;
       margin-top: 1rem;
     }
-    
+
     // Styles pour les cartes d'entités
     .entity-card {
       background: white;
@@ -555,19 +627,20 @@ $font-secondary: $secondaryFont;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
       border: 1px solid rgba(0, 0, 0, 0.05);
-      
+
       &:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       }
     }
   }
+
   &__header {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
-    
+
     &-avatar {
       width: 48px;
       height: 48px;
@@ -579,10 +652,10 @@ $font-secondary: $secondaryFont;
       font-size: 1.5rem;
       color: white;
     }
-    
+
     &-info {
       flex: 1;
-      
+
       h3 {
         margin: 0 0 0.25rem 0;
         font-family: $font-primary;
@@ -590,7 +663,7 @@ $font-secondary: $secondaryFont;
         font-weight: 600;
         color: #2d3748;
       }
-      
+
       p {
         margin: 0;
         font-family: $font-secondary;
@@ -599,26 +672,26 @@ $font-secondary: $secondaryFont;
       }
     }
   }
-        
+
   &__content {
     font-family: $font-secondary;
-    
+
     &-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 0.5rem 0;
       border-bottom: 1px solid #e2e8f0;
-      
+
       &:last-child {
         border-bottom: none;
       }
-      
+
       &-label {
         font-weight: 500;
         color: #4a5568;
       }
-      
+
       &-value {
         color: #2d3748;
         font-weight: 600;
@@ -626,19 +699,19 @@ $font-secondary: $secondaryFont;
     }
   }
 
-  &__map-container{
+  &__map-container {
     border: solid;
     border-top-width: 1px;
   }
 
-  &__photo-preview{
-    >img{
+  &__photo-preview {
+    >img {
       width: 75%;
       margin-inline: auto;
       display: block;
     }
   }
-        
+
   &__actions {
     margin-top: 0;
     padding: 1rem;
@@ -654,20 +727,20 @@ $font-secondary: $secondaryFont;
     box-sizing: border-box;
     flex-shrink: 0;
     z-index: 10;
-    
+
     &--centered {
       justify-content: center;
     }
-    
+
     &--spaced {
       justify-content: space-between;
     }
-    
+
     &--stacked {
       flex-direction: column;
       align-items: stretch;
     }
-    
+
     // Boutons d'action avec nomenclature BEM
     &-btn {
       padding: 0.75rem 1.5rem;
@@ -685,7 +758,7 @@ $font-secondary: $secondaryFont;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      
+
       // Animation de survol avec onde
       &::before {
         content: '';
@@ -699,121 +772,121 @@ $font-secondary: $secondaryFont;
         transform: translate(-50%, -50%);
         transition: width 0.3s ease, height 0.3s ease;
       }
-      
+
       &:hover::before {
         width: 300px;
         height: 300px;
       }
-      
+
       &:active {
         transform: scale(0.98);
       }
-      
+
       // Modificateurs BEM pour les types de boutons
       &--primary {
         background: linear-gradient(135deg, $primary-color 0%, color.scale($primary-color, $lightness: -14.406779661%) 100%);
         color: white;
         box-shadow: 0 4px 12px rgba($primary-color, 0.3);
-        
+
         &:hover {
           background: linear-gradient(135deg, color.scale($primary-color, $lightness: -7.2033898305%) 0%, color.scale($primary-color, $lightness: -21.6101694915%) 100%);
           box-shadow: 0 6px 16px rgba($primary-color, 0.4);
           transform: translateY(-2px);
         }
-        
+
         &:focus {
           outline: none;
           box-shadow: 0 0 0 3px rgba($primary-color, 0.3);
         }
       }
-      
+
       &--secondary {
         background: linear-gradient(135deg, $secondary-color 0%, color.scale($secondary-color, $lightness: -14.406779661%) 100%);
         color: white;
         box-shadow: 0 4px 12px rgba($secondary-color, 0.3);
-        
+
         &:hover {
           background: linear-gradient(135deg, color.scale($secondary-color, $lightness: -7.2033898305%) 0%, color.scale($secondary-color, $lightness: -21.6101694915%) 100%);
           box-shadow: 0 6px 16px rgba($secondary-color, 0.4);
           transform: translateY(-2px);
         }
-        
+
         &:focus {
           outline: none;
           box-shadow: 0 0 0 3px rgba($secondary-color, 0.3);
         }
       }
-      
+
       &--success {
         background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
         color: white;
         box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-        
+
         &:hover {
           background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
           box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
           transform: translateY(-2px);
         }
       }
-      
+
       &--danger {
         background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
         color: white;
         box-shadow: 0 4px 12px rgba(245, 101, 101, 0.3);
-        
+
         &:hover {
           background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
           box-shadow: 0 6px 16px rgba(245, 101, 101, 0.4);
           transform: translateY(-2px);
         }
       }
-      
+
       &--outline {
         background: transparent;
         border: 2px solid #e2e8f0;
         color: #4a5568;
-        
+
         &:hover {
           background: #f7fafc;
           border-color: #cbd5e0;
           transform: translateY(-1px);
         }
       }
-      
+
       &--ghost {
         background: transparent;
         color: #4a5568;
-        
+
         &:hover {
           background: rgba(0, 0, 0, 0.05);
           transform: translateY(-1px);
         }
       }
-      
+
       &--disabled {
         background: #e2e8f0;
         color: #a0aec0;
         cursor: not-allowed;
-        
+
         &:hover {
           transform: none;
           box-shadow: none;
         }
-        
+
         &::before {
           display: none;
         }
       }
-      
+
       // Icônes dans les boutons
       &-icon {
         font-size: 1rem;
-        
+
         &--left {
           margin-right: 0.5rem;
           margin-left: -0.25rem;
         }
-        
+
         &--right {
           margin-left: 0.5rem;
           margin-right: -0.25rem;
@@ -821,7 +894,7 @@ $font-secondary: $secondaryFont;
       }
     }
   }
-    
+
   // Bouton de fermeture
   &__close {
     position: absolute;
@@ -839,7 +912,7 @@ $font-secondary: $secondaryFont;
     font-size: 1.5rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.3);
       transform: scale(1.1);
@@ -847,11 +920,12 @@ $font-secondary: $secondaryFont;
   }
 }
 
-section>div:has(.modal){
+section>div:has(.modal) {
   position: relative;
 }
-#map{
-    height: 400px;
+
+#map {
+  height: 400px;
 }
 
 .parents-block {
@@ -861,11 +935,12 @@ section>div:has(.modal){
   justify-content: center;
   flex-wrap: wrap;
 }
+
 .parent-card {
   background: #f8f8fc;
   border: 2px solid #e0e0e0;
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 1.5rem 1.2rem 1.2rem 1.2rem;
   min-width: 220px;
   max-width: 280px;
@@ -873,33 +948,42 @@ section>div:has(.modal){
   flex-direction: column;
   align-items: center;
 }
+
 .parent-img {
   width: 64px;
   height: 64px;
   object-fit: cover;
   border-radius: 50%;
   margin-bottom: 0.7rem;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
 }
+
 .parent-title {
   font-weight: bold;
   font-size: 1.1rem;
   margin-bottom: 0.7rem;
   text-align: center;
 }
+
 @media (max-width: 600px) {
   .parents-block {
     flex-direction: column;
     gap: 1rem;
   }
+
   .parent-card {
     max-width: 100%;
     min-width: 0;
   }
 }
 
-.enseignants-list{flex-flow: wrap;}
-.eleves-list,.enseignants-list,.classes-list {
+.enseignants-list {
+  flex-flow: wrap;
+}
+
+.eleves-list,
+.enseignants-list,
+.classes-list {
   display: flex;
   // flex-flow: nowrap;
   overflow-x: scroll;
@@ -913,13 +997,13 @@ section>div:has(.modal){
   flex-flow: column;
   gap: 0;
   @extend %entityModal__form;
-  
+
   select {
     @extend %entityModal__select;
     min-width: 220px;
     margin: 0.7em 0;
   }
-  
+
   input[type="text"],
   input[type="email"],
   input[type="tel"],
@@ -927,7 +1011,7 @@ section>div:has(.modal){
   input[type="number"] {
     @extend %entityModal__input;
   }
-  
+
   textarea {
     @extend %entityModal__textarea;
     display: none;
@@ -936,18 +1020,20 @@ section>div:has(.modal){
   label {
     @extend %entityModal__label;
   }
+
   >label {
     font-size: 2em;
-    text-decoration:underline;
+    text-decoration: underline;
     text-decoration-color: $primary-color;
   }
 
-  >div:has(.modal__photo-preview){
+  >div:has(.modal__photo-preview) {
     max-height: 400px;
     overflow: scroll;
     background: wheat;
     padding: 1em;
   }
+
   >.modal__fieldGroup {
     flex-flow: column;
     display: flex;
@@ -955,19 +1041,26 @@ section>div:has(.modal){
     background: whitesmoke;
     border: 1px solid;
     margin: 1em 0;
-    &:has(#input-adresse){
+
+    &:has(#input-adresse) {
       border: solid;
       border-bottom-width: 0;
     }
   }
+
   .modal__fieldGroup--row {
+
     //adresse
-    #input-adresse{display: none;}
-    button.input-adresseBtn{
+    #input-adresse {
+      display: none;
+    }
+
+    button.input-adresseBtn {
       font-size: 3em;
       margin: 0 auto;
       display: block;
     }
+
     // ___birthday___
   }
 }
@@ -987,7 +1080,7 @@ section>div:has(.modal){
   transition: all 0.2s ease;
 
   @media (max-width: 768px) {
-    flex-flow:column;
+    flex-flow: column;
   }
 
   &:hover {
@@ -995,13 +1088,15 @@ section>div:has(.modal){
     box-shadow: map.get($shadows, md);
   }
 }
+
 .isinterne-img {
   width: 200px;
   object-fit: cover;
   border-radius: 8px;
   margin-right: 1.2em;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
 }
+
 .isinterne-label {
   display: flex;
   align-items: center;
@@ -1011,17 +1106,19 @@ section>div:has(.modal){
   color: #3a356a;
   padding: 1.2em 1em;
   border-radius: 8px;
-//   background: rgba(108,99,255,0.05);
-  box-shadow: 0 1px 4px rgba(108,99,255,0.06);
+  //   background: rgba(108,99,255,0.05);
+  box-shadow: 0 1px 4px rgba(108, 99, 255, 0.06);
   transition: background 0.2s, color 0.2s;
   cursor: pointer;
   width: 100%;
   justify-content: center;
 }
+
 .isinterne-label:hover {
-  background: rgba(0,0,0,0.13);
+  background: rgba(0, 0, 0, 0.13);
   color: black;
 }
+
 .isinterne-label input[type="checkbox"] {
   appearance: none;
   width: 1.4em;
@@ -1035,12 +1132,14 @@ section>div:has(.modal){
   outline: none;
   cursor: pointer;
   vertical-align: middle;
-  box-shadow: 0 1px 4px rgba(108,99,255,0.07);
+  box-shadow: 0 1px 4px rgba(108, 99, 255, 0.07);
 }
+
 .isinterne-label input[type="checkbox"]:checked {
   border-color: black;
   background: black;
 }
+
 .isinterne-label input[type="checkbox"]:checked:after {
   content: '';
   display: block;
@@ -1053,20 +1152,23 @@ section>div:has(.modal){
   border-width: 0 0.18em 0.18em 0;
   transform: rotate(45deg);
 }
+
 .isinterne-label input[type="checkbox"]:focus {
   box-shadow: 0 0 0 2px #bdbdfc;
 }
+
 .isinterne-label span {
   margin-left: 0.2em;
   letter-spacing: 0.01em;
   user-select: none;
 }
-.previewImageAddForm{
-    max-width: 400px;
-    max-height: 300px;
-    margin: 0 auto;
-    // object-position: 0% 0%;
-    object-position: top;
+
+.previewImageAddForm {
+  max-width: 400px;
+  max-height: 300px;
+  margin: 0 auto;
+  // object-position: 0% 0%;
+  object-position: top;
 }
 
 .entry-block {
@@ -1075,10 +1177,11 @@ section>div:has(.modal){
   border-radius: 12px;
   padding: 1.1em 1.5em 1.2em 1.5em;
   margin: 1.2em 0 1.4em 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   min-width: 220px;
   max-width: 600px;
 }
+
 .entry-header {
   display: flex;
   align-items: center;
@@ -1087,9 +1190,11 @@ section>div:has(.modal){
   font-weight: 600;
   font-size: 1.04em;
 }
+
 .entry-list {
   margin-bottom: 0.7em;
 }
+
 .add-entry-btn {
   background: #6c63ff;
   color: #fff;
@@ -1101,23 +1206,28 @@ section>div:has(.modal){
   cursor: pointer;
   transition: background 0.18s;
 }
+
 .add-entry-btn:hover {
   background: #554fc6;
 }
+
 .entry-month {
   margin-bottom: 0.8em;
 }
+
 .entry-title {
   font-weight: 500;
   color: #6c63ff;
   margin-bottom: 0.2em;
   font-size: 1.01em;
 }
+
 .entry-dates {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4em;
 }
+
 .entry-entry {
   background: #fbe9e7;
   color: #9c2921;
@@ -1125,10 +1235,11 @@ section>div:has(.modal){
   padding: 0.32em 1.2em 0.32em 0.9em;
   font-size: 0.97em;
   position: relative;
-  box-shadow: 0 1px 2px rgba(156,41,33,0.04);
+  box-shadow: 0 1px 2px rgba(156, 41, 33, 0.04);
   margin-bottom: 0.2em;
   margin-right: 0.5em;
 }
+
 .remove-entry-btn {
   position: absolute;
   top: -0.45em;
@@ -1145,17 +1256,19 @@ section>div:has(.modal){
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 4px rgba(156,41,33,0.07);
+  box-shadow: 0 1px 4px rgba(156, 41, 33, 0.07);
   transition: background 0.15s, color 0.15s;
 }
+
 .remove-entry-btn:hover {
   background: #ffeaea;
   color: #e00;
 }
+
 .entry-picker-modal {
   background: #fff;
   border: 2px solid #6c63ff;
-  box-shadow: 0 2px 16px rgba(108,99,255,0.09);
+  box-shadow: 0 2px 16px rgba(108, 99, 255, 0.09);
   border-radius: 12px;
   padding: 1.2em 2em 1.2em 2em;
   margin: 1em auto;
@@ -1164,24 +1277,29 @@ section>div:has(.modal){
   align-items: center;
   width: fit-content;
 }
+
 // Spécialisation commentaires professeur
 .commentaires-block {
   border: 2px solid #b0b0b0;
   border-radius: 7px;
   margin-bottom: 18px;
   padding: 10px 14px;
+
   &__header {
     font-weight: 700;
     margin-bottom: 8px;
     font-size: 1.1em;
   }
+
   &__list {
     margin-bottom: 8px;
   }
+
   &__empty {
     color: #888;
     font-style: italic;
   }
+
   &__entry {
     display: flex;
     align-items: center;
@@ -1192,8 +1310,19 @@ section>div:has(.modal){
     margin-bottom: 4px;
     position: relative;
   }
-  &__entry-date { color: #2e2e7e; font-weight: 600; margin-right: 8px; font-size: 0.95em; }
-  &__entry-txt { color: #222; font-size: 1em; }
+
+  &__entry-date {
+    color: #2e2e7e;
+    font-weight: 600;
+    margin-right: 8px;
+    font-size: 0.95em;
+  }
+
+  &__entry-txt {
+    color: #222;
+    font-size: 1em;
+  }
+
   &__remove-btn {
     background: none;
     border: none;
@@ -1203,13 +1332,18 @@ section>div:has(.modal){
     cursor: pointer;
     margin-left: auto;
   }
+
   &__add-form {
     display: flex;
     flex-flow: wrap;
     align-items: center;
     gap: 8px;
     margin-top: 4px;
-    input[type='text'] { font-size: 1em; flex: 1; }
+
+    input[type='text'] {
+      font-size: 1em;
+      flex: 1;
+    }
   }
 }
 
@@ -1219,18 +1353,22 @@ section>div:has(.modal){
   border-radius: 7px;
   margin-bottom: 18px;
   padding: 10px 14px;
+
   &__header {
     font-weight: 700;
     margin-bottom: 8px;
     font-size: 1.1em;
   }
+
   &__list {
     margin-bottom: 8px;
   }
+
   &__empty {
     color: #888;
     font-style: italic;
   }
+
   &__entry {
     display: flex;
     align-items: center;
@@ -1241,8 +1379,18 @@ section>div:has(.modal){
     margin-bottom: 4px;
     position: relative;
   }
-  &__entry-year { color: #2e2e7e; font-weight: 600; margin-right: 8px; }
-  &__entry-ecole { color: #222; font-size: 1em; }
+
+  &__entry-year {
+    color: #2e2e7e;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  &__entry-ecole {
+    color: #222;
+    font-size: 1em;
+  }
+
   &__remove-btn {
     background: none;
     border: none;
@@ -1252,13 +1400,18 @@ section>div:has(.modal){
     cursor: pointer;
     margin-left: auto;
   }
+
   &__add-form {
     display: flex;
     flex-flow: wrap;
     align-items: center;
     gap: 8px;
     margin-top: 4px;
-    select, input[type='text'] { font-size: 1em; }
+
+    select,
+    input[type='text'] {
+      font-size: 1em;
+    }
   }
 }
 
@@ -1268,26 +1421,42 @@ section>div:has(.modal){
   border-radius: 7px;
   margin-bottom: 18px;
   padding: 10px 14px;
-  &--complete { background: #d2ffd2; border-color: #4caf50; }
-  &--incomplete { background: #fff9e0; border-color: #ffa500; }
+
+  &--complete {
+    background: #d2ffd2;
+    border-color: #4caf50;
+  }
+
+  &--incomplete {
+    background: #fff9e0;
+    border-color: #ffa500;
+  }
+
   &__header {
     font-weight: 700;
     margin-bottom: 8px;
     font-size: 1.1em;
   }
+
   &__totals {
     display: flex;
     gap: 24px;
     margin-bottom: 8px;
-    span { font-size: 1em; }
+
+    span {
+      font-size: 1em;
+    }
   }
+
   &__list {
     margin-bottom: 8px;
   }
+
   &__empty {
     color: #888;
     font-style: italic;
   }
+
   &__entry {
     display: flex;
     align-items: center;
@@ -1298,10 +1467,29 @@ section>div:has(.modal){
     margin-bottom: 4px;
     position: relative;
   }
-  &__entry-date { color: #666; font-size: 0.95em; margin-right: 8px; }
-  &__entry-time { color: #999; font-size: 0.85em; margin-left: 4px; }
-  &__entry-argent { color: #137c13; font-weight: 600; }
-  &__entry-riz { color: #3466b8; font-weight: 600; }
+
+  &__entry-date {
+    color: #666;
+    font-size: 0.95em;
+    margin-right: 8px;
+  }
+
+  &__entry-time {
+    color: #999;
+    font-size: 0.85em;
+    margin-left: 4px;
+  }
+
+  &__entry-argent {
+    color: #137c13;
+    font-weight: 600;
+  }
+
+  &__entry-riz {
+    color: #3466b8;
+    font-weight: 600;
+  }
+
   &__remove-btn {
     background: none;
     border: none;
@@ -1311,6 +1499,7 @@ section>div:has(.modal){
     cursor: pointer;
     margin-left: auto;
   }
+
   &__add-btn {
     background: #0a0;
     color: #fff;
@@ -1321,17 +1510,23 @@ section>div:has(.modal){
     margin-top: 6px;
     cursor: pointer;
   }
+
   &__add-form {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-top: 4px;
     flex-flow: wrap;
-    background:silver;
-    padding:.5em;
+    background: silver;
+    padding: .5em;
     box-shadow: 0 0 3px 1px black inset;
-    select, input[type='number'] { font-size: 1em; }
+
+    select,
+    input[type='number'] {
+      font-size: 1em;
+    }
   }
+
   &__add-cancel {
     background: #ccc;
     color: #222;
@@ -1355,20 +1550,24 @@ section>div:has(.modal){
     font-weight: 600;
     margin-bottom: 8px;
   }
+
   &__trimestre {
     margin-bottom: 10px;
     background: #f8f8fa;
     border-radius: 4px;
     padding: 8px;
   }
+
   &__trimestre-header {
     display: flex;
     align-items: center;
     margin-bottom: 4px;
   }
+
   &__trimestre-title {
     min-width: 120px;
   }
+
   &__nav-btn {
     @extend %entityModal__btn;
     @extend %entityModal__btn--primary;
@@ -1389,6 +1588,7 @@ section>div:has(.modal){
       font-size: 1.4em;
     }
   }
+
   &__add-btn {
     margin-left: 8px;
     background: #0a0;
@@ -1398,32 +1598,38 @@ section>div:has(.modal){
     padding: 2px 8px;
     font-weight: 600;
     cursor: pointer;
+
     &--cancel {
       background: #ccc;
       color: #222;
     }
   }
+
   &__notes {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    &Date{
+
+    &Date {
       padding: .5em;
       border: 1px solid;
       background: whitesmoke;
       box-shadow: 0 0 5px 1px black;
       border-radius: 3px;
     }
-    &Details{
+
+    &Details {
       display: flex;
       justify-content: space-evenly;
-      >span{
+
+      >span {
         padding: .5em;
         box-shadow: 0 0 3px 1Px black inset;
         border: 1px solid #e8f6e8;
       }
     }
   }
+
   &__note {
     position: relative;
     padding: 2px 16px 2px 8px;
@@ -1432,6 +1638,7 @@ section>div:has(.modal){
     font-weight: 500;
     margin-right: 4px;
     margin-bottom: 4px;
+
     button {
       position: absolute;
       right: 2px;
@@ -1444,131 +1651,173 @@ section>div:has(.modal){
       cursor: pointer;
     }
   }
+
   &__no-compo {
     color: #888;
     font-style: italic;
     margin-right: 8px;
   }
+
   &__add-form {
-      display: flex;
+    display: flex;
     align-items: center;
     gap: 4px;
+
     input[type='number'] {
       width: 60px;
     }
   }
+
   &__group-form {
     width: 100%;
     margin-inline: -1rem;
     padding: 1em;
-    &:not(:empty){background:silver;}
-    >*{
+
+    &:not(:empty) {
+      background: silver;
+    }
+
+    >* {
       width: 90%;
-      >*{
+
+      >* {
         width: 100%;
       }
     }
   }
-    
+
 }
 
 // Spécialisation notes
 .add-note-form {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .add-note-date {
-    min-width: 120px;
-  }
-  .add-note-matiere {
-    min-width: 100px;
-  }
-  .add-note-note {
-    min-width: 60px;
-  }
-  .add-note-btn {
-    background: #0a0;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 2px 8px;
-    font-weight: 600;
-  }
-  .add-note-error {
-    color: red;
-    margin-left: 8px;
-  }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.add-note-date {
+  min-width: 120px;
+}
+
+.add-note-matiere {
+  min-width: 100px;
+}
+
+.add-note-note {
+  min-width: 60px;
+}
+
+.add-note-btn {
+  background: #0a0;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: 600;
+}
+
+.add-note-error {
+  color: red;
+  margin-left: 8px;
+}
+
 // Spécialisation absences
 .absences-block {
   @extend .entry-block;
   max-width: unset !important;
   min-width: 0 !important;
-  padding:1em !important;
+  padding: 1em !important;
 }
+
 .absences-header {
   @extend .entry-header;
 }
+
 .absences-list {
   @extend .entry-list;
 }
+
 .absence-month {
   @extend .entry-month;
 }
+
 .month-title {
   @extend .entry-title;
 }
+
 .month-dates {
   @extend .entry-dates;
 }
+
 .absence-date {
   @extend .entry-entry;
 }
+
 .remove-absence-btn {
   @extend .remove-entry-btn;
 }
+
 .absence-picker-modal {
   @extend .entry-picker-modal;
 }
+
 // Spécialisation bonus
-.bonus-block, .manus-block {
+.bonus-block,
+.manus-block {
   @extend .entry-block;
 }
-.bonus-header,.manus-header {
+
+.bonus-header,
+.manus-header {
   @extend .entry-header;
 }
-.bonus-list,.manus-list {
+
+.bonus-list,
+.manus-list {
   @extend .entry-list;
 }
-.bonus-month,.manus-month {
+
+.bonus-month,
+.manus-month {
   @extend .entry-month;
 }
-.month-bonus,.month-manus {
+
+.month-bonus,
+.month-manus {
   @extend .entry-dates;
 }
-.bonus-entry,.manus-entry {
+
+.bonus-entry,
+.manus-entry {
   @extend .entry-entry;
 }
-.remove-bonus-btn,.remove-manus-btn {
+
+.remove-bonus-btn,
+.remove-manus-btn {
   @extend .remove-entry-btn;
 }
-.bonus-picker-modal,.manus-picker-modal {
+
+.bonus-picker-modal,
+.manus-picker-modal {
   @extend .entry-picker-modal;
   flex-flow: column;
   width: 75%;
 }
+
 .bonus-txt {
   color: #28a745;
   font-weight: 600;
   margin-left: 8px;
   font-style: italic;
 }
+
 .bonus-date {
   color: #666;
   font-size: 0.9em;
   margin-right: 8px;
 }
+
 // Spécialisation manus
 .manus-txt {
   color: #dc3545;
@@ -1576,6 +1825,7 @@ section>div:has(.modal){
   margin-left: 8px;
   font-style: italic;
 }
+
 .manus-date {
   color: #666;
   font-size: 0.9em;
@@ -1586,14 +1836,14 @@ section>div:has(.modal){
 .documents-block {
   @extend .entry-block;
   margin-top: map.get($spacing, lg);
-  
+
   &__list {
     margin-top: map.get($spacing, sm);
     display: flex;
     flex-direction: column;
     gap: map.get($spacing, xs);
   }
-  
+
   &__item {
     display: flex;
     align-items: center;
@@ -1603,22 +1853,22 @@ section>div:has(.modal){
     border-radius: 6px;
     transition: background-color 0.2s;
     cursor: pointer;
-    
+
     &:hover {
       background: map.get($themeColors, gray100);
     }
   }
-  
+
   &__icon {
     font-size: 1.4em;
     margin-right: map.get($spacing, xs);
   }
-  
+
   &__name {
     flex: 1;
     font-family: $primaryFont;
   }
-  
+
   &__input {
     @extend %entityModal__input;
     margin-left: map.get($spacing, sm);
@@ -1650,19 +1900,21 @@ section>div:has(.modal){
   box-shadow: 0 2px 12px #e0e0e0cc;
   min-height: 100vh;
   position: relative;
-  &:before{
-    content:"";
-    position:absolute;
+
+  &:before {
+    content: "";
+    position: absolute;
     // z-index: -1;
-    inset:0;
-    opacity:.5;
-    background:url("./fond_motif_ecole_a.jpg");
+    inset: 0;
+    opacity: .5;
+    background: url("./fond_motif_ecole_a.jpg");
   }
 
-  >*:not(.modal):not(.detailModal){
+  >*:not(.modal):not(.detailModal) {
     position: relative;
     z-index: 1;
   }
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -1684,8 +1936,8 @@ section>div:has(.modal){
     color: $primary-color;
     letter-spacing: 0.01em;
     font-family: $font-primary;
-    
-    > a:not(:first-of-type) {
+
+    >a:not(:first-of-type) {
       width: 100%;
     }
   }
@@ -1719,7 +1971,7 @@ section>div:has(.modal){
     &--signIn {
       background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
       color: white;
-      
+
       &:hover {
         background: linear-gradient(135deg, color.adjust($primary-color, $lightness: -5%), $primary-color);
         transform: translateY(-2px);
@@ -1731,7 +1983,7 @@ section>div:has(.modal){
       background: transparent;
       color: $primary-color;
       border-color: $primary-color;
-      
+
       &:hover {
         background: $primary-color;
         color: white;
@@ -1842,7 +2094,7 @@ section>div:has(.modal){
   }
 
   &--admin {
-    background: linear-gradi  ent(135deg, #ff6b6b, #ee5a24);
+    background: linear-gradi ent(135deg, #ff6b6b, #ee5a24);
     color: white;
     border-color: #ff6b6b;
   }
@@ -2084,10 +2336,13 @@ section>div:has(.modal){
 
 // Animation pour le loader
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.1);
@@ -2096,6 +2351,7 @@ section>div:has(.modal){
 
 // Continuation des styles ecole-admin
 .ecole-admin {
+
   // --- Styles pour les dashboards adaptatifs ---
   &__publicDashboard {
     padding: 2em;
@@ -2170,7 +2426,7 @@ section>div:has(.modal){
     box-shadow: 0 0 10px 1px;
     border: 1px solid;
     border-radius: 3px;
-    
+
     &-icon {
       font-size: 1.5em;
       animation: pulse 1.5s infinite;
@@ -2197,12 +2453,13 @@ section>div:has(.modal){
   &__publicUserDashboard {
     padding: 2em 0;
   }
-  &__adminDashboard{
-    background:none;
+
+  &__adminDashboard {
+    background: none;
     position: absolute;
     top: calc(100% - 1em);
     left: 0;
-    padding:0;
+    padding: 0;
     margin: 0;
     width: 100%;
   }
@@ -2350,10 +2607,11 @@ section>div:has(.modal){
     justify-content: space-evenly;
     gap: 24px;
     padding: 1em;
-    margin:0;
+    margin: 0;
     background: transparent;
 
   }
+
   &__nav-btn {
     font-size: 1.1em;
     padding: 0.7em 1.3em;
@@ -2368,17 +2626,19 @@ section>div:has(.modal){
     display: flex;
     align-items: center;
     gap: 0.5em;
-    &:not(.ecole-admin__nav-btn--admin){
+
+    &:not(.ecole-admin__nav-btn--admin) {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);    padding: 0.8em 2em;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      padding: 0.8em 2em;
       border-radius: 2em;
       background: linear-gradient(135deg, #17a2b8, #007bff);
       color: white;
       font-weight: 600;
       padding: .5em 4em;
-      margin:0 auto;
+      margin: 0 auto;
     }
-    
+
     &:hover,
     &:focus {
       transform: translateY(-2px);
@@ -2391,9 +2651,18 @@ section>div:has(.modal){
       color: white;
       border-color: #ff6b6b;
       box-shadow: 0 2px 8px rgba(#ff6b6b, 0.3);
-      &[aria-label="Gérer les élèves"]{background: #2C3DCE;}
-      &[aria-label="Gérer les enseignants"]{background: #3a3f3c;}
-      &[aria-label="Gérer les classes"]{background: #9A3412;}
+
+      &[aria-label="Gérer les élèves"] {
+        background: #2C3DCE;
+      }
+
+      &[aria-label="Gérer les enseignants"] {
+        background: #3a3f3c;
+      }
+
+      &[aria-label="Gérer les classes"] {
+        background: #9A3412;
+      }
 
       &:hover {
         background: linear-gradient(135deg, color.adjust(#ff6b6b, $lightness: -5%), #ff6b6b);
@@ -2436,6 +2705,7 @@ section>div:has(.modal){
 
     // Style par défaut (pour compatibilité)
     &:not(&--admin):not(&--prof):not(&--eleve):not(&--public) {
+
       &:hover,
       &:focus {
         background: #e7e7fd;
@@ -2449,10 +2719,12 @@ section>div:has(.modal){
       justify-content: center;
       position: relative;
     }
-    >span{
-      font-size:1.4em;
+
+    >span {
+      font-size: 1.4em;
     }
-    >strong{
+
+    >strong {
       position: absolute;
       background: linear-gradient(135deg, #ff6b6b, #ee5a24);
       padding: .5em;
@@ -2471,6 +2743,7 @@ section>div:has(.modal){
       gap: 12px;
       align-items: center;
     }
+
     &-col {
       display: flex;
       flex-flow: wrap;
@@ -2478,17 +2751,20 @@ section>div:has(.modal){
       width: 100%;
       column-gap: 3em;
     }
+
     &-title {
-      width:100%;
+      width: 100%;
       text-align: center;
       text-decoration: underline;
     }
+
     &-label {
       font-size: 1.1em;
       color: #444;
       margin-bottom: 0.2em;
       font-weight: 600;
     }
+
     &-value {
       font-weight: bold;
       font-size: 1.08em;
@@ -2498,6 +2774,7 @@ section>div:has(.modal){
 
   // Styles pour __content maintenant dans components/CONTENT/homeContent.scss
   &__content {
+
     // Styles de base pour les autres pages (non-home)
     &:not(.home) {
       margin-top: 32px;
@@ -2505,17 +2782,16 @@ section>div:has(.modal){
       border: 1px solid;
       border-width: 0 1px;
       box-shadow: 0 5px 10px 1px black;
-      
-      >div{
-        >h1{
+
+      >div {
+        >h1 {
           display: flex;
           justify-content: space-between;
           align-items: center;
           background: silver;
           padding: 1em;
-          >button{
 
-          }
+          >button {}
         }
       }
     }
@@ -2523,12 +2799,14 @@ section>div:has(.modal){
 
   @media (max-width: 768px) {
     padding: 10px;
+
     &__nav {
       // flex-direction: column;
       gap: 0px;
       // margin-top: 18px;
       flex-wrap: nowrap;
     }
+
     &__content {
       margin-top: 18px;
     }

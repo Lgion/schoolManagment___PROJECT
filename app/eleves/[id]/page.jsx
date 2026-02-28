@@ -17,7 +17,7 @@ export default function ElevePage() {
   const ctx = useContext(AiAdminContext);
   const [isReduced, setIsReduced] = useState(false);
 
-  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
+  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   const getDefaultSchoolYear = (compositions) => {
     const keys = Object.keys(compositions || {});
     if (keys.length > 0) return keys[0];
@@ -29,9 +29,6 @@ export default function ElevePage() {
     ctx.fetchClasses && ctx.fetchClasses();
   }, []);
 
-  // DEBUG : log ids pour comprendre le bug
-  console.log('params id:', id, 'eleves ids:', (ctx.eleves || []).map(e => e._id));
-  console.log(ctx.eleves);
   const { setSelected, showModal, setShowModal, setEditType } = ctx;
 
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
@@ -39,19 +36,7 @@ export default function ElevePage() {
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
   if (!eleve) return <div style={{ color: 'red' }}>Élève introuvable</div>;
 
-
-  // Récupère toutes les années de scolarité pour progression globale
-  const allFees = eleve.scolarity_fees_$_checkbox || {};
   const onEdit = e => { setSelected(e); setEditType("eleve"); setShowModal(true); }
-  // Fusionne tous les dépôts pour une progression globale
-  let totalArgent = 0, totalRiz = 0;
-  Object.values(allFees).forEach(fees => {
-    Object.values(fees || {}).forEach(v => {
-      if (v.argent) totalArgent += Number(v.argent);
-      if (v.riz) totalRiz += Number(v.riz);
-    });
-  });
-  // console.log(eleve);
 
   // Créer le select d'année scolaire pour le header
   const yearSelectControl = (
@@ -101,11 +86,6 @@ export default function ElevePage() {
       reduced={[isReduced, setIsReduced]}
       headerControls={yearSelectControl}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
-        {/* <button
-        className="person-detail__close"
-        aria-label="Fermer"
-        onClick={() => router.back()}
-      >✕</button> */}
 
         <PermissionGate roles={['admin', 'prof']}>
           {onEdit && (
@@ -127,7 +107,6 @@ export default function ElevePage() {
           alt=""
           title="Réduire la fenêtre"
           onClick={e => {
-            // e.target.parentNode.classList.toggle('--reduce')
             setIsReduced(!isReduced)
           }}
         />
@@ -171,20 +150,35 @@ export default function ElevePage() {
           <h2 className="person-detail__subtitle">Historique des écoles</h2>
           <SchoolHistoryBlock schoolHistory={eleve.school_history} />
         </div>
-        <div className="person-detail__block person-detail__block--fees">
-          <h2 className="person-detail__subtitle">Frais de scolarité</h2>
-          {Object.keys(allFees).length === 0 ? <div>Aucun dépôt enregistré</div> :
-            Object.entries(allFees).map(([year, fees]) => (
-              <div key={year} style={{ marginBottom: '1.3em' }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
-                <ScolarityFeesBlock fees={fees} schoolYear={year} />
+        <PermissionGate role="admin">
+          {(() => {
+            // Financial data computation - only executed for admins
+            const allFees = eleve.scolarity_fees_$_checkbox || {};
+            let totalArgent = 0, totalRiz = 0;
+            Object.values(allFees).forEach(fees => {
+              Object.values(fees || {}).forEach(v => {
+                if (v.argent) totalArgent += Number(v.argent);
+                if (v.riz) totalRiz += Number(v.riz);
+              });
+            });
+            return (
+              <div className="person-detail__block person-detail__block--fees">
+                <h2 className="person-detail__subtitle">Frais de scolarité</h2>
+                {Object.keys(allFees).length === 0 ? <div>Aucun dépôt enregistré</div> :
+                  Object.entries(allFees).map(([year, fees]) => (
+                    <div key={year} style={{ marginBottom: '1.3em' }}>
+                      <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
+                      <ScolarityFeesBlock fees={fees} schoolYear={year} />
+                    </div>
+                  ))
+                }
+                <div style={{ marginTop: '1em', fontSize: '0.97em', color: '#444' }}>
+                  <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
+                </div>
               </div>
-            ))
-          }
-          <div style={{ marginTop: '1em', fontSize: '0.97em', color: '#444' }}>
-            <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
-          </div>
-        </div>
+            );
+          })()}
+        </PermissionGate>
         <div style={{ margin: '2em 0 1em 0' }}>
           <h2>Commentaires</h2>
           <CommentairesBlock commentaires={eleve.commentaires} />

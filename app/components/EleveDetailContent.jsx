@@ -8,10 +8,11 @@ import PermissionGate from "../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../components/ClasseEnseignantDisplay';
 import { getEleveImagePath } from '../../utils/imageUtils';
+import HistoriqueBlock from '../components/HistoriqueBlock';
 
 export default function EleveDetailContent({ entityId }) {
   const ctx = useContext(AiAdminContext);
-  if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
+  if (!ctx) return <div className="person-detail__error">Erreur : contexte non trouvé</div>;
 
   const getDefaultSchoolYear = (compositions) => {
     const keys = Object.keys(compositions || {});
@@ -30,7 +31,7 @@ export default function EleveDetailContent({ entityId }) {
   const [gmapOpen, setGmapOpen] = useState(false);
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
 
-  if (!eleve) return <div style={{ color: 'red' }}>Élève introuvable</div>;
+  if (!eleve) return <div className="person-detail__error">Élève introuvable</div>;
 
   // Récupère toutes les années de scolarité pour progression globale
   const allFees = eleve.scolarity_fees_$_checkbox || {};
@@ -44,7 +45,6 @@ export default function EleveDetailContent({ entityId }) {
       if (v.riz) totalRiz += Number(v.riz);
     });
   });
-  alert('okkkk')
   return (
     <main className="person-detail">
       <PermissionGate roles={['admin', 'prof']}>
@@ -107,20 +107,27 @@ export default function EleveDetailContent({ entityId }) {
         <h2 className="person-detail__subtitle">Frais de scolarité</h2>
         {Object.keys(allFees).length === 0 ? <div>Aucun dépôt enregistré</div> :
           Object.entries(allFees).map(([year, fees]) => (
-            <div key={year} style={{ marginBottom: '1.3em' }}>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
+            <div key={year} className="person-detail__fees-year">
+              <div className="person-detail__fees-year-label">{year}</div>
               <ScolarityFeesBlock fees={fees} schoolYear={year} />
             </div>
           ))
         }
-        <div style={{ marginTop: '1em', fontSize: '0.97em', color: '#444' }}>
+        <div className="person-detail__fees-total">
           <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
         </div>
       </div>
-      <div style={{ margin: '2em 0 1em 0' }}>
-        <h2>Commentaires</h2>
+      <div className="person-detail__block person-detail__block--commentaires">
+        <h2 className="person-detail__subtitle">Commentaires</h2>
         <CommentairesBlock commentaires={eleve.commentaires} />
       </div>
+
+      {/* Story 1.5: Historique Inaltérable — Admin uniquement (Task 3) */}
+      <PermissionGate roles={['admin']}>
+        <div className="person-detail__block person-detail__block--historique">
+          <HistoriqueBlock eleveId={entityId} />
+        </div>
+      </PermissionGate>
     </main>
   );
 }

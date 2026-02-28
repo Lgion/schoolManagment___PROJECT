@@ -10,7 +10,8 @@
     "process-fallbacks": "node scripts/process-cloudinary-fallbacks.js",
     "process-fallbacks:dry": "node scripts/process-cloudinary-fallbacks.js --dry-run",
     "process-fallbacks:limit": "node scripts/process-cloudinary-fallbacks.js --limit=10",
-    "process-fallbacks:force": "node scripts/process-cloudinary-fallbacks.js --force"
+    "process-fallbacks:force": "node scripts/process-cloudinary-fallbacks.js --force",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",
@@ -37,6 +38,9 @@
     "svix": "^1.76.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
+    "@playwright/test": "^1.58.2",
+    "@seontechnologies/playwright-utils": "^3.14.0",
     "@types/node": "24.0.1",
     "@types/react": "19.1.8",
     "typescript": "5.8.3"

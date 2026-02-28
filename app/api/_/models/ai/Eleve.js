@@ -2,9 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 const { schema: schemaClasseForEleve } = require("./Classe")
-// const {schema: schemaClasse} = require("./Classe")
-console.log("iii");
-// console.log(schemaClasseForEleve);
+
 
 let currentSchoolYear = new Date()
 currentSchoolYear = (currentSchoolYear.getMonth() + 1) < 7 ? (currentSchoolYear.getFullYear() - 1) + "-" + currentSchoolYear.getFullYear() : currentSchoolYear.getFullYear() + "-" + (currentSchoolYear.getFullYear() + 1)
