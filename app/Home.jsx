@@ -57,7 +57,7 @@ export default ({ children }) => {
 
   // --- LOGIQUE ANNIVERSAIRES ---
   const birthdayMessage = useMemo(() => {
-    if (!eleves || !enseignants) return null;
+    if (!Array.isArray(eleves) || !Array.isArray(enseignants)) return null;
 
     const today = new Date();
     const tDay = today.getDate();
