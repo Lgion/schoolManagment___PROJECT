@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { cookies, headers } from 'next/headers';
-import dbConnect from '../lib/dbConnect';
-import User from '../_/models/ai/User';
+import dbConnect from '../app/lib/dbConnect';
+import User from '../app/_/models/ai/User';
 
 export const Roles = {
     ADMIN: 'admin',
