@@ -46,10 +46,10 @@ development_status:
   1-3-visualisation-isolee-des-classes: done
   1-4-saisie-manuelle-des-notes-et-absences: done
   1-5-consultation-de-lhistorique-inalterable: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
-  epic-2: backlog
-  2-1-prototype-dimport-dimage-et-skeletons: backlog
+  epic-2: in-progress
+  2-1-prototype-dimport-dimage-et-skeletons: ready-for-dev
   2-2-integration-de-lintelligence-artificielle-gemini-vision: backlog
   2-3-interface-de-validation-split-screen-reviewmodal: backlog
   2-4-gestion-des-incertitudes-soft-warnings-et-edition-de-cellule-reviewcell: backlog
