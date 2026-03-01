@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 // const classeSchema = require("./Classe")
 const { schema: schemaClasseForTeacher } = require("./Classe")
-console.log(schemaClasseForTeacher);
 
 const teacherSchema = mongoose.Schema({
   // current_classes: { default: "", type: Object, required:true },

@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -20,7 +21,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (mockRole) {
       if (isAdminRoute(request) && mockRole !== 'admin') {
         const url = new URL('/', request.url);
-        return Response.redirect(url);
+        return NextResponse.redirect(url);
       }
       return;
     }
@@ -29,12 +30,15 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     const authObj = await auth();
     if (!authObj.userId && request.nextUrl.pathname.startsWith('/api')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
       });
+    } else if (!authObj.userId) {
+      // Manual redirect allows overriding Clerk's protect() which can throw 404s
+      const url = new URL('/', request.url);
+      return NextResponse.redirect(url);
     }
-    await auth.protect();
   }
 
   // Prevent Teachers (non-admins) from accessing Admin dashboard routes
@@ -47,7 +51,7 @@ export default clerkMiddleware(async (auth, request) => {
     // Explicit email check to bypass stale metadata in session token
     if (userRole !== 'admin' && !(userEmail && adminEmails.includes(userEmail))) {
       const url = new URL('/', request.url);
-      return Response.redirect(url);
+      return NextResponse.redirect(url);
     }
   }
 });
