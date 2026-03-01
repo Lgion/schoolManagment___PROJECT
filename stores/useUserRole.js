@@ -22,7 +22,7 @@ export function UserRoleProvider({ children }) {
         return await response.json();
       } else if (response.status === 401 || response.status === 403) {
         console.warn(`⚠️ Fetch user data returned ${response.status}. Session might be invalid or role missing.`);
-        // Don't just return null, maybe we need to force a sync if it's 404/403
+        return { error: 'Unauthorized', status: response.status };
       }
       return null;
     } catch (error) {

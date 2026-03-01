@@ -41,8 +41,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (isAdminRoute(request)) {
     const { sessionClaims } = await auth();
     const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
+    const userEmail = sessionClaims?.email || sessionClaims?.primary_email_address;
+    const adminEmails = (process.env.NEXT_PUBLIC_EMAIL_ADMIN || '').split(' ');
 
-    if (userRole !== 'admin') {
+    // Explicit email check to bypass stale metadata in session token
+    if (userRole !== 'admin' && !(userEmail && adminEmails.includes(userEmail))) {
       const url = new URL('/', request.url);
       return Response.redirect(url);
     }
