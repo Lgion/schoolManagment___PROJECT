@@ -1,0 +1,277 @@
+@use '../../variables' as *;
+@use 'sass:color';
+
+.review-modal {
+    &.--inline {
+        position: relative;
+        width: 100%;
+        height: 800px;
+        margin: 1.5rem 0;
+        z-index: 10;
+        background: transparent;
+        display: block;
+        padding: 0;
+        backdrop-filter: none;
+        border: 2px solid #1e3a8a;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    &__container {
+        background: #ffffff;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        animation: review-modal-fade 0.3s ease-out;
+    }
+
+    &__header {
+        background-color: #1e3a8a; // Navy
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 4px solid #f97316; // Orange accent
+
+        h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        &-actions {
+            display: flex;
+            gap: 1rem;
+        }
+    }
+
+    &__btn-cancel {
+        background: transparent;
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+    }
+
+    &__btn-validate {
+        background: #f97316; // Orange
+        color: white;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+
+        &:hover {
+            background: color.scale(#f97316, $lightness: -10%);
+            transform: translateY(-1px);
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    &__left-panel {
+        flex: 1;
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 1rem;
+    }
+
+    &__image-container {
+        flex: 1;
+        overflow: auto;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+            transform-origin: center center;
+        }
+    }
+
+    &__zoom-controls {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        button {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #334155;
+
+            &:hover {
+                background: #f1f5f9;
+                border-color: #94a3b8;
+            }
+        }
+    }
+
+
+    &__right-panel {
+        width: 450px;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    &__panel-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+
+        h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+
+        p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+    }
+
+    &__data-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    &__data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+
+        th {
+            text-align: left;
+            padding: 0 1rem 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 600;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-right: none;
+            border-left: none;
+
+            &:first-child {
+                border-left: 1px solid #e2e8f0;
+                border-top-left-radius: 8px;
+                border-bottom-left-radius: 8px;
+            }
+
+            &:last-child {
+                border-right: 1px solid #e2e8f0;
+                border-top-right-radius: 8px;
+                border-bottom-right-radius: 8px;
+            }
+        }
+
+        tr {
+            transition: all 0.2s;
+
+            &:hover td {
+                background: #f1f5f9;
+            }
+        }
+    }
+
+    &__cell-name {
+        font-weight: 500;
+        color: #334155;
+    }
+
+    &__cell-score {
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        background: #e0e7ff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    &__cell-warning {
+        // Prep for Story 2.4 - placeholder style
+        position: relative;
+
+        &.--is-warning td {
+            background: #fef9c3; // yellow-100
+            border-color: #fde047; // yellow-300
+
+            &:hover td {
+                background: #fef08a;
+            }
+        }
+    }
+}
+
+@keyframes review-modal-fade {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

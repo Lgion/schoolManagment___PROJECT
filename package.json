@@ -17,6 +17,7 @@
     "@clerk/nextjs": "^6.21.0",
     "@google/generative-ai": "^0.24.1",
     "@googlemaps/react-wrapper": "^1.2.0",
+    "browser-image-compression": "^2.0.2",
     "chart.js": "^4.5.0",
     "cloudinary": "^2.7.0",
     "cloudinary-react": "^1.8.1",

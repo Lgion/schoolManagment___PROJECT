@@ -34,8 +34,10 @@ export async function POST(request) {
         const base64Image = buffer.toString('base64');
         const mimeType = file.type;
 
+        // Immediately zero out the original ArrayBuffer to satisfy NFR-SEC-2 Data Ephemerality
+        new Uint8Array(arrayBuffer).fill(0);
+
         if (!mimeType.startsWith('image/')) {
-            // NFR-SEC-2: Image ephemerality
             buffer.fill(0);
             return NextResponse.json({ error: 'Le fichier doit être une image' }, { status: 400 });
         }
@@ -76,7 +78,10 @@ Retourne son nom complet (ou prénom selon ce qui est écrit), la note associée
         ];
 
         const result = await model.generateContent([prompt, ...imageParts]);
-        const responseText = result.response.text();
+        let responseText = result.response.text();
+
+        // Strip markdown code fences if Gemini provides them despite responseMimeType
+        responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
 
         // 4. Data Validation (Task 2)
         let extractedData = [];
@@ -96,10 +101,10 @@ Retourne son nom complet (ou prénom selon ce qui est écrit), la note associée
         // Sanitize and validate
         const sanitizedData = extractedData.map(item => {
             let note = parseFloat(item.note);
-            // Force clamp to 0-20 limits just in case
+            // Relaxed clamp to 0-100 logic to handle different grading systems
             if (isNaN(note)) note = 0;
             if (note < 0) note = 0;
-            if (note > 20) note = 20;
+            if (note > 100) note = 100;
 
             let conf = parseFloat(item.confiance);
             if (isNaN(conf)) conf = 0.5;

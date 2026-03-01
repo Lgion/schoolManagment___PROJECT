@@ -4,8 +4,12 @@
 .image-scanner {
     margin: 1rem 0;
 
+    &.--compact {
+        margin: 0;
+    }
+
     &__btn {
-        background: map.get($themeColors, accent);
+        background: map.get($themeColors, primary);
         color: white;
         font-family: $primaryFont;
         font-weight: 600;
@@ -17,12 +21,18 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 4px 12px rgba(map.get($themeColors, accent), 0.3);
+        box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
         transition: all 0.2s ease;
+
+        .--compact & {
+            padding: 0.4rem 1rem;
+            font-size: 0.95rem;
+            border-radius: 6px;
+        }
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(map.get($themeColors, accent), 0.4);
+            box-shadow: 0 6px 16px rgba(map.get($themeColors, primary), 0.4);
         }
 
         &:active {
@@ -31,6 +41,10 @@
 
         .icon {
             font-size: 1.3rem;
+
+            .--compact & {
+                font-size: 1.1rem;
+            }
         }
     }
 
@@ -58,6 +72,29 @@
         font-size: 0.95rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         animation: fadeup 0.3s ease;
+    }
+
+    &__loader-mini {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 140px;
+        height: 40px;
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(map.get($themeColors, primary), 0.2);
+            border-top-color: map.get($themeColors, primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 

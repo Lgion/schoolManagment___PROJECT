@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
@@ -14,6 +14,8 @@ import NotesBlock from '../../components/NotesBlock';
 import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 import TeacherReportModule from '../../components/TeacherReportModule';
+import ImageScanner from '../../components/ui/ImageScanner';
+import ReviewModal from '../../components/ui/ReviewModal';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -22,6 +24,8 @@ export default function ClasseDetailPage() {
   const { userRole, userData, isProf } = useUserRole();
   const [isReduced, setIsReduced] = useState(false);
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
+  const reviewRef = useRef(null);
 
   useEffect(() => {
     ctx.fetchClasses && ctx.fetchClasses();
@@ -134,6 +138,7 @@ export default function ClasseDetailPage() {
             </div>
           </div>
         </div>
+
         {/* Liste des élèves */}
         <div className="person-detail__block person-detail__block--students">
           <h2 className="person-detail__subtitle">
@@ -237,12 +242,47 @@ export default function ClasseDetailPage() {
             isCurrentYear={isCurrentYear}
           />
           {/* Saisie manuelle des notes — Story 1.4 */}
-          <PermissionGate roles={['admin', 'prof']}>
+          <PermissionGate roles={['admin', 'prof']} fallback={<div className="image-scanner__loader-mini"><span className="spinner"></span></div>}>
             <div className="person-detail__block person-detail__block--entry">
-              <h3 className="person-detail__subtitle person-detail__subtitle--sm">
-                <span className="person-detail__subtitle-icon">✏️</span>
-                Saisir de nouvelles notes
+              <h3 className="person-detail__subtitle person-detail__subtitle--sm" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <span className="person-detail__subtitle-icon">✏️</span>
+                  Saisir de nouvelles notes
+                </div>
+                <ImageScanner
+                  classeId={classe._id}
+                  label="Scanner notes"
+                  className="--compact"
+                  onScanComplete={(result) => {
+                    console.log('Scan completed', result);
+                    if (result.success) {
+                      setScanResult(result);
+                      // Petit délai pour laisser le temps au DOM de s'updater
+                      setTimeout(() => {
+                        reviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    } else {
+                      alert(result.error || "Erreur lors du scan"); // Basic error handling
+                    }
+                  }}
+                />
               </h3>
+
+              {/* Résultats du scan - Story 2.3 (Inline) */}
+              <div ref={reviewRef}>
+                {scanResult && scanResult.success && scanResult.file && (
+                  <ReviewModal
+                    file={scanResult.file}
+                    extractedData={scanResult.data}
+                    onClose={() => setScanResult(null)}
+                    onValidate={(data) => {
+                      console.log("Validation en cours avec les données:", data);
+                      setScanResult(null);
+                    }}
+                  />
+                )}
+              </div>
+
               <NotesEntryBlock
                 eleves={eleves}
                 classeId={classe._id}
@@ -282,6 +322,7 @@ export default function ClasseDetailPage() {
             ctx.fetchClasses && ctx.fetchClasses();
           }}
         />
+
       </main>
     </DetailPortal>
 }

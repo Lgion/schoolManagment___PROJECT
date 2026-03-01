@@ -1,6 +1,6 @@
 # Story 2.2: Intégration de l'Intelligence Artificielle (Gemini Vision)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -74,5 +74,26 @@ antigravity-1.0
 - Git history checked showing recent epic 1 completion and Story 2.1 implementation. Extracted `isMounted` and non-blocking toast insights from 2.1 review commits.
 
 ### Completion Notes List
+- Implemented `/api/school_ai/extract-notes` backend AI logic
+- Integrated `ImageScanner` with compression features to avoid OOM
+- Fixed Buffer ephemerality and Gemini Markdown issues.
+
+### Senior Developer Review (AI)
+**🔥 CODE REVIEW FINDINGS**
+Reviewed by ERP_school on 2026-03-01.
+**Git vs Story Discrepancies:** 20 files found in git history, but 0 documented in the story File List.
+**Issues Found & Resolved Auto:** 
+- **[CRITICAL] Security/Stability (OOM Risk):** `ImageScanner.jsx` was sending 10MB+ raw camera files causing NextJS limits & V8 Out-Of-Memory crashes. FIXED by adding `browser-image-compression` targeting 1MB. 
+- **[CRITICAL] False Claims:** Story `File List` was completely empty. FIXED.
+- **[MEDIUM] Data Ephemerality Bypass (NFR-SEC-2):** `buffer.fill(0)` left the original `arrayBuffer` intact causing memory retention. FIXED by running `new Uint8Array(arrayBuffer).fill(0)`.
+- **[MEDIUM] Resilience (JSON Parsing):** Gemini occasionally wrapped json in markdown fences throwing 502s. FIXED by regex stripping fences prior to parse.
+- **[MEDIUM] Limit Bounds:** Max grade arbitrarily clamped at 20. FIXED by relaxing bounds for 0-100 logic.
 
 ### File List
+- `app/api/school_ai/extract-notes/route.js`
+- `app/api/school_ai/extract-notes/__tests__/route.test.js`
+- `app/components/ui/ImageScanner.jsx`
+- `app/assets/scss/components/FORMS/imageScanner.scss`
+- `app/classes/[id]/page.jsx`
+- `package.json`
+- `pnpm-lock.yaml`

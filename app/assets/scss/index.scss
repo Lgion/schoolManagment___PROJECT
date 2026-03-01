@@ -22,6 +22,7 @@
 @use "./components/MEDIA/mediaManager.scss";
 @use 'components/MODALS/entityModal.scss';
 @use 'components/MODALS/detailModal.scss';
+@use 'components/MODALS/reviewModal.scss';
 
 // Variables individuelles extraites des maps pour compatibilité
 $primary-color: map.get($themeColors, primary);

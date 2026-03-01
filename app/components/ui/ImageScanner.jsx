@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from 'react';
+import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 
-export default function ImageScanner({ classeId, onScanComplete }) {
+export default function ImageScanner({ classeId, onScanComplete, label = "Scanner une classe", className = "" }) {
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -63,8 +64,20 @@ export default function ImageScanner({ classeId, onScanComplete }) {
         setIsScanning(true);
 
         try {
+            // 1. Client-side Image Compression (OOM Security fix)
+            const options = {
+                maxSizeMB: 1, // Target size is 1MB to avoid NextJS payload limits and backend RAM OOM
+                maxWidthOrHeight: 1920, // Standard 1080p resolution is plenty for Gemini Vision
+                useWebWorker: true
+            };
+
+            let uploadFile = file;
+            if (file.size > 1024 * 1024) { // Only compress if over 1MB
+                uploadFile = await imageCompression(file, options);
+                console.log(`Image compressée de ${(file.size / 1024 / 1024).toFixed(2)} MB à ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`);
+            }
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('image', uploadFile);
 
             const response = await fetch('/api/school_ai/extract-notes', {
                 method: 'POST',
@@ -82,6 +95,7 @@ export default function ImageScanner({ classeId, onScanComplete }) {
                 onScanComplete({
                     success: true,
                     data: result.data,
+                    file: file,
                     message: "Analyse IA terminée avec succès"
                 });
             }
@@ -110,7 +124,7 @@ export default function ImageScanner({ classeId, onScanComplete }) {
     }
 
     return (
-        <div className="image-scanner">
+        <div className={`image-scanner ${className}`}>
             <input
                 type="file"
                 accept="image/*"
@@ -124,7 +138,7 @@ export default function ImageScanner({ classeId, onScanComplete }) {
                 onClick={handleButtonClick}
             >
                 <span className="icon">📸</span>
-                Scanner une classe
+                {label}
             </button>
 
             {showToast && (
