@@ -40,7 +40,9 @@ export default clerkMiddleware(async (auth, request) => {
   // Prevent Teachers (non-admins) from accessing Admin dashboard routes
   if (isAdminRoute(request)) {
     const { sessionClaims } = await auth();
-    if (sessionClaims?.metadata?.role !== 'admin') {
+    const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
+
+    if (userRole !== 'admin') {
       const url = new URL('/', request.url);
       return Response.redirect(url);
     }

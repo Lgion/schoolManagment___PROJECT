@@ -124,7 +124,8 @@ export async function POST(request) {
 
       // Update Clerk publicMetadata so middleware and sessionClaims have the correct role
       try {
-        await clerkClient.users.updateUserMetadata(clerkId, {
+        const client = await clerkClient();
+        await client.users.updateUserMetadata(clerkId, {
           publicMetadata: { role: existingUser.role }
         });
         console.log(`✅ Synced role '${existingUser.role}' to Clerk publicMetadata for ${clerkId}`);
@@ -174,7 +175,8 @@ export async function POST(request) {
 
     // Update Clerk publicMetadata
     try {
-      await clerkClient.users.updateUserMetadata(clerkId, {
+      const client = await clerkClient();
+      await client.users.updateUserMetadata(clerkId, {
         publicMetadata: { role: newUser.role }
       });
       console.log(`✅ Synced role '${newUser.role}' to Clerk publicMetadata for ${clerkId}`);
