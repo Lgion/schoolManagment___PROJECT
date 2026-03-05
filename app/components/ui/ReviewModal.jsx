@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../../assets/scss/components/MODALS/reviewModal.scss';
+import ReviewCell from './ReviewCell';
 
 export default function ReviewModal({ file, extractedData, onClose, onValidate }) {
     const [imageUrl, setImageUrl] = useState(null);
     const [zoom, setZoom] = useState(1);
     const imgRef = useRef(null);
     const containerRef = useRef(null);
+
+    // NFR-PERF-1: Utilizing a ref for mutable localized data without forcing parent re-renders
+    const editedDataRef = useRef(extractedData ? [...extractedData] : []);
+
+    // Synchronize ref if extractedData changes
+    useEffect(() => {
+        if (extractedData) {
+            editedDataRef.current = [...extractedData];
+        }
+    }, [extractedData]);
 
     // Initialisation et focus trap basique + a11y (Escape)
     useEffect(() => {
@@ -34,6 +45,10 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
     const handleResetZoom = () => setZoom(1);
 
+    const handleRowChange = (index, updatedRow) => {
+        editedDataRef.current[index] = updatedRow;
+    };
+
     if (!file || !extractedData) {
         return null;
     }
@@ -59,7 +74,7 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
                         </button>
                         <button
                             className="review-modal__btn-validate"
-                            onClick={() => onValidate(extractedData)}
+                            onClick={() => onValidate(editedDataRef.current)}
                         >
                             Valider & Publier
                         </button>
@@ -101,24 +116,14 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {extractedData.map((row, index) => {
-                                        // Soft warning condition (Story 2.4 prep)
-                                        const isWarning = row.confiance < 0.8;
-                                        return (
-                                            <tr
-                                                key={index}
-                                                className={`review-modal__cell-warning ${isWarning ? '--is-warning' : ''}`}
-                                                title={isWarning ? "Vérification recommandée" : ""}
-                                            >
-                                                <td className="review-modal__cell-name">{row.nom || '-'}</td>
-                                                <td>
-                                                    <span className="review-modal__cell-score">
-                                                        {row.note !== undefined && row.note !== null ? row.note : '?'}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                    {extractedData.map((row, index) => (
+                                        <ReviewCell
+                                            key={index}
+                                            index={index}
+                                            row={row}
+                                            onChange={handleRowChange}
+                                        />
+                                    ))}
                                 </tbody>
                             </table>
                         </div>

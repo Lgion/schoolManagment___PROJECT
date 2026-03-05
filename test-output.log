@@ -1,0 +1,126 @@
+
+> ecom@0.1.0 test:e2e
+> playwright test tests/e2e/story-2-4-review-cell.spec.ts
+
+[dotenv@17.2.2] injecting env (19) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Auth configuration saved to /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json
+[11:16:58] ℹ [1m[37mInitializing auth tokens with per-user isolation[0m
+[11:16:58] ℹ [1m[37mInitializing isolated tokens for users: default-user, admin-user, enseignant-user[0m
+[11:16:58] ℹ [1m[37mInitializing isolated token for user: default-user[0m
+[11:16:58] ℹ [1m[37mToken loaded from storage[0m
+[11:16:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:16:58] ✓ [1m[32m✓ Isolated token for user 'default-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default-user/storage-state.json[0m
+[11:16:58] ℹ [1m[37mInitializing isolated token for user: admin-user[0m
+[11:16:58] ℹ [1m[37mToken loaded from advanced memory cache[0m
+[11:16:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:16:58] ✓ [1m[32m✓ Isolated token for user 'admin-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/admin-user/storage-state.json[0m
+[11:16:58] ℹ [1m[37mInitializing isolated token for user: enseignant-user[0m
+[11:16:58] ℹ [1m[37mToken loaded from advanced memory cache[0m
+[11:16:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:16:58] ✓ [1m[32m✓ Isolated token for user 'enseignant-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/enseignant-user/storage-state.json[0m
+
+Running 3 tests using 2 workers
+
+[dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+  ✘  1 [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (722ms)
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+[dotenv@17.2.2] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+  ✘  3 [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (1.5s)
+  ✘  2 [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (3.6s)
+
+
+  1) [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+    Call log:
+    [2m  - navigating to "/classes/class123", waiting until "load"[22m
+
+
+      49 |
+      50 |         // Navigate to the class detail page
+    > 51 |         await page.goto('/classes/class123');
+         |                    ^
+      52 |
+      53 |         // Look for the scanner button
+      54 |         const uploadInput = page.locator('input[type="file"]');
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:51:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    Error: page.goto: Protocol error (Page.navigate): Invalid url: "/classes/class123"
+    Call log:
+    [2m  - navigating to "/classes/class123", waiting until "load"[22m
+
+
+      49 |
+      50 |         // Navigate to the class detail page
+    > 51 |         await page.goto('/classes/class123');
+         |                    ^
+      52 |
+      53 |         // Look for the scanner button
+      54 |         const uploadInput = page.locator('input[type="file"]');
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:51:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    Error: page.goto: Protocol error (Playwright.navigate): Cannot navigate to invalid URL
+    Call log:
+    [2m  - navigating to "/classes/class123", waiting until "load"[22m
+
+
+      49 |
+      50 |         // Navigate to the class detail page
+    > 51 |         await page.goto('/classes/class123');
+         |                    ^
+      52 |
+      53 |         // Look for the scanner button
+      54 |         const uploadInput = page.locator('input[type="file"]');
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:51:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+    [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+    [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 

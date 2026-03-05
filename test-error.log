@@ -1,0 +1,128 @@
+[dotenv@17.2.2] injecting env (19) from .env -- tip: 📡 auto-backup env with Radar: https://dotenvx.com/radar
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Auth configuration saved to /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json
+[11:19:58] ℹ [1m[37mInitializing auth tokens with per-user isolation[0m
+[11:19:58] ℹ [1m[37mInitializing isolated tokens for users: default-user, admin-user, enseignant-user[0m
+[11:19:58] ℹ [1m[37mInitializing isolated token for user: default-user[0m
+[11:19:58] ℹ [1m[37mToken loaded from storage[0m
+[11:19:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:19:58] ✓ [1m[32m✓ Isolated token for user 'default-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default-user/storage-state.json[0m
+[11:19:58] ℹ [1m[37mInitializing isolated token for user: admin-user[0m
+[11:19:58] ℹ [1m[37mToken loaded from advanced memory cache[0m
+[11:19:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:19:58] ✓ [1m[32m✓ Isolated token for user 'admin-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/admin-user/storage-state.json[0m
+[11:19:58] ℹ [1m[37mInitializing isolated token for user: enseignant-user[0m
+[11:19:58] ℹ [1m[37mToken loaded from advanced memory cache[0m
+[11:19:58] ℹ [1m[37mAuth session manager initialized with storage at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/default/storage-state.json[0m
+[11:19:58] ✓ [1m[32m✓ Isolated token for user 'enseignant-user' initialized successfully at: /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/.auth/local/enseignant-user/storage-state.json[0m
+
+Running 3 tests using 2 workers
+
+[dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.2.2] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+  ✘  2 [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (20.0s)
+[dotenv@17.2.2] injecting env (0) from .env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+[dotenv@17.2.2] injecting env (0) from node_modules/.pnpm/@seontechnologies+playwright-utils@3.14.0_@playwright+test@1.58.2_typescript@5.8.3/node_modules/@seontechnologies/playwright-utils/dist/cjs/.env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Warning: No baseURL found in authOptions, provider, Playwright config, or environment. Navigation to relative URLs may fail.
+  ✘  3 [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (21.4s)
+  ✘  1 [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit (46.1s)
+
+
+  1) [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    TimeoutError: locator.setInputFiles: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="file"]')[22m
+
+
+      55 |
+      56 |         // Upload a dummy file to trigger the scanner
+    > 57 |         await uploadInput.setInputFiles({
+         |         ^
+      58 |             name: 'test.png',
+      59 |             mimeType: 'image/png',
+      60 |             buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:57:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    TimeoutError: locator.setInputFiles: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="file"]')[22m
+
+
+      55 |
+      56 |         // Upload a dummy file to trigger the scanner
+    > 57 |         await uploadInput.setInputFiles({
+         |         ^
+      58 |             name: 'test.png',
+      59 |             mimeType: 'image/png',
+      60 |             buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:57:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+
+    TimeoutError: locator.setInputFiles: Timeout 15000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[type="file"]')[22m
+
+
+      55 |
+      56 |         // Upload a dummy file to trigger the scanner
+    > 57 |         await uploadInput.setInputFiles({
+         |         ^
+      58 |             name: 'test.png',
+      59 |             mimeType: 'image/png',
+      60 |             buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+        at /home/nihongo/Bureau/BMAD/schoolManagment___PROJECT/tests/e2e/story-2-4-review-cell.spec.ts:57:9
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/e2e-story-2-4-review-cell--df4ba-ence-and-removes-it-on-edit-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+    [firefox] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 
+    [webkit] › tests/e2e/story-2-4-review-cell.spec.ts:5:9 › Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit 

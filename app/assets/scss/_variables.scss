@@ -1,6 +1,8 @@
 // Variables de thème selon les règles de code
 $primaryFont: 'Inter', 'Segoe UI', sans-serif;
 $secondaryFont: 'Poppins', 'Arial', sans-serif;
+@use 'sass:map';
+@use 'sass:color';
 
 // Variables CSS pour les composants
 :root {
@@ -105,6 +107,13 @@ $themeColors: (
   gray800: #343a40,
   gray900: #212529
 );
+
+// Variables individuelles pour compatibilité (extraites de $themeColors)
+$primary-color: map.get($themeColors, primary);
+$secondary-color: map.get($themeColors, secondary);
+$primary-blue: $primary-color; // Fallback ou alias si besoin
+$primary-orange: $secondary-color; // Alias pour compatibilité
+
 
 // Espacements
 $spacing: (

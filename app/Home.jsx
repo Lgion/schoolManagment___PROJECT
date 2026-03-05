@@ -56,33 +56,45 @@ export default ({ children }) => {
   };
 
   // --- LOGIQUE ANNIVERSAIRES ---
-  const birthdayMessage = useMemo(() => {
-    if (!Array.isArray(eleves) || !Array.isArray(enseignants)) return null;
+  const birthdayCelebrants = useMemo(() => {
+    if (!Array.isArray(eleves) || !Array.isArray(enseignants)) return [];
 
     const today = new Date();
     const tDay = today.getDate();
     const tMonth = today.getMonth();
 
-    const celebrate = [];
+    const result = [];
 
-    const check = (person, roleLabel) => {
+    const check = (person, roleLabel, type) => {
       const birthDate = person.naissance_$_date ? new Date(person.naissance_$_date) : null;
       if (birthDate && birthDate.getDate() === tDay && birthDate.getMonth() === tMonth) {
-        const pName = Array.isArray(person.prenoms) ? person.prenoms.join(' ') : (person.prenoms || '');
-        celebrate.push(`${roleLabel} ${person.nom} ${pName}`);
+        const pPrenoms = Array.isArray(person.prenoms) ? person.prenoms.join(' ') : (person.prenoms || '');
+
+        // Trouver la classe pour les élèves
+        let personClassName = '';
+        if (type === 'eleve' && Array.isArray(classes)) {
+          const matchedClass = classes.find(c => (c._id || c.id) === person.current_classe);
+          if (matchedClass) {
+            personClassName = matchedClass && matchedClass.niveau + '-' + matchedClass.alias || 'NoValue';
+          }
+        }
+
+        result.push({
+          id: person._id || person.id,
+          name: `${person.nom} ${pPrenoms}`,
+          role: roleLabel,
+          className: personClassName,
+          classId: person.current_classe,
+          path: type === 'eleve' ? `/eleves/${person._id || person.id}` : `/enseignants/${person._id || person.id}`
+        });
       }
     };
 
-    eleves.forEach(e => check(e, 'élève'));
-    enseignants.forEach(e => check(e, 'professeur'));
+    eleves.forEach(e => check(e, 'élève', 'eleve'));
+    enseignants.forEach(e => check(e, 'professeur', 'prof'));
 
-    if (celebrate.length === 0) return null;
-
-    if (celebrate.length === 1) return `Joyeux anniversaire ${celebrate[0]}`;
-
-    const last = celebrate.pop();
-    return `Joyeux anniversaire ${celebrate.join(', ')} et ${last}`;
-  }, [eleves, enseignants]);
+    return result;
+  }, [eleves, enseignants, classes]);
 
   // Fonction pour vider toutes les données localStorage de l'app
   const clearAllAppData = () => {
@@ -446,10 +458,21 @@ export default ({ children }) => {
     */}
 
       <main className="ecole-admin__content home">
-        {birthdayMessage && (
+        {birthdayCelebrants.length > 0 && (
           <div className="ecole-admin__birthday-banner">
             <span className="ecole-admin__birthday-icon">🎂</span>
-            <p className="ecole-admin__birthday-text">{birthdayMessage}</p>
+            <div className="ecole-admin__birthday-text">
+              Joyeux anniversaire{' '}
+              {birthdayCelebrants.map((person, idx) => (
+                <Fragment key={person.id}>
+                  {idx > 0 && idx === birthdayCelebrants.length - 1 ? ' et ' : idx > 0 ? ', ' : ''}
+                  <Link href={person.path} className="ecole-admin__birthday-link">
+                    {person.role} <strong>{person.name}</strong>
+                    {person.className && <Link href={"/classes/" + person.classId}>Classe: ${person.className}</Link>}
+                  </Link>
+                </Fragment>
+              ))}
+            </div>
           </div>
         )}
         <h1 className={"ecole-admin__dashboardTitle role___" + userRole}>
@@ -481,9 +504,25 @@ export default ({ children }) => {
           }
           .ecole-admin__birthday-text {
             color: #d84315;
-            font-weight: 700;
+            font-weight: 500;
             margin: 0;
             font-size: 1.1rem;
+          }
+          .ecole-admin__birthday-link {
+            color: #bf360c;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            display: inline-block;
+            padding: 2px 4px;
+            border-radius: 4px;
+          }
+          .ecole-admin__birthday-link:hover {
+            background: rgba(255, 255, 255, 0.4);
+            color: #e64a19;
+            transform: translateY(-1px);
+          }
+          .ecole-admin__birthday-link strong {
+            font-weight: 800;
           }
           @keyframes slideInDown {
             from { transform: translateY(-20px); opacity: 0; }

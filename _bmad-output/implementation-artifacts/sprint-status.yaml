@@ -52,8 +52,8 @@ development_status:
   2-1-prototype-dimport-dimage-et-skeletons: done
   2-2-integration-de-lintelligence-artificielle-gemini-vision: done
   2-3-interface-de-validation-split-screen-reviewmodal: done
-  2-4-gestion-des-incertitudes-soft-warnings-et-edition-de-cellule-reviewcell: backlog
-  2-5-eleves-fantomes-et-fusion-de-lignes: backlog
+  2-4-gestion-des-incertitudes-soft-warnings-et-edition-de-cellule-reviewcell: done
+  2-5-eleves-fantomes-et-fusion-de-lignes: ready-for-dev
   epic-2-retrospective: optional
 
   epic-3: backlog

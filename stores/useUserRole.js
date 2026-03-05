@@ -74,6 +74,16 @@ export function UserRoleProvider({ children }) {
   // Effet principal pour charger les données utilisateur
   useEffect(() => {
     const loadUserData = async () => {
+      // Test mode bypass
+      if (process.env.NEXT_PUBLIC_MODE === 'test') {
+        const mockRole = (typeof window !== 'undefined' ? localStorage.getItem('mock_role') : null) || 'admin';
+        setUserData({ id: 'test', firstName: 'Test', lastName: 'User', email: 'test@test.com', role: mockRole });
+        setUserRole(mockRole);
+        setPermissions(getPermissionsByRole(mockRole));
+        setLoading(false);
+        return;
+      }
+
       if (!isLoaded || !clerkUser) {
         setLoading(false);
         return;

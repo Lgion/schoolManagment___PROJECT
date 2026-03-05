@@ -12,7 +12,7 @@
         display: block;
         padding: 0;
         backdrop-filter: none;
-        border: 2px solid #1e3a8a;
+        border: 2px solid $primary-color;
         border-radius: 16px;
         overflow: hidden;
     }
@@ -29,13 +29,13 @@
     }
 
     &__header {
-        background-color: #1e3a8a; // Navy
+        background-color: $primary-color; // Navy
         color: white;
         padding: 1rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 4px solid #f97316; // Orange accent
+        border-bottom: 4px solid $secondary-color; // Orange accent
 
         h2 {
             margin: 0;
@@ -69,7 +69,7 @@
     }
 
     &__btn-validate {
-        background: #f97316; // Orange
+        background: $secondary-color; // Orange
         color: white;
         border: none;
         padding: 0.5rem 1.5rem;
@@ -80,7 +80,7 @@
         box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
 
         &:hover {
-            background: color.scale(#f97316, $lightness: -10%);
+            background: color.scale($secondary-color, $lightness: -10%);
             transform: translateY(-1px);
         }
     }
@@ -242,24 +242,70 @@
         font-family: monospace;
         font-size: 1.1rem;
         font-weight: 600;
-        color: #1e3a8a;
-        background: #e0e7ff;
+        color: $primary-color;
+        background: #e0e7ff; // Keep the same colors if no tokens exist
         padding: 0.25rem 0.75rem;
         border-radius: 4px;
         display: inline-block;
     }
 
-    &__cell-warning {
-        // Prep for Story 2.4 - placeholder style
-        position: relative;
+    &__cell-score-input {
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: $primary-color;
+        background: #e0e7ff; // Keep the same colors
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        border: 2px solid transparent; // Added for focus state
+        width: 60px;
+        text-align: center;
+        transition: all 0.2s;
 
-        &.--is-warning td {
+        &:focus {
+            outline: none;
+            border-color: $secondary-color;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+        }
+
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        -moz-appearance: textfield;
+    }
+
+    &__cell-warning {
+        position: relative;
+        transition: all 0.3s;
+
+        &.--is-warning {
             background: #fef9c3; // yellow-100
             border-color: #fde047; // yellow-300
+
+            td {
+                background: #fef9c3;
+            }
 
             &:hover td {
                 background: #fef08a;
             }
+
+            .review-modal__cell-score-input {
+                background: #fef08a; // Match the warning theme
+                color: #854d0e; // Dark yellow/brown
+
+                &:focus {
+                    background: #fff; // Clear on focus
+                }
+            }
+        }
+
+        &.--is-focused {
+            border-color: $secondary-color;
         }
     }
 }
