@@ -1,5 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 import { NextResponse } from 'next/server';
+import { currentUser, clerkClient } from '@clerk/nextjs/server';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../_/models/ai/User';
 import Teacher from '../../_/models/ai/Teacher';
@@ -8,15 +9,11 @@ import Eleve from '../../_/models/ai/Eleve';
 export async function GET(request, { params }) {
   try {
     // Vérification de l'authentification Clerk
-    const { userId } = await auth();
-
-    if (!userId) {
-      console.warn(`⚠️ [API users/:clerkId] Unauthorized access attempt detected (userId: ${userId})`);
-      return NextResponse.json(
-        { error: 'Non autorisé - Token manquant ou expiré.' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'GET /api/users/[clerkId]');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
     const { clerkId } = await params;
@@ -59,14 +56,11 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const { userId } = auth();
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'PATCH /api/users/[clerkId]');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
     const { clerkId } = await params;

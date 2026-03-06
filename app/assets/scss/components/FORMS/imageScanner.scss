@@ -30,12 +30,21 @@
             border-radius: 6px;
         }
 
-        &:hover {
+        &.--disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+            background: #eee !important;
+            color: #999 !important;
+            box-shadow: none !important;
+        }
+
+        &:hover:not(.--disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(map.get($themeColors, primary), 0.4);
         }
 
-        &:active {
+        &:active:not(.--disabled) {
             transform: scale(0.98);
         }
 

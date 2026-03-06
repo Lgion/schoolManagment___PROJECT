@@ -26,16 +26,49 @@ export default function ClasseDetailPage() {
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const reviewRef = useRef(null);
+  const editBtnRef = useRef(null);
+  const [dynamicSubjects, setDynamicSubjects] = useState([]);
+  const [highlightEdit, setHighlightEdit] = useState(false);
 
   useEffect(() => {
     ctx.fetchClasses && ctx.fetchClasses();
     ctx.fetchEleves && ctx.fetchEleves();
     ctx.fetchEnseignants && ctx.fetchEnseignants();
-  }, []);
+
+    // Charger les matières pour l'affichage des noms dans les coefficients
+    const loadSubjects = async () => {
+      const { getLSItem, setLSItem } = await import('../../../utils/localStorageManager');
+      const parsed = getLSItem('app_subjects');
+      if (parsed) {
+        setDynamicSubjects(parsed.map(s => typeof s === 'string' ? { id: s, nom: s } : s));
+      } else {
+        const res = await fetch('/api/subjects');
+        const data = await res.json();
+        if (data.success) {
+          const subjects = data.data.map(s => ({ id: s._id, nom: s.nom }));
+          setDynamicSubjects(subjects);
+          setLSItem('app_subjects', subjects);
+        }
+      }
+    };
+    loadSubjects();
+  }, [ctx.fetchClasses, ctx.fetchEleves, ctx.fetchEnseignants]);
+
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const classe = (ctx.classes || []).find(c => String(c._id) === String(id));
   if (!classe) return <div style={{ color: 'red' }}>Classe introuvable</div>;
+
+  // Déterminer s'il y a des coefficients définis
+  const hasCoefficients = classe.coefficients && Object.keys(classe.coefficients).length > 0;
+
+  const scrollToEdit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHighlightEdit(true);
+    editBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => setHighlightEdit(false), 3000);
+  };
 
   // Déterminer si c'est une classe de l'année actuelle ou historique
   const currentYear = new Date().getFullYear();
@@ -45,7 +78,6 @@ export default function ClasseDetailPage() {
 
   const isCurrentYear = classe.annee === currentSchoolYear;
 
-  // Liste des élèves selon le contexte (actuel vs historique)
   const eleves = isCurrentYear
     ? (ctx.eleves || []).filter(e => e.current_classe === classe._id)
     : classe.eleves || [];
@@ -56,7 +88,6 @@ export default function ClasseDetailPage() {
     )
     : classe.professeur || [];
 
-  const prof = (ctx.enseignants || []).find(e => e._id === classe.prof_principal_id);
   const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
 
   return !classe ? <div>....loading.....</div>
@@ -71,8 +102,9 @@ export default function ClasseDetailPage() {
         <PermissionGate roles={['admin', 'prof']}>
           {onEdit && !showModal && (
             <button
+              ref={editBtnRef}
               type="button"
-              className="person-detail__editbtn"
+              className={`person-detail__editbtn ${highlightEdit ? '--highlight' : ''}`}
               onClick={e => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -162,7 +194,11 @@ export default function ClasseDetailPage() {
           ) : (
             <div className="person-detail__grid">
               {eleves.map(eleve => {
-                const student = ctx.eleves.find(el => el._id === (eleve._id || eleve))
+                const student = ctx.eleves.find(el => el._id === (eleve._id || eleve));
+
+                // Si l'élève n'est pas trouvé dans le contexte, on ne l'affiche pas pour éviter le crash
+                if (!student) return null;
+
                 const imagePath = getEleveImagePath(student);
 
                 return (
@@ -170,7 +206,7 @@ export default function ClasseDetailPage() {
                     <div className="person-detail__card-avatar">
                       <img
                         src={imagePath}
-                        alt={`${student?.nom} ${student?.prenoms}`}
+                        alt={`${student.nom} ${student.prenoms}`}
                         data-ok={imagePath}
                         onError={(e) => {
                           e.target.src = '/school/student.webp';
@@ -178,12 +214,12 @@ export default function ClasseDetailPage() {
                       />
                     </div>
                     <div className="person-detail__card-content">
-                      <h3 className="person-detail__card-name">{student?.nom} {student?.prenoms}</h3>
+                      <h3 className="person-detail__card-name">{student.nom} {student.prenoms}</h3>
                       <p className="person-detail__card-role">Élève</p>
                     </div>
                   </Link>
                 )
-              })}
+              }).filter(Boolean)}
             </div>
           )}
 
@@ -202,26 +238,28 @@ export default function ClasseDetailPage() {
           ) : (
             <div className="person-detail__grid">
               {enseignants.map(enseignant => {
-                const teacher = ctx.enseignants.find(el => el._id === enseignant._id || enseignant)
+                const teacher = ctx.enseignants.find(el => el._id === (enseignant._id || enseignant));
+
+                if (!teacher) return null;
 
                 return (
-                  <Link key={teacher?._id} href={`/enseignants/${teacher?._id}`} className="person-detail__card">
+                  <Link key={teacher._id} href={`/enseignants/${teacher._id}`} className="person-detail__card">
                     <div className="person-detail__card-avatar">
                       <img
                         src={getEnseignantImagePath(teacher)}
-                        alt={`${teacher?.nom} ${teacher?.prenoms}`}
+                        alt={`${teacher.nom} ${teacher.prenoms}`}
                         onError={(e) => {
-                          e.target.src = '/school/default-teacher.webp';
+                          e.target.src = '/school/prof.webp';
                         }}
                       />
                     </div>
                     <div className="person-detail__card-content">
-                      <h3 className="person-detail__card-name">{teacher?.nom} {teacher?.prenoms}</h3>
+                      <h3 className="person-detail__card-name">{teacher.nom} {teacher.prenoms}</h3>
                       <p className="person-detail__card-role">Enseignant</p>
                     </div>
                   </Link>
                 )
-              })}
+              }).filter(Boolean)}
             </div>
           )}
 
@@ -245,14 +283,32 @@ export default function ClasseDetailPage() {
           <PermissionGate roles={['admin', 'prof']} fallback={<div className="image-scanner__loader-mini"><span className="spinner"></span></div>}>
             <div className="person-detail__block person-detail__block--entry">
               <h3 className="person-detail__subtitle person-detail__subtitle--sm" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span className="person-detail__subtitle-icon">✏️</span>
-                  Saisir de nouvelles notes
+                  {hasCoefficients ? (
+                    <div className="person-detail__coefficients-list" title="Coefficients configurés pour cette classe">
+                      {Object.entries(classe.coefficients).map(([subId, coeff]) => {
+                        const sub = dynamicSubjects.find(s => s.id === subId);
+                        return (
+                          <span key={subId} className="person-detail__coeff-tag">
+                            {sub ? sub.nom : `Mat. ${subId.slice(-4)}`}: <b>{coeff}</b>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="person-detail__no-coefficients">
+                      ⚠️ Pas de coefficients définis.
+                      <button onClick={scrollToEdit} className="person-detail__scroll-btn" title="Aller à l'édition de la classe">Définir maintenant</button>
+                    </div>
+                  )}
                 </div>
                 <ImageScanner
                   classeId={classe._id}
                   label="Scanner notes"
                   className="--compact"
+                  disabled={!hasCoefficients}
+                  title={!hasCoefficients ? "Veuillez définir les coefficients de la classe avant de scanner des notes (cliquez sur 'Définir maintenant')" : "Scanner une liste de notes avec l'IA"}
                   onScanComplete={(result) => {
                     console.log('Scan completed', result);
                     if (result.success) {

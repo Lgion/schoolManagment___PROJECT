@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 import dbConnect from '../../lib/dbConnect';
 const Subject = require('../../_/models/ai/Subject');
 
@@ -10,14 +10,13 @@ const Subject = require('../../_/models/ai/Subject');
  */
 export async function PUT(request, { params }) {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'PUT /api/subjects/[id]');
+
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     await dbConnect();
 
@@ -107,14 +106,13 @@ export async function PUT(request, { params }) {
  */
 export async function DELETE(request, { params }) {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'DELETE /api/subjects/[id]');
+
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     await dbConnect();
 
@@ -155,14 +153,13 @@ export async function DELETE(request, { params }) {
  */
 export async function GET(request, { params }) {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'GET /api/subjects/[id]');
+
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     await dbConnect();
 

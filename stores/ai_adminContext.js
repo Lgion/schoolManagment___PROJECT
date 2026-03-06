@@ -361,10 +361,7 @@ export const AdminContextProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-
-    if (process.env.NEXT_PUBLIC_MODE === 'test') {
-      clearLS();
-    }
+    // Initialisation
   }, [])
   // --- AUTO FETCH CLASSES AU MONTAGE ---
   useEffect(() => {

@@ -1,18 +1,16 @@
 // API Route pour récupérer les statistiques d'usage Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 
 export async function GET(request) {
   try {
     // Vérification de l'authentification (admin uniquement)
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'GET /api/cloudinary/stats');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     // TODO: Vérifier que l'utilisateur est admin
     // const user = await getUserRole(userId);
@@ -67,12 +65,12 @@ export async function GET(request) {
 // Fonction helper pour formater les bytes
 function formatBytes(bytes, decimals = 2) {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
+
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }

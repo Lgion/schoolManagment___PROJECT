@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../lib/authWithFallback';
 import dbConnect from '../lib/dbConnect';
 const Subject = require('../_/models/ai/Subject');
 
@@ -10,10 +10,11 @@ const Subject = require('../_/models/ai/Subject');
  */
 export async function POST(request) {
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'POST /api/subjectSamples');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
 
@@ -161,10 +162,11 @@ export async function POST(request) {
  */
 export async function GET(request) {
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'GET /api/subjectSamples');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
 
@@ -200,10 +202,11 @@ export async function GET(request) {
  */
 export async function DELETE(request) {
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'DELETE /api/subjectSamples');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
 

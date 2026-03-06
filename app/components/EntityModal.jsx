@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres'; // Keep for structure mapping only
 import { getLSItem, setLSItem } from '../../utils/localStorageManager';
@@ -246,13 +246,15 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       if (parsedSubjects) {
         if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
           console.log('✅ [EntityModal] Matières trouvées dans localStorage:', parsedSubjects.length);
-          setDynamicSubjects(parsedSubjects);
+          // S'assurer que les données sont au format objet {id, nom}
+          const formattedSubjects = parsedSubjects.map(s => typeof s === 'string' ? { id: s, nom: s } : s);
+          setDynamicSubjects(formattedSubjects);
           setSubjectsLoaded(true);
           return; // Utiliser localStorage, pas besoin de fallback
         }
       }
 
-      console.log('� [EntityModal] Pas de matières dans localStorage, fallback MongoDB...');
+      console.log(' [EntityModal] Pas de matières dans localStorage, fallback MongoDB...');
 
       // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
       const response = await fetch('/api/subjects', {
@@ -267,12 +269,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         console.log('✅ [EntityModal] Matières MongoDB chargées:', data.data.length);
 
         // Convertir la structure MongoDB en format utilisable
-        // IMPORTANT: Trier par ordre de création pour maintenir la cohérence avec les indices
         const sortedData = data.data
           .filter(subject => subject.isActive)
           .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Tri par date de création
 
-        const subjects = sortedData.map(subject => subject.nom);
+        const subjects = sortedData.map(subject => ({
+          id: subject._id || subject.id,
+          nom: subject.nom
+        }));
 
         // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
         setLSItem('app_subjects', subjects);
@@ -282,7 +286,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         setSubjectsLoaded(true);
 
         console.log('✅ [EntityModal] Matières configurées (triées par date):', {
-          subjects,
+          subjectsCount: subjects.length,
           first4: subjects.slice(0, 4)
         });
       } else {
@@ -1833,7 +1837,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
         const availableSubjects = getAvailableSubjects();
         return indices.map((index, i) => ({
           index: index.toString(),
-          name: availableSubjects[index] || `Matière ${index}`,
+          name: availableSubjects[index]?.nom || `Matière ${index}`,
           displayIndex: i
         })).filter(subject => subject.name);
       }
@@ -1854,24 +1858,24 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
   // Initialiser la matière sélectionnée
   useEffect(() => {
     if (availableSubjects.length > 0 && !selectedMatiere) {
-      setSelectedMatiere(availableSubjects[0]);
+      setSelectedMatiere(availableSubjects[0]?.nom);
     }
   }, [availableSubjects, selectedMatiere]);
 
   const handleAddCoefficient = () => {
     if (!selectedMatiere) return;
 
-    const subjectIndex = availableSubjects.indexOf(selectedMatiere);
-    if (subjectIndex === -1) return;
+    const subject = availableSubjects.find(s => s.nom === selectedMatiere);
+    if (!subject) return;
 
     const newCoefficients = { ...coefficients };
     const coeffValue = Math.floor(parseInt(selectedCoefficient) / 10); // Convertir dénominateur en coefficient
-    newCoefficients[subjectIndex.toString()] = coeffValue;
+    newCoefficients[subject.id] = coeffValue;
     onChange(newCoefficients);
 
     console.log('✅ Coefficient ajouté:', {
       matiere: selectedMatiere,
-      index: subjectIndex,
+      id: subject.id,
       denominateur: selectedCoefficient,
       coefficient: coeffValue
     });
@@ -1917,7 +1921,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           onChange={(e) => setSelectedMatiere(e.target.value)}
         >
           {availableSubjects.map(matiere => (
-            <option key={matiere} value={matiere}>{matiere}</option>
+            <option key={matiere.id} value={matiere.nom}>{matiere.nom}</option>
           ))}
         </select>
 
@@ -1948,16 +1952,17 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
         <h4>Coefficients configurés :</h4>
         {Object.keys(coefficients).length > 0 ? (
           <div className="coefficients-manager__list">
-            {Object.entries(coefficients).map(([index, coeff]) => {
-              const subjectName = availableSubjects[parseInt(index)] || `Matière ${index}`;
+            {Object.entries(coefficients).map(([id, coeff]) => {
+              const subject = availableSubjects.find(s => s.id === id);
+              const subjectName = subject ? subject.nom : `ID: ${id}`;
               return (
-                <div key={index} className="coefficients-manager__configured-item">
+                <div key={id} className="coefficients-manager__configured-item">
                   <span className="coefficients-manager__subject-name">{subjectName}</span>
                   <span className="coefficients-manager__coefficient">Coefficient {coeff} (sur {coeff * 10})</span>
                   <button
                     type="button"
                     className="coefficients-manager__remove-btn"
-                    onClick={() => handleRemoveCoefficient(index)}
+                    onClick={() => handleRemoveCoefficient(id)}
                     title="Supprimer ce coefficient"
                   >
                     ×
@@ -2150,10 +2155,10 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
 
   // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
   const getCoefficientForSubject = (matiere) => {
-    // 1. Chercher par index dans les coefficients de classe
-    const subjectIndex = dynamicSubjects.indexOf(matiere);
-    if (subjectIndex !== -1 && classCoefficients[subjectIndex.toString()]) {
-      return classCoefficients[subjectIndex.toString()] * 10; // coefficient * 10 = sur
+    // 1. Chercher par ID dans les coefficients de classe
+    const subject = dynamicSubjects.find(s => s.nom === matiere);
+    if (subject && classCoefficients[subject.id]) {
+      return classCoefficients[subject.id] * 10; // coefficient * 10 = sur
     }
 
     // 2. Fallback sur coefficients hardcodés
@@ -2174,7 +2179,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
 
     console.log('🎯 Coefficient calculé pour', matiere, ':', {
       coefficient,
-      source: classCoefficients[dynamicSubjects.indexOf(matiere)] ? 'classe' : 'fallback'
+      source: classCoefficients[dynamicSubjects.find(s => s.nom === matiere)?.id] ? 'classe' : 'fallback'
     });
   };
 
@@ -2299,17 +2304,17 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   const handleCreateGroup = (idx) => {
     console.log('🔍 DEBUG - Ouverture du formulaire de groupe...');
 
-    // NOUVEAU : Utiliser les indices réellement configurés dans les coefficients de classe
+    // NOUVEAU : Utiliser les IDs réellement configurés dans les coefficients de classe
     // au lieu de la variable d'environnement statique
-    const configuredIndices = classCoefficients && Object.keys(classCoefficients).length > 0
-      ? Object.keys(classCoefficients).map(key => parseInt(key))
+    const configuredIds = classCoefficients && Object.keys(classCoefficients).length > 0
+      ? Object.keys(classCoefficients)
       : null;
 
     // Fallback sur la variable d'environnement si pas de coefficients configurés
     const subjectGroup = process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]';
 
     console.log('📊 État actuel:', {
-      configuredIndices,
+      configuredIds,
       classCoefficients,
       subjectGroup,
       subjectsLoaded,
@@ -2321,10 +2326,11 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
     let subjects = [];
     let indices;
 
-    if (configuredIndices && configuredIndices.length > 0) {
-      // PRIORITÉ : Utiliser les indices des coefficients configurés
-      indices = configuredIndices;
-      console.log('✅ Utilisation des indices des coefficients configurés:', indices);
+    if (configuredIds && configuredIds.length > 0) {
+      // PRIORITÉ : Utiliser les IDs des coefficients configurés
+      const availableSubjects = dynamicSubjects;
+      subjects = configuredIds.map(id => availableSubjects.find(s => s.id === id)?.nom).filter(Boolean);
+      console.log('✅ Utilisation des IDs des coefficients configurés:', configuredIds);
     } else {
       // FALLBACK : Utiliser la variable d'environnement
       try {
@@ -2336,10 +2342,10 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       }
     }
 
-    if (Array.isArray(indices) && dynamicSubjects.length > 0) {
+    if (subjects.length === 0 && Array.isArray(indices) && dynamicSubjects.length > 0) {
       // Convertir les indices en noms de matières
       const availableSubjects = dynamicSubjects;
-      subjects = indices.map(index => availableSubjects[index]).filter(Boolean);
+      subjects = indices.map(index => availableSubjects[index]?.nom).filter(Boolean);
 
       console.log('🎯 Conversion des indices:', {
         indices,
@@ -2348,9 +2354,9 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
         source: 'MongoDB',
         mongodbFirst4: dynamicSubjects.slice(0, 4),
       });
-    } else if (dynamicSubjects.length > 0) {
+    } else if (subjects.length === 0 && dynamicSubjects.length > 0) {
       // Fallback si les indices ne sont pas un array
-      subjects = [dynamicSubjects[0]];
+      subjects = [dynamicSubjects[0].nom];
       console.log('⚠️ Fallback sur première matière:', subjects);
     } else {
       console.log('⚠️ Aucune matière disponible.');
@@ -2613,7 +2619,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                   onChange={e => handleMatiereChange(e.target.value)}
                 >
                   {dynamicSubjects.length > 0 ? dynamicSubjects.map(matiere => (
-                    <option key={matiere} value={matiere}>{matiere}</option>
+                    <option key={matiere.id} value={matiere.nom}>{matiere.nom}</option>
                   )) : (
                     <option value="" disabled>Aucune matière</option>
                   )}

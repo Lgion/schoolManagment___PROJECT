@@ -1,18 +1,16 @@
 // API Route pour supprimer des fichiers de Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 
 export async function DELETE(request) {
   try {
     // Vérification de l'authentification
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'DELETE /api/cloudinary/delete');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     // Récupération des données
     const body = await request.json();

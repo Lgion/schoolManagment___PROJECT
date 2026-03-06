@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { auth, currentUser, clerkClient } from '@clerk/nextjs/server';
+import { authWithFallback, getUserId } from '../lib/authWithFallback';
+import { currentUser, clerkClient } from '@clerk/nextjs/server';
 import dbConnect from '../lib/dbConnect';
 import User from '../_/models/ai/User';
 import Teacher from '../_/models/ai/Teacher';

@@ -4,21 +4,20 @@ import dbConnect from '../../../../lib/dbConnect';
 import Eleve from '../../../../_/models/ai/Eleve';
 import Classe from '../../../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
-import { Roles } from '../../../../../../utils/roles';
-import { auth } from '@clerk/nextjs/server';
+import { checkRole, Roles } from '../../../../../../utils/roles';
+import { authWithFallback } from '../../../lib/authWithFallback';
 
 export async function GET(request, { params }) {
     try {
-        // Pattern Story 1.3/1.4 — single auth() call
-        const { userId, sessionClaims } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        const authResult = await authWithFallback(request, 'GET /api/school_ai/eleves/[id]/history');
+        if (!authResult.success) {
+            return authResult.response;
         }
 
-        const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
+        const isAdmin = await checkRole(Roles.ADMIN, request);
 
         // Task 1.2: Admin ONLY — aucun autre rôle
-        if (userRole !== Roles.ADMIN) {
+        if (!isAdmin) {
             return NextResponse.json({ error: 'Accès réservé aux administrateurs' }, { status: 403 });
         }
 

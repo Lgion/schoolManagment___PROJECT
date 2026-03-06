@@ -1,18 +1,16 @@
 // API Route pour upload de fichiers vers Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 
 export async function POST(request) {
   try {
     // Vérification de l'authentification
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'POST /api/cloudinary/upload');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     // Récupération des données
     const formData = await request.formData();
@@ -20,7 +18,7 @@ export async function POST(request) {
     const entityType = formData.get('entityType'); // eleve, enseignant, classe
     const entityData = JSON.parse(formData.get('entityData') || '{}');
     const tags = JSON.parse(formData.get('tags') || '[]');
-    
+
     console.log('📤 Upload request:', {
       filesCount: files.length,
       entityType,
@@ -49,13 +47,13 @@ export async function POST(request) {
         // Déterminer le type de fichier et les options
         const isImage = file.type.startsWith('image/');
         const publicId = cloudinaryService.generatePublicId(entityType, entityData);
-        
+
         // Options d'upload selon le type
         const uploadOptions = {
           publicId,
-          folder: cloudinaryService.folders[entityType === 'eleve' ? 'eleves' : 
-                  entityType === 'enseignant' ? 'enseignants' : 
-                  entityType === 'classe' ? 'classes' : 'documents'],
+          folder: cloudinaryService.folders[entityType === 'eleve' ? 'eleves' :
+            entityType === 'enseignant' ? 'enseignants' :
+              entityType === 'classe' ? 'classes' : 'documents'],
           tags: [entityType, ...tags],
           context: {
             entityId: entityData._id || '',
@@ -69,7 +67,7 @@ export async function POST(request) {
 
         // Upload vers Cloudinary
         const result = await cloudinaryService.uploadFile(base64, uploadOptions);
-        
+
         if (result.success) {
           uploadedFiles.push({
             ...result.data,
@@ -114,16 +112,13 @@ export async function POST(request) {
   }
 }
 
-// GET - Récupérer la signature pour upload direct depuis le client
 export async function GET(request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'GET /api/cloudinary/upload/signature');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     const { searchParams } = new URL(request.url);
     const folder = searchParams.get('folder');

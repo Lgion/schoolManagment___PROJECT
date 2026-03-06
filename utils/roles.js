@@ -2,18 +2,20 @@ import { auth } from '@clerk/nextjs/server';
 import { cookies, headers } from 'next/headers';
 import dbConnect from '../app/api/lib/dbConnect';
 import User from '../app/api/_/models/ai/User';
+import { authWithFallback } from '../app/api/lib/authWithFallback';
 
 export const Roles = {
     ADMIN: 'admin',
-    TEACHER: 'enseignant', // Assuming "enseignant" or "teacher" based on PRD "Admin, Enseignant"
+    TEACHER: 'prof', // Harmonisé avec le reste de l'application (prof)
 };
 
 /**
  * Checks if the current authenticated user has the specified role.
- * @param {string} role - The role to check against (e.g. 'admin', 'enseignant').
+ * @param {string} role - The role to check against (e.g. 'admin', 'prof').
+ * @param {Request} [request] - Optional request for robust auth
  * @returns {Promise<boolean>} True if the user has the role, false otherwise.
  */
-export const checkRole = async (role) => {
+export const checkRole = async (role, request = null) => {
     try {
         if (process.env.NEXT_PUBLIC_MODE === 'test') {
             const cookieStore = await cookies();
@@ -30,21 +32,36 @@ export const checkRole = async (role) => {
             }
         }
 
-        const { userId, sessionClaims } = await auth();
+        let userId = null;
+        let sessionClaims = null;
+
+        if (request) {
+            // Utiliser la méthode robuste si la requête est fournie
+            const authResult = await authWithFallback(request, 'checkRole');
+            if (authResult.success) {
+                userId = authResult.userId;
+                // Note: authWithFallback doesn't return sessionClaims in its current form, 
+                // but we can fetch them from Clerk if needed or fallback to DB.
+            }
+        } else {
+            // Fallback sur la méthode standard
+            const authData = await auth();
+            userId = authData.userId;
+            sessionClaims = authData.sessionClaims;
+        }
 
         if (!userId) {
             return false;
         }
 
-        // Clerk custom claims often reside in publicMetadata
+        // 1. Tenter via sessionClaims (si disponible)
         const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
 
         if (userRole) {
             return userRole === role;
         }
 
-        // Fallback: If sessionClaims doesn't have the role yet (e.g. before token refresh),
-        // check the database directly.
+        // 2. Fallback DB : Plus lent mais fiable
         await dbConnect();
         const mongoUser = await User.findOne({ clerkId: userId }).select('role');
         if (mongoUser) {

@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../_/models/ai/User';
@@ -45,14 +45,11 @@ async function determineUserRole(email) {
 
 export async function POST(request) {
   try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' }, 
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'POST /api/users/create');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     await dbConnect();
     const body = await request.json();
@@ -101,7 +98,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création de l\'utilisateur' }, 
+      { error: 'Erreur lors de la création de l\'utilisateur' },
       { status: 500 }
     );
   }

@@ -1,18 +1,16 @@
 // API Route pour lister les fichiers dans Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 
 export async function GET(request) {
   try {
     // Vérification de l'authentification
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'GET /api/cloudinary/list');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     // Récupération des paramètres
     const { searchParams } = new URL(request.url);
@@ -45,20 +43,20 @@ export async function GET(request) {
     } else {
       // Si pas de dossier spécifié, utiliser le type d'entité
       let targetFolder = cloudinaryService.folders.documents;
-      
+
       if (entityType) {
         targetFolder = cloudinaryService.folders[
           entityType === 'eleve' ? 'eleves' :
-          entityType === 'enseignant' ? 'enseignants' :
-          entityType === 'classe' ? 'classes' : 'documents'
+            entityType === 'enseignant' ? 'enseignants' :
+              entityType === 'classe' ? 'classes' : 'documents'
         ];
-        
+
         // Si un ID d'entité est fourni, chercher dans le sous-dossier spécifique
         if (entityId) {
           targetFolder = `${targetFolder}/${entityId}`;
         }
       }
-      
+
       result = await cloudinaryService.listFiles(targetFolder, {
         maxResults: maxResults ? parseInt(maxResults) : 30
       });

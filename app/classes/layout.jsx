@@ -1,7 +1,7 @@
 "use client"
 
-// Liste des classes et gestion modale
 import { useContext, useState, useEffect } from 'react';
+import Link from 'next/link';
 import ClasseCard from './ClasseCard';
 import EntityModal from '../components/EntityModal';
 import { AiAdminContext } from '../../stores/ai_adminContext';
@@ -47,11 +47,17 @@ export default function ClassesPage({ children }) {
   */}
 
   return (<>
-    <h2>Liste des classes
+    <h2 className="ecole-admin__dashboardSubTitle">Liste des classes
       <PermissionGate role="admin">
         <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button>
       </PermissionGate>
     </h2>
+
+    <div className="ecole-admin__nav-actions">
+      <Link href="/scheduling" className="ecole-admin__nav-link-item">
+        <span className="icon">📅</span> Accéder au Planning (Schedules)
+      </Link>
+    </div>
 
     {/* Badges de filtrage par année */}
     {Array.isArray(classes) && classes.length > 0 && (

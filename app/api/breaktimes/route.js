@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../lib/authWithFallback';
 import dbConnect from '../lib/dbConnect';
 const BreakTime = require('../_/models/ai/BreakTime');
 
@@ -9,9 +9,9 @@ const BreakTime = require('../_/models/ai/BreakTime');
  */
 export async function GET(request) {
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'GET /api/breaktimes');
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     await dbConnect();
@@ -21,7 +21,7 @@ export async function GET(request) {
     const jour = searchParams.get('jour');
 
     let breaks;
-    
+
     if (jour) {
       // Récupérer les pauses pour un jour spécifique
       breaks = await BreakTime.getBreaksByDay(jour, niveau);
@@ -50,9 +50,9 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ success: false, error: 'Non authentifié' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'POST /api/breaktimes');
+    if (!authResult.success) {
+      return authResult.response;
     }
 
     await dbConnect();

@@ -1,11 +1,16 @@
 // API RESTful pour les enseignants
 import dbConnect from '../../lib/dbConnect';
 import Teacher from '../../_/models/ai/Teacher';
-import { NextResponse } from 'next/server';
 import { checkRole, Roles } from '../../../../utils/roles';
+import { authWithFallback } from '../../lib/authWithFallback';
+import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const authResult = await authWithFallback(request, 'GET /api/school_ai/enseignants');
+    if (!authResult.success) {
+      return authResult.response;
+    }
     await dbConnect();
     const enseignants = await Teacher.find();
     return NextResponse.json(enseignants);
@@ -16,7 +21,7 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();
@@ -49,7 +54,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();
@@ -122,7 +127,7 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();

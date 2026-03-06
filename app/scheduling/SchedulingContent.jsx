@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useUserRole } from '../../stores/useUserRole'
 import PermissionGate from '../components/PermissionGate'
 import ScheduleManager from '../components/ScheduleManager'
@@ -107,6 +108,11 @@ export default function SchedulingContent() {
 
   return (
     <PermissionGate role="admin">
+      <div className="scheduling__top-back-link">
+        <Link href="/classes" className="scheduling__back-btn">
+          <span className="icon">⬅️</span> Retour aux classes
+        </Link>
+      </div>
       <main className="scheduling">
         <header className="scheduling__header">
           <div className="scheduling__header-content">

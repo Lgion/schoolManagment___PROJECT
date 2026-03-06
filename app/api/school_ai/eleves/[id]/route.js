@@ -3,20 +3,18 @@ import dbConnect from '../../../lib/dbConnect';
 import Eleve from '../../../_/models/ai/Eleve';
 import User from '../../../_/models/ai/User';
 import { NextResponse } from 'next/server';
-import { Roles } from '../../../../../utils/roles';
-import { auth } from '@clerk/nextjs/server';
-
+import { checkRole, Roles } from '../../../../../../utils/roles';
+import { authWithFallback } from '../../../lib/authWithFallback';
 export async function PATCH(request, { params }) {
     try {
-        // Single auth() call — pattern Story 1.3
-        const { userId, sessionClaims } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+        const authResult = await authWithFallback(request, 'PATCH /api/school_ai/eleves/[id]');
+        if (!authResult.success) {
+            return authResult.response;
         }
 
-        const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
-        const isAdmin = userRole === Roles.ADMIN;
-        const isTeacher = userRole === Roles.TEACHER;
+        const userId = authResult.userId;
+        const isAdmin = await checkRole(Roles.ADMIN, request);
+        const isTeacher = await checkRole(Roles.TEACHER, request);
 
         if (!isAdmin && !isTeacher) {
             return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });

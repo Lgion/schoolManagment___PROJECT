@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
 import { checkRole, Roles } from '../../../../utils/roles';
+import { authWithFallback } from '../../lib/authWithFallback';
+import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 
 // Construct Gemini instance
@@ -8,9 +9,14 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(request) {
     try {
+        const authResult = await authWithFallback(request, 'POST /api/school_ai/extract-notes');
+        if (!authResult.success) {
+            return authResult.response;
+        }
+
         // 1. Role-Based Access Control (RBAC) - Restrict to Admin/Teacher
-        const isAdmin = await checkRole(Roles.ADMIN);
-        const isTeacher = await checkRole(Roles.TEACHER);
+        const isAdmin = await checkRole(Roles.ADMIN, request);
+        const isTeacher = await checkRole(Roles.TEACHER, request);
 
         if (!isAdmin && !isTeacher) {
             return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });

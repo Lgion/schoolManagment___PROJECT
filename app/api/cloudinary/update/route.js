@@ -1,18 +1,16 @@
 // API Route pour mettre à jour des fichiers dans Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 
 export async function PUT(request) {
   try {
     // Vérification de l'authentification
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Non autorisé' },
-        { status: 401 }
-      );
+    const authResult = await authWithFallback(request, 'PUT /api/cloudinary/update');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
     // Récupération des données
     const body = await request.json();

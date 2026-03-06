@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
 
-export default function ImageScanner({ classeId, onScanComplete, label = "Scanner une classe", className = "" }) {
+export default function ImageScanner({ classeId, onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "" }) {
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -35,6 +35,7 @@ export default function ImageScanner({ classeId, onScanComplete, label = "Scanne
     }, []);
 
     const handleButtonClick = () => {
+        if (disabled) return;
         fileInputRef.current?.click();
     };
 
@@ -135,8 +136,10 @@ export default function ImageScanner({ classeId, onScanComplete, label = "Scanne
                 style={{ display: 'none' }}
             />
             <button
-                className="image-scanner__btn"
+                className={`image-scanner__btn ${disabled ? '--disabled' : ''}`}
                 onClick={handleButtonClick}
+                disabled={disabled}
+                title={title}
             >
                 <span className="icon">📸</span>
                 {label}

@@ -3,19 +3,19 @@ import dbConnect from '../../lib/dbConnect';
 import Classe from '../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
 import { checkRole, Roles } from '../../../../utils/roles';
-
-import { auth } from '@clerk/nextjs/server';
+import { authWithFallback } from '../../lib/authWithFallback';
 import User from '../../_/models/ai/User';
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    const authResult = await authWithFallback(request, 'GET /api/school_ai/classes');
+    if (!authResult.success) {
+      return authResult.response;
     }
+    const userId = authResult.userId;
 
-    const isAdmin = await checkRole(Roles.ADMIN);
-    const isTeacher = await checkRole(Roles.TEACHER);
+    const isAdmin = await checkRole(Roles.ADMIN, request);
+    const isTeacher = await checkRole(Roles.TEACHER, request);
 
     if (!isAdmin && !isTeacher) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
@@ -48,7 +48,7 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();
@@ -74,7 +74,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();
@@ -97,7 +97,7 @@ export async function PUT(request) {
 
 export async function DELETE(request) {
   try {
-    if (!(await checkRole(Roles.ADMIN))) {
+    if (!(await checkRole(Roles.ADMIN, request))) {
       return NextResponse.json({ error: 'Accès refusé (Admin requis)' }, { status: 403 });
     }
     await dbConnect();
