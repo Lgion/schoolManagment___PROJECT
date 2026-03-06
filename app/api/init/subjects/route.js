@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
 const Subject = require('../../_/models/ai/Subject');
+import { MATIERES_SCOLAIRES } from '../../../../utils/matieres';
 
 /**
  * POST /api/init/subjects
@@ -21,118 +22,37 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Matières par défaut pour école primaire française
-    const defaultSubjects = [
-      // Matières générales (toutes classes)
-      {
-        nom: 'Mathématiques',
-        code: 'MATH',
-        couleur: '#3498db',
-        niveaux: false, // Général
-        dureeDefaut: 60
-      },
-      {
-        nom: 'Français',
-        code: 'FRAN',
-        couleur: '#e74c3c',
-        niveaux: false, // Général
-        dureeDefaut: 60
-      },
-      {
-        nom: 'Sciences et Technologie',
-        code: 'SCI',
-        couleur: '#2ecc71',
-        niveaux: false, // Général
-        dureeDefaut: 45
-      },
-      {
-        nom: 'Éducation Physique et Sportive',
-        code: 'EPS',
-        couleur: '#e67e22',
-        niveaux: false, // Général
-        dureeDefaut: 60
-      },
-      {
-        nom: 'Arts Plastiques',
-        code: 'ART',
-        couleur: '#f1c40f',
-        niveaux: false, // Général
-        dureeDefaut: 45
-      },
-      {
-        nom: 'Éducation Musicale',
-        code: 'MUS',
-        couleur: '#8e44ad',
-        niveaux: false, // Général
-        dureeDefaut: 45
-      },
-      {
-        nom: 'Calcul Mental',
-        code: 'CALC',
-        couleur: '#16a085',
-        niveaux: false, // Général
-        dureeDefaut: 15
-      },
-      {
-        nom: 'Étude Dirigée',
-        code: 'ETUD',
-        couleur: '#2c3e50',
-        niveaux: false, // Général
-        dureeDefaut: 60
-      },
-      {
-        nom: 'Enseignement Moral et Civique',
-        code: 'EMC',
-        couleur: '#9b59b6',
-        niveaux: false, // Général
-        dureeDefaut: 30
-      },
-      {
-        nom: 'Récréation',
-        code: 'REC',
-        couleur: '#f39c12',
-        niveaux: false, // Général
-        dureeDefaut: 15
-      },
-      
-      // Matières spécifiques à certains niveaux
-      {
-        nom: 'Histoire-Géographie',
-        code: 'HIST',
-        couleur: '#f39c12',
-        niveaux: ['CE2', 'CM1', 'CM2'], // Spécifique
-        dureeDefaut: 45
-      },
-      {
-        nom: 'Anglais',
-        code: 'ANG',
-        couleur: '#1abc9c',
-        niveaux: ['CE1', 'CE2', 'CM1', 'CM2'], // Spécifique
-        dureeDefaut: 45
-      },
-      {
-        nom: 'Lecture',
-        code: 'LECT',
-        couleur: '#95a5a6',
-        niveaux: ['CP', 'CE1', 'CE2'], // Spécifique
-        dureeDefaut: 30
-      },
-      {
-        nom: 'Écriture',
-        code: 'ECR',
-        couleur: '#7f8c8d',
-        niveaux: ['CP', 'CE1', 'CE2'], // Spécifique
-        dureeDefaut: 30
+    // Matières par défaut créées à partir de MATIERES_SCOLAIRES
+    const defaultSubjects = MATIERES_SCOLAIRES.map((matiere, index) => {
+      // Générer une couleur en fonction de l'index pour avoir des couleurs variées
+      const hue = (index * 137.5) % 360;
+      const couleur = `hsl(${Math.round(hue)}, 70%, 50%)`;
+
+      // Générer un code court (4 1ères lettres en majuscules)
+      let code = matiere.substring(0, 4).toUpperCase();
+      // s'il y a un espace ou tiret, prendre les premières lettres
+      if (matiere.includes(' ') || matiere.includes('-')) {
+        code = matiere.split(/[\s-]/).map(w => w[0]).join('').substring(0, 4).toUpperCase();
       }
-    ];
+
+      return {
+        nom: matiere,
+        code: code,
+        couleur: couleur,
+        niveaux: false, // Général
+        dureeDefaut: 60
+      };
+    });
 
     // Debug : Vérifier le schéma du modèle
-    console.log('🔍 Schéma Subject niveaux:', Subject.schema.paths.niveaux)
+    console.log('🔍 Schéma Subject niveaux:', Subject.schema?.paths?.niveaux)
     console.log('🔍 Premier sujet à créer:', JSON.stringify(defaultSubjects[0], null, 2))
-    
+
     // Créer les matières une par une pour debug
     const createdSubjects = []
+    let hasError = false;
     for (const subjectData of defaultSubjects) {
+      // Create independent block so variables are reissued
       try {
         console.log(`📝 Création de ${subjectData.nom} avec niveaux:`, subjectData.niveaux)
         const subject = new Subject(subjectData)
@@ -141,10 +61,11 @@ export async function POST(request) {
         createdSubjects.push(saved)
         console.log(`✅ ${subjectData.nom} créé avec succès`)
       } catch (err) {
+        hasError = true;
         console.error(`❌ Erreur pour ${subjectData.nom}:`, err.message)
-        throw err
       }
     }
+
 
     return NextResponse.json({
       success: true,
@@ -187,8 +108,8 @@ export async function GET(request) {
           isActive: s.isActive
         }))
       },
-      message: existingCount > 0 
-        ? `Base initialisée avec ${existingCount} matières` 
+      message: existingCount > 0
+        ? `Base initialisée avec ${existingCount} matières`
         : 'Base non initialisée - aucune matière trouvée'
     });
 

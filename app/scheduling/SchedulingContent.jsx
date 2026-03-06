@@ -7,12 +7,13 @@ import PermissionGate from '../components/PermissionGate'
 import ScheduleManager from '../components/ScheduleManager'
 import ScheduleHistory from '../components/ScheduleHistory'
 import ScheduleEditor from '../components/ScheduleEditor'
+import SubjectsPalette from '../components/SubjectsPalette'
 
 export default function SchedulingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { userRole, loading } = useUserRole()
-  
+
   const [currentView, setCurrentView] = useState('manager')
   const [selectedClasseId, setSelectedClasseId] = useState(null)
   const [selectedSchedule, setSelectedSchedule] = useState(null)
@@ -22,11 +23,11 @@ export default function SchedulingContent() {
   useEffect(() => {
     const classeId = searchParams.get('classeId')
     const view = searchParams.get('view') || 'manager'
-    
+
     if (classeId) {
       setSelectedClasseId(classeId)
     }
-    
+
     setCurrentView(view)
   }, [searchParams])
 
@@ -45,11 +46,11 @@ export default function SchedulingContent() {
       const response = await fetch(`/api/school_ai/classes`, {
         credentials: 'include'
       })
-      
+
       if (response.ok) {
         const classes = await response.json()
         const classe = classes.find(c => c._id === classeId)
-        
+
         if (classe) {
           setSelectedClasse(classe)
         } else {
@@ -69,11 +70,11 @@ export default function SchedulingContent() {
   // Gestion de la navigation
   const handleViewChange = (view, options = {}) => {
     setCurrentView(view)
-    
+
     if (options.schedule) {
       setSelectedSchedule(options.schedule)
     }
-    
+
     // Mise à jour de l'URL
     const params = new URLSearchParams(searchParams) // Conserver les params existants
     if (view !== 'manager') {
@@ -81,7 +82,7 @@ export default function SchedulingContent() {
     } else {
       params.delete('view') // Nettoyer l'URL pour la vue par défaut
     }
-    
+
     const newUrl = `/scheduling${params.toString() ? '?' + params.toString() : ''}`
     router.push(newUrl, { scroll: false })
   }
@@ -91,7 +92,7 @@ export default function SchedulingContent() {
     setSelectedClasseId(classeId)
     const params = new URLSearchParams(searchParams)
     params.set('classeId', classeId)
-    
+
     router.push(`/scheduling?${params.toString()}`, { scroll: false })
   }
 
@@ -110,28 +111,28 @@ export default function SchedulingContent() {
         <header className="scheduling__header">
           <div className="scheduling__header-content">
             <h1 className="scheduling__title">
-              📅 {selectedClasse 
+              📅 {selectedClasse
                 ? `Emplois du Temps - ${selectedClasse.niveau} ${selectedClasse.alias} (${selectedClasse.annee})`
                 : 'Gestion des Emplois du Temps'
               }
             </h1>
             <p className="scheduling__subtitle">
-              {selectedClasse 
+              {selectedClasse
                 ? `Gérez les emplois du temps de la classe ${selectedClasse.niveau} ${selectedClasse.alias}`
                 : 'Créez, modifiez et gérez les emplois du temps de vos classes'
               }
             </p>
           </div>
-          
+
           <nav className="scheduling__nav">
-            <button 
+            <button
               className={`scheduling__nav-btn ${currentView === 'manager' ? 'scheduling__nav-btn--active' : ''}`}
               onClick={() => handleViewChange('manager')}
             >
               <span className="scheduling__nav-btn-icon">🏠</span>
               Gestionnaire
             </button>
-            <button 
+            <button
               className={`scheduling__nav-btn ${currentView === 'history' ? 'scheduling__nav-btn--active' : ''}`}
               onClick={() => handleViewChange('history')}
               disabled={!selectedClasseId}
@@ -139,7 +140,7 @@ export default function SchedulingContent() {
               <span className="scheduling__nav-btn-icon">📚</span>
               Historique {selectedClasse?.niveau}-{selectedClasse?.alias}
             </button>
-            <button 
+            <button
               className={`scheduling__nav-btn ${currentView === 'editor' ? 'scheduling__nav-btn--active' : ''}`}
               onClick={() => handleViewChange('editor')}
               disabled={!selectedClasseId}
@@ -147,33 +148,56 @@ export default function SchedulingContent() {
               <span className="scheduling__nav-btn-icon">✏️</span>
               Éditeur {selectedClasse?.niveau}-{selectedClasse?.alias}
             </button>
+            <button
+              className={`scheduling__nav-btn ${currentView === 'subjects' ? 'scheduling__nav-btn--active' : ''}`}
+              onClick={() => handleViewChange('subjects')}
+            >
+              <span className="scheduling__nav-btn-icon">🎨</span>
+              Matières
+            </button>
           </nav>
         </header>
 
         <div className="scheduling__content">
           {currentView === 'manager' && (
-            <ScheduleManager 
-              selectedClasseId={selectedClasseId}
-              onClasseSelect={handleClasseSelect}
-              onViewChange={handleViewChange}
-            />
+            <>
+              <ScheduleManager
+                selectedClasseId={selectedClasseId}
+                onClasseSelect={handleClasseSelect}
+                onViewChange={handleViewChange}
+              />
+              <div className="scheduling__palette-wrapper">
+                <SubjectsPalette />
+              </div>
+            </>
           )}
-          
+
           {currentView === 'history' && selectedClasseId && (
-            <ScheduleHistory 
-              classeId={selectedClasseId}
-              onEditSchedule={(schedule) => handleViewChange('editor', { schedule })}
-              onBackToManager={() => handleViewChange('manager')}
-            />
+            <>
+              <ScheduleHistory
+                classeId={selectedClasseId}
+                onEditSchedule={(schedule) => handleViewChange('editor', { schedule })}
+                onBackToManager={() => handleViewChange('manager')}
+              />
+              <div className="scheduling__palette-wrapper">
+                <SubjectsPalette />
+              </div>
+            </>
           )}
-          
+
           {currentView === 'editor' && selectedClasseId && (
-            <ScheduleEditor 
+            <ScheduleEditor
               classeId={selectedClasseId}
               schedule={selectedSchedule}
               onSave={() => handleViewChange('manager')}
               onCancel={() => handleViewChange('manager')}
             />
+          )}
+
+          {currentView === 'subjects' && (
+            <div className="scheduling__subjects-view">
+              <SubjectsPalette />
+            </div>
           )}
         </div>
       </main>

@@ -29,38 +29,38 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [newManusReason, setNewManusReason] = useState('');
   const ctx = useContext(AiAdminContext);
   const fileInput = useRef();
-  
+
   // État pour la duplication de classe
   const [duplicateYear, setDuplicateYear] = useState('');
   const [duplicating, setDuplicating] = useState(false);
   const [availableYears, setAvailableYears] = useState([]);
-  
+
   // Fonction utilitaire pour convertir timestamp en format YYYY-MM-DD
   const timestampToDateString = (timestamp) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
     return date.toISOString().split('T')[0]; // Format YYYY-MM-DD
   };
-  
+
   // Initialiser le formulaire avec conversion des dates
   const initializeForm = (entityData) => {
     if (!entityData) return {};
-    
+
     const formData = { ...entityData };
-    
+
     // Convertir le timestamp en format date pour l'input
     if (formData.naissance_$_date && typeof formData.naissance_$_date === 'number') {
       formData.naissance_$_date = timestampToDateString(formData.naissance_$_date);
     }
-    
+
     // S'assurer que les coefficients sont toujours initialisés pour les classes
     if (type === 'classe' && !formData.coefficients) {
       formData.coefficients = {};
     }
-    
+
     return formData;
   };
-  
+
   const [form, setForm] = useState(initializeForm(entity));
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -77,27 +77,27 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       // Récupérer toutes les classes existantes
       const res = await fetch('/api/school_ai/classes');
       if (!res.ok) throw new Error('Erreur lors du chargement des classes');
-      
+
       const allClasses = await res.json();
-      
+
       // Générer la plage d'années (±10 ans de l'année courante)
       const currentYear = new Date().getFullYear();
       const years = [];
-      
+
       for (let i = -10; i <= 10; i++) {
         const startYear = currentYear + i;
         const endYear = startYear + 1;
         const yearString = `${startYear}-${endYear}`;
         years.push(yearString);
       }
-      
+
       // Filtrer les années où cette classe existe déjà
       const existingYears = allClasses
         .filter(c => c.niveau === entity.niveau && c.alias === entity.alias)
         .map(c => c.annee);
-      
+
       const available = years.filter(year => !existingYears.includes(year));
-      
+
       console.log('🔍 Debug années disponibles:', {
         classeNiveau: entity.niveau,
         classeAlias: entity.alias,
@@ -105,9 +105,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         existingYears,
         availableYears: available
       });
-      
+
       setAvailableYears(available);
-      
+
     } catch (error) {
       console.error('Erreur lors du chargement des années:', error);
     }
@@ -131,11 +131,11 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     }
 
     const confirmMessage = `Dupliquer la classe ${entity.niveau} ${entity.alias} vers l'année ${duplicateYear} ?\n\nLa nouvelle classe aura les mêmes informations mais aucun élève ni enseignant.`;
-    
+
     if (!confirm(confirmMessage)) return;
 
     setDuplicating(true);
-    
+
     try {
       const res = await fetch(`/api/classes/${entity._id}/duplicate`, {
         method: 'POST',
@@ -153,20 +153,20 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       }
 
       const result = await res.json();
-      
+
       alert(`✅ Classe dupliquée avec succès pour l'année ${duplicateYear} !`);
-      
+
       // Rafraîchir les données
       if (ctx.fetchClasses) {
         ctx.fetchClasses();
       }
-      
+
       // Recharger les années disponibles
       loadAvailableYears();
-      
+
       // Réinitialiser la sélection
       setDuplicateYear('');
-      
+
     } catch (error) {
       console.error('❌ Erreur lors de la duplication:', error);
       alert(`❌ Erreur: ${error.message}`);
@@ -177,15 +177,15 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [showMap, setShowMap] = useState(false);
-  
+
   // États pour les matières dynamiques depuis MongoDB (utilisé par CoefficientsManager et CompositionsBlock)
   const [dynamicSubjects, setDynamicSubjects] = useState([]);
   const [subjectsLoaded, setSubjectsLoaded] = useState(false);
-  
+
   // États pour les coefficients de classe
   const [classCoefficients, setClassCoefficients] = useState({});
   const [classCoefficientsLoaded, setClassCoefficientsLoaded] = useState(false);
-  
+
   // États pour la capture caméra
   const [showCamera, setShowCamera] = useState(false);
 
@@ -236,12 +236,12 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     }
   }, [type, entity])
   const [selectedDocuments, setSelectedDocuments] = useState([]);
-  
+
   // Chargement des matières avec priorité localStorage (selon règles projet)
   const loadSubjectsForEntityModal = async () => {
     try {
       console.log('🔄 [EntityModal] Chargement des matières - priorité localStorage...');
-      
+
       // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
       const localStorageSubjects = localStorage.getItem('app_subjects');
       if (localStorageSubjects) {
@@ -257,73 +257,73 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           console.warn('⚠️ [EntityModal] Erreur parsing localStorage subjects:', parseError);
         }
       }
-      
+
       console.log('� [EntityModal] Pas de matières dans localStorage, fallback MongoDB...');
-      
+
       // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
       const response = await fetch('/api/subjects', {
         credentials: 'include'
       });
       console.log('📡 [EntityModal] Réponse API subjects:', response.status);
-      
+
       const data = await response.json();
       console.log('📊 [EntityModal] Données matières reçues:', data);
-      
+
       if (data.success && data.data) {
         console.log('✅ [EntityModal] Matières MongoDB chargées:', data.data.length);
-        
+
         // Convertir la structure MongoDB en format utilisable
         // IMPORTANT: Trier par ordre de création pour maintenir la cohérence avec les indices
         const sortedData = data.data
           .filter(subject => subject.isActive)
           .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Tri par date de création
-        
+
         const subjects = sortedData.map(subject => subject.nom);
-        
+
         // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
         localStorage.setItem('app_subjects', JSON.stringify(subjects));
         console.log('💾 [EntityModal] Matières sauvegardées dans localStorage');
-        
+
         setDynamicSubjects(subjects);
         setSubjectsLoaded(true);
-        
-        console.log('✅ [EntityModal] Matières configurées (triées par date):', { 
-          subjects, 
+
+        console.log('✅ [EntityModal] Matières configurées (triées par date):', {
+          subjects,
           first4: subjects.slice(0, 4)
         });
       } else {
-        console.log('⚠️ [EntityModal] Pas de données MongoDB, utilisation du fallback hardcodé');
-        // Sauvegarder le fallback hardcodé dans localStorage
-        localStorage.setItem('app_subjects', JSON.stringify(MATIERES_SCOLAIRES));
-        setDynamicSubjects(MATIERES_SCOLAIRES);
+        console.log('⚠️ [EntityModal] Pas de données MongoDB, aucun fallback');
+        // Sauvegarder liste vide dans localStorage
+        localStorage.setItem('app_subjects', JSON.stringify([]));
+        setDynamicSubjects([]);
         setSubjectsLoaded(true);
       }
     } catch (error) {
       console.error('❌ [EntityModal] Erreur lors du chargement des matières:', error);
-      // En cas d'erreur, utiliser le fallback hardcodé et le sauvegarder
-      localStorage.setItem('app_subjects', JSON.stringify(MATIERES_SCOLAIRES));
-      setDynamicSubjects(MATIERES_SCOLAIRES);
+      // En cas d'erreur, sauvegarder liste vide
+      localStorage.setItem('app_subjects', JSON.stringify([]));
+      setDynamicSubjects([]);
       setSubjectsLoaded(true);
     }
   };
-  
+
   // Charger les matières depuis MongoDB au montage du composant
   useEffect(() => {
     loadSubjectsForEntityModal();
   }, []);
-  
+
   // Charger les coefficients de classe quand l'élève a une classe assignée
   useEffect(() => {
     if (type === 'eleve' && form.current_classe) {
       loadClassCoefficients(form.current_classe);
     }
   }, [type, form.current_classe]);
-  
+
   // Chargement des coefficients de classe avec priorité localStorage (selon règles projet)
   const loadClassCoefficients = async (classeId) => {
     try {
       console.log('🎓 [EntityModal] Chargement des coefficients de classe - priorité localStorage...', classeId);
-      
+
       // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
       const localStorageKey = `app_class_coefficients_${classeId}`;
       const localStorageCoefficients = localStorage.getItem(localStorageKey);
@@ -340,25 +340,25 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           console.warn('⚠️ [EntityModal] Erreur parsing localStorage coefficients:', parseError);
         }
       }
-      
+
       console.log('📡 [EntityModal] Pas de coefficients dans localStorage, fallback MongoDB...');
-      
+
       // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
       const response = await fetch(`/api/classes/${classeId}`, {
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('📊 [EntityModal] Données classe reçues:', data);
-        
+
         if (data.success && data.data && data.data.coefficients) {
           console.log('✅ [EntityModal] Coefficients MongoDB chargés:', data.data.coefficients);
-          
+
           // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
           localStorage.setItem(localStorageKey, JSON.stringify(data.data.coefficients));
           console.log('💾 [EntityModal] Coefficients sauvegardés dans localStorage');
-          
+
           setClassCoefficients(data.data.coefficients);
         } else {
           console.log('⚠️ [EntityModal] Pas de coefficients configurés pour cette classe');
@@ -371,29 +371,29 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         // 3. FALLBACK FINAL : Utiliser coefficients par défaut et sauvegarder
         const defaultCoefficients = {};
         const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
-        
+
         // Créer des coefficients par défaut pour les 4 premières matières
         for (let i = 0; i < 4; i++) {
           defaultCoefficients[i.toString()] = defaultCoeff;
         }
-        
+
         localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
         console.log('💾 [EntityModal] Coefficients par défaut sauvegardés dans localStorage');
         setClassCoefficients(defaultCoefficients);
       }
-      
+
       setClassCoefficientsLoaded(true);
     } catch (error) {
       console.error('❌ [EntityModal] Erreur lors du chargement des coefficients de classe:', error);
-      
+
       // En cas d'erreur, utiliser coefficients par défaut et sauvegarder
       const defaultCoefficients = {};
       const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
-      
+
       for (let i = 0; i < 4; i++) {
         defaultCoefficients[i.toString()] = defaultCoeff;
       }
-      
+
       const localStorageKey = `app_class_coefficients_${classeId}`;
       localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
       setClassCoefficients(defaultCoefficients);
@@ -433,10 +433,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(form);
-    
+
     // Activer le loading spinner dès le début de la soumission
     setUploading(true);
-    
+
     let newForm = { ...form };
     // alert(type)
     // Si un fichier a été sélectionné, on l'upload maintenant
@@ -475,33 +475,33 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       console.log('🎉 UPLOAD RESULT - cloudinaryResults:', uploadRes.cloudinaryResults);
       console.log('🎉 UPLOAD RESULT - success:', uploadRes.success);
       const { paths, error, cloudinaryResults, success } = uploadRes;
-      
+
       setUploading(false);
-      
+
       if (error || !paths) {
         setError("Erreur lors de l'upload du fichier : " + (error || 'aucun chemin de fichier retourné'));
         return;
       }
-      
+
       // 🚀 NOUVEAU : Si upload Cloudinary réussi, ajouter l'objet cloudinary
       console.log('🔍 DEBUG EntityModal - uploadRes:', uploadRes);
       console.log('🔍 DEBUG EntityModal - success:', success);
       console.log('🔍 DEBUG EntityModal - cloudinaryResults:', cloudinaryResults);
-      
+
       if (success && cloudinaryResults && cloudinaryResults.length > 0) {
         console.log('🔍 DEBUG EntityModal - cloudinaryResults[0]:', cloudinaryResults[0]);
         console.log('🔍 DEBUG EntityModal - cloudinaryResults length:', cloudinaryResults.length);
         console.log('🔍 DEBUG EntityModal - cloudinaryResults full:', JSON.stringify(cloudinaryResults, null, 2));
-        
+
         const cloudinaryData = cloudinaryResults[0]; // Premier fichier uploadé
         console.log('🔍 DEBUG EntityModal - cloudinaryData:', cloudinaryData);
-        
+
         // Vérifier que les données Cloudinary sont valides
         if (cloudinaryData && cloudinaryData.url && typeof cloudinaryData.url === 'string') {
           // FORCER le remplacement complet de l'objet cloudinary
           // D'abord supprimer l'ancien objet
           delete newForm.cloudinary;
-          
+
           // Puis créer le nouvel objet cloudinary complet
           newForm.cloudinary = {
             url: cloudinaryData.url,
@@ -511,9 +511,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             large: cloudinaryData.url.replace('/upload/', '/upload/c_scale,w_800,f_auto,q_auto/'),
             migratedAt: new Date()
           };
-          
+
           console.log('🔄 Ancien objet cloudinary supprimé et remplacé');
-          
+
           console.log('☁️ Objet Cloudinary ajouté:', newForm.cloudinary);
         } else {
           console.warn('⚠️ Données Cloudinary invalides:', cloudinaryData);
@@ -523,9 +523,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         // Filtrer les paths valides avant de chercher
         const validPaths = paths.filter(p => p && typeof p === 'string');
         newForm.photo = validPaths.find(p => p.endsWith('photo.webp'));
-        
+
         console.log('📁 Paths classe traités:', { paths, validPaths, photo: newForm.photo });
-        
+
         uploadPayload.annee = form.annee;
         uploadPayload.niveau = form.niveau;
         uploadPayload.alias = form.alias;
@@ -534,14 +534,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         // Filtrer les paths valides avant de chercher
         const validPaths = paths.filter(p => p && typeof p === 'string');
         // Accepter tous les formats d'image, pas seulement .webp
-        newForm.photo_$_file = validPaths.find(p => 
-          p.includes('photo') || 
+        newForm.photo_$_file = validPaths.find(p =>
+          p.includes('photo') ||
           p.match(/\.(jpg|jpeg|png|webp|gif)$/i) ||
           validPaths.length === 1 // Si un seul fichier, c'est probablement la photo
         ) || validPaths[0]; // Fallback vers le premier fichier
-        
+
         newForm.documents = validPaths;
-        
+
         console.log('📁 Paths traités:', { paths, validPaths, photo: newForm.photo_$_file });
       }
     }
@@ -615,24 +615,24 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         setUploading(false);
         return setError('Niveau et alias obligatoires.');
       }
-      
+
       // Si aucune photo personnalisée n'a été uploadée (utilise encore l'image par défaut)
-      if (!newForm.photo || newForm.photo === '/school/classe.webp'|| newForm.photo === '/school/prof.webp') {
+      if (!newForm.photo || newForm.photo === '/school/classe.webp' || newForm.photo === '/school/prof.webp') {
         console.log('📁 Utilisation de l\'image par défaut pour la classe...');
         setUploading(true);
-        
+
         try {
           // Charger l'image par défaut depuis /school/classe.webp
           const defaultImagePath = type === 'enseignant' ? '/school/prof.webp' : '/school/classe.webp';
           console.log('🖼️ Chargement de l\'image par défaut:', defaultImagePath);
-          
+
           // Télécharger l'image par défaut et la convertir en Blob
           const response = await fetch(defaultImagePath);
           if (!response.ok) throw new Error('Image par défaut introuvable');
-          
+
           const blob = await response.blob();
           const file = new File([blob], 'photo.webp', { type: 'image/webp' });
-          
+
           // Uploader l'image par défaut vers le dossier de la classe
           const uploadPayload = {
             file: file,
@@ -642,20 +642,20 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             niveau: newForm.niveau,
             alias: newForm.alias
           };
-          
+
           const uploadRes = await ctx.uploadFile(uploadPayload);
           console.log('📤 Résultat copie image par défaut:', uploadRes);
-          
+
           const { paths, error } = uploadRes;
-          
+
           if (error || !paths) {
             throw new Error(error || 'Aucun chemin de fichier retourné');
           }
-          
+
           // Assigner le chemin de la photo copiée
           newForm.photo = paths.find(p => p.endsWith('photo.webp'));
           console.log('✅ Image par défaut copiée:', newForm.photo);
-          
+
         } catch (error) {
           console.error('❌ Erreur lors de la copie de l\'image par défaut:', error);
           setError('Erreur lors de la copie de l\'image par défaut: ' + error.message);
@@ -665,13 +665,13 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           setUploading(false);
         }
       }
-      
+
       setError('');
       console.log('DEBUG SUBMIT CLASSE - Après traitement:', newForm);
-      
+
       // Sauvegarder la classe d'abord
       const savedClasse = await ctx.saveClasse(newForm);
-      
+
       // Ensuite, sauvegarder les coefficients si configurés
       console.log('🔍 [EntityModal] Vérification des coefficients à sauvegarder:', {
         hasCoefficients: !!form.coefficients,
@@ -679,10 +679,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         coefficientsKeys: form.coefficients ? Object.keys(form.coefficients) : 'N/A',
         coefficientsContent: form.coefficients
       });
-      
+
       if (form.coefficients && Object.keys(form.coefficients).length > 0) {
         console.log('💾 [EntityModal] Sauvegarde des coefficients de classe:', form.coefficients);
-        
+
         try {
           const classeId = entity?._id || savedClasse?._id || savedClasse?.data?._id;
           if (classeId) {
@@ -696,11 +696,11 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 coefficients: form.coefficients
               })
             });
-            
+
             if (response.ok) {
               const result = await response.json();
               console.log('✅ [EntityModal] Coefficients sauvegardés avec succès:', result);
-              
+
               // Mettre à jour le localStorage aussi
               const localStorageKey = `app_class_coefficients_${classeId}`;
               localStorage.setItem(localStorageKey, JSON.stringify(form.coefficients));
@@ -716,7 +716,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         }
       }
     }
-    
+
     // Désactiver le loading spinner à la fin
     setUploading(false);
     onClose();
@@ -738,7 +738,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
             {type === 'enseignant' && (entity ? 'Modifier l\'enseignant' : 'Ajouter un enseignant')}
             {type === 'classe' && (entity ? 'Modifier la classe' : 'Ajouter une classe')}
           </h2>
-          
+
           {/* Contrôles du header pour les élèves */}
           {type === 'eleve' && (
             <div className="modal__headerControls">
@@ -750,7 +750,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 {(() => {
                   // Utilise la même logique que CompositionsBlock
                   const { years, currentYearStart } = generateSchoolYears(entity?.compositions);
-                  
+
                   return years.map(y => {
                     const start = parseInt(y.split('-')[0], 10);
                     let color = '';
@@ -763,7 +763,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               </select>
             </div>
           )}
-          
+
           {/* Contrôles du header pour les classes - Duplication */}
           {type === 'classe' && entity && (
             <div className="modal__headerControls">
@@ -794,26 +794,26 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               </div>
             </div>
           )}
-          
+
           <button type="button" className="modal__closeBtn" onClick={onClose} aria-label="Fermer">
             ✕
           </button>
         </header>
-        
+
         {(uploading || (typeof window !== 'undefined' && ctx && ctx.showModal && uploading)) && (
           <div className="modal__loadingOverlay">
             <div className="modal__loadingSpinner"></div>
             <span>Enregistrement en cours...</span>
           </div>
         )}
-        
+
         <div className="modal__body">
           {error && (
             <div className="modal__errorMessage">
               {error}
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} id="modalPersonForm" className="modal__form">
 
 
@@ -822,633 +822,633 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
 
 
-          
-          {type === 'eleve' && <>
-            <div className="modal__fieldGroup modal__fieldGroup--grid">
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-nom" className="modal__label">Nom</label>
-                <input 
-                  id="input-nom" 
-                  name="nom" 
-                  value={form.nom || ''} 
-                  onChange={handleChange} 
-                  placeholder="Nom de famille" 
-                  className="modal__input"
-                  required 
-                />
-              </div>
 
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-prenoms" className="modal__label">Prénoms</label>
-                <input 
-                  id="input-prenoms" 
-                  name="prenoms" 
-                  value={Array.isArray(form.prenoms) ? form.prenoms.join(',') : form.prenoms || ''} 
-                  onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} 
-                  placeholder="Prénoms (séparés par des virgules)" 
-                  className="modal__input"
-                  required 
-                />
-              </div>
-            </div>
-            
-            <div className="modal__fieldGroup modal__fieldGroup--grid">
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-sexe" className="modal__label">Sexe</label>
-                <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} className="modal__select" required>
-                  <option value="">Sélectionnez le sexe</option>
-                  <option value="M">Masculin</option>
-                  <option value="F">Féminin</option>
-                </select>
-              </div>
-
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-naissance" className="modal__label">Date de naissance</label>
-                <input 
-                  id="input-naissance" 
-                  type="date" 
-                  name="naissance_$_date" 
-                  value={form.naissance_$_date || ''} 
-                  onChange={handleChange} 
-                  className="modal__input"
-                  required 
-                />
-              </div>
-            </div>
-
-            <label htmlFor="input-adresse">Adresse (facultatif): </label>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <input
-                id="input-adresse"
-                name="adresse_$_map"
-                value={form.adresse_$_map}
-                onChange={handleChange}
-                placeholder="Adresse"
-                required
-                style={{ flex: 1 }}
-              />
-              <button type="button" onClick={() => setShowMap(true)} style={{ marginLeft: 8 }}>
-                📍
-              </button>
-            </div>
-            {showMap && (
-              <div style={{ margin: '10px 0' }}>
-                <Gmap
-                  // Pass initial center based on current state (which might be from datas)
-                  // initialCenter={{ lat: parseFloat(latitude) || 5.36, lng: parseFloat(longitude) || -4.00 }}
-                  onCoordinatesClick={handleMapClick} // Pass the callback function
-                />
-                <button type="button" onClick={() => setShowMap(false)}>Fermer la carte</button>
-              </div>
-            )}
-            <Parent form={form} setForm={setForm} />
-            {console.log(ctx.classes)}
-            <label htmlFor="input-classe">Classe actuelle</label>
-            <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} required>
-              <option value="">Sélectionnez une classe</option>
-              {ctx.classes && (() => {
-                // Logique dynamique : filtrer les classes de l'année courante et suivante
-                const currentDate = new Date();
-                const currentMonth = currentDate.getMonth(); // 0-11
-                const currentYear = currentDate.getFullYear();
-                
-                // Déterminer l'année scolaire courante (septembre à août)
-                const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
-                
-                // Générer l'année scolaire courante et suivante
-                const relevantSchoolYears = [
-                  `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
-                  `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
-                ];
-                
-                // Filtrer les classes par années pertinentes
-                let filteredClasses = ctx.classes.filter(classe => relevantSchoolYears.includes(classe.annee));
-                
-                // Si on édite un élève et que sa classe actuelle n'est pas dans la liste, l'ajouter
-                if (entity && form.current_classe) {
-                  const currentClasseExists = filteredClasses.some(classe => classe._id === form.current_classe);
-                  if (!currentClasseExists) {
-                    const currentClasse = ctx.classes.find(classe => classe._id === form.current_classe);
-                    if (currentClasse) {
-                      filteredClasses = [currentClasse, ...filteredClasses];
-                    }
-                  }
-                }
-                
-                return filteredClasses
-                  .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
-                  .map(classe => (
-                    <option key={classe._id} value={classe._id}>
-                      {classe.niveau} {classe.alias} ({classe.annee})
-                      {entity && form.current_classe === classe._id ? ' (Actuelle)' : ''}
-                    </option>
-                  ));
-              })()}
-            </select>
-
-            <div className="modal__fieldGroup">
-              <label className="modal__label">Photo de l'élève</label>
-              
-              <div className="modal__photo-controls">
-                <input 
-                  id="input-photo" 
-                  type="file" 
-                  ref={fileInput} 
-                  accept="image/*" 
-                  required={!form.photo_$_file && !previewUrl} 
-                  onChange={handleFile}
-                  className="modal__input modal__input--file"
-                />
-                
-                <button 
-                  type="button"
-                  onClick={() => setShowCamera(true)}
-                  className="modal__camera-btn"
-                  title="Prendre une photo avec la caméra"
-                >
-                  <span className="modal__camera-btn-icon">📷</span>
-                  <span className="modal__camera-btn-text">Caméra</span>
-                </button>
-              </div>
-              
-              {(previewUrl || form.photo_$_file) && (
-                <div className="modal__photo-preview">
-                  <img 
-                    src={previewUrl || form.photo_$_file || "/school/classe.webp"} 
-                    alt="Photo de l'élève" 
-                    className="modal__preview-image"
+            {type === 'eleve' && <>
+              <div className="modal__fieldGroup modal__fieldGroup--grid">
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-nom" className="modal__label">Nom</label>
+                  <input
+                    id="input-nom"
+                    name="nom"
+                    value={form.nom || ''}
+                    onChange={handleChange}
+                    placeholder="Nom de famille"
+                    className="modal__input"
+                    required
                   />
-                  {previewUrl && (
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setPreviewUrl('');
-                        setSelectedFile(null);
-                        if (fileInput.current) fileInput.current.value = '';
-                      }}
-                      className="modal__remove-photo-btn"
-                      title="Supprimer la photo"
-                    >
-                      ✕
-                    </button>
-                  )}
                 </div>
-              )}
-            </div>
 
-            <IsInterneBlock form={form} setForm={setForm} />
-            <AbsencesBlock absences={form.absences} setForm={setForm} />
-            <BonusBlock bonus={form.bonus} setForm={setForm} />
-            <ManusBlock manus={form.manus} setForm={setForm} />
-            <CommentairesBlock
-              commentaires={Array.isArray(form.commentaires) ? form.commentaires : []}
-              setForm={setForm}
-            />
-            <input type="hidden" name="commentaires" value={JSON.stringify(Array.isArray(form.commentaires) ? form.commentaires : [])} />
-            <DocumentsBlock form={form} setForm={setForm} selectedDocuments={selectedDocuments} setSelectedDocuments={setSelectedDocuments} />
-
-            <label>Notes</label>
-            {/* <AddNoteForm
-              notes={form.notes || {}}
-              onAdd={noteObj => setForm(f => ({ ...f, notes: { ...f.notes, ...noteObj } }))}
-              onRemove={timestamp => setForm(f => { const newNotes = { ...f.notes }; delete newNotes[timestamp]; return { ...f, notes: newNotes }; })}
-            /> */}
-
-            <label>Compositions (JSON)</label>
-            {/* Bloc de gestion des compositions par trimestre */}
-            <CompositionsBlock
-              compositions={form.compositions || {}}
-              schoolYear={schoolYear}
-              onChange={newCompo => setForm(f => ({ ...f, compositions: newCompo }))}
-              studentData={form}
-              dynamicSubjects={dynamicSubjects}
-              subjectsLoaded={subjectsLoaded}
-              classCoefficients={classCoefficients}
-              classes={classes}
-            />
-            <textarea readOnly name="compositions" value={form.compositions ? JSON.stringify(form.compositions) : ''}
-            // onChange={e => setForm(f => ({ ...f, compositions: e.target.value ? JSON.parse(e.target.value) : {} }))} 
-            />
-            {/* <label>Moyenne trimetriel (JSON)
-              <textarea name="moyenne_trimetriel" value={form.moyenne_trimetriel ? JSON.stringify(form.moyenne_trimetriel) : ''} onChange={e => setForm(f => ({ ...f, moyenne_trimetriel: e.target.value ? JSON.parse(e.target.value) : {} }))} />
-            </label> */}
-            <label>Scolarity fees (JSON)</label>
-            <ScolarityFeesBlock
-              fees={form.scolarity_fees_$_checkbox?.[schoolYear] || {}}
-              onChange={newFees => setForm(f => ({
-                ...f,
-                scolarity_fees_$_checkbox: {
-                  ...f.scolarity_fees_$_checkbox,
-                  [schoolYear]: newFees
-                }
-              }))}
-              schoolYear={schoolYear}
-              isInterne={form.isInterne || false}
-            />
-            <textarea readOnly name="scolarity_fees_$_checkbox_" value={form.scolarity_fees_$_checkbox ? JSON.stringify(form.scolarity_fees_$_checkbox) : ''}
-            // onChange={e => setForm(f => ({ ...f, scolarity_fees_$_checkbox: e.target.value ? JSON.parse(e.target.value) : {} }))} 
-            />
-            <label>Bolobi class history (JSON)
-            </label>
-            <SchoolHistoryBlock
-              schoolHistory={(() => {
-                const now = new Date();
-                const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
-                const currentYearStr = `${currentYearStart}-${currentYearStart + 1}`;
-                return {
-                  [currentYearStr]: "Martin de Porrès de Bolobi",
-                  ...(form.school_history || {})
-                };
-              })()}
-              onChange={newHistory => setForm(f => ({ ...f, school_history: newHistory }))}
-            />
-            <textarea readOnly name="school_history_" value={form.school_history ? JSON.stringify(form.school_history) : ''}
-            // onChange={e => setForm(f => ({ ...f, bolobi_class_history_$_ref_µ_classes: e.target.value ? JSON.parse(e.target.value) : {} }))} 
-            />
-          </>}
-
-
-
-
-
-
-
-          {type === 'enseignant' && <>
-            <div className="modal__fieldGroup modal__fieldGroup--grid">
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-nom" className="modal__label">Nom: </label>
-                <input 
-                  id="input-nom" 
-                  name="nom" 
-                  value={form.nom || ''} 
-                  onChange={handleChange} 
-                  placeholder="Nom" 
-                  className="modal__input"
-                  required 
-                />
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-prenoms" className="modal__label">Prénoms</label>
+                  <input
+                    id="input-prenoms"
+                    name="prenoms"
+                    value={Array.isArray(form.prenoms) ? form.prenoms.join(',') : form.prenoms || ''}
+                    onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))}
+                    placeholder="Prénoms (séparés par des virgules)"
+                    className="modal__input"
+                    required
+                  />
+                </div>
               </div>
-              
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-prenoms" className="modal__label">Prénoms: </label>
-                <input 
-                  id="input-prenoms"
-                  name="prenoms" 
-                  value={Array.isArray(form.prenoms) ? form.prenoms.join(', ') : (form.prenoms || '')} 
-                  onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))} 
-                  placeholder="Prénoms (séparés par des virgules)" 
-                  className="modal__input"
-                  required 
-                />
+
+              <div className="modal__fieldGroup modal__fieldGroup--grid">
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-sexe" className="modal__label">Sexe</label>
+                  <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} className="modal__select" required>
+                    <option value="">Sélectionnez le sexe</option>
+                    <option value="M">Masculin</option>
+                    <option value="F">Féminin</option>
+                  </select>
+                </div>
+
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-naissance" className="modal__label">Date de naissance</label>
+                  <input
+                    id="input-naissance"
+                    type="date"
+                    name="naissance_$_date"
+                    value={form.naissance_$_date || ''}
+                    onChange={handleChange}
+                    className="modal__input"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="modal__fieldGroup">
-              <label htmlFor="input-sexe" className="modal__label">Sexe: </label>
-              <select 
-                id="input-sexe" 
-                name="sexe" 
-                value={form.sexe || ''} 
-                onChange={handleChange} 
-                className="modal__select"
-                required
-              >
-                <option value="">Sélectionnez le sexe</option>
-                <option value="M">Masculin</option>
-                <option value="F">Féminin</option>
-              </select>
-            </div>
-            <div className="modal__fieldGroup">
-              <label htmlFor="input-classes" className="modal__label">Classes assignées: </label>
-              <select 
-                id="input-classes" 
-                name="current_classes" 
-                multiple 
-                value={Array.isArray(form.current_classes) ? form.current_classes : []} 
-                onChange={e => {
-                  const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
-                  console.log('🔍 DEBUG SELECT - Classes sélectionnées:', selectedValues);
-                  console.log('🔍 DEBUG SELECT - Type:', typeof selectedValues);
-                  console.log('🔍 DEBUG SELECT - Est array?', Array.isArray(selectedValues));
-                  setForm(f => ({ ...f, current_classes: selectedValues }));
-                }} 
-                className="modal__select"
-                required
-              >
-              {ctx.classes && (() => {
-                // Logique dynamique : filtrer les classes des 2 dernières années scolaires
-                const currentDate = new Date();
-                const currentMonth = currentDate.getMonth(); // 0-11
-                const currentYear = currentDate.getFullYear();
-                
-                // Déterminer l'année scolaire courante (septembre à août)
-                const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
-                
-                // Générer l'année scolaire courante et suivante
-                const relevantSchoolYears = [
-                  `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
-                  `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
-                ];
-                
-                return ctx.classes
-                  .filter(classe => relevantSchoolYears.includes(classe.annee))
-                  .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
-                  .map(classe => (
-                    <option key={classe._id} value={classe._id}>
-                      {classe.niveau} {classe.alias} ({classe.annee})
-                    </option>
-                  ));
-              })()}
-              </select>
-            </div>
-
-            <div className="modal__fieldGroup">
-              <label htmlFor="input-naissance" className="modal__label">Date de naissance: </label>
-              <input 
-                id="input-naissance" 
-                type="date" 
-                name="naissance_$_date" 
-                value={form.naissance_$_date || ''} 
-                onChange={handleChange} 
-                className="modal__input"
-                required 
-              />
-            </div>
-
-            <div className="modal__fieldGroup">
-              <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif): </label>
-              <div className="modal__fieldGroup modal__fieldGroup--row">
+              <label htmlFor="input-adresse">Adresse (facultatif): </label>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <input
                   id="input-adresse"
                   name="adresse_$_map"
                   value={form.adresse_$_map}
                   onChange={handleChange}
                   placeholder="Adresse"
-                  className="modal__input"
                   required
+                  style={{ flex: 1 }}
                 />
-                <button 
-                  type="button" 
-                  onClick={() => setShowMap(true)} 
-                  className="modal__btn modal__btn--secondary input-adresseBtn"
-                  title="Ouvrir la carte"
-                >
+                <button type="button" onClick={() => setShowMap(true)} style={{ marginLeft: 8 }}>
                   📍
                 </button>
               </div>
-            </div>
-            {showMap && (
-              <div className="modal__map-container">
-                <Gmap
-                  onCoordinatesClick={handleMapClick}
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowMap(false)}
-                  className="modal__btn modal__btn--secondary"
-                >
-                  Fermer la carte
-                </button>
-              </div>
-            )}
-
-            <div className="modal__fieldGroup modal__fieldGroup--grid">
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-tel" className="modal__label">N° Téléphone: </label>
-                <input 
-                  id="input-tel" 
-                  name="phone_$_tel" 
-                  value={form.phone_$_tel || ''} 
-                  onChange={handleChange} 
-                  placeholder="Téléphone" 
-                  className="modal__input"
-                  required 
-                />
-              </div>
-              
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-email" className="modal__label">Email: </label>
-                <input 
-                  id="input-email" 
-                  name="email_$_email" 
-                  value={form.email_$_email || ''} 
-                  onChange={handleChange} 
-                  placeholder="Email" 
-                  className="modal__input"
-                  type="email"
-                  required 
-                />
-              </div>
-            </div>
-            <div className="modal__fieldGroup">
-              <label className="modal__label">Photo de l'enseignant: </label>
-              
-              <div className="modal__photo-controls">
-                <input 
-                  id="input-photo" 
-                  type="file" 
-                  ref={fileInput} 
-                  accept="image/*" 
-                  required={!form.photo_$_file && !previewUrl} 
-                  onChange={handleFile}
-                  className="modal__input modal__input--file"
-                />
-                
-                <button 
-                  type="button"
-                  onClick={() => setShowCamera(true)}
-                  className="modal__camera-btn"
-                  title="Prendre une photo avec la caméra"
-                >
-                  <span className="modal__camera-btn-icon">📷</span>
-                  <span className="modal__camera-btn-text">Caméra</span>
-                </button>
-              </div>
-              
-              {(previewUrl || form.photo_$_file) && (
-                <div className="modal__photo-preview">
-                  <img 
-                    src={previewUrl || form.photo_$_file || "/school/prof.webp"} 
-                    alt="Photo de l'enseignant" 
-                    className="modal__preview-image"
+              {showMap && (
+                <div style={{ margin: '10px 0' }}>
+                  <Gmap
+                    // Pass initial center based on current state (which might be from datas)
+                    // initialCenter={{ lat: parseFloat(latitude) || 5.36, lng: parseFloat(longitude) || -4.00 }}
+                    onCoordinatesClick={handleMapClick} // Pass the callback function
                   />
-                  {previewUrl && (
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setPreviewUrl('');
-                        setSelectedFile(null);
-                        if (fileInput.current) fileInput.current.value = '';
-                      }}
-                      className="modal__remove-photo-btn"
-                      title="Supprimer la photo"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <button type="button" onClick={() => setShowMap(false)}>Fermer la carte</button>
                 </div>
               )}
-            </div>
+              <Parent form={form} setForm={setForm} />
+              {console.log(ctx.classes)}
+              <label htmlFor="input-classe">Classe actuelle</label>
+              <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} required>
+                <option value="">Sélectionnez une classe</option>
+                {ctx.classes && (() => {
+                  // Logique dynamique : filtrer les classes de l'année courante et suivante
+                  const currentDate = new Date();
+                  const currentMonth = currentDate.getMonth(); // 0-11
+                  const currentYear = currentDate.getFullYear();
 
-          </>}
+                  // Déterminer l'année scolaire courante (septembre à août)
+                  const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
 
+                  // Générer l'année scolaire courante et suivante
+                  const relevantSchoolYears = [
+                    `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
+                    `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
+                  ];
 
+                  // Filtrer les classes par années pertinentes
+                  let filteredClasses = ctx.classes.filter(classe => relevantSchoolYears.includes(classe.annee));
 
-
-
-
-
-
-
-          {type === 'classe' && <>
-            <div className="modal__fieldGroup">
-              <label htmlFor="input-annee" className="modal__label">Année scolaire</label>
-              <select 
-                id="input-annee" 
-                name="annee" 
-                value={form.annee || ''} 
-                onChange={handleChange} 
-                className="modal__select"
-                required
-              >
-                <option value="">Sélectionnez l'année scolaire</option>
-                {(() => {
-                  const currentYear = new Date().getFullYear()
-                  const currentMonth = new Date().getMonth() + 1
-                  // Si nous sommes avant juillet, l'année scolaire actuelle a commencé l'année précédente
-                  const schoolYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
-                  const years = []
-                  // Générer 5 années (2 précédentes, actuelle, 2 suivantes)
-                  for (let i = -2; i <= 2; i++) {
-                    const startYear = schoolYearStart + i
-                    const endYear = startYear + 1
-                    years.push(`${startYear}-${endYear}`)
+                  // Si on édite un élève et que sa classe actuelle n'est pas dans la liste, l'ajouter
+                  if (entity && form.current_classe) {
+                    const currentClasseExists = filteredClasses.some(classe => classe._id === form.current_classe);
+                    if (!currentClasseExists) {
+                      const currentClasse = ctx.classes.find(classe => classe._id === form.current_classe);
+                      if (currentClasse) {
+                        filteredClasses = [currentClasse, ...filteredClasses];
+                      }
+                    }
                   }
-                  return years.map(year => (
-                    <option key={year} value={year}>{year}</option>
-                  ))
+
+                  return filteredClasses
+                    .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
+                    .map(classe => (
+                      <option key={classe._id} value={classe._id}>
+                        {classe.niveau} {classe.alias} ({classe.annee})
+                        {entity && form.current_classe === classe._id ? ' (Actuelle)' : ''}
+                      </option>
+                    ));
                 })()}
               </select>
-            </div>
 
-            <div className="modal__fieldGroup modal__fieldGroup--grid">
               <div className="modal__fieldGroup">
-                <label htmlFor="input-niveau" className="modal__label">Niveau de classe</label>
-                <select 
-                  id="input-niveau" 
-                  name="niveau" 
-                  value={form.niveau || ''} 
-                  onChange={handleChange} 
+                <label className="modal__label">Photo de l'élève</label>
+
+                <div className="modal__photo-controls">
+                  <input
+                    id="input-photo"
+                    type="file"
+                    ref={fileInput}
+                    accept="image/*"
+                    required={!form.photo_$_file && !previewUrl}
+                    onChange={handleFile}
+                    className="modal__input modal__input--file"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCamera(true)}
+                    className="modal__camera-btn"
+                    title="Prendre une photo avec la caméra"
+                  >
+                    <span className="modal__camera-btn-icon">📷</span>
+                    <span className="modal__camera-btn-text">Caméra</span>
+                  </button>
+                </div>
+
+                {(previewUrl || form.photo_$_file) && (
+                  <div className="modal__photo-preview">
+                    <img
+                      src={previewUrl || form.photo_$_file || "/school/classe.webp"}
+                      alt="Photo de l'élève"
+                      className="modal__preview-image"
+                    />
+                    {previewUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewUrl('');
+                          setSelectedFile(null);
+                          if (fileInput.current) fileInput.current.value = '';
+                        }}
+                        className="modal__remove-photo-btn"
+                        title="Supprimer la photo"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <IsInterneBlock form={form} setForm={setForm} />
+              <AbsencesBlock absences={form.absences} setForm={setForm} />
+              <BonusBlock bonus={form.bonus} setForm={setForm} />
+              <ManusBlock manus={form.manus} setForm={setForm} />
+              <CommentairesBlock
+                commentaires={Array.isArray(form.commentaires) ? form.commentaires : []}
+                setForm={setForm}
+              />
+              <input type="hidden" name="commentaires" value={JSON.stringify(Array.isArray(form.commentaires) ? form.commentaires : [])} />
+              <DocumentsBlock form={form} setForm={setForm} selectedDocuments={selectedDocuments} setSelectedDocuments={setSelectedDocuments} />
+
+              <label>Notes</label>
+              {/* <AddNoteForm
+              notes={form.notes || {}}
+              onAdd={noteObj => setForm(f => ({ ...f, notes: { ...f.notes, ...noteObj } }))}
+              onRemove={timestamp => setForm(f => { const newNotes = { ...f.notes }; delete newNotes[timestamp]; return { ...f, notes: newNotes }; })}
+            /> */}
+
+              <label>Compositions (JSON)</label>
+              {/* Bloc de gestion des compositions par trimestre */}
+              <CompositionsBlock
+                compositions={form.compositions || {}}
+                schoolYear={schoolYear}
+                onChange={newCompo => setForm(f => ({ ...f, compositions: newCompo }))}
+                studentData={form}
+                dynamicSubjects={dynamicSubjects}
+                subjectsLoaded={subjectsLoaded}
+                classCoefficients={classCoefficients}
+                classes={classes}
+              />
+              <textarea readOnly name="compositions" value={form.compositions ? JSON.stringify(form.compositions) : ''}
+              // onChange={e => setForm(f => ({ ...f, compositions: e.target.value ? JSON.parse(e.target.value) : {} }))} 
+              />
+              {/* <label>Moyenne trimetriel (JSON)
+              <textarea name="moyenne_trimetriel" value={form.moyenne_trimetriel ? JSON.stringify(form.moyenne_trimetriel) : ''} onChange={e => setForm(f => ({ ...f, moyenne_trimetriel: e.target.value ? JSON.parse(e.target.value) : {} }))} />
+            </label> */}
+              <label>Scolarity fees (JSON)</label>
+              <ScolarityFeesBlock
+                fees={form.scolarity_fees_$_checkbox?.[schoolYear] || {}}
+                onChange={newFees => setForm(f => ({
+                  ...f,
+                  scolarity_fees_$_checkbox: {
+                    ...f.scolarity_fees_$_checkbox,
+                    [schoolYear]: newFees
+                  }
+                }))}
+                schoolYear={schoolYear}
+                isInterne={form.isInterne || false}
+              />
+              <textarea readOnly name="scolarity_fees_$_checkbox_" value={form.scolarity_fees_$_checkbox ? JSON.stringify(form.scolarity_fees_$_checkbox) : ''}
+              // onChange={e => setForm(f => ({ ...f, scolarity_fees_$_checkbox: e.target.value ? JSON.parse(e.target.value) : {} }))} 
+              />
+              <label>Bolobi class history (JSON)
+              </label>
+              <SchoolHistoryBlock
+                schoolHistory={(() => {
+                  const now = new Date();
+                  const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
+                  const currentYearStr = `${currentYearStart}-${currentYearStart + 1}`;
+                  return {
+                    [currentYearStr]: "Martin de Porrès de Bolobi",
+                    ...(form.school_history || {})
+                  };
+                })()}
+                onChange={newHistory => setForm(f => ({ ...f, school_history: newHistory }))}
+              />
+              <textarea readOnly name="school_history_" value={form.school_history ? JSON.stringify(form.school_history) : ''}
+              // onChange={e => setForm(f => ({ ...f, bolobi_class_history_$_ref_µ_classes: e.target.value ? JSON.parse(e.target.value) : {} }))} 
+              />
+            </>}
+
+
+
+
+
+
+
+            {type === 'enseignant' && <>
+              <div className="modal__fieldGroup modal__fieldGroup--grid">
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-nom" className="modal__label">Nom: </label>
+                  <input
+                    id="input-nom"
+                    name="nom"
+                    value={form.nom || ''}
+                    onChange={handleChange}
+                    placeholder="Nom"
+                    className="modal__input"
+                    required
+                  />
+                </div>
+
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-prenoms" className="modal__label">Prénoms: </label>
+                  <input
+                    id="input-prenoms"
+                    name="prenoms"
+                    value={Array.isArray(form.prenoms) ? form.prenoms.join(', ') : (form.prenoms || '')}
+                    onChange={e => setForm(f => ({ ...f, prenoms: e.target.value.split(',') }))}
+                    placeholder="Prénoms (séparés par des virgules)"
+                    className="modal__input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-sexe" className="modal__label">Sexe: </label>
+                <select
+                  id="input-sexe"
+                  name="sexe"
+                  value={form.sexe || ''}
+                  onChange={handleChange}
                   className="modal__select"
                   required
                 >
-                  <option value="">Sélectionnez le niveau</option>
-                  {["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"].map(n => <option key={n} value={n}>{n}</option>)}
+                  <option value="">Sélectionnez le sexe</option>
+                  <option value="M">Masculin</option>
+                  <option value="F">Féminin</option>
                 </select>
               </div>
-              
               <div className="modal__fieldGroup">
-                <label htmlFor="input-alias" className="modal__label">Alias de la classe</label>
-                <input 
-                  id="input-alias" 
-                  name="alias" 
-                  value={form.alias || ''} 
-                  onChange={handleChange} 
-                  placeholder="Alias (ex: 4B, A, Rouge...)" 
-                  className="modal__input"
-                  required 
-                />
-              </div>
-            </div>
-            
-            <div className="modal__fieldGroup">
-              <label className="modal__label">Photo de la classe</label>
-              
-              <div className="modal__photo-controls">
-                <input 
-                  id="input-photo-classe" 
-                  type="file" 
-                  ref={fileInput} 
-                  accept="image/*" 
-                  required={!form.photo && !previewUrl} 
-                  onChange={handleFile}
-                  className="modal__input modal__input--file"
-                />
-                
-                <button 
-                  type="button"
-                  onClick={() => setShowCamera(true)}
-                  className="modal__camera-btn"
-                  title="Prendre une photo avec la caméra"
+                <label htmlFor="input-classes" className="modal__label">Classes assignées: </label>
+                <select
+                  id="input-classes"
+                  name="current_classes"
+                  multiple
+                  value={Array.isArray(form.current_classes) ? form.current_classes : []}
+                  onChange={e => {
+                    const selectedValues = Array.from(e.target.selectedOptions, option => option.value);
+                    console.log('🔍 DEBUG SELECT - Classes sélectionnées:', selectedValues);
+                    console.log('🔍 DEBUG SELECT - Type:', typeof selectedValues);
+                    console.log('🔍 DEBUG SELECT - Est array?', Array.isArray(selectedValues));
+                    setForm(f => ({ ...f, current_classes: selectedValues }));
+                  }}
+                  className="modal__select"
+                  required
                 >
-                  <span className="modal__camera-btn-icon">📷</span>
-                  <span className="modal__camera-btn-text">Caméra</span>
-                </button>
+                  {ctx.classes && (() => {
+                    // Logique dynamique : filtrer les classes des 2 dernières années scolaires
+                    const currentDate = new Date();
+                    const currentMonth = currentDate.getMonth(); // 0-11
+                    const currentYear = currentDate.getFullYear();
+
+                    // Déterminer l'année scolaire courante (septembre à août)
+                    const schoolYearStart = currentMonth >= 8 ? currentYear : currentYear - 1;
+
+                    // Générer l'année scolaire courante et suivante
+                    const relevantSchoolYears = [
+                      `${schoolYearStart}-${schoolYearStart + 1}`,     // Année courante
+                      `${schoolYearStart + 1}-${schoolYearStart + 2}`  // Année suivante
+                    ];
+
+                    return ctx.classes
+                      .filter(classe => relevantSchoolYears.includes(classe.annee))
+                      .sort((a, b) => b.annee.localeCompare(a.annee)) // Trier par année décroissante
+                      .map(classe => (
+                        <option key={classe._id} value={classe._id}>
+                          {classe.niveau} {classe.alias} ({classe.annee})
+                        </option>
+                      ));
+                  })()}
+                </select>
               </div>
-              
-              {(previewUrl || form.photo) && (
-                <div className="modal__photo-preview">
-                  <img 
-                    src={previewUrl || form.photo || "/school/classe.webp"} 
-                    alt="Photo de la classe" 
-                    className="modal__preview-image"
+
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-naissance" className="modal__label">Date de naissance: </label>
+                <input
+                  id="input-naissance"
+                  type="date"
+                  name="naissance_$_date"
+                  value={form.naissance_$_date || ''}
+                  onChange={handleChange}
+                  className="modal__input"
+                  required
+                />
+              </div>
+
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif): </label>
+                <div className="modal__fieldGroup modal__fieldGroup--row">
+                  <input
+                    id="input-adresse"
+                    name="adresse_$_map"
+                    value={form.adresse_$_map}
+                    onChange={handleChange}
+                    placeholder="Adresse"
+                    className="modal__input"
+                    required
                   />
-                  {previewUrl && (
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setPreviewUrl('');
-                        setSelectedFile(null);
-                        if (fileInput.current) fileInput.current.value = '';
-                      }}
-                      className="modal__remove-photo-btn"
-                      title="Supprimer la photo"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowMap(true)}
+                    className="modal__btn modal__btn--secondary input-adresseBtn"
+                    title="Ouvrir la carte"
+                  >
+                    📍
+                  </button>
+                </div>
+              </div>
+              {showMap && (
+                <div className="modal__map-container">
+                  <Gmap
+                    onCoordinatesClick={handleMapClick}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMap(false)}
+                    className="modal__btn modal__btn--secondary"
+                  >
+                    Fermer la carte
+                  </button>
                 </div>
               )}
-            </div>
-            
-            {/* Section Coefficients des matières */}
-            <div className="modal__fieldGroup modal__fieldGroup--coefficients">
-              <h3 className="modal__sectionTitle">Coefficients des matières</h3>
-              <p className="modal__sectionDescription">
-                Configurez les coefficients pour chaque matière de cette classe. 
-                Si non configuré, le coefficient par défaut sera {process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2'}.
-              </p>
-              
-              <CoefficientsManager 
-                coefficients={form.coefficients || {}}
-                onChange={(newCoefficients) => setForm(f => ({ ...f, coefficients: newCoefficients }))}
-                subjectGroup={process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]'}
-                dynamicSubjects={dynamicSubjects}
-                subjectsLoaded={subjectsLoaded}
-              />
-            </div>
-            
-            {/* Section Gestion des compositions */}
-            <div className="modal__fieldGroup modal__fieldGroup--compositions">
-              <h3 className="modal__sectionTitle">Dates de compositions</h3>
-              <p className="modal__sectionDescription">
-                Définissez les dates de compositions pour cette classe. Ces dates seront disponibles lors de la saisie des notes d'élèves.
-              </p>
-              
-              <CompositionsManager 
-                compositions={form.compositions || []}
-                onChange={(newCompositions) => setForm(f => ({ ...f, compositions: newCompositions }))}
-              />
-            </div>
-            
-            <div className="form-info-note">
-              <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>
-            </div>
 
-          </>}
-          
+              <div className="modal__fieldGroup modal__fieldGroup--grid">
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-tel" className="modal__label">N° Téléphone: </label>
+                  <input
+                    id="input-tel"
+                    name="phone_$_tel"
+                    value={form.phone_$_tel || ''}
+                    onChange={handleChange}
+                    placeholder="Téléphone"
+                    className="modal__input"
+                    required
+                  />
+                </div>
+
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-email" className="modal__label">Email: </label>
+                  <input
+                    id="input-email"
+                    name="email_$_email"
+                    value={form.email_$_email || ''}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className="modal__input"
+                    type="email"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="modal__fieldGroup">
+                <label className="modal__label">Photo de l'enseignant: </label>
+
+                <div className="modal__photo-controls">
+                  <input
+                    id="input-photo"
+                    type="file"
+                    ref={fileInput}
+                    accept="image/*"
+                    required={!form.photo_$_file && !previewUrl}
+                    onChange={handleFile}
+                    className="modal__input modal__input--file"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCamera(true)}
+                    className="modal__camera-btn"
+                    title="Prendre une photo avec la caméra"
+                  >
+                    <span className="modal__camera-btn-icon">📷</span>
+                    <span className="modal__camera-btn-text">Caméra</span>
+                  </button>
+                </div>
+
+                {(previewUrl || form.photo_$_file) && (
+                  <div className="modal__photo-preview">
+                    <img
+                      src={previewUrl || form.photo_$_file || "/school/prof.webp"}
+                      alt="Photo de l'enseignant"
+                      className="modal__preview-image"
+                    />
+                    {previewUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewUrl('');
+                          setSelectedFile(null);
+                          if (fileInput.current) fileInput.current.value = '';
+                        }}
+                        className="modal__remove-photo-btn"
+                        title="Supprimer la photo"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+            </>}
+
+
+
+
+
+
+
+
+
+            {type === 'classe' && <>
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-annee" className="modal__label">Année scolaire</label>
+                <select
+                  id="input-annee"
+                  name="annee"
+                  value={form.annee || ''}
+                  onChange={handleChange}
+                  className="modal__select"
+                  required
+                >
+                  <option value="">Sélectionnez l'année scolaire</option>
+                  {(() => {
+                    const currentYear = new Date().getFullYear()
+                    const currentMonth = new Date().getMonth() + 1
+                    // Si nous sommes avant juillet, l'année scolaire actuelle a commencé l'année précédente
+                    const schoolYearStart = currentMonth < 7 ? currentYear - 1 : currentYear
+                    const years = []
+                    // Générer 5 années (2 précédentes, actuelle, 2 suivantes)
+                    for (let i = -2; i <= 2; i++) {
+                      const startYear = schoolYearStart + i
+                      const endYear = startYear + 1
+                      years.push(`${startYear}-${endYear}`)
+                    }
+                    return years.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))
+                  })()}
+                </select>
+              </div>
+
+              <div className="modal__fieldGroup modal__fieldGroup--grid">
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-niveau" className="modal__label">Niveau de classe</label>
+                  <select
+                    id="input-niveau"
+                    name="niveau"
+                    value={form.niveau || ''}
+                    onChange={handleChange}
+                    className="modal__select"
+                    required
+                  >
+                    <option value="">Sélectionnez le niveau</option>
+                    {["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+
+                <div className="modal__fieldGroup">
+                  <label htmlFor="input-alias" className="modal__label">Alias de la classe</label>
+                  <input
+                    id="input-alias"
+                    name="alias"
+                    value={form.alias || ''}
+                    onChange={handleChange}
+                    placeholder="Alias (ex: 4B, A, Rouge...)"
+                    className="modal__input"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="modal__fieldGroup">
+                <label className="modal__label">Photo de la classe</label>
+
+                <div className="modal__photo-controls">
+                  <input
+                    id="input-photo-classe"
+                    type="file"
+                    ref={fileInput}
+                    accept="image/*"
+                    required={!form.photo && !previewUrl}
+                    onChange={handleFile}
+                    className="modal__input modal__input--file"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowCamera(true)}
+                    className="modal__camera-btn"
+                    title="Prendre une photo avec la caméra"
+                  >
+                    <span className="modal__camera-btn-icon">📷</span>
+                    <span className="modal__camera-btn-text">Caméra</span>
+                  </button>
+                </div>
+
+                {(previewUrl || form.photo) && (
+                  <div className="modal__photo-preview">
+                    <img
+                      src={previewUrl || form.photo || "/school/classe.webp"}
+                      alt="Photo de la classe"
+                      className="modal__preview-image"
+                    />
+                    {previewUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPreviewUrl('');
+                          setSelectedFile(null);
+                          if (fileInput.current) fileInput.current.value = '';
+                        }}
+                        className="modal__remove-photo-btn"
+                        title="Supprimer la photo"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Section Coefficients des matières */}
+              <div className="modal__fieldGroup modal__fieldGroup--coefficients">
+                <h3 className="modal__sectionTitle">Coefficients des matières</h3>
+                <p className="modal__sectionDescription">
+                  Configurez les coefficients pour chaque matière de cette classe.
+                  Si non configuré, le coefficient par défaut sera {process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2'}.
+                </p>
+
+                <CoefficientsManager
+                  coefficients={form.coefficients || {}}
+                  onChange={(newCoefficients) => setForm(f => ({ ...f, coefficients: newCoefficients }))}
+                  subjectGroup={process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]'}
+                  dynamicSubjects={dynamicSubjects}
+                  subjectsLoaded={subjectsLoaded}
+                />
+              </div>
+
+              {/* Section Gestion des compositions */}
+              <div className="modal__fieldGroup modal__fieldGroup--compositions">
+                <h3 className="modal__sectionTitle">Dates de compositions</h3>
+                <p className="modal__sectionDescription">
+                  Définissez les dates de compositions pour cette classe. Ces dates seront disponibles lors de la saisie des notes d'élèves.
+                </p>
+
+                <CompositionsManager
+                  compositions={form.compositions || []}
+                  onChange={(newCompositions) => setForm(f => ({ ...f, compositions: newCompositions }))}
+                />
+              </div>
+
+              <div className="form-info-note">
+                <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>
+              </div>
+
+            </>}
+
           </form>
         </div>
-        
+
         <footer className="modal__actions">
           <button type="submit" form="modalPersonForm" className="modal__actions-btn modal__actions-btn--primary">
             {uploading ? (
@@ -1460,10 +1460,10 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               'Enregistrer'
             )}
           </button>
-          
+
           {entity && entity._id && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="modal__actions-btn modal__actions-btn--danger"
               onClick={() => {
                 if (type === 'eleve') ctx.deleteEleve(entity._id);
@@ -1475,16 +1475,16 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               Supprimer
             </button>
           )}
-          
+
           <button type="button" className="modal__actions-btn modal__actions-btn--secondary" onClick={onClose}>
             Annuler
           </button>
         </footer>
       </div>
-      
+
       {/* Modal de capture caméra */}
       {showCamera && (
-        <CameraCapture 
+        <CameraCapture
           onCapture={handleCameraCapture}
           onClose={() => setShowCamera(false)}
           facingMode="user"
@@ -1500,7 +1500,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
 
 
-function Parent({form,setForm,parents}){
+function Parent({ form, setForm, parents }) {
 
   return <div className="parents-block">
     <div className="parent-card">
@@ -1661,15 +1661,15 @@ function SchoolHistoryBlock({ schoolHistory, onChange }) {
         />
         <button type="button" onClick={handleAdd} disabled={!selectedYear || !ecole.trim()}>Ajouter</button>
       </div>
-      <input type="hidden" name="school_history" value={(() => {
-        const now = new Date();
-        const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
-        const currentYearStr = `${currentYearStart}-${currentYearStart + 1}`;
-        return JSON.stringify({
-          [currentYearStr]: "Martin de Porrès de Bolobi",
-          ...(schoolHistory || {})
-        });
-      })()} /></>}
+        <input type="hidden" name="school_history" value={(() => {
+          const now = new Date();
+          const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
+          const currentYearStr = `${currentYearStart}-${currentYearStart + 1}`;
+          return JSON.stringify({
+            [currentYearStr]: "Martin de Porrès de Bolobi",
+            ...(schoolHistory || {})
+          });
+        })()} /></>}
     </div>
   );
 }
@@ -1686,7 +1686,7 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   // Fonction pour convertir l'ancien format vers le nouveau (migration automatique)
   const migrateFeesFormat = (fees) => {
     if (!fees || typeof fees !== 'object') return {};
-    
+
     const migrated = {};
     Object.entries(fees).forEach(([ts, value]) => {
       if (Array.isArray(value)) {
@@ -1704,17 +1704,17 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   const migratedFees = migrateFeesFormat(fees);
 
   // Liste des dépôts : aplatir tous les arrays de dépôts
-  const entries = Object.entries(migratedFees || {}).flatMap(([ts, deposits]) => 
+  const entries = Object.entries(migratedFees || {}).flatMap(([ts, deposits]) =>
     deposits.map((deposit, index) => ({ ts, index, ...deposit }))
   );
-  
+
   // Récupérer les frais selon le statut interne/externe
   const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
   const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
-  
+
   const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
   const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
-  
+
   const targetArgent = isInterne ? interneArgent : externeArgent;
   const targetRiz = isInterne ? interneRiz : externeRiz;
 
@@ -1728,18 +1728,18 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     const ts = d.getTime();
-    
+
     const newDeposit = type === 'argent'
       ? { argent: Number(val), timestamp: Date.now() }
       : { riz: Number(val), timestamp: Date.now() };
-    
+
     // Ajouter le nouveau dépôt à la liste existante pour ce jour
     const existingDeposits = migratedFees[ts] || [];
     const updatedFees = {
       ...migratedFees,
       [ts]: [...existingDeposits, newDeposit]
     };
-    
+
     onChange(updatedFees);
     setShowForm(false); setType('argent'); setVal(''); setDate(new Date().toISOString().slice(0, 10));
   };
@@ -1774,10 +1774,10 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
             <span className="scolarity-fees-block__entry-time">
               {e.timestamp ? new Date(e.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
             </span>
-            <button 
-              type="button" 
-              className="scolarity-fees-block__remove-btn" 
-              title="Supprimer ce dépôt" 
+            <button
+              type="button"
+              className="scolarity-fees-block__remove-btn"
+              title="Supprimer ce dépôt"
               onClick={() => handleRemove(e.ts, e.index)}
             >
               ×
@@ -1823,21 +1823,21 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
 // --- Composant de gestion des coefficients par classe ---
 function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubjects, subjectsLoaded }) {
   const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
-  
+
   // États pour l'interface de saisie
   const [selectedMatiere, setSelectedMatiere] = useState('');
   const [selectedCoefficient, setSelectedCoefficient] = useState('20');
-  
+
   // Obtenir la liste des matières disponibles
   const getAvailableSubjects = () => {
     if (!subjectsLoaded) return [];
-    return dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES;
+    return dynamicSubjects;
   };
-  
+
   // Obtenir la liste des matières selon les indices pour l'affichage
   const getConfiguredSubjects = () => {
     if (!subjectsLoaded) return [];
-    
+
     try {
       const indices = JSON.parse(subjectGroup);
       if (Array.isArray(indices)) {
@@ -1858,28 +1858,28 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
     }
     return [];
   };
-  
+
   const availableSubjects = getAvailableSubjects();
   const configuredSubjects = getConfiguredSubjects();
-  
+
   // Initialiser la matière sélectionnée
   useEffect(() => {
     if (availableSubjects.length > 0 && !selectedMatiere) {
       setSelectedMatiere(availableSubjects[0]);
     }
   }, [availableSubjects, selectedMatiere]);
-  
+
   const handleAddCoefficient = () => {
     if (!selectedMatiere) return;
-    
+
     const subjectIndex = availableSubjects.indexOf(selectedMatiere);
     if (subjectIndex === -1) return;
-    
+
     const newCoefficients = { ...coefficients };
     const coeffValue = Math.floor(parseInt(selectedCoefficient) / 10); // Convertir dénominateur en coefficient
     newCoefficients[subjectIndex.toString()] = coeffValue;
     onChange(newCoefficients);
-    
+
     console.log('✅ Coefficient ajouté:', {
       matiere: selectedMatiere,
       index: subjectIndex,
@@ -1887,13 +1887,13 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
       coefficient: coeffValue
     });
   };
-  
+
   const handleRemoveCoefficient = (index) => {
     const newCoefficients = { ...coefficients };
     delete newCoefficients[index];
     onChange(newCoefficients);
   };
-  
+
   const resetToDefault = () => {
     const defaultCoefficients = {};
     configuredSubjects.forEach(subject => {
@@ -1901,17 +1901,17 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
     });
     onChange(defaultCoefficients);
   };
-  
+
   if (!subjectsLoaded) {
     return <div className="coefficients-manager__loading">Chargement des matières...</div>;
   }
-  
+
   return (
     <div className="coefficients-manager">
       <div className="coefficients-manager__header">
         <h3>Configuration des coefficients par matière</h3>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="coefficients-manager__reset-btn"
           onClick={resetToDefault}
           title="Remettre tous les coefficients à la valeur par défaut"
@@ -1919,7 +1919,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           Réinitialiser ({defaultCoeff})
         </button>
       </div>
-      
+
       {/* Interface de saisie similaire aux notes d'élève */}
       <div className="compositions-block__add-form coefficients-manager__add-form">
         <select
@@ -1931,7 +1931,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
             <option key={matiere} value={matiere}>{matiere}</option>
           ))}
         </select>
-        
+
         <select
           className="compositions-block__denominateur-select"
           value={selectedCoefficient}
@@ -1944,7 +1944,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           <option value="50">50 (coeff 5)</option>
           <option value="100">100 (coeff 10)</option>
         </select>
-        
+
         <button
           type="button"
           className="compositions-block__add-btn"
@@ -1953,7 +1953,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           Configurer
         </button>
       </div>
-      
+
       {/* Affichage des coefficients configurés */}
       <div className="coefficients-manager__configured">
         <h4>Coefficients configurés :</h4>
@@ -1981,7 +1981,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           <p className="coefficients-manager__empty">Aucun coefficient configuré. Les valeurs par défaut seront utilisées.</p>
         )}
       </div>
-      
+
       <div className="coefficients-manager__info">
         <p><strong>💡 Astuce :</strong> Le coefficient détermine l'importance de la matière dans le calcul des moyennes.</p>
         <p><strong>📊 Exemple :</strong> Coefficient 4 = la note compte 4 fois plus qu'une matière de coefficient 1.</p>
@@ -1994,26 +1994,26 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
 // Fonction de migration de l'ancien format vers le nouveau
 function migrateCompositionsFormat(oldCompositions) {
   if (!oldCompositions || typeof oldCompositions !== 'object') return {};
-  
+
   const migratedCompositions = {};
-  
+
   Object.entries(oldCompositions).forEach(([year, trimestres]) => {
     if (!Array.isArray(trimestres)) return;
-    
+
     migratedCompositions[year] = trimestres.map(trimestreNotes => {
       if (!Array.isArray(trimestreNotes)) return { officiel: {}, unOfficiel: {} };
-      
+
       const result = { officiel: {}, unOfficiel: {} };
-      
+
       trimestreNotes.forEach(note => {
         if (typeof note !== 'object' || note === null) return;
-        
+
         // Extraire les données de la note
         const [matiere, noteData] = Object.entries(note)[0] || [null, null];
         if (!matiere || !noteData) return;
-        
+
         let noteValue, sur, date, officiel;
-        
+
         if (typeof noteData === 'object' && noteData.note !== undefined) {
           // Nouveau format avec objet {note, sur, date, officiel}
           noteValue = noteData.note;
@@ -2027,7 +2027,7 @@ function migrateCompositionsFormat(oldCompositions) {
           date = new Date().toISOString().split('T')[0]; // Date par défaut
           officiel = true;
         }
-        
+
         // Convertir la date en timestamp
         let timestamp;
         if (date) {
@@ -2035,26 +2035,26 @@ function migrateCompositionsFormat(oldCompositions) {
         } else {
           timestamp = Date.now().toString();
         }
-        
+
         // Déterminer la catégorie (officiel/unOfficiel)
         const category = officiel ? 'officiel' : 'unOfficiel';
-        
+
         // Initialiser le timestamp s'il n'existe pas
         if (!result[category][timestamp]) {
           result[category][timestamp] = {};
         }
-        
+
         // Ajouter la note
         result[category][timestamp][matiere] = {
           note: noteValue,
           sur: sur
         };
       });
-      
+
       return result;
     });
   });
-  
+
   console.log('🔄 Migration des compositions terminée:', migratedCompositions);
   return migratedCompositions;
 }
@@ -2063,17 +2063,17 @@ function migrateCompositionsFormat(oldCompositions) {
 function generateSchoolYears(existingCompositions = {}) {
   const now = new Date();
   const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
-  
+
   // Génère la liste des années disponibles (de N-10 à N+10)
   const yearRange = Array.from({ length: 21 }, (_, i) => {
     const start = currentYearStart - 10 + i;
     return `${start}-${start + 1}`;
   });
-  
+
   // Fusionne avec les années existantes dans les compositions
   const yearsSet = new Set([...yearRange, ...Object.keys(existingCompositions || {})]);
   const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
-  
+
   return { years, currentYearStart };
 }
 
@@ -2086,7 +2086,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   const [selectedDenominateur, setSelectedDenominateur] = useState(COEFFICIENTS_MATIERES['Mathématiques'].toString());
   const [selectedDate, setSelectedDate] = useState('');
   const [isOfficiel, setIsOfficiel] = useState(true);
-  
+
   // Migration automatique si l'ancien format est détecté
   const [migratedCompositions, setMigratedCompositions] = useState(() => {
     // Détecter l'ancien format (array de notes directement)
@@ -2111,20 +2111,20 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       onChange(migratedCompositions);
     }
   }, [migratedCompositions, onChange]);
-  
+
   // Récupérer les compositions disponibles pour la classe de l'élève selon l'année sélectionnée
   const getAvailableCompositions = () => {
     if (!studentData?._id || !classes || classes.length === 0) return [];
-    
+
     // Trouver la classe de l'élève pour l'année sélectionnée
-    const eleveClasse = classes.find(classe => 
-      classe.annee === schoolYear && 
-      classe.eleves && 
+    const eleveClasse = classes.find(classe =>
+      classe.annee === schoolYear &&
+      classe.eleves &&
       classe.eleves.includes(studentData._id)
     );
-    
+
     if (!eleveClasse || !eleveClasse.compositions) return [];
-    
+
     // Retourner les compositions triées par date
     return eleveClasse.compositions
       .map(([timestamp, officiel]) => ({
@@ -2135,30 +2135,30 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
   };
-  
+
   const availableCompositions = getAvailableCompositions();
-  
+
   // Fonction pour valider qu'un timestamp existe dans les compositions de classe
   const validateTimestampWithClass = (timestamp) => {
     if (!classes || !Array.isArray(classes)) return false;
-    
+
     // Trouver la classe de l'élève pour l'année scolaire sélectionnée
-    const studentClass = classes.find(classe => 
-      classe.annee === schoolYear && 
-      classe.eleves && 
+    const studentClass = classes.find(classe =>
+      classe.annee === schoolYear &&
+      classe.eleves &&
       classe.eleves.includes(studentData._id)
     );
-    
+
     if (!studentClass || !studentClass.compositions || !Array.isArray(studentClass.compositions)) {
       return false;
     }
-    
+
     // Vérifier si le timestamp existe dans les compositions de classe
-    return studentClass.compositions.some(([classTimestamp]) => 
+    return studentClass.compositions.some(([classTimestamp]) =>
       classTimestamp.toString() === timestamp.toString()
     );
   };
-  
+
   // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
   const getCoefficientForSubject = (matiere) => {
     // 1. Chercher par index dans les coefficients de classe
@@ -2166,23 +2166,23 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
     if (subjectIndex !== -1 && classCoefficients[subjectIndex.toString()]) {
       return classCoefficients[subjectIndex.toString()] * 10; // coefficient * 10 = sur
     }
-    
+
     // 2. Fallback sur coefficients hardcodés
     if (COEFFICIENTS_MATIERES[matiere]) {
       return COEFFICIENTS_MATIERES[matiere];
     }
-    
+
     // 3. Valeur par défaut
     return parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2') * 10;
   };
-  
+
   // Fonction pour gérer le changement de matière et ajuster automatiquement le dénominateur
   const handleMatiereChange = (matiere) => {
     setSelectedMatiere(matiere);
     // Ajuster automatiquement le dénominateur selon le coefficient de la matière
     const coefficient = getCoefficientForSubject(matiere);
     setSelectedDenominateur(coefficient.toString());
-    
+
     console.log('🎯 Coefficient calculé pour', matiere, ':', {
       coefficient,
       source: classCoefficients[dynamicSubjects.indexOf(matiere)] ? 'classe' : 'fallback'
@@ -2194,11 +2194,11 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   const [groupFormData, setGroupFormData] = useState({}); // {matiere: {note, sur, officiel}}
   const [groupCommonDate, setGroupCommonDate] = useState(''); // Date commune pour toutes les notes du groupe
   const [groupOfficielStatus, setGroupOfficielStatus] = useState(true); // Statut officiel/non-officiel pour le groupe
-  
 
-  
+
+
   const trimestres = ["1er trimestre", "2e trimestre", "3e trimestre"];
-  
+
   // Génère la liste des années disponibles (utilise la fonction utilitaire)
   const { years, currentYearStart } = generateSchoolYears(migratedCompositions);
   // On récupère le tableau pour l'année courante avec la nouvelle structure
@@ -2211,24 +2211,24 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   // Fonction pour calculer la moyenne d'un trimestre avec la nouvelle structure
   const calculateTrimestreMoyenne = (trimestreData) => {
     if (!trimestreData || typeof trimestreData !== 'object') return null;
-    
+
     let totalPoints = 0;
     let totalCoefficients = 0;
-    
+
     // Parcourir les compositions officielles et non-officielles
     ['officiel', 'unOfficiel'].forEach(category => {
       const categoryData = trimestreData[category] || {};
-      
+
       Object.values(categoryData).forEach(compositionNotes => {
         if (typeof compositionNotes !== 'object') return;
-        
+
         Object.entries(compositionNotes).forEach(([matiere, noteData]) => {
           if (!noteData || typeof noteData !== 'object') return;
-          
+
           const noteValue = noteData.note;
           const sur = noteData.sur || 20;
           const coefficient = sur / 10; // sur/10 = coefficient (sur:20 = coeff:2)
-          
+
           if (typeof noteValue === 'number' && noteValue >= 0) {
             // Convertir en note sur 20 pour uniformiser
             const noteSur20 = (noteValue / sur) * 20;
@@ -2238,7 +2238,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
         });
       });
     });
-    
+
     return totalCoefficients > 0 ? (totalPoints / totalCoefficients) : null;
   };
 
@@ -2256,51 +2256,51 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
 
   const handleAdd = idx => {
     if (!onChange || newNote === '' || isNaN(Number(newNote)) || !selectedDate) return;
-    
+
     const noteNum = Number(newNote);
     const denominateur = Number(selectedDenominateur);
     const timestamp = selectedDate; // selectedDate contient déjà le timestamp
     const category = isOfficiel ? 'officiel' : 'unOfficiel';
-    
+
     // Validation: vérifier que le timestamp existe dans les compositions de classe
     if (!validateTimestampWithClass(timestamp)) {
       alert('Cette date de composition n\'existe pas dans la classe de l\'élève pour cette année scolaire.');
       return;
     }
-    
+
     // Créer une copie de la structure actuelle
     const newCompoArr = [...compoArr];
-    
+
     // S'assurer que le trimestre existe avec la bonne structure
     if (!newCompoArr[idx]) {
       newCompoArr[idx] = { officiel: {}, unOfficiel: {} };
     }
-    
+
     // S'assurer que la catégorie existe
     if (!newCompoArr[idx][category]) {
       newCompoArr[idx][category] = {};
     }
-    
+
     // S'assurer que le timestamp existe
     if (!newCompoArr[idx][category][timestamp]) {
       newCompoArr[idx][category][timestamp] = {};
     }
-    
+
     // Ajouter la note
     newCompoArr[idx][category][timestamp][selectedMatiere] = {
       note: noteNum,
       sur: denominateur
     };
-    
+
     // Sauvegarder avec la nouvelle structure
     const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
     onChange(newCompositions);
     setMigratedCompositions(newCompositions);
-    
+
     // Reset du formulaire
-    setAdding(null); 
-    setNewNote(''); 
-    setSelectedMatiere('Mathématiques'); 
+    setAdding(null);
+    setNewNote('');
+    setSelectedMatiere('Mathématiques');
     setSelectedDenominateur(COEFFICIENTS_MATIERES['Mathématiques'].toString());
     setSelectedDate('');
     setIsOfficiel(true);
@@ -2309,16 +2309,16 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   // Fonction pour ouvrir le formulaire de groupe
   const handleCreateGroup = (idx) => {
     console.log('🔍 DEBUG - Ouverture du formulaire de groupe...');
-    
+
     // NOUVEAU : Utiliser les indices réellement configurés dans les coefficients de classe
     // au lieu de la variable d'environnement statique
-    const configuredIndices = classCoefficients && Object.keys(classCoefficients).length > 0 
+    const configuredIndices = classCoefficients && Object.keys(classCoefficients).length > 0
       ? Object.keys(classCoefficients).map(key => parseInt(key))
       : null;
-    
+
     // Fallback sur la variable d'environnement si pas de coefficients configurés
     const subjectGroup = process.env.NEXT_PUBLIC_SUBJECT_GROUP || '[0,1,2,3]';
-    
+
     console.log('📊 État actuel:', {
       configuredIndices,
       classCoefficients,
@@ -2326,13 +2326,12 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       subjectsLoaded,
       dynamicSubjectsLength: dynamicSubjects.length,
       dynamicSubjects,
-      hardcodedFirst4: MATIERES_SCOLAIRES.slice(0, 4)
     });
-    
+
     // Gérer le cas où on a des coefficients configurés ou utiliser la variable d'environnement
-    let subjects;
+    let subjects = [];
     let indices;
-    
+
     if (configuredIndices && configuredIndices.length > 0) {
       // PRIORITÉ : Utiliser les indices des coefficients configurés
       indices = configuredIndices;
@@ -2347,45 +2346,45 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
         console.log('⚠️ Fallback par défaut:', indices);
       }
     }
-    
-    if (Array.isArray(indices)) {
+
+    if (Array.isArray(indices) && dynamicSubjects.length > 0) {
       // Convertir les indices en noms de matières
-      // Utiliser les matières dynamiques en priorité, puis fallback sur hardcodé
-      const availableSubjects = dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES;
+      const availableSubjects = dynamicSubjects;
       subjects = indices.map(index => availableSubjects[index]).filter(Boolean);
-      
+
       console.log('🎯 Conversion des indices:', {
         indices,
         availableSubjectsFirst6: availableSubjects.slice(0, 6),
         subjects,
-        source: dynamicSubjects.length > 0 ? 'MongoDB' : 'hardcodé',
+        source: 'MongoDB',
         mongodbFirst4: dynamicSubjects.slice(0, 4),
-        hardcodedFirst4: MATIERES_SCOLAIRES.slice(0, 4)
       });
-    } else {
+    } else if (dynamicSubjects.length > 0) {
       // Fallback si les indices ne sont pas un array
-      subjects = [dynamicSubjects[0] || MATIERES_SCOLAIRES[0]];
+      subjects = [dynamicSubjects[0]];
       console.log('⚠️ Fallback sur première matière:', subjects);
+    } else {
+      console.log('⚠️ Aucune matière disponible.');
     }
-    
+
     // Initialiser les données du formulaire de groupe
     const initialFormData = {};
     const defaultDate = new Date().toISOString().split('T')[0];
-    
+
     subjects.forEach(matiere => {
       initialFormData[matiere] = {
         note: '',
         sur: getCoefficientForSubject(matiere)
       };
     });
-    
+
     setGroupFormData(initialFormData);
     setGroupCommonDate(''); // Initialiser avec une date vide
     setGroupOfficielStatus(true); // Initialiser le statut
     setShowingGroupForm(idx);
     console.log('Formulaire de groupe initialisé:', { formData: initialFormData });
   };
-  
+
   // Fonction pour valider le formulaire de groupe
   const handleValidateGroup = () => {
     // Vérifier que la date commune est renseignée
@@ -2393,62 +2392,62 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       alert('Veuillez sélectionner une date pour les compositions.');
       return;
     }
-    
+
     const timestamp = groupCommonDate; // groupCommonDate contient déjà le timestamp
-    
+
     // Validation: vérifier que le timestamp existe dans les compositions de classe
     if (!validateTimestampWithClass(timestamp)) {
       alert('Cette date de composition n\'existe pas dans la classe de l\'élève pour cette année scolaire.');
       return;
     }
-    
+
     // Créer une copie de la structure actuelle
     const newCompoArr = [...compoArr];
     const idx = showingGroupForm;
-    
+
     // S'assurer que le trimestre existe avec la bonne structure
     if (!newCompoArr[idx]) {
       newCompoArr[idx] = { officiel: {}, unOfficiel: {} };
     }
-    
+
     // Traiter chaque matière du groupe
     Object.entries(groupFormData).forEach(([matiere, data]) => {
       const noteValue = parseFloat(data.note);
       if (isNaN(noteValue) || noteValue < 0) return; // Ignorer les notes invalides
-      
+
       const category = groupOfficielStatus ? 'officiel' : 'unOfficiel';
-      
+
       // S'assurer que la catégorie existe
       if (!newCompoArr[idx][category]) {
         newCompoArr[idx][category] = {};
       }
-      
+
       // S'assurer que le timestamp existe
       if (!newCompoArr[idx][category][timestamp]) {
         newCompoArr[idx][category][timestamp] = {};
       }
-      
+
       // Ajouter la note
       newCompoArr[idx][category][timestamp][matiere] = {
         note: noteValue,
         sur: data.sur
       };
     });
-    
+
     // Sauvegarder avec la nouvelle structure
     const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
     onChange(newCompositions);
     setMigratedCompositions(newCompositions);
-    
+
     // Réinitialiser le formulaire
     setShowingGroupForm(null);
     setGroupFormData({});
     setGroupCommonDate(''); // Réinitialiser la date commune
     setGroupOfficielStatus(true); // Réinitialiser le statut
-    
+
     alert(`Groupe de ${Object.keys(groupFormData).length} notes créé avec succès pour le ${groupCommonDate} !`);
   };
-  
+
   // Fonction pour annuler le formulaire de groupe
   const handleCancelGroup = () => {
     setShowingGroupForm(null);
@@ -2459,28 +2458,28 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   // Fonction pour supprimer une note dans la nouvelle structure
   const handleRemoveNew = (trimestreIdx, category, timestamp, matiere) => {
     if (!onChange) return;
-    
+
     const newCompoArr = [...compoArr];
-    
+
     // Supprimer la matière spécifique
-    if (newCompoArr[trimestreIdx] && 
-        newCompoArr[trimestreIdx][category] && 
-        newCompoArr[trimestreIdx][category][timestamp]) {
-      
+    if (newCompoArr[trimestreIdx] &&
+      newCompoArr[trimestreIdx][category] &&
+      newCompoArr[trimestreIdx][category][timestamp]) {
+
       delete newCompoArr[trimestreIdx][category][timestamp][matiere];
-      
+
       // Si le timestamp n'a plus de matières, le supprimer
       if (Object.keys(newCompoArr[trimestreIdx][category][timestamp]).length === 0) {
         delete newCompoArr[trimestreIdx][category][timestamp];
       }
     }
-    
+
     // Sauvegarder
     const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
     onChange(newCompositions);
     setMigratedCompositions(newCompositions);
   };
-  
+
   // Fonction pour mettre à jour une donnée du formulaire de groupe
   const updateGroupFormData = (matiere, field, value) => {
     setGroupFormData(prev => ({
@@ -2500,7 +2499,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
   return (
     <div className="compositions-block">
       <div className="compositions-block__header">Compositions</div>
-      
+
       {/* Moyenne annuelle */}
       <div className="compositions-block__moyenne-annuelle">
         <strong>Moyenne annuelle ({schoolYear}): </strong>
@@ -2519,13 +2518,13 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                 <button
                   type="button"
                   className="compositions-block__add-btn"
-                  onClick={() => { 
-                    setAdding(idx); 
-                    setNewNote(''); 
+                  onClick={() => {
+                    setAdding(idx);
+                    setNewNote('');
                     setSelectedDate(new Date().toISOString().split('T')[0]);
                   }}
                 >Ajouter</button>
-                
+
                 <button
                   type="button"
                   className="compositions-block__createGroup-btn"
@@ -2540,7 +2539,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
               // Regrouper toutes les notes par timestamp (date)
               (() => {
                 const notesByDate = {};
-                
+
                 // Collecter toutes les notes par timestamp
                 Object.entries(compoArr[idx]).forEach(([category, timestamps]) => {
                   Object.entries(timestamps || {}).forEach(([timestamp, subjects]) => {
@@ -2551,7 +2550,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                         notes: []
                       };
                     }
-                    
+
                     Object.entries(subjects || {}).forEach(([matiere, noteData]) => {
                       notesByDate[timestamp].notes.push({
                         matiere,
@@ -2562,7 +2561,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                     });
                   });
                 });
-                
+
                 // Afficher les notes regroupées par date
                 return Object.entries(notesByDate)
                   .sort(([a], [b]) => parseInt(a) - parseInt(b))
@@ -2618,17 +2617,19 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                     </option>
                   ))}
                 </select>
-                
+
                 <select
                   className="compositions-block__matiere-select"
                   value={selectedMatiere}
                   onChange={e => handleMatiereChange(e.target.value)}
                 >
-                  {(dynamicSubjects.length > 0 ? dynamicSubjects : MATIERES_SCOLAIRES).map(matiere => (
+                  {dynamicSubjects.length > 0 ? dynamicSubjects.map(matiere => (
                     <option key={matiere} value={matiere}>{matiere}</option>
-                  ))}
+                  )) : (
+                    <option value="" disabled>Aucune matière</option>
+                  )}
                 </select>
-                
+
                 <input
                   type="number"
                   min="0"
@@ -2639,9 +2640,9 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                   className="compositions-block__note-input"
                   autoFocus
                 />
-                
+
                 <span className="compositions-block__separator">/</span>
-                
+
                 <select
                   className="compositions-block__denominateur-select"
                   value={selectedDenominateur}
@@ -2654,7 +2655,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                   <option value="50">50</option>
                   <option value="100">100</option>
                 </select>
-                
+
                 <button
                   type="button"
                   className={`compositions-block__officiel-badge ${isOfficiel ? 'compositions-block__officiel-badge--active' : ''}`}
@@ -2663,31 +2664,31 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                 >
                   {isOfficiel ? 'Officiel' : 'Non officiel'}
                 </button>
-                
+
                 <button
                   type="button"
                   className="compositions-block__add-btn"
                   onClick={() => handleAdd(idx)}
                 >Valider</button>
-                
+
                 <button
                   type="button"
                   className="compositions-block__add-btn compositions-block__add-btn--cancel"
-                  onClick={() => { 
-                    setAdding(null); 
-                    setNewNote(''); 
+                  onClick={() => {
+                    setAdding(null);
+                    setNewNote('');
                     setSelectedDate('');
                     setIsOfficiel(true);
                   }}
                 >Annuler</button>
               </div>
             )}
-            
+
             {/* Formulaire de groupe */}
             {showingGroupForm === idx && (
               <div className="compositions-block__group-form">
                 <h4 className="compositions-block__group-title">Saisie groupée de notes</h4>
-                
+
                 {/* Date commune pour toutes les notes du groupe */}
                 <div className="compositions-block__group-date">
                   <label className="compositions-block__group-date-label">
@@ -2722,7 +2723,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                     {groupOfficielStatus ? 'Officiel' : 'Non officiel'}
                   </button>
                 </div>
-                
+
                 {Object.entries(groupFormData).map(([matiere, data]) => (
                   <div key={matiere} className="compositions-block__add-form">
                     <select
@@ -2732,7 +2733,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                     >
                       <option value={matiere}>{matiere}</option>
                     </select>
-                    
+
                     <input
                       type="number"
                       min="0"
@@ -2742,9 +2743,9 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                       placeholder="Note"
                       className="compositions-block__note-input"
                     />
-                    
+
                     <span className="compositions-block__separator">/</span>
-                    
+
                     <select
                       className="compositions-block__denominateur-select"
                       value={data.sur}
@@ -2757,17 +2758,17 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                       <option value="50">50</option>
                       <option value="100">100</option>
                     </select>
-                    
+
                   </div>
                 ))}
-                
+
                 <div className="compositions-block__group-actions">
                   <button
                     type="button"
                     className="compositions-block__add-btn"
                     onClick={handleValidateGroup}
                   >Valider tout</button>
-                  
+
                   <button
                     type="button"
                     className="compositions-block__add-btn compositions-block__add-btn--cancel"
@@ -2878,10 +2879,10 @@ function BonusBlock({ bonus, setForm }) {
   const [bonusDate, setBonusDate] = useState('');
   const [bonusLabel, setBonusLabel] = useState('');
   // Gérer les deux formats : objet direct ou array d'objets
-  const items = bonus && typeof bonus === 'object' 
-    ? (Array.isArray(bonus) 
-        ? bonus.flatMap(obj => Object.entries(obj)) 
-        : Object.entries(bonus))
+  const items = bonus && typeof bonus === 'object'
+    ? (Array.isArray(bonus)
+      ? bonus.flatMap(obj => Object.entries(obj))
+      : Object.entries(bonus))
     : [];
 
   if (!setForm) {
@@ -2914,14 +2915,14 @@ function BonusBlock({ bonus, setForm }) {
             </div>
           ))}
         </div>
-        <input type="hidden" name="bonus" value={JSON.stringify(bonus||{})} />
+        <input type="hidden" name="bonus" value={JSON.stringify(bonus || {})} />
       </div>
     );
   }
 
   return (
     <div className="bonus-block">
-      <input type="hidden" name="bonus" value={JSON.stringify(bonus||{})} />
+      <input type="hidden" name="bonus" value={JSON.stringify(bonus || {})} />
       <div className="bonus-header">
         <span>Bonus : <b>{items.length}</b></span>
         <button type="button" className="add-bonus-btn" onClick={() => setShowBonusForm(true)}>Ajouter</button>
@@ -2932,7 +2933,7 @@ function BonusBlock({ bonus, setForm }) {
           <input type="text" placeholder="Raison du bonus" value={bonusLabel} onChange={e => setBonusLabel(e.target.value)} />
           <button type="button" onClick={() => {
             if (bonusDate && bonusLabel) {
-              const ts = new Date(bonusDate).setHours(0,0,0,0);
+              const ts = new Date(bonusDate).setHours(0, 0, 0, 0);
               setForm(f => {
                 // Gérer les deux formats : array d'objets ou objet direct
                 const currentBonus = f.bonus || [];
@@ -2941,7 +2942,7 @@ function BonusBlock({ bonus, setForm }) {
                   return { ...f, bonus: [...currentBonus, { [ts]: bonusLabel }] };
                 } else {
                   // Format objet direct - convertir en array puis ajouter
-                  const bonusArray = Object.keys(currentBonus).length > 0 
+                  const bonusArray = Object.keys(currentBonus).length > 0
                     ? [currentBonus, { [ts]: bonusLabel }]
                     : [{ [ts]: bonusLabel }];
                   return { ...f, bonus: bonusArray };
@@ -2952,7 +2953,7 @@ function BonusBlock({ bonus, setForm }) {
               setBonusLabel('');
             }
           }}>Valider</button>
-          <button type="button" onClick={() => setShowBonusForm(false)} style={{marginLeft:8}}>Annuler</button>
+          <button type="button" onClick={() => setShowBonusForm(false)} style={{ marginLeft: 8 }}>Annuler</button>
         </div>
       )}
       <div className="bonus-list">
@@ -3004,10 +3005,10 @@ function ManusBlock({ manus, setForm }) {
   const [manusDate, setManusDate] = useState('');
   const [manusLabel, setManusLabel] = useState('');
   // Gérer les deux formats : objet direct ou array d'objets
-  const items = manus && typeof manus === 'object' 
-    ? (Array.isArray(manus) 
-        ? manus.flatMap(obj => Object.entries(obj)) 
-        : Object.entries(manus))
+  const items = manus && typeof manus === 'object'
+    ? (Array.isArray(manus)
+      ? manus.flatMap(obj => Object.entries(obj))
+      : Object.entries(manus))
     : [];
 
   if (!setForm) {
@@ -3040,14 +3041,14 @@ function ManusBlock({ manus, setForm }) {
             </div>
           ))}
         </div>
-        <input type="hidden" name="manus" value={JSON.stringify(manus||{})} />
+        <input type="hidden" name="manus" value={JSON.stringify(manus || {})} />
       </div>
     );
   }
 
   return (
     <div className="manus-block">
-      <input type="hidden" name="manus" value={JSON.stringify(manus||{})} />
+      <input type="hidden" name="manus" value={JSON.stringify(manus || {})} />
       <div className="manus-header">
         <span>Malus : <b>{items.length}</b></span>
         <button type="button" className="add-manus-btn" onClick={() => setShowManusForm(true)}>Ajouter</button>
@@ -3058,7 +3059,7 @@ function ManusBlock({ manus, setForm }) {
           <input type="text" placeholder="Raison du malus" value={manusLabel} onChange={e => setManusLabel(e.target.value)} />
           <button type="button" onClick={() => {
             if (manusDate && manusLabel) {
-              const ts = new Date(manusDate).setHours(0,0,0,0);
+              const ts = new Date(manusDate).setHours(0, 0, 0, 0);
               setForm(f => {
                 // Gérer les deux formats : array d'objets ou objet direct
                 const currentManus = f.manus || [];
@@ -3067,7 +3068,7 @@ function ManusBlock({ manus, setForm }) {
                   return { ...f, manus: [...currentManus, { [ts]: manusLabel }] };
                 } else {
                   // Format objet direct - convertir en array puis ajouter
-                  const manusArray = Object.keys(currentManus).length > 0 
+                  const manusArray = Object.keys(currentManus).length > 0
                     ? [currentManus, { [ts]: manusLabel }]
                     : [{ [ts]: manusLabel }];
                   return { ...f, manus: manusArray };
@@ -3078,7 +3079,7 @@ function ManusBlock({ manus, setForm }) {
               setManusLabel('');
             }
           }}>Valider</button>
-          <button type="button" onClick={() => setShowManusForm(false)} style={{marginLeft:8}}>Annuler</button>
+          <button type="button" onClick={() => setShowManusForm(false)} style={{ marginLeft: 8 }}>Annuler</button>
         </div>
       )}
       <div className="manus-list">
@@ -3174,7 +3175,7 @@ function AddNoteForm({ notes = {}, onAdd, onRemove }) {
         !showForm ? (
           <button type="button" className="add-note-btn" onClick={() => setShowForm(true)}>Ajouter une note</button>
         ) : (
-          <div style={{marginTop:8}}>
+          <div style={{ marginTop: 8 }}>
             <input type="date" className="add-note-date" value={date} onChange={e => setDate(e.target.value)} />
             <select className="add-note-matiere" value={matiere} onChange={e => setMatiere(e.target.value)}>
               <option value="">Choisir une matière</option>
@@ -3210,8 +3211,8 @@ function IsInterneBlock({ form, setForm }) {
     <div className="isinterne-card">
       <img src="/dortoir.png" alt="Dortoir" className="isinterne-img" />
       <label className="isinterne-label">
-        <input type="checkbox" readOnly={!setForm ? true : false } name="isInterne" checked={!!form.isInterne} 
-          onChange={setForm ? e => setForm(f => ({ ...f, isInterne: e.target.checked })) : undefined} 
+        <input type="checkbox" readOnly={!setForm ? true : false} name="isInterne" checked={!!form.isInterne}
+          onChange={setForm ? e => setForm(f => ({ ...f, isInterne: e.target.checked })) : undefined}
         />
         <span>Interne</span>
       </label>
@@ -3251,19 +3252,19 @@ function DocumentsBlock({ form, setForm, selectedDocuments = [], setSelectedDocu
                 const type = doc.type?.startsWith("image/") && doc.type !== "application/pdf" ? "img" : "pdf"
                 const img = document.querySelector('.documents-list img.docs_preview_img');
                 const frame = document.querySelector('.documents-list iframe.docs_preview_pdf');
-                if(type=="img")img.src = doc;
-                if(type=="pdf")frame.src = doc;
+                if (type == "img") img.src = doc;
+                if (type == "pdf") frame.src = doc;
               }}>
-                {doc.type}
+              {doc.type}
               {doc.type === "application/pdf"
                 ? <span className="doc-icon" title="PDF">📄</span>
                 : <span className="doc-icon" title="Image">🖼️</span>}
               <span>{doc.name}</span>
             </div>
-            {doc&&<a href={doc} target="_blank">
+            {doc && <a href={doc} target="_blank">
               <span className="doc-icon" title="Télécharger"> Télécharger</span>
-              <img className="docs_preview_img" src={null} alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
-              <iframe className="docs_preview_pdf" src={null} alt="" style={{maxWidth:'100%', maxHeight:'70vh', margin:'16px auto'}}/>
+              <img className="docs_preview_img" src={null} alt="" style={{ maxWidth: '100%', maxHeight: '70vh', margin: '16px auto' }} />
+              <iframe className="docs_preview_pdf" src={null} alt="" style={{ maxWidth: '100%', maxHeight: '70vh', margin: '16px auto' }} />
             </a>}
           </Fragment>))}
         </div>
@@ -3305,14 +3306,14 @@ function CompositionsManager({ compositions = [], onChange }) {
 
   const handleAdd = () => {
     if (!newDate) return;
-    
+
     const timestamp = new Date(newDate).getTime();
     const newComposition = [timestamp, newOfficiel];
     const updatedCompositions = [...compositions, newComposition];
-    
+
     // Trier par date (timestamp croissant)
     updatedCompositions.sort((a, b) => a[0] - b[0]);
-    
+
     onChange(updatedCompositions);
     setNewDate('');
     setNewOfficiel(true);
@@ -3374,7 +3375,7 @@ function CompositionsManager({ compositions = [], onChange }) {
               onChange={(e) => setNewDate(e.target.value)}
               required
             />
-            
+
             <button
               type="button"
               className={`compositions-manager__officiel-toggle ${newOfficiel ? 'compositions-manager__officiel-toggle--active' : ''}`}
@@ -3384,7 +3385,7 @@ function CompositionsManager({ compositions = [], onChange }) {
               {newOfficiel ? 'Officiel' : 'Non officiel'}
             </button>
           </div>
-          
+
           <div className="compositions-manager__form-actions">
             <button
               type="button"
@@ -3394,7 +3395,7 @@ function CompositionsManager({ compositions = [], onChange }) {
             >
               Valider
             </button>
-            
+
             <button
               type="button"
               className="compositions-manager__cancel-btn"
@@ -3413,4 +3414,4 @@ function CompositionsManager({ compositions = [], onChange }) {
   );
 }
 
-export {SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock, CompositionsManager } 
+export { SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock, CompositionsManager } 
