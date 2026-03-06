@@ -14,6 +14,7 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
+import { clearLS, setLSItem, initStorage } from '../utils/localStorageManager';
 
 export default ({ children }) => {
   const router = useRouter();
@@ -111,31 +112,8 @@ export default ({ children }) => {
     if (!confirmReset) return;
 
     try {
-      // 🎓 Données scolaires principales
-      localStorage.removeItem('eleves');
-      localStorage.removeItem('enseignants');
-      localStorage.removeItem('classes');
+      clearLS()
 
-      // 📚 Données pédagogiques
-      localStorage.removeItem('app_subjects');
-
-      // Coefficients par classe (pattern dynamique)
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('app_class_coefficients_')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      // 👤 Données utilisateur
-      localStorage.removeItem('user');
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('user_')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-
-      console.log('🗑️ Toutes les données de l\'application ont été supprimées du localStorage');
       alert('✅ Toutes les données ont été supprimées ! La page va se recharger.');
       window.location.reload();
     } catch (error) {
@@ -160,6 +138,11 @@ export default ({ children }) => {
   };
 
   useEffect(() => {
+    initStorage()
+
+    // Le cache est-il valide ? On s'assure d'appeler local storage d'abord
+    // fetch... sera bloqué dans le contexte par les fonctions elles-mêmes ou si besoin,
+    // on appelle les datas initales ici
     fetchClasses()
     fetchEleves()
     fetchEnseignants()

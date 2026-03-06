@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useContext, createContext } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { getLSItem, setLSItem } from '../utils/localStorageManager';
 
 // Contexte pour les données utilisateur
 const UserRoleContext = createContext({});
@@ -31,21 +32,7 @@ export function UserRoleProvider({ children }) {
     }
   };
 
-  // Fonction pour sauvegarder dans localStorage (PRIORITÉ ABSOLUE selon vos règles)
-  const saveToLocalStorage = (key, data) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(data));
-    }
-  };
 
-  // Fonction pour récupérer depuis localStorage
-  const getFromLocalStorage = (key) => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : null;
-    }
-    return null;
-  };
 
   // Fonction pour déterminer les permissions selon le rôle
   const getPermissionsByRole = (role) => {
@@ -76,7 +63,7 @@ export function UserRoleProvider({ children }) {
     const loadUserData = async () => {
       // Test mode bypass
       if (process.env.NEXT_PUBLIC_MODE === 'test') {
-        const mockRole = (typeof window !== 'undefined' ? localStorage.getItem('mock_role') : null) || 'admin';
+        const mockRole = getLSItem('mock_role') || 'admin';
         setUserData({ id: 'test', firstName: 'Test', lastName: 'User', email: 'test@test.com', role: mockRole });
         setUserRole(mockRole);
         setPermissions(getPermissionsByRole(mockRole));
@@ -92,7 +79,7 @@ export function UserRoleProvider({ children }) {
       const userStorageKey = `user_${clerkUser.id}`;
 
       // 1. PRIORITÉ ABSOLUE : récupérer depuis localStorage
-      let storedUserData = getFromLocalStorage(userStorageKey);
+      let storedUserData = getLSItem(userStorageKey);
 
       if (storedUserData) {
         // Données trouvées dans localStorage
@@ -108,7 +95,7 @@ export function UserRoleProvider({ children }) {
           setUserData(freshData);
           setUserRole(freshData.role);
           setPermissions(getPermissionsByRole(freshData.role));
-          saveToLocalStorage(userStorageKey, freshData);
+          setLSItem(userStorageKey, freshData);
         } else if (!freshData) {
           // If fetch fails but we have storage data, we might want to try to sync-user
           // just in case the db was wiped but localstorage remained.
@@ -136,7 +123,7 @@ export function UserRoleProvider({ children }) {
           setUserData(freshData);
           setUserRole(freshData.role);
           setPermissions(getPermissionsByRole(freshData.role));
-          saveToLocalStorage(userStorageKey, freshData);
+          setLSItem(userStorageKey, freshData);
         } else {
           // 3. Fallback final : synchroniser automatiquement l'utilisateur
           console.log('🔄 Aucune donnée trouvée, synchronisation automatique...');
@@ -162,7 +149,7 @@ export function UserRoleProvider({ children }) {
                 setUserData(result.user);
                 setUserRole(result.user.role);
                 setPermissions(getPermissionsByRole(result.user.role));
-                saveToLocalStorage(userStorageKey, result.user);
+                setLSItem(userStorageKey, result.user);
               } else {
                 throw new Error('Réponse de synchronisation invalide');
               }
@@ -182,7 +169,7 @@ export function UserRoleProvider({ children }) {
             setUserData(defaultUserData);
             setUserRole('public');
             setPermissions(getPermissionsByRole('public'));
-            saveToLocalStorage(userStorageKey, defaultUserData);
+            setLSItem(userStorageKey, defaultUserData);
           }
         }
 
@@ -261,7 +248,7 @@ export function UserRoleProvider({ children }) {
           setUserData(result.user);
           setUserRole(result.user.role);
           setPermissions(getPermissionsByRole(result.user.role));
-          saveToLocalStorage(userStorageKey, result.user);
+          setLSItem(userStorageKey, result.user);
           console.log('✅ Synchronisation réussie:', result.message);
           return result;
         }

@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useContext,useRef, useEffect, useState } from "react";
+import { useContext, useRef, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import PermissionGate from '../components/PermissionGate';
@@ -11,8 +11,8 @@ import PersonCard from '../components/PersonCard';
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
     const { openPortal } = useDetailPortal();
-    if (!ctx) return <div style={{color:'red'}}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
-    const {enseignants, classes, selected, setSelected, showModal, setShowModal, setEditType} = ctx
+    if (!ctx) return <div style={{ color: 'red' }}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
+    const { enseignants, classes, selected, setSelected, showModal, setShowModal, setEditType } = ctx
 
     // États pour le filtrage et tri
     const [sortBy, setSortBy] = useState('nom'); // 'nom', 'classe'
@@ -27,9 +27,9 @@ export default function EcoleAdminEleveLayout({ children }) {
             <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
         </PermissionGate>
         <h2>Liste des enseignants </h2>
-        
+
         {/* Contrôles de filtrage et tri */}
-{/*
+        {/*
         <div className="infos_cards__controls">
             {// Recherche textuelle 
             }
@@ -96,7 +96,7 @@ export default function EcoleAdminEleveLayout({ children }) {
             </div>
         </div>
 */}
-        
+
         {enseignants ?
             <div className={`enseignants-list ${viewMode === 'inline' ? 'enseignants-list--inline' : ''}`}>
                 {enseignants
@@ -110,12 +110,12 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const nomComplet = `${nom} ${prenom}`.toLowerCase();
                             matchesSearch = nomComplet.includes(searchLower);
                         }
-                        
+
                         return matchesSearch;
                     })
                     .sort((a, b) => {
                         let comparison = 0;
-                        
+
                         if (sortBy === 'nom') {
                             // Tri par nom de famille puis prénom (avec vérifications de sécurité)
                             const nomA = a.nom || '';
@@ -131,25 +131,25 @@ export default function EcoleAdminEleveLayout({ children }) {
                             const nomB = b.nom || '';
                             comparison = nbClassesA - nbClassesB || nomA.localeCompare(nomB);
                         }
-                        
+
                         // Inverser l'ordre si décroissant
                         return sortOrder === 'desc' ? -comparison : comparison;
                     })
                     .map(enseignant => (
                         <PersonCard
-                        key={enseignant._id}
-                        person={enseignant}
-                        classes={enseignant?.current_classes.map(el=>classes.find(c => c._id === el))}
-                        type="enseignant"
-                        onEdit={e => {setSelected(e); setEditType("enseignant"); setShowModal(true); }}
-                        viewMode={viewMode}
+                            key={enseignant._id}
+                            person={enseignant}
+                            classes={(enseignant?.current_classes || []).map(el => Array.isArray(classes) ? classes.find(c => c._id === el) : null).filter(Boolean)}
+                            type="enseignant"
+                            onEdit={e => { setSelected(e); setEditType("enseignant"); setShowModal(true); }}
+                            viewMode={viewMode}
                         />
-                ))}
+                    ))}
             </div>
             :
-            <div style={{textAlign:'center',marginTop:'2em',fontSize:'1.3em'}}>Chargement...</div>
+            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
         }
-        
+
         {children}
     </>)
 }

@@ -54,7 +54,7 @@ export default function ClassesPage({ children }) {
     </h2>
 
     {/* Badges de filtrage par année */}
-    {classes && (
+    {Array.isArray(classes) && classes.length > 0 && (
       <div className="year-filter">
         {selectedYear && (
           <button

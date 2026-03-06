@@ -39,7 +39,9 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
         <div className="person-card__infos">
           <div className="person-card__name">{person.nom} <span className="person-card__prenoms">{person.prenoms}</span></div>
           <div className="person-card__sexe">Sexe : {person.sexe === 'M' ? 'Masculin' : person.sexe === 'F' ? 'Féminin' : '-'}</div>
-          <div className="person-card__classe">{classes.map(el => el?.niveau + " - " + el?.alias)}</div>
+          <div className="person-card__classe">
+            {Array.isArray(classes) && classes.map(el => el?.niveau + " - " + el?.alias).join(', ')}
+          </div>
           {/* Badge ou champ spécifique selon le type */}
           {type === 'eleve' && (
             <div className="person-card__isinterne">

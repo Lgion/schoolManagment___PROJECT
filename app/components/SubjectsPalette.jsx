@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useUserRole } from '../../stores/useUserRole'
+import { getLSItem } from '../../utils/localStorageManager'
 
 /**
  * Composant SubjectsPalette
@@ -30,7 +31,25 @@ export default function SubjectsPalette({ onSubjectsChange }) {
 
     const loadSubjects = async () => {
         try {
-            console.log('🔄 [SubjectsPalette] Chargement des matières...')
+            console.log('🔄 [SubjectsPalette] Vérification de la disponibilité des matières locales...');
+            const localStorageSubjects = getLSItem('app_subjects');
+            if (localStorageSubjects && Array.isArray(localStorageSubjects) && localStorageSubjects.length > 0) {
+                console.log('✅ [SubjectsPalette] Matières trouvées dans localStorage, arrêt du proxy API.');
+                // Note that in SubjectsPalette, the original implementation fetched the full subject objects, 
+                // but getLSItem('app_subjects') currently stores an array of strings (names) from EntityModal, 
+                // so we need to fetch the real objects here if the local storage only has names.
+                // For proper isolation, we will rely on fetching objects anyway if the exact full object array is not in cache,
+                // but in this project they seem to use /api/subjects purely without caching the objects here. 
+                // Let's implement the block:
+
+                if (typeof localStorageSubjects[0] === 'object') {
+                    setSubjects(localStorageSubjects);
+                    if (onSubjectsChange) onSubjectsChange(localStorageSubjects);
+                    return; // BLOCK FETCH
+                }
+            }
+
+            console.log('🔄 [SubjectsPalette] Chargement des matières depuis API...')
             const response = await fetch('/api/subjects', { credentials: 'include' })
             const data = await response.json()
 

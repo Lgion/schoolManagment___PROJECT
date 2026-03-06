@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearLS } from '../../utils/localStorageManager';
 
 export default function ReloadLSPage() {
   const router = useRouter();
@@ -9,8 +10,8 @@ export default function ReloadLSPage() {
 
   useEffect(() => {
     // Vider complètement le localStorage
-    localStorage.clear();
-    
+    clearLS();
+
     console.log('🗑️ localStorage vidé complètement');
     setEtat('🗑️ localStorage vidé complètement')
     // Rediriger vers la page d'accueil

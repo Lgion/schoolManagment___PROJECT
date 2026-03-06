@@ -89,3 +89,16 @@ WIP mise en page à revoir, et encore quelque fonctionnalités à ajouter je pen
 WIP, almost DONE, il faut rajouter un petit module permettant de lister les anniversaire à venir(les 10 suivants, ou ceux du mois en cours et suivant)
 - assainir le code le plus possible, et optimiser la vitesse d'affichage, réduire la charge de sur processeur, etc. Commencer par le scss, puis clore par le jsx
 - vérifier quand je crée un eleve prof ou classe si un dossier est bien créé dans /public/school/
+
+
+- la variable dynamicSubjects tire ses données selon 3 sources dans l'ordre: 1 localstorage, 2 mongodb, 3 hardcodé MATIERES_SCOLAIRES. Il ne doit jamais y avoir de donnée tiré de donnée hardcodé. Le seul cas d'utilisation des données hardcodés est par le clic sur un bouton par le user afin de "seed" mongodb (donc si le user désire un template d'ensemble de matiere)
+DONE
+- le calendrier doit etre retravaillé (...TODO à compélter)
+- il faut retravailler le contenu des bloc d'édition des eleves, profs, et classes
+    - il doit etre possible de recardrer une photo (eleves, profs, classes)
+    - les boutons d'action sur la page d'un éleve doivent disparaitre
+    - un bouton map doit remplacer les données géoloc
+- le module d'anniversaire doit permettre d'afficher les 3 prochain anniversaire avec date et (...à définir)
+- la logic des classes doit etre rectifiée pour que les classes des années précédentes puissent afficher les élèves qu'elles avaient (actuellement on mute les élèves vers les classes des nouvelles années, et du coup les classes des anciennes années perdent leur effectifs pour n'avoir 0 élève)
+- si le user n'est ni un prof ni un admin, il ne doit pas avoir accès à autre chose que élèves. Le mnenu principal doit n'afficher que le liens vers /élèves
+- revisiter la titrologie de chaque page

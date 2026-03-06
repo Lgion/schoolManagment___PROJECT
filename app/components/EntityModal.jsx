@@ -1,8 +1,7 @@
-import { useContext, useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres';
-import Gmap from '../_/Gmap_plus';
-import CameraCapture from './CameraCapture';
+import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres'; // Keep for structure mapping only
+import { getLSItem, setLSItem } from '../../utils/localStorageManager';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -243,18 +242,13 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       console.log('🔄 [EntityModal] Chargement des matières - priorité localStorage...');
 
       // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
-      const localStorageSubjects = localStorage.getItem('app_subjects');
-      if (localStorageSubjects) {
-        try {
-          const parsedSubjects = JSON.parse(localStorageSubjects);
-          if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
-            console.log('✅ [EntityModal] Matières trouvées dans localStorage:', parsedSubjects.length);
-            setDynamicSubjects(parsedSubjects);
-            setSubjectsLoaded(true);
-            return; // Utiliser localStorage, pas besoin de fallback
-          }
-        } catch (parseError) {
-          console.warn('⚠️ [EntityModal] Erreur parsing localStorage subjects:', parseError);
+      const parsedSubjects = getLSItem('app_subjects');
+      if (parsedSubjects) {
+        if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
+          console.log('✅ [EntityModal] Matières trouvées dans localStorage:', parsedSubjects.length);
+          setDynamicSubjects(parsedSubjects);
+          setSubjectsLoaded(true);
+          return; // Utiliser localStorage, pas besoin de fallback
         }
       }
 
@@ -281,7 +275,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
         const subjects = sortedData.map(subject => subject.nom);
 
         // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
-        localStorage.setItem('app_subjects', JSON.stringify(subjects));
+        setLSItem('app_subjects', subjects);
         console.log('💾 [EntityModal] Matières sauvegardées dans localStorage');
 
         setDynamicSubjects(subjects);
@@ -294,14 +288,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       } else {
         console.log('⚠️ [EntityModal] Pas de données MongoDB, aucun fallback');
         // Sauvegarder liste vide dans localStorage
-        localStorage.setItem('app_subjects', JSON.stringify([]));
+        setLSItem('app_subjects', []);
         setDynamicSubjects([]);
         setSubjectsLoaded(true);
       }
     } catch (error) {
       console.error('❌ [EntityModal] Erreur lors du chargement des matières:', error);
       // En cas d'erreur, sauvegarder liste vide
-      localStorage.setItem('app_subjects', JSON.stringify([]));
+      setLSItem('app_subjects', []);
       setDynamicSubjects([]);
       setSubjectsLoaded(true);
     }
@@ -326,18 +320,13 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
       // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
       const localStorageKey = `app_class_coefficients_${classeId}`;
-      const localStorageCoefficients = localStorage.getItem(localStorageKey);
-      if (localStorageCoefficients) {
-        try {
-          const parsedCoefficients = JSON.parse(localStorageCoefficients);
-          if (typeof parsedCoefficients === 'object' && parsedCoefficients !== null) {
-            console.log('✅ [EntityModal] Coefficients trouvés dans localStorage:', parsedCoefficients);
-            setClassCoefficients(parsedCoefficients);
-            setClassCoefficientsLoaded(true);
-            return; // Utiliser localStorage, pas besoin de fallback
-          }
-        } catch (parseError) {
-          console.warn('⚠️ [EntityModal] Erreur parsing localStorage coefficients:', parseError);
+      const parsedCoefficients = getLSItem(localStorageKey);
+      if (parsedCoefficients) {
+        if (typeof parsedCoefficients === 'object' && parsedCoefficients !== null) {
+          console.log('✅ [EntityModal] Coefficients trouvés dans localStorage:', parsedCoefficients);
+          setClassCoefficients(parsedCoefficients);
+          setClassCoefficientsLoaded(true);
+          return; // Utiliser localStorage, pas besoin de fallback
         }
       }
 
@@ -356,14 +345,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           console.log('✅ [EntityModal] Coefficients MongoDB chargés:', data.data.coefficients);
 
           // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
-          localStorage.setItem(localStorageKey, JSON.stringify(data.data.coefficients));
+          setLSItem(localStorageKey, data.data.coefficients);
           console.log('💾 [EntityModal] Coefficients sauvegardés dans localStorage');
 
           setClassCoefficients(data.data.coefficients);
         } else {
           console.log('⚠️ [EntityModal] Pas de coefficients configurés pour cette classe');
           // Sauvegarder objet vide dans localStorage
-          localStorage.setItem(localStorageKey, JSON.stringify({}));
+          setLSItem(localStorageKey, {});
           setClassCoefficients({});
         }
       } else {
@@ -377,7 +366,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           defaultCoefficients[i.toString()] = defaultCoeff;
         }
 
-        localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
+        setLSItem(localStorageKey, defaultCoefficients);
         console.log('💾 [EntityModal] Coefficients par défaut sauvegardés dans localStorage');
         setClassCoefficients(defaultCoefficients);
       }
@@ -395,7 +384,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       }
 
       const localStorageKey = `app_class_coefficients_${classeId}`;
-      localStorage.setItem(localStorageKey, JSON.stringify(defaultCoefficients));
+      setLSItem(localStorageKey, defaultCoefficients);
       setClassCoefficients(defaultCoefficients);
       setClassCoefficientsLoaded(true);
     }
@@ -703,7 +692,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
               // Mettre à jour le localStorage aussi
               const localStorageKey = `app_class_coefficients_${classeId}`;
-              localStorage.setItem(localStorageKey, JSON.stringify(form.coefficients));
+              setLSItem(localStorageKey, form.coefficients);
               console.log('💾 [EntityModal] Coefficients mis à jour dans localStorage');
             } else {
               console.error('❌ [EntityModal] Erreur lors de la sauvegarde des coefficients:', response.status);

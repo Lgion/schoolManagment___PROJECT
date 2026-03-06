@@ -1,36 +1,36 @@
 
+import { getLSItem, setLSItem } from './localStorageManager';
 
-
-export function getAllFavoris(){
+export function getAllFavoris() {
     if (typeof window === 'undefined') return {};
-    return JSON.parse(localStorage.cart || "{}")
+    return getLSItem("cart") || {};
 }
 
 
-export function saveArticle(object, key="cart"){
+export function saveArticle(object, key = "cart") {
     if (typeof window !== 'undefined') {
-        localStorage[key] = JSON.stringify(object)
+        setLSItem(key, object);
     }
 }
 
 
-export function addArticle(articleID,qty){
+export function addArticle(articleID, qty) {
     if (typeof window !== 'undefined') {
-        localStorage.cart = JSON.stringify({...getAllFavoris(), [articleID]: qty})
+        setLSItem("cart", { ...getAllFavoris(), [articleID]: qty });
     }
 }
 
 
-export function deleteArticle(articleID){
+export function deleteArticle(articleID) {
     if (typeof window !== 'undefined') {
         const ls = getAllFavoris()
         delete ls[articleID]
-        localStorage.cart = JSON.stringify(ls)
+        setLSItem("cart", ls);
     }
 }
 
 
-export function getFavorisIDs(){
+export function getFavorisIDs() {
     return Object.keys(getAllFavoris())
 }
 

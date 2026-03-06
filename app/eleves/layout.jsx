@@ -6,6 +6,7 @@ import { AiAdminContext } from '../../stores/ai_adminContext';
 import PermissionGate from '../components/PermissionGate';
 import EleveCard from './EleveCard';
 import './EleveCard.scss';
+import { getLSItem } from "../../utils/localStorageManager";
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -72,7 +73,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre d\'élèves: ' + JSON.parse(localStorage.getItem('eleves'))?.length
+                        text: 'Nombre d\'élèves: ' + (getLSItem('eleves')?.length || 0)
                     },
                     legend: {
                         onClick: (e, legendItem, legend) => {

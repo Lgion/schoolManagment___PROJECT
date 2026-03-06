@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '../../../lib/dbConnect';
-const Subject = require('../../../_/models/ai/Subject');
+import dbConnect from '../../lib/dbConnect';
+const Subject = require('../../_/models/ai/Subject');
 
 /**
  * DELETE /api/subjects/delete-all

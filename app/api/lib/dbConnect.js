@@ -29,7 +29,18 @@ async function dbConnect() {
       // useNewUrlParser: true,
       // useUnifiedTopology: true,
       bufferCommands: false, // recommandé avec Next.js
-    }).then((mongoose) => mongoose);
+      serverSelectionTimeoutMS: 5000, // Timeout après 5s au lieu de 30s
+      connectTimeoutMS: 10000, // Timeout de connexion initial
+    }).then((mongoose) => {
+      console.log('✅ Connected to MongoDB');
+      return mongoose;
+    }).catch(err => {
+      console.error('❌ MongoDB Connection Error:', err.message);
+      if (err.message.includes('ETIMEDOUT') || err.message.includes('ENETUNREACH')) {
+        console.error('👉 Tip: Check your internet connection or MongoDB Atlas IP Whitelist.');
+      }
+      throw err;
+    });
   }
   cached.conn = await cached.promise;
   return cached.conn;

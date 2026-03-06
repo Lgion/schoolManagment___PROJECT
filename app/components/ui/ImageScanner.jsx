@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
+import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
 
 export default function ImageScanner({ classeId, onScanComplete, label = "Scanner une classe", className = "" }) {
     const [isScanning, setIsScanning] = useState(false);
@@ -45,8 +46,8 @@ export default function ImageScanner({ classeId, onScanComplete, label = "Scanne
             // Local caching fallback without blocking the main thread (No alert())
             try {
                 const cacheData = { name: file.name, size: file.size, date: new Date().toISOString() };
-                const existing = JSON.parse(localStorage.getItem(`offline_scans_${classeId}`) || '[]');
-                localStorage.setItem(`offline_scans_${classeId}`, JSON.stringify([...existing, cacheData]));
+                const existing = getLSItem(`offline_scans_${classeId}`) || [];
+                setLSItem(`offline_scans_${classeId}`, [...existing, cacheData]);
             } catch (e) {
                 console.error("Local storage error:", e);
             }

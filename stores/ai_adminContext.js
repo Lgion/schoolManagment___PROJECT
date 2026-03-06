@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useState, useCallback, useEffect } from 'react';
+import { getLSItem, setLSItem, clearLS } from '../utils/localStorageManager';
 
 export const AiAdminContext = createContext({});
 
@@ -13,32 +14,23 @@ export const AdminContextProvider = ({ children }) => {
   const [editType, setEditType] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // --- UTILS LOCALSTORAGE ---
-  const loadFromStorage = (key) => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const val = localStorage.getItem(key);
-      return val ? JSON.parse(val) : null;
-    } catch {
-      return null;
-    }
-  };
-  const saveToStorage = (key, val) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(val));
-    }
-  };
+
 
   // --- ELEVE CRUD ---
   const fetchEleves = useCallback(async () => {
-    let data = loadFromStorage('eleves');
+    let data = getLSItem('eleves');
     if (data && Array.isArray(data) && data.length > 0) {
       setEleves(data);
     } else {
       const res = await fetch('/api/school_ai/eleves');
       data = await res.json();
-      setEleves(data);
-      saveToStorage('eleves', data);
+      if (Array.isArray(data)) {
+        setEleves(data);
+        setLSItem('eleves', data);
+      } else {
+        console.error('Erreur lors du fetch des élèves:', data);
+        setEleves([]);
+      }
     }
   }, []);
 
@@ -54,7 +46,7 @@ export const AdminContextProvider = ({ children }) => {
         const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
       return newList;
     });
 
@@ -70,7 +62,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/eleves');
       const newList = await updated.json();
       setEleves(newList);
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
       return await res.json();
     } catch (err) {
       console.error("Optimistic UI revert for saveEleve", err);
@@ -83,7 +75,7 @@ export const AdminContextProvider = ({ children }) => {
     // Optimistic Update
     setEleves(prev => {
       const newList = prev.filter(e => e._id !== _id);
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
       return newList;
     });
 
@@ -99,7 +91,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/eleves');
       const newList = await updated.json();
       setEleves(newList);
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteEleve", err);
       fetchEleves();
@@ -109,14 +101,19 @@ export const AdminContextProvider = ({ children }) => {
 
   // --- ENSEIGNANT CRUD ---
   const fetchEnseignants = useCallback(async () => {
-    let data = loadFromStorage('enseignants');
+    let data = getLSItem('enseignants');
     if (data && Array.isArray(data) && data.length > 0) {
       setEnseignants(data);
     } else {
       const res = await fetch('/api/school_ai/enseignants');
       data = await res.json();
-      setEnseignants(data);
-      saveToStorage('enseignants', data);
+      if (Array.isArray(data)) {
+        setEnseignants(data);
+        setLSItem('enseignants', data);
+      } else {
+        console.error('Erreur lors du fetch des enseignants:', data);
+        setEnseignants([]);
+      }
     }
   }, []);
 
@@ -132,7 +129,7 @@ export const AdminContextProvider = ({ children }) => {
         const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
-      saveToStorage('enseignants', newList);
+      setLSItem('enseignants', newList);
       return newList;
     });
 
@@ -148,7 +145,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/enseignants');
       const newList = await updated.json();
       setEnseignants(newList);
-      saveToStorage('enseignants', newList);
+      setLSItem('enseignants', newList);
       return await res.json();
     } catch (err) {
       console.error("Optimistic UI revert for saveEnseignant", err);
@@ -161,7 +158,7 @@ export const AdminContextProvider = ({ children }) => {
     // Optimistic Update
     setEnseignants(prev => {
       const newList = prev.filter(e => e._id !== _id);
-      saveToStorage('enseignants', newList);
+      setLSItem('enseignants', newList);
       return newList;
     });
 
@@ -177,7 +174,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/enseignants');
       const newList = await updated.json();
       setEnseignants(newList);
-      saveToStorage('enseignants', newList);
+      setLSItem('enseignants', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteEnseignant", err);
       fetchEnseignants();
@@ -187,14 +184,19 @@ export const AdminContextProvider = ({ children }) => {
 
   // --- CLASSE CRUD ---
   const fetchClasses = useCallback(async () => {
-    let data = loadFromStorage('classes');
+    let data = getLSItem('classes');
     if (data && Array.isArray(data) && data.length > 0) {
       setClasses(data);
     } else {
       const res = await fetch('/api/school_ai/classes');
       data = await res.json();
-      setClasses(data);
-      saveToStorage('classes', data);
+      if (Array.isArray(data)) {
+        setClasses(data);
+        setLSItem('classes', data);
+      } else {
+        console.error('Erreur lors du fetch des classes:', data);
+        setClasses([]);
+      }
     }
   }, []);
 
@@ -210,7 +212,7 @@ export const AdminContextProvider = ({ children }) => {
         const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
-      saveToStorage('classes', newList);
+      setLSItem('classes', newList);
       return newList;
     });
 
@@ -226,7 +228,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/classes');
       const newList = await updated.json();
       setClasses(newList);
-      saveToStorage('classes', newList);
+      setLSItem('classes', newList);
       return await res.json();
     } catch (err) {
       console.error("Optimistic UI revert for saveClasse", err);
@@ -239,7 +241,7 @@ export const AdminContextProvider = ({ children }) => {
     // Optimistic Update
     setClasses(prev => {
       const newList = prev.filter(c => c._id !== _id);
-      saveToStorage('classes', newList);
+      setLSItem('classes', newList);
       return newList;
     });
 
@@ -255,7 +257,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await fetch('/api/school_ai/classes');
       const newList = await updated.json();
       setClasses(newList);
-      saveToStorage('classes', newList);
+      setLSItem('classes', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteClasse", err);
       fetchClasses();
@@ -271,7 +273,7 @@ export const AdminContextProvider = ({ children }) => {
       const newList = prev.map(e =>
         e._id === eleveId ? { ...e, compositions } : e
       );
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
       return newList;
     });
 
@@ -289,7 +291,7 @@ export const AdminContextProvider = ({ children }) => {
       // Synchroniser avec la valeur réelle du serveur
       setEleves(prev => {
         const newList = prev.map(e => e._id === eleveId ? updated : e);
-        saveToStorage('eleves', newList);
+        setLSItem('eleves', newList);
         return newList;
       });
       return updated;
@@ -307,7 +309,7 @@ export const AdminContextProvider = ({ children }) => {
       const newList = prev.map(e =>
         e._id === eleveId ? { ...e, absences } : e
       );
-      saveToStorage('eleves', newList);
+      setLSItem('eleves', newList);
       return newList;
     });
 
@@ -324,7 +326,7 @@ export const AdminContextProvider = ({ children }) => {
       const updated = await res.json();
       setEleves(prev => {
         const newList = prev.map(e => e._id === eleveId ? updated : e);
-        saveToStorage('eleves', newList);
+        setLSItem('eleves', newList);
         return newList;
       });
       return updated;
@@ -361,7 +363,7 @@ export const AdminContextProvider = ({ children }) => {
   useEffect(() => {
 
     if (process.env.NEXT_PUBLIC_MODE === 'test') {
-      localStorage.clear()
+      clearLS();
     }
   }, [])
   // --- AUTO FETCH CLASSES AU MONTAGE ---
