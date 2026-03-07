@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef, Fragment } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres'; // Keep for structure mapping only
 import { getLSItem, setLSItem } from '../../utils/localStorageManager';
@@ -27,6 +27,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [newManusDate, setNewManusDate] = useState('');
   const [newManusReason, setNewManusReason] = useState('');
   const ctx = useContext(AiAdminContext);
+  const { dynamicSubjects, subjectsLoaded } = ctx;
   const fileInput = useRef();
 
   // État pour la duplication de classe
@@ -177,10 +178,6 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   const [previewUrl, setPreviewUrl] = useState('');
   const [showMap, setShowMap] = useState(false);
 
-  // États pour les matières dynamiques depuis MongoDB (utilisé par CoefficientsManager et CompositionsBlock)
-  const [dynamicSubjects, setDynamicSubjects] = useState([]);
-  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
-
   // États pour les coefficients de classe
   const [classCoefficients, setClassCoefficients] = useState({});
   const [classCoefficientsLoaded, setClassCoefficientsLoaded] = useState(false);
@@ -236,79 +233,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
   }, [type, entity])
   const [selectedDocuments, setSelectedDocuments] = useState([]);
 
-  // Chargement des matières avec priorité localStorage (selon règles projet)
-  const loadSubjectsForEntityModal = async () => {
-    try {
-      console.log('🔄 [EntityModal] Chargement des matières - priorité localStorage...');
 
-      // 1. PRIORITÉ ABSOLUE : Vérifier localStorage d'abord
-      const parsedSubjects = getLSItem('app_subjects');
-      if (parsedSubjects) {
-        if (Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
-          console.log('✅ [EntityModal] Matières trouvées dans localStorage:', parsedSubjects.length);
-          // S'assurer que les données sont au format objet {id, nom}
-          const formattedSubjects = parsedSubjects.map(s => typeof s === 'string' ? { id: s, nom: s } : s);
-          setDynamicSubjects(formattedSubjects);
-          setSubjectsLoaded(true);
-          return; // Utiliser localStorage, pas besoin de fallback
-        }
-      }
-
-      console.log(' [EntityModal] Pas de matières dans localStorage, fallback MongoDB...');
-
-      // 2. FALLBACK : Charger depuis MongoDB et sauvegarder dans localStorage
-      const response = await fetch('/api/subjects', {
-        credentials: 'include'
-      });
-      console.log('📡 [EntityModal] Réponse API subjects:', response.status);
-
-      const data = await response.json();
-      console.log('📊 [EntityModal] Données matières reçues:', data);
-
-      if (data.success && data.data) {
-        console.log('✅ [EntityModal] Matières MongoDB chargées:', data.data.length);
-
-        // Convertir la structure MongoDB en format utilisable
-        const sortedData = data.data
-          .filter(subject => subject.isActive)
-          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Tri par date de création
-
-        const subjects = sortedData.map(subject => ({
-          id: subject._id || subject.id,
-          nom: subject.nom
-        }));
-
-        // IMPORTANT: Sauvegarder dans localStorage pour les prochaines fois
-        setLSItem('app_subjects', subjects);
-        console.log('💾 [EntityModal] Matières sauvegardées dans localStorage');
-
-        setDynamicSubjects(subjects);
-        setSubjectsLoaded(true);
-
-        console.log('✅ [EntityModal] Matières configurées (triées par date):', {
-          subjectsCount: subjects.length,
-          first4: subjects.slice(0, 4)
-        });
-      } else {
-        console.log('⚠️ [EntityModal] Pas de données MongoDB, aucun fallback');
-        // Sauvegarder liste vide dans localStorage
-        setLSItem('app_subjects', []);
-        setDynamicSubjects([]);
-        setSubjectsLoaded(true);
-      }
-    } catch (error) {
-      console.error('❌ [EntityModal] Erreur lors du chargement des matières:', error);
-      // En cas d'erreur, sauvegarder liste vide
-      setLSItem('app_subjects', []);
-      setDynamicSubjects([]);
-      setSubjectsLoaded(true);
-    }
-  };
-
-  // Charger les matières depuis MongoDB au montage du composant
-  useEffect(() => {
-    loadSubjectsForEntityModal();
-  }, []);
 
   // Charger les coefficients de classe quand l'élève a une classe assignée
   useEffect(() => {
@@ -2072,7 +1997,7 @@ function generateSchoolYears(existingCompositions = {}) {
 }
 
 // --- Bloc de gestion des compositions par trimestre ---
-function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dynamicSubjects, subjectsLoaded, classCoefficients, classes = [] }) {
+function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentData, dynamicSubjects = [], subjectsLoaded, classCoefficients = {}, classes = [] }) {
   // Nouveau format : {"2025-2026": [{officiel: {timestamp: {matiere: {note, sur}}}, unOfficiel: {...}}, ...]}
   const [adding, setAdding] = useState(null); // trimestre en cours d'ajout
   const [newNote, setNewNote] = useState('');
@@ -2155,8 +2080,8 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
 
   // Fonction pour obtenir le coefficient d'une matière (priorité: classe > hardcodé > défaut)
   const getCoefficientForSubject = (matiere) => {
-    // 1. Chercher par ID dans les coefficients de classe
-    const subject = dynamicSubjects.find(s => s.nom === matiere);
+    // 1. Chercher par ID ou Nom dans les coefficients de classe
+    const subject = dynamicSubjects.find(s => s.nom === matiere || s.id === matiere || s._id === matiere);
     if (subject && classCoefficients[subject.id]) {
       return classCoefficients[subject.id] * 10; // coefficient * 10 = sur
     }
@@ -2202,6 +2127,19 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
     { officiel: {}, unOfficiel: {} }
   ];
 
+  const getSubName = (idOrName) => {
+    if (!idOrName) return 'Inconnue';
+    if (!dynamicSubjects || dynamicSubjects.length === 0) return idOrName;
+
+    const sub = dynamicSubjects.find(s =>
+      s.id === idOrName ||
+      s._id === idOrName ||
+      s.nom === idOrName ||
+      (s.id && s.id.toString() === idOrName.toString())
+    );
+    return sub ? sub.nom : idOrName;
+  };
+
   // Fonction pour calculer la moyenne d'un trimestre avec la nouvelle structure
   const calculateTrimestreMoyenne = (trimestreData) => {
     if (!trimestreData || typeof trimestreData !== 'object') return null;
@@ -2221,12 +2159,19 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
 
           const noteValue = noteData.note;
           const sur = noteData.sur || 20;
-          const coefficient = sur / 10; // sur/10 = coefficient (sur:20 = coeff:2)
+
+          // Déterminer le coefficient réel
+          // Si sur est 20, le coefficient est 2 (format legacy)
+          // Sinon, sur est le coefficient (nouveau format)
+          const coefficient = sur === 20 ? 2 : sur;
 
           if (typeof noteValue === 'number' && noteValue >= 0) {
-            // Convertir en note sur 20 pour uniformiser
-            const noteSur20 = (noteValue / sur) * 20;
-            totalPoints += noteSur20 * coefficient;
+            // Note sur 10 :
+            // Si sur=20, noteValue est sur 20, donc noteSur10 = noteValue / 2
+            // Si sur=coeff, noteValue est sur coeff*10, donc noteSur10 = noteValue / coeff
+            const noteSur10 = sur === 20 ? (noteValue / 2) : (noteValue / sur);
+
+            totalPoints += noteSur10 * coefficient;
             totalCoefficients += coefficient;
           }
         });
@@ -2498,7 +2443,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
       {/* Moyenne annuelle */}
       <div className="compositions-block__moyenne-annuelle">
         <strong>Moyenne annuelle ({schoolYear}): </strong>
-        <span>{moyenneAnnuelle !== null ? `${moyenneAnnuelle.toFixed(2)}/20` : 'Non calculée'}</span>
+        <span>{moyenneAnnuelle !== null ? `${(moyenneAnnuelle * 2).toFixed(2)}/20` : 'Non calculée'}</span>
       </div>
 
       {trimestres.map((tri, idx) => (
@@ -2506,7 +2451,7 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
           <div className="compositions-block__trimestre-header">
             <span className="compositions-block__trimestre-title">{tri}</span>
             <span className="compositions-block__trimestre-score">
-              Moyenne trimestrielle: {moyennesTrimestrielles[idx] !== null ? `${(moyennesTrimestrielles[idx] / 2).toFixed(2)}/10` : 'Non calculée'}
+              Moyenne trimestrielle: {moyennesTrimestrielles[idx] !== null ? `${moyennesTrimestrielles[idx].toFixed(2)}/10` : 'Non calculée'}
             </span>
             {onChange && (
               <div className="compositions-block__actions">
@@ -2572,8 +2517,10 @@ function CompositionsBlock({ compositions, schoolYear, onChange, studentData, dy
                       </div>
                       {dateGroup.notes.map((note, noteIndex) => (
                         <div key={`${timestamp}-${note.matiere}`} className="compositions-block__note">
-                          <span className="compositions-block__note-matiere">{note.matiere}:</span>
-                          <span className="compositions-block__note-value">{note.noteValue}/{note.denominateur}</span>
+                          <span className="compositions-block__note-matiere">{getSubName(note.matiere)}:</span>
+                          <span className="compositions-block__note-value">
+                            {note.noteValue}/{note.denominateur === 20 ? 20 : (note.denominateur * 10)}
+                          </span>
                           {onChange && (
                             <button
                               type="button"

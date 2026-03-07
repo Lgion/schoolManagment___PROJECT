@@ -13,6 +13,8 @@ export const AdminContextProvider = ({ children }) => {
   const [selected, setSelected] = useState(null);
   const [editType, setEditType] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [dynamicSubjects, setDynamicSubjects] = useState([]);
+  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
 
 
 
@@ -337,6 +339,38 @@ export const AdminContextProvider = ({ children }) => {
     }
   }, [fetchEleves]);
 
+  // --- SUBJECTS ---
+  const fetchSubjects = useCallback(async () => {
+    try {
+      const parsedSubjects = getLSItem('app_subjects');
+      if (parsedSubjects && Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
+        setDynamicSubjects(parsedSubjects);
+        setSubjectsLoaded(true);
+        return;
+      }
+
+      const response = await fetch('/api/subjects');
+      const data = await response.json();
+      if (data.success && data.data) {
+        const sortedData = data.data
+          .filter(subject => subject.isActive)
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+        const subjects = sortedData.map(subject => ({
+          id: subject._id || subject.id,
+          nom: subject.nom
+        }));
+
+        setLSItem('app_subjects', subjects);
+        setDynamicSubjects(subjects);
+        setSubjectsLoaded(true);
+      }
+    } catch (error) {
+      console.error('Erreur chargement matières context:', error);
+      setSubjectsLoaded(true);
+    }
+  }, []);
+
   // --- UPLOAD ---
   const uploadFile = useCallback(async (payload) => {
     const { file, type, documents, ...payload_ } = payload;
@@ -366,7 +400,8 @@ export const AdminContextProvider = ({ children }) => {
   // --- AUTO FETCH CLASSES AU MONTAGE ---
   useEffect(() => {
     if (classes.length === 0) fetchClasses();
-  }, [classes.length, fetchClasses]);
+    if (dynamicSubjects.length === 0) fetchSubjects();
+  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects]);
 
 
 
@@ -381,6 +416,7 @@ export const AdminContextProvider = ({ children }) => {
         saveEleveNotes, saveEleveAbsences,
         enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
         classes, fetchClasses, saveClasse, deleteClasse,
+        dynamicSubjects, fetchSubjects, subjectsLoaded,
         uploadFile,
         selected, setSelected, showModal, setShowModal, editType, setEditType
       }}

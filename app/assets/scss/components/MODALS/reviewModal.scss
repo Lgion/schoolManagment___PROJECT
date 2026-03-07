@@ -163,7 +163,12 @@
         background: white;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        overflow: scroll;
+    }
+
+    &__tr {
+        display: flex;
+        flex-flow: wrap;
     }
 
     &__panel-header {

@@ -5,7 +5,7 @@ import Eleve from '../../../../_/models/ai/Eleve';
 import Classe from '../../../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
 import { checkRole, Roles } from '../../../../../../utils/roles';
-import { authWithFallback } from '../../../lib/authWithFallback';
+import { authWithFallback } from '../../../../lib/authWithFallback';
 
 export async function GET(request, { params }) {
     try {

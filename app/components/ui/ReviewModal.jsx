@@ -1,22 +1,61 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import '../../assets/scss/components/MODALS/reviewModal.scss';
 import ReviewCell from './ReviewCell';
 
-export default function ReviewModal({ file, extractedData, onClose, onValidate }) {
+export default function ReviewModal({ file, extractedData, students = [], subjects = [], coefficients = {}, onClose, onValidate }) {
     const [imageUrl, setImageUrl] = useState(null);
     const [zoom, setZoom] = useState(1);
     const imgRef = useRef(null);
     const containerRef = useRef(null);
 
-    // NFR-PERF-1: Utilizing a ref for mutable localized data without forcing parent re-renders
-    const editedDataRef = useRef(extractedData ? [...extractedData] : []);
+    const [rows, setRows] = useState([]);
+    // État pour le mapping centralisé des matières { rawOcrName: officialId }
+    const [subjectMapping, setSubjectMapping] = useState({});
 
-    // Synchronize ref if extractedData changes
+    // Liste filtrée des matières de la classe (uniquement celles avec coeff)
+    const classSubjects = useMemo(() => {
+        return subjects.filter(s => coefficients[s.id] !== undefined);
+    }, [subjects, coefficients]);
+
+    // Algorithme de matching initial
     useEffect(() => {
-        if (extractedData) {
-            editedDataRef.current = [...extractedData];
-        }
-    }, [extractedData]);
+        if (!extractedData) return;
+
+        // 1. Extraire les noms de matières uniques détectés par l'IA
+        const ocrSubjects = new Set();
+        extractedData.forEach(item => {
+            (item.notes || []).forEach(n => {
+                if (n.matiere) ocrSubjects.add(n.matiere);
+            });
+        });
+
+        // 2. Tenter un matching automatique pour la table de correspondance unique
+        const initialMapping = {};
+        ocrSubjects.forEach(ocrName => {
+            const bestSubMatch = classSubjects.find(s =>
+                s.nom.toLowerCase().includes(ocrName.toLowerCase()) ||
+                ocrName.toLowerCase().includes(s.nom.toLowerCase())
+            );
+            initialMapping[ocrName] = bestSubMatch ? bestSubMatch.id : "";
+        });
+        setSubjectMapping(initialMapping);
+
+        // 3. Préparer les lignes d'élèves (matching élèves seulement ici)
+        const matched = extractedData.map(item => {
+            const rawName = (item.nom || "").toLowerCase().trim();
+            const bestMatch = students.find(s => {
+                const sNom = (s.nom || "").toLowerCase();
+                const sPrenom = (Array.isArray(s.prenoms) ? s.prenoms[0] : s.prenoms || "").toLowerCase();
+                return rawName.includes(sNom) || rawName.includes(sPrenom) || sNom.includes(rawName);
+            });
+
+            return {
+                ...item,
+                matchedStudentId: bestMatch ? bestMatch._id : null
+            };
+        });
+        setRows(matched);
+    }, [extractedData, students, classSubjects]);
 
     // Initialisation et focus trap basique + a11y (Escape)
     useEffect(() => {
@@ -45,8 +84,28 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
     const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
     const handleResetZoom = () => setZoom(1);
 
+    const handleSubjectMapChange = (ocrName, officialId) => {
+        setSubjectMapping(prev => ({ ...prev, [ocrName]: officialId }));
+    };
+
     const handleRowChange = (index, updatedRow) => {
-        editedDataRef.current[index] = updatedRow;
+        setRows(prev => {
+            const next = [...prev];
+            next[index] = updatedRow;
+            return next;
+        });
+    };
+
+    const triggerValidation = () => {
+        // Fusionner le mapping centralisé des matières dans les données avant validation
+        const finalData = rows.map(row => ({
+            ...row,
+            notes: (row.notes || []).map(n => ({
+                ...n,
+                matchedMatiereId: subjectMapping[n.matiere] || null
+            }))
+        }));
+        onValidate(finalData);
     };
 
     if (!file || !extractedData) {
@@ -70,11 +129,12 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
                             className="review-modal__btn-cancel"
                             onClick={onClose}
                         >
-                            Fermer l'aperçu
+                            Fermer
                         </button>
                         <button
                             className="review-modal__btn-validate"
-                            onClick={() => onValidate(editedDataRef.current)}
+                            onClick={triggerValidation}
+                            disabled={Object.values(subjectMapping).some(val => !val)}
                         >
                             Valider & Publier
                         </button>
@@ -102,30 +162,65 @@ export default function ReviewModal({ file, extractedData, onClose, onValidate }
                     </div>
 
                     <div className="review-modal__right-panel">
-                        <div className="review-modal__panel-header">
-                            <h3>Données extraites</h3>
-                            <p>{extractedData.length} notes reconnues depuis l'image</p>
-                        </div>
-
-                        <div className="review-modal__data-list">
-                            <table className="review-modal__data-table">
+                        {/* 1. TABLE DE CORRESPONDANCE DES MATIÈRES CENTRALISÉE */}
+                        <div className="review-modal__subjects-mapping">
+                            <h3 className="review-modal__panel-title">1. Correspondance des matières</h3>
+                            <p className="review-modal__panel-desc">Liez les noms lus par l'IA aux matières de la classe.</p>
+                            <table className="review-modal__data-table_validSubjects">
                                 <thead>
                                     <tr>
-                                        <th>Élève (Texte reconnu)</th>
-                                        <th>Note</th>
+                                        <th>Texte lu (IA)</th>
+                                        <th>Matière officielle</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {extractedData.map((row, index) => (
-                                        <ReviewCell
-                                            key={index}
-                                            index={index}
-                                            row={row}
-                                            onChange={handleRowChange}
-                                        />
+                                    {Object.keys(subjectMapping).map(ocrName => (
+                                        <tr key={ocrName}>
+                                            <td className="ocr-name-cell">🔍 {ocrName}</td>
+                                            <td>
+                                                <select
+                                                    className={`review-modal__select-subject ${!subjectMapping[ocrName] ? '--error' : ''}`}
+                                                    value={subjectMapping[ocrName]}
+                                                    onChange={(e) => handleSubjectMapChange(ocrName, e.target.value)}
+                                                >
+                                                    <option value="">-- Sélectionner la matière --</option>
+                                                    {classSubjects.map(s => (
+                                                        <option key={s.id} value={s.id}>{s.nom}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                        </tr>
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* 2. TABLE DES ÉLÈVES ET NOTES */}
+                        <div className="review-modal__students-mapping">
+                            <h3 className="review-modal__panel-title">2. Correspondance des élèves et notes</h3>
+                            <p className="review-modal__panel-desc">{rows.length} lignes extraites ({rows.filter(r => r.matchedStudentId).length} identifiés)</p>
+                            <div className="review-modal__data-list">
+                                <table className="review-modal__data-table_students">
+                                    <thead>
+                                        <tr>
+                                            <th>Texte OCR</th>
+                                            <th>Correspondance Élève</th>
+                                            <th>Notes extraites</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {rows.map((row, index) => (
+                                            <ReviewCell
+                                                key={index}
+                                                index={index}
+                                                row={row}
+                                                students={students}
+                                                onChange={handleRowChange}
+                                            />
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ import dbConnect from '../../../lib/dbConnect';
 import Eleve from '../../../_/models/ai/Eleve';
 import User from '../../../_/models/ai/User';
 import { NextResponse } from 'next/server';
-import { checkRole, Roles } from '../../../../../../utils/roles';
+import { checkRole, Roles } from '../../../../../utils/roles';
 import { authWithFallback } from '../../../lib/authWithFallback';
 export async function PATCH(request, { params }) {
     try {

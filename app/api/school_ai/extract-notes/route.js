@@ -29,6 +29,8 @@ export async function POST(request) {
         // 2. Image Parsing
         const formData = await request.formData();
         const file = formData.get('image');
+        const subjectsStr = formData.get('subjects');
+        const subjects = subjectsStr ? JSON.parse(subjectsStr) : [];
 
         if (!file || !(file instanceof Blob)) {
             return NextResponse.json({ error: 'Image manquante ou format invalide' }, { status: 400 });
@@ -56,23 +58,41 @@ export async function POST(request) {
                 responseMimeType: "application/json",
                 responseSchema: {
                     type: SchemaType.ARRAY,
-                    description: "Liste des notes des élèves extraites du document manuscrit.",
+                    description: "Liste des élèves avec leurs notes par matière extraites du document.",
                     items: {
                         type: SchemaType.OBJECT,
                         properties: {
                             nom: { type: SchemaType.STRING, description: "Nom complet de l'élève" },
-                            note: { type: SchemaType.NUMBER, description: "Note obtenue par l'élève, classiquement sur 20" },
-                            confiance: { type: SchemaType.NUMBER, description: "Score de confiance OCR entre 0.0 et 1.0 (1.0 = sûr à 100%, 0.1 = très incertain, illisible)" }
+                            notes: {
+                                type: SchemaType.ARRAY,
+                                description: "Liste des notes par matière",
+                                items: {
+                                    type: SchemaType.OBJECT,
+                                    properties: {
+                                        matiere: { type: SchemaType.STRING, description: "Nom de la matière identifiée" },
+                                        note: { type: SchemaType.NUMBER, description: "Note obtenue" }
+                                    },
+                                    required: ["matiere", "note"]
+                                }
+                            },
+                            confiance: { type: SchemaType.NUMBER, description: "Score de confiance global (0.0 à 1.0)" }
                         },
-                        required: ["nom", "note", "confiance"]
+                        required: ["nom", "notes", "confiance"]
                     }
                 }
             }
         });
 
-        const prompt = `Tu es un assistant spécialisé dans l'extraction de notes scolaires à partir de photos de copies ou de relevés manuscrits.
-Analyse cette image. Extrais chaque ligne correspondant à un élève. 
-Retourne son nom complet (ou prénom selon ce qui est écrit), la note associée (un nombre, attention aux demi-points, ex: 12.5), et attribue un score de confiance (entre 0 et 1) sur ta capacité à lire la ligne correctement. Si la note ou le nom est très mal écrit, mets un score de confiance de 0.5 ou moins.`;
+        const subjectsPrompt = subjects.length > 0
+            ? `Les matières valides dans l'application sont : ${subjects.map(s => s.nom).join(', ')}. Essaie de faire correspondre les colonnes ou lignes du document à ces matières.`
+            : "Identifie les matières présentes dans le document.";
+
+        const prompt = `Tu es un assistant spécialisé dans l'extraction de relevés de notes scolaires.
+Analyse cette image qui contient un tableau ou une liste de notes. 
+Pour chaque élève trouvé, extrais son nom et la liste de ses notes par matière.
+${subjectsPrompt}
+Retourne uniquement les notes individuelles par matière. Ne calcule pas de moyenne finale, l'application s'en chargera.
+Pour chaque note, fournis un score de confiance global pour l'élève.`;
 
         const imageParts = [
             {
@@ -89,37 +109,34 @@ Retourne son nom complet (ou prénom selon ce qui est écrit), la note associée
         // Strip markdown code fences if Gemini provides them despite responseMimeType
         responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '').trim();
 
-        // 4. Data Validation (Task 2)
+        // 4. Data Validation
         let extractedData = [];
         try {
             extractedData = JSON.parse(responseText);
         } catch (parseError) {
             console.error("Gemini a retourné un JSON invalide", parseError);
-            // Clean up
             buffer.fill(0);
             return NextResponse.json({ error: 'Le format de réponse de l\'IA est invalide' }, { status: 502 });
         }
 
         if (!Array.isArray(extractedData)) {
-            extractedData = [extractedData]; // Fallback if API returned single object instead of array
+            extractedData = [extractedData];
         }
 
         // Sanitize and validate
         const sanitizedData = extractedData.map(item => {
-            let note = parseFloat(item.note);
-            // Relaxed clamp to 0-100 logic to handle different grading systems
-            if (isNaN(note)) note = 0;
-            if (note < 0) note = 0;
-            if (note > 100) note = 100;
+            const sanitizedNotes = (item.notes || []).map(n => ({
+                matiere: n.matiere || "Inconnue",
+                note: Math.min(100, Math.max(0, parseFloat(n.note) || 0))
+            }));
 
             let conf = parseFloat(item.confiance);
             if (isNaN(conf)) conf = 0.5;
-            if (conf < 0) conf = 0;
-            if (conf > 1) conf = 1;
+            conf = Math.min(1, Math.max(0, conf));
 
             return {
                 nom: item.nom || "Inconnu",
-                note: note,
+                notes: sanitizedNotes,
                 confiance: conf
             };
         });

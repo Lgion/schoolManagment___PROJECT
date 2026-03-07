@@ -25,6 +25,7 @@ export default function ClasseDetailPage() {
   const [isReduced, setIsReduced] = useState(false);
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+  const [validatedScannedData, setValidatedScannedData] = useState(null);
   const reviewRef = useRef(null);
   const editBtnRef = useRef(null);
   const [dynamicSubjects, setDynamicSubjects] = useState([]);
@@ -278,6 +279,7 @@ export default function ClasseDetailPage() {
             eleves={eleves}
             classeId={classe._id}
             isCurrentYear={isCurrentYear}
+            allSubjects={dynamicSubjects}
           />
           {/* Saisie manuelle des notes — Story 1.4 */}
           <PermissionGate roles={['admin', 'prof']} fallback={<div className="image-scanner__loader-mini"><span className="spinner"></span></div>}>
@@ -305,7 +307,8 @@ export default function ClasseDetailPage() {
                 </div>
                 <ImageScanner
                   classeId={classe._id}
-                  label="Scanner notes"
+                  subjects={dynamicSubjects}
+                  label="Scanner Notes IA"
                   className="--compact"
                   disabled={!hasCoefficients}
                   title={!hasCoefficients ? "Veuillez définir les coefficients de la classe avant de scanner des notes (cliquez sur 'Définir maintenant')" : "Scanner une liste de notes avec l'IA"}
@@ -330,9 +333,13 @@ export default function ClasseDetailPage() {
                   <ReviewModal
                     file={scanResult.file}
                     extractedData={scanResult.data}
+                    students={eleves}
+                    subjects={dynamicSubjects}
+                    coefficients={classe.coefficients || {}}
                     onClose={() => setScanResult(null)}
                     onValidate={(data) => {
                       console.log("Validation en cours avec les données:", data);
+                      setValidatedScannedData(data);
                       setScanResult(null);
                     }}
                   />
@@ -343,6 +350,9 @@ export default function ClasseDetailPage() {
                 eleves={eleves}
                 classeId={classe._id}
                 isCurrentYear={isCurrentYear}
+                coefficients={classe.coefficients || {}}
+                prefilledData={validatedScannedData}
+                allSubjects={dynamicSubjects}
               />
             </div>
           </PermissionGate>

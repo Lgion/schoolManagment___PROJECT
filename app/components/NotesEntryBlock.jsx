@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useContext, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useContext, useMemo, useRef } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useUserRole } from '../../stores/useUserRole';
 
@@ -31,11 +31,13 @@ const getCurrentSchoolYear = () => {
     return month < 7 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
 };
 
-export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurrentYear }) {
+export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurrentYear, coefficients = {}, prefilledData = null, allSubjects = [] }) {
     const ctx = useContext(AiAdminContext);
     // Fix #1: Use useUserRole() directly instead of PermissionGate in table rows
     const { hasAnyRole } = useUserRole();
     const canEdit = hasAnyRole(['admin', 'prof']);
+
+    const hasCoefficients = Object.keys(coefficients).length > 0;
 
     // Résoudre les élèves complets depuis le contexte
     const elevesComplets = useMemo(() => {
@@ -57,12 +59,60 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         annee: currentYear,
         trimestreIndex: 0,
         isOfficiel: true,
-        matieres: ['Math', 'Français'],
-        surValeurs: { 'Math': 20, 'Français': 20 },
+        matieres: Object.keys(coefficients),
+        surValeurs: { ...coefficients }, // Use actual coefficients as denominators
     });
+
+    // Sync subjects if coefficients change
+    useEffect(() => {
+        if (hasCoefficients) {
+            setSessionConfig(prev => ({
+                ...prev,
+                matieres: Object.keys(coefficients),
+                surValeurs: { ...coefficients },
+            }));
+        }
+    }, [coefficients, hasCoefficients]);
 
     // Saisie des notes : { eleveId: { matiere: valeur } }
     const [notesDraft, setNotesDraft] = useState({});
+
+    // Gérer le pré-remplissage issu du scan
+    useEffect(() => {
+        if (prefilledData && prefilledData.length > 0) {
+            const nextNotes = { ...notesDraft };
+            prefilledData.forEach(item => {
+                if (item.matchedStudentId) {
+                    const studentNotes = { ...(nextNotes[item.matchedStudentId] || {}) };
+                    item.notes.forEach(n => {
+                        // PRIORITÉ : Utiliser l'ID sélectionné par l'enseignant dans le ReviewModal
+                        let subId = n.matchedMatiereId;
+
+                        if (!subId) {
+                            // FALLBACK : Recherche automatique par nom si aucun ID n'est lié
+                            const matchedSub = allSubjects.find(s =>
+                                s.nom.toLowerCase() === n.matiere.toLowerCase() || s.id === n.matiere
+                            );
+                            subId = matchedSub ? matchedSub.id : n.matiere;
+                        }
+
+                        if (sessionConfig.matieres.includes(subId)) {
+                            studentNotes[subId] = n.note;
+                        }
+                    });
+                    nextNotes[item.matchedStudentId] = studentNotes;
+                }
+            });
+            setNotesDraft(nextNotes);
+        }
+    }, [prefilledData, allSubjects, sessionConfig.matieres]);
+
+    // Barème dynamique basé sur votre modification (Coeff * 10)
+    const getMaxNote = (matiereId) => {
+        const coeff = sessionConfig.surValeurs[matiereId] || 2;
+        return coeff * 10;
+    };
+
     // Saisie des absences : { eleveId: count }
     const [absencesDraft, setAbsencesDraft] = useState({});
 
@@ -98,7 +148,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         setSessionConfig(prev => ({
             ...prev,
             matieres: [...prev.matieres, m],
-            surValeurs: { ...prev.surValeurs, [m]: 20 },
+            surValeurs: { ...prev.surValeurs, [m]: coefficients[m] || 20 },
         }));
         setNewMatiere('');
     };
@@ -230,6 +280,47 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         }
     };
 
+    const handleUnlock = async () => {
+        setPublishing(true);
+        setPublishError(null);
+        try {
+            const { annee, trimestreIndex } = sessionConfig;
+
+            const unlockPromises = elevesComplets.map(eleve => {
+                if (!eleve.compositions || !eleve.compositions[annee] || !eleve.compositions[annee][trimestreIndex]) {
+                    return Promise.resolve({ status: 'fulfilled', eleveId: eleve._id });
+                }
+
+                const existingComps = { ...eleve.compositions };
+                const existingYear = [...existingComps[annee]];
+                const trimestre = { ...existingYear[trimestreIndex] };
+
+                // Remove the lock
+                trimestre._locked = false;
+                existingYear[trimestreIndex] = trimestre;
+                const newCompositions = { ...existingComps, [annee]: existingYear };
+
+                return ctx.saveEleveNotes(eleve._id, newCompositions)
+                    .then(() => ({ status: 'fulfilled', eleveId: eleve._id }))
+                    .catch(err => ({ status: 'rejected', eleveId: eleve._id, reason: err.message }));
+            });
+
+            const results = await Promise.all(unlockPromises);
+
+            const failures = results.filter(r => r.status === 'rejected');
+            if (failures.length > 0) {
+                setPublishError(`${failures.length} déverrouillage(s) échoué(s).`);
+                return;
+            }
+
+            // Success - state will update automatically via context
+        } catch (err) {
+            setPublishError(err.message || 'Erreur lors du déverrouillage');
+        } finally {
+            setPublishing(false);
+        }
+    };
+
     if (!isCurrentYear) {
         return (
             <div className="notes-entry__readonly-notice">
@@ -239,15 +330,54 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         );
     }
 
-    // Fix #3: If locked, show read-only notice
-    if (isCurrentTrimestreLocked) {
+    if (!hasCoefficients) {
         return (
-            <div className="notes-entry__locked-notice">
-                <span className="notes-entry__locked-icon">🔒</span>
-                <p>Ce trimestre a été publié et verrouillé. Les notes ne peuvent plus être modifiées.</p>
+            <div className="notes-entry__no-coef-notice">
+                <span>⚠️</span>
+                <p>Veuillez d'abord configurer les coefficients de la classe pour activer la saisie des notes.</p>
             </div>
         );
     }
+
+    // Fix #3: If locked, show read-only notice
+    if (isCurrentTrimestreLocked) {
+        return (
+            <div className="notes-entry__locked-notice" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="notes-entry__locked-icon">🔒</span>
+                    <p>Ce trimestre a été publié et verrouillé. Les notes ne peuvent plus être modifiées.</p>
+                </div>
+                {canEdit && (
+                    <button
+                        type="button"
+                        onClick={handleUnlock}
+                        disabled={publishing}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: '#e74c3c',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: publishing ? 'not-allowed' : 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontWeight: 'bold',
+                            opacity: publishing ? 0.7 : 1
+                        }}
+                    >
+                        {publishing ? 'Déverrouillage...' : '🔓 Déverrouiller la saisie'}
+                    </button>
+                )}
+                {publishError && <p style={{ color: '#e74c3c', marginTop: '10px' }}>{publishError}</p>}
+            </div>
+        );
+    }
+
+    const getSubName = (id) => {
+        const sub = allSubjects.find(s => s.id === id);
+        return sub ? sub.nom : id;
+    };
 
     return (
         <div className="notes-entry">
@@ -301,27 +431,16 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                     <div className="notes-entry__matieres-list">
                         {sessionConfig.matieres.map(m => (
                             <div key={m} className="notes-entry__matiere-item">
-                                <span className="notes-entry__matiere-name">{m}</span>
-                                <label className="notes-entry__label notes-entry__label--inline">/{' '}
-                                    <input
-                                        className="notes-entry__input notes-entry__input--sur"
-                                        type="number"
-                                        min={1}
-                                        max={100}
-                                        value={sessionConfig.surValeurs[m] || 20}
-                                        onChange={e => setSessionConfig(prev => ({
-                                            ...prev,
-                                            surValeurs: { ...prev.surValeurs, [m]: Number(e.target.value) }
-                                        }))}
-                                        aria-label={`Barème pour ${m}`}
-                                    />
-                                </label>
+                                <span className="notes-entry__matiere-name" title={m}>{getSubName(m)}</span>
+                                <span className="notes-entry__matiere-coeff-badge">
+                                    sur <b>{sessionConfig.surValeurs[m] * 10 || 20}</b>
+                                </span>
                                 <button
                                     type="button"
                                     className="notes-entry__btn notes-entry__btn--remove"
                                     onClick={() => removeMatiere(m)}
-                                    aria-label={`Supprimer ${m}`}
-                                    title={`Supprimer ${m}`}
+                                    aria-label={`Supprimer ${getSubName(m)}`}
+                                    title={`Supprimer ${getSubName(m)}`}
                                 >✕</button>
                             </div>
                         ))}
@@ -352,9 +471,9 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         <tr>
                             <th className="notes-entry__th" scope="col">Élève</th>
                             {sessionConfig.matieres.map(m => (
-                                <th key={m} className="notes-entry__th" scope="col">
-                                    {m}
-                                    <span className="notes-entry__sur">/{sessionConfig.surValeurs[m] || 20}</span>
+                                <th key={m} className="notes-entry__th" scope="col" title={m}>
+                                    {getSubName(m)}
+                                    <span className="notes-entry__sur">/{sessionConfig.surValeurs[m] * 10 || 20}</span>
                                 </th>
                             ))}
                             <th className="notes-entry__th" scope="col">Absences</th>
@@ -378,11 +497,11 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                                             type="number"
                                             className="notes-entry__input notes-entry__input--note"
                                             min={0}
-                                            max={sessionConfig.surValeurs[m] || 20}
+                                            max={getMaxNote(m)}
                                             step={0.25}
                                             value={notesDraft[eleve._id]?.[m] ?? ''}
                                             onChange={e => handleNoteChange(eleve._id, m, e.target.value)}
-                                            aria-label={`Note de ${eleve.nom} en ${m}`}
+                                            aria-label={`Note de ${eleve.nom} en ${getSubName(m)}`}
                                             disabled={savingMap[eleve._id] || !canEdit}
                                         />
                                     </td>

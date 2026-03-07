@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
 
-export default function ImageScanner({ classeId, onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "" }) {
+export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "" }) {
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -80,6 +80,7 @@ export default function ImageScanner({ classeId, onScanComplete, label = "Scanne
             }
             const formData = new FormData();
             formData.append('image', uploadFile);
+            formData.append('subjects', JSON.stringify(subjects));
 
             const response = await fetch('/api/school_ai/extract-notes', {
                 method: 'POST',

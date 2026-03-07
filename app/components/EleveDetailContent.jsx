@@ -24,9 +24,10 @@ export default function EleveDetailContent({ entityId }) {
   useEffect(() => {
     ctx.fetchEleves && ctx.fetchEleves();
     ctx.fetchClasses && ctx.fetchClasses();
+    ctx.fetchSubjects && ctx.fetchSubjects();
   }, []);
 
-  const { setSelected, showModal, setShowModal } = ctx;
+  const { setSelected, showModal, setShowModal, dynamicSubjects, subjectsLoaded, classes } = ctx;
   const { entity: eleve, classe } = useEntityDetail(entityId, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false);
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
@@ -95,7 +96,13 @@ export default function EleveDetailContent({ entityId }) {
 
       <ManusBlock manus={eleve.manus} />
 
-      <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} />
+      <CompositionsBlock
+        compositions={eleve.compositions}
+        schoolYear={schoolYear}
+        dynamicSubjects={dynamicSubjects}
+        subjectsLoaded={subjectsLoaded}
+        classes={classes}
+      />
 
       <AddNoteForm notes={eleve.notes} />
 

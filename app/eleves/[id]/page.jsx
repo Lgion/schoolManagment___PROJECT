@@ -27,9 +27,10 @@ export default function ElevePage() {
   useEffect(() => {
     ctx.fetchEleves && ctx.fetchEleves();
     ctx.fetchClasses && ctx.fetchClasses();
+    ctx.fetchSubjects && ctx.fetchSubjects();
   }, []);
 
-  const { setSelected, showModal, setShowModal, setEditType } = ctx;
+  const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes } = ctx;
 
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
@@ -142,7 +143,13 @@ export default function ElevePage() {
           <ManusBlock manus={eleve.manus} />
         </section>
 
-        <CompositionsBlock compositions={eleve.compositions} schoolYear={schoolYear} />
+        <CompositionsBlock
+          compositions={eleve.compositions}
+          schoolYear={schoolYear}
+          dynamicSubjects={dynamicSubjects}
+          subjectsLoaded={subjectsLoaded}
+          classes={classes}
+        />
 
         {/* <AddNoteForm notes={eleve.notes} /> */}
 

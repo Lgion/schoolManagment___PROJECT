@@ -3,17 +3,22 @@
 import { useState, useMemo, useContext } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 
-export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
+export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubjects = [] }) {
   const ctx = useContext(AiAdminContext);
   const [selectedComposition, setSelectedComposition] = useState('latest');
   const [sortBy, setSortBy] = useState('note'); // 'note', 'nom', 'moyenne'
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
   const [selectedMatiere, setSelectedMatiere] = useState('all');
 
+  const getSubName = (id) => {
+    const sub = allSubjects.find(s => s.id === id);
+    return sub ? sub.nom : id;
+  };
+
   // Résoudre les élèves complets (gérer les cas où eleves contient des IDs)
   const elevesComplets = useMemo(() => {
     if (!ctx.eleves) return [];
-    
+
     return eleves.map(eleve => {
       // Si eleve est juste un ID ou un objet partiel, le résoudre via ctx.eleves
       const student = ctx.eleves.find(el => el._id === (eleve._id || eleve));
@@ -24,24 +29,24 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
   // Extraire toutes les compositions de tous les élèves (nouvelle structure)
   const allCompositions = useMemo(() => {
     const compositions = new Map();
-    
+
     elevesComplets.forEach(eleve => {
       if (!eleve.compositions) return;
-      
+
       Object.entries(eleve.compositions).forEach(([annee, trimestres]) => {
         if (!Array.isArray(trimestres)) return;
-        
+
         trimestres.forEach((trimestre, trimestreIndex) => {
           // Nouvelle structure : {officiel: {timestamp: {matiere: {note, sur}}}, unOfficiel: {...}}
           if (trimestre && typeof trimestre === 'object' && (trimestre.officiel || trimestre.unOfficiel)) {
             ['officiel', 'unOfficiel'].forEach(category => {
               const categoryData = trimestre[category] || {};
-              
+
               Object.entries(categoryData).forEach(([timestamp, subjects]) => {
                 const date = new Date(parseInt(timestamp));
                 const dateStr = date.toISOString().split('T')[0];
                 const key = `${timestamp}-${trimestreIndex}-${category}`;
-                
+
                 if (!compositions.has(key)) {
                   compositions.set(key, {
                     timestamp: parseInt(timestamp),
@@ -53,7 +58,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
                     matieres: new Set()
                   });
                 }
-                
+
                 Object.keys(subjects || {}).forEach(matiere => {
                   compositions.get(key).matieres.add(matiere);
                 });
@@ -91,31 +96,35 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
       .sort((a, b) => (b.timestamp || new Date(b.date).getTime()) - (a.timestamp || new Date(a.date).getTime()));
   }, [elevesComplets]);
 
-  // Obtenir toutes les matières disponibles
+  // Obtenir toutes les matières disponibles avec tri par nom résolu
   const allMatieres = useMemo(() => {
     const matieres = new Set();
     allCompositions.forEach(comp => {
       comp.matieres.forEach(matiere => matieres.add(matiere));
     });
-    return Array.from(matieres).sort();
-  }, [allCompositions]);
+    return Array.from(matieres).sort((a, b) => {
+      const nomA = getSubName(a).toLowerCase();
+      const nomB = getSubName(b).toLowerCase();
+      return nomA.localeCompare(nomB);
+    });
+  }, [allCompositions, allSubjects]);
 
   // Obtenir les coefficients des matières pour la composition sélectionnée
   const matiereCoefficients = useMemo(() => {
     const coefficients = {};
-    
+
     // Parcourir tous les élèves pour extraire les coefficients
     elevesComplets.forEach(eleve => {
       if (!eleve.compositions) return;
-      
+
       Object.entries(eleve.compositions).forEach(([annee, trimestres]) => {
         if (!Array.isArray(trimestres)) return;
-        
+
         trimestres.forEach((trimestre) => {
           if (trimestre && typeof trimestre === 'object' && (trimestre.officiel || trimestre.unOfficiel)) {
             ['officiel', 'unOfficiel'].forEach(category => {
               const categoryData = trimestre[category] || {};
-              
+
               Object.entries(categoryData).forEach(([timestamp, subjects]) => {
                 Object.entries(subjects || {}).forEach(([matiere, noteData]) => {
                   if (noteData && typeof noteData === 'object' && noteData.sur !== undefined) {
@@ -128,7 +137,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
         });
       });
     });
-    
+
     return coefficients;
   }, [elevesComplets]);
 
@@ -136,26 +145,26 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
   const notesData = useMemo(() => {
     if (allCompositions.length === 0) return [];
 
-    const selectedComp = selectedComposition === 'latest' 
-      ? allCompositions[0] 
+    const selectedComp = selectedComposition === 'latest'
+      ? allCompositions[0]
       : allCompositions.find(c => {
-          if (c.category === 'legacy') {
-            return `${c.date}-${c.trimestre}` === selectedComposition;
-          } else {
-            return `${c.timestamp}-${c.trimestre}-${c.category}` === selectedComposition;
-          }
-        });
+        if (c.category === 'legacy') {
+          return `${c.date}-${c.trimestre}` === selectedComposition;
+        } else {
+          return `${c.timestamp}-${c.trimestre}-${c.category}` === selectedComposition;
+        }
+      });
 
     if (!selectedComp) return [];
 
     const notes = [];
-    
+
     elevesComplets.forEach(eleve => {
       if (!eleve.compositions || !eleve.compositions[selectedComp.annee]) return;
-      
+
       const trimestres = eleve.compositions[selectedComp.annee];
       if (!Array.isArray(trimestres)) return;
-      
+
       const trimestre = trimestres[selectedComp.trimestre - 1];
       if (!trimestre) return;
 
@@ -177,18 +186,17 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
       if (trimestre && typeof trimestre === 'object' && (trimestre.officiel || trimestre.unOfficiel)) {
         const categoryData = trimestre[selectedComp.category] || {};
         const compositionNotes = categoryData[selectedComp.timestamp] || {};
-        
+
         Object.entries(compositionNotes).forEach(([matiere, noteData]) => {
-          if (noteData && typeof noteData === 'object' && noteData.note !== undefined) {
-            const noteValue = noteData.note;
-            const sur = noteData.sur || 20;
-            // Garder la note avec son coefficient d'origine
-            eleveNotes.notes[matiere] = { note: noteValue, sur: sur };
-            // Pour le calcul de moyenne, convertir vers /10
-            const noteSur10 = (noteValue / sur) * 10;
-            sum += noteSur10;
-            count++;
-          }
+          const noteValue = noteData.note;
+          const sur = noteData.sur || 20;
+          // Garder la note avec son coefficient d'origine
+          eleveNotes.notes[matiere] = { note: noteValue, sur: sur };
+          // Pour le calcul de moyenne (sur 10) :
+          // noteValue est sur (coeff * 10), donc noteSur10 = noteValue / coeff
+          const noteSur10 = noteValue / sur;
+          sum += noteSur10;
+          count++;
         });
       }
       // Ancien format (legacy)
@@ -244,8 +252,8 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
           if (selectedMatiere !== 'all') {
             const noteA = a.notes[selectedMatiere];
             const noteB = b.notes[selectedMatiere];
-            valueA = noteA ? (noteA.note / noteA.sur) * 10 : 0;
-            valueB = noteB ? (noteB.note / noteB.sur) * 10 : 0;
+            valueA = noteA ? noteA.note / noteA.sur : 0;
+            valueB = noteB ? noteB.note / noteB.sur : 0;
           } else {
             valueA = a.moyenne;
             valueB = b.moyenne;
@@ -281,21 +289,21 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
       <div className="notes-block__controls">
         <div className="notes-block__control-group">
           <label className="notes-block__label">Composition :</label>
-          <select 
+          <select
             className="notes-block__select"
             value={selectedComposition}
             onChange={(e) => setSelectedComposition(e.target.value)}
           >
             <option value="latest">Dernière composition</option>
             {allCompositions.map(comp => {
-              const key = comp.category === 'legacy' 
-                ? `${comp.date}-${comp.trimestre}` 
+              const key = comp.category === 'legacy'
+                ? `${comp.date}-${comp.trimestre}`
                 : `${comp.timestamp}-${comp.trimestre}-${comp.category}`;
-              const dateStr = comp.timestamp 
+              const dateStr = comp.timestamp
                 ? new Date(comp.timestamp).toLocaleDateString('fr-FR')
                 : new Date(comp.date).toLocaleDateString('fr-FR');
               const statusStr = comp.isOfficiel ? 'Officiel' : 'Non officiel';
-              
+
               return (
                 <option key={key} value={key}>
                   {dateStr} - T{comp.trimestre} ({comp.annee}) - {statusStr}
@@ -307,26 +315,26 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
 
         <div className="notes-block__control-group">
           <label className="notes-block__label">Matière :</label>
-          <select 
+          <select
             className="notes-block__select"
             value={selectedMatiere}
             onChange={(e) => setSelectedMatiere(e.target.value)}
           >
             <option value="all">Toutes les matières</option>
             {allMatieres.map(matiere => (
-              <option key={matiere} value={matiere}>{matiere}</option>
+              <option key={matiere} value={matiere}>{getSubName(matiere)}</option>
             ))}
           </select>
         </div>
 
         <div className="notes-block__control-group">
           <label className="notes-block__label">Trier par :</label>
-          <select 
+          <select
             className="notes-block__select"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
-            <option value="note">Note{selectedMatiere !== 'all' ? ` (${selectedMatiere})` : ' (moyenne)'}</option>
+            <option value="note">Note{selectedMatiere !== 'all' ? ` (${getSubName(selectedMatiere)})` : ' (moyenne)'}</option>
             <option value="nom">Nom alphabétique</option>
             <option value="moyenne">Moyenne générale</option>
           </select>
@@ -334,7 +342,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
 
         <div className="notes-block__control-group">
           <label className="notes-block__label">Ordre :</label>
-          <select 
+          <select
             className="notes-block__select"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
@@ -359,18 +367,30 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
                 <th className="notes-block__th">Élève</th>
                 {selectedMatiere === 'all' ? (
                   <>
-                    {allMatieres.map(matiere => (
-                      <th key={matiere} className="notes-block__th">
-                        {matiere} 
-                        {matiereCoefficients[matiere] && (
-                          <span className="notes-block__coefficient"> (/{matiereCoefficients[matiere]})</span>
-                        )}
-                      </th>
-                    ))}
+                    {allMatieres.map(matiere => {
+                      const coeff = matiereCoefficients[matiere];
+                      // Si coeff est 20, c'est probablement l'ancien format legacy
+                      const maxNote = coeff === 20 ? 20 : (coeff * 10);
+                      return (
+                        <th key={matiere} className="notes-block__th">
+                          {getSubName(matiere)}
+                          {coeff && (
+                            <span className="notes-block__coefficient"> (/{maxNote})</span>
+                          )}
+                        </th>
+                      );
+                    })}
                     <th className="notes-block__th notes-block__th--moyenne">Moyenne (/10)</th>
                   </>
                 ) : (
-                  <th className="notes-block__th">{selectedMatiere}</th>
+                  <th className="notes-block__th">
+                    {getSubName(selectedMatiere)}
+                    {matiereCoefficients[selectedMatiere] && (
+                      <span className="notes-block__coefficient">
+                        (/{matiereCoefficients[selectedMatiere] === 20 ? 20 : matiereCoefficients[selectedMatiere] * 10})
+                      </span>
+                    )}
+                  </th>
                 )}
               </tr>
             </thead>
@@ -383,22 +403,24 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear }) {
                   </td>
                   {selectedMatiere === 'all' ? (
                     <>
-                      {allMatieres.map(matiere => (
-                        <td key={matiere} className="notes-block__td notes-block__td--note">
-                          {noteData.notes[matiere] !== undefined ? 
-                            `${noteData.notes[matiere].note}/${noteData.notes[matiere].sur}` : 
-                            '-'
-                          }
-                        </td>
-                      ))}
+                      {allMatieres.map(matiere => {
+                        const noteObj = noteData.notes[matiere];
+                        if (!noteObj) return <td key={matiere} className="notes-block__td notes-block__td--note">-</td>;
+                        const maxNote = noteObj.sur === 20 ? 20 : (noteObj.sur * 10);
+                        return (
+                          <td key={matiere} className="notes-block__td notes-block__td--note">
+                            {noteObj.note}/{maxNote}
+                          </td>
+                        );
+                      })}
                       <td className="notes-block__td notes-block__td--moyenne">
                         {noteData.moyenne.toFixed(2)}/10
                       </td>
                     </>
                   ) : (
                     <td className="notes-block__td notes-block__td--note">
-                      {noteData.notes[selectedMatiere] !== undefined ? 
-                        `${noteData.notes[selectedMatiere].note}/${noteData.notes[selectedMatiere].sur}` : 
+                      {noteData.notes[selectedMatiere] !== undefined ?
+                        `${noteData.notes[selectedMatiere].note}/${noteData.notes[selectedMatiere].sur === 20 ? 20 : noteData.notes[selectedMatiere].sur * 10}` :
                         '-'
                       }
                     </td>

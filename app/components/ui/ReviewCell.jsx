@@ -4,59 +4,60 @@ import React, { useState } from 'react';
  * ReviewCell - Composant granulaire (NFR-PERF-1)
  * Gère son propre état local pour éviter le re-rendu de la liste complète lors de l'édition.
  */
-export default function ReviewCell({ index, row, onChange }) {
-    // État initial de la valeur
-    const [value, setValue] = useState(row.note !== undefined && row.note !== null ? row.note : '');
-    const [isDirty, setIsDirty] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
+export default function ReviewCell({ index, row, students = [], onChange }) {
+    const isWarning = row.confiance < 0.7;
 
-    // Un style d'avertissement s'affiche si l'IA doute ET que l'user n'a pas encore modifié la case
-    const initialWarning = row.confiance < 0.8;
-    const isWarning = initialWarning && !isDirty;
+    const handleStudentMatchChange = (e) => {
+        onChange(index, { ...row, matchedStudentId: e.target.value });
+    };
 
-    const handleChange = (e) => {
-        let rawValue = e.target.value;
-        // Strict boundaries check
-        if (!isNaN(numericValue)) {
-            if (numericValue < 0) rawValue = "0";
-            if (numericValue > 20) rawValue = "20";
-        }
-
-        setValue(rawValue);
-
-        // Optimistic State Update
-        setIsDirty(true);
-
-        const currentNum = parseFloat(rawValue);
-        const nextNote = isNaN(currentNum) ? null : currentNum;
-
-        // On propage silencieusement au parent via la ref pour la validation finale
-        onChange(index, {
-            ...row,
-            note: nextNote,
-            isEdited: true
-        });
+    const handleNoteValueChange = (matiereIndex, newValue) => {
+        const nextNotes = [...(row.notes || [])];
+        const val = parseFloat(newValue);
+        nextNotes[matiereIndex] = {
+            ...nextNotes[matiereIndex],
+            note: isNaN(val) ? 0 : Math.min(100, Math.max(0, val))
+        };
+        onChange(index, { ...row, notes: nextNotes });
     };
 
     return (
-        <tr
-            className={`review-modal__cell-warning ${isWarning ? '--is-warning' : ''} ${isFocused ? '--is-focused' : ''}`}
-            title={isWarning ? "Vérification recommandée" : ""}
-        >
-            <td className="review-modal__cell-name">{row.nom || '-'}</td>
-            <td>
-                <input
-                    type="number"
-                    className="review-modal__cell-score-input"
-                    value={value}
-                    onChange={handleChange}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder="?"
-                    step="0.25"
-                    min="0"
-                    max="20"
-                />
+        <tr className={`review-modal__tr ${isWarning ? '--warning' : ''}`}>
+            <td className="review-modal__td-ocr">
+                <span className="ocr-text">{row.nom || "N/A"}</span>
+                {isWarning && <span className="warning-icon" title="L'IA n'est pas sûre du texte">⚠️</span>}
+            </td>
+            <td className="review-modal__td-match">
+                <select
+                    className="review-modal__select-student"
+                    value={row.matchedStudentId || ""}
+                    onChange={handleStudentMatchChange}
+                >
+                    <option value="">-- Ignorer cet élève --</option>
+                    {students.map(s => (
+                        <option key={s._id} value={s._id}>
+                            {s.nom} {Array.isArray(s.prenoms) ? s.prenoms[0] : s.prenoms}
+                        </option>
+                    ))}
+                </select>
+            </td>
+            <td className="review-modal__td-notes">
+                <div className="review-modal__notes-preview-grid">
+                    {(row.notes || []).map((n, i) => (
+                        <div key={i} className="review-modal__note-pill">
+                            <span className="ocr-matiere-label">{n.matiere}:</span>
+                            <input
+                                type="number"
+                                step="0.25"
+                                min="0"
+                                max={100}
+                                value={n.note}
+                                onChange={(e) => handleNoteValueChange(i, e.target.value)}
+                                className="review-modal__note-input-inline"
+                            />
+                        </div>
+                    ))}
+                </div>
             </td>
         </tr>
     );
