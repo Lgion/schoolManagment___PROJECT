@@ -2519,7 +2519,7 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
                         <div key={`${timestamp}-${note.matiere}`} className="compositions-block__note">
                           <span className="compositions-block__note-matiere">{getSubName(note.matiere)}:</span>
                           <span className="compositions-block__note-value">
-                            {note.noteValue}/{note.denominateur === 20 ? 20 : (note.denominateur * 10)}
+                            {note.noteValue}/{note.denominateur >= 10 ? note.denominateur : note.denominateur * 10}
                           </span>
                           {onChange && (
                             <button

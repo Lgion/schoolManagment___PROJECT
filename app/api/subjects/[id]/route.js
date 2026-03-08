@@ -16,11 +16,12 @@ export async function PUT(request, { params }) {
       return authResult.response;
     }
 
-    const userId = authResult.userId;
-
     await dbConnect();
 
-    const { id } = params;
+    // Fix pour Next.js 15+ : les paramètres dynamiques sont asynchrones
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
+
     const body = await request.json();
     const { nom, code, couleur, niveaux, dureeDefaut } = body;
 
@@ -112,11 +113,11 @@ export async function DELETE(request, { params }) {
       return authResult.response;
     }
 
-    const userId = authResult.userId;
-
     await dbConnect();
 
-    const { id } = params;
+    // Fix pour Next.js 15+ : les paramètres dynamiques sont asynchrones
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
 
     // Vérifier que la matière existe
     const existingSubject = await Subject.findById(id);
@@ -159,11 +160,12 @@ export async function GET(request, { params }) {
       return authResult.response;
     }
 
-    const userId = authResult.userId;
-
     await dbConnect();
 
-    const { id } = params;
+    // Fix pour Next.js 15+ : les paramètres dynamiques sont asynchrones
+    const awaitedParams = await params;
+    const id = awaitedParams.id;
+
     const subject = await Subject.findById(id);
 
     if (!subject) {

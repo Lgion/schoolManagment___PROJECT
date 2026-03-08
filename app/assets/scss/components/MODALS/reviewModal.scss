@@ -87,14 +87,15 @@
 
     &__body {
         display: flex;
+        flex-direction: column;
         flex: 1;
         overflow: hidden;
     }
 
-    &__left-panel {
-        flex: 1;
+    &__above-panel {
+        height: 40%;
         background: #f8fafc;
-        border-right: 1px solid #e2e8f0;
+        border-bottom: 2px solid #e2e8f0;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -158,12 +159,43 @@
     }
 
 
-    &__right-panel {
-        width: 450px;
-        background: white;
+    &__bottom-panel {
+        width: 100%;
+        height: 60%;
+        background: #f1f5f9; // Gray backgroud to contrast with cards
+        display: flex;
+        flex-direction: row;
+        overflow: hidden;
+    }
+
+    &__subjects-mapping {
+        flex: 1;
+        border-right: 1px solid #e2e8f0;
         display: flex;
         flex-direction: column;
-        overflow: scroll;
+        padding: 1rem;
+        background: white;
+        overflow: hidden;
+    }
+
+    &__students-mapping {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        background: #f8fafc;
+        overflow: hidden;
+    }
+
+    &__unmatched-list {
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #fef2f2;
+        border-left: 4px solid #ef4444;
+        border-radius: 4px;
+        color: #991b1b;
+        font-size: 0.875rem;
+        line-height: 1.4;
     }
 
     &__tr {
@@ -195,7 +227,7 @@
         padding: 1rem;
     }
 
-    &__data-table {
+    &__data-table_validSubjects {
         width: 100%;
         border-collapse: separate;
         border-spacing: 0 0.5rem;
@@ -228,13 +260,126 @@
                 border-bottom-right-radius: 8px;
             }
         }
+    }
 
-        tr {
-            transition: all 0.2s;
+    &__student-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        border-left: 4px solid $secondary-color;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
 
-            &:hover td {
-                background: #f1f5f9;
+        &:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        &.--warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            border-left-color: #f59e0b;
+        }
+    }
+
+    &__student-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px dashed #e2e8f0;
+        padding-bottom: 0.75rem;
+    }
+
+    &__card-ocr {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__card-match {
+        .review-modal__select-student {
+            width: 200px;
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.875rem;
+            color: #334155;
+            background: #f8fafc;
+
+            &:focus {
+                border-color: $primary-color;
+                outline: none;
+                box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
             }
+        }
+    }
+
+    &__notes-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+
+    &__note-pill {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+
+        .ocr-matiere-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: #64748b;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .review-modal__note-input-inline {
+            width: 100%;
+            height: 32px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: $primary-color;
+            background: #ffffff;
+            font-family: monospace;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+
+            &:focus {
+                border-color: $secondary-color;
+                outline: none;
+                background: #fff;
+                box-shadow: 0 0 0 2px rgba($secondary-color, 0.2);
+            }
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            -moz-appearance: textfield;
+            appearance: textfield;
         }
     }
 
@@ -281,6 +426,7 @@
         }
 
         -moz-appearance: textfield;
+        appearance: textfield;
     }
 
     &__cell-warning {
@@ -310,6 +456,49 @@
         }
 
         &.--is-focused {
+            border-color: $secondary-color;
+        }
+    }
+
+    &.--reduced-banner {
+        background: $primary-color;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-left: 6px solid $secondary-color;
+
+        &:hover {
+            background: color.scale($primary-color, $lightness: 5%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+    }
+
+    &__reduced-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    &__btn-reopen {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: $secondary-color;
             border-color: $secondary-color;
         }
     }

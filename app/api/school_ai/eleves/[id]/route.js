@@ -22,7 +22,7 @@ export async function PATCH(request, { params }) {
 
         await dbConnect();
 
-        const { id } = params; // eleve _id
+        const { id } = await params; // eleve _id
         const body = await request.json();
 
         // Récupérer l'élève
@@ -113,6 +113,11 @@ export async function PATCH(request, { params }) {
             }
             eleve.absences = body.absences;
             eleve.markModified('absences');
+        }
+
+        // Nettoyage préventif des données historiques corrompues (Mongoose CastError)
+        if (eleve.current_classe === "") {
+            eleve.current_classe = undefined;
         }
 
         const updated = await eleve.save();

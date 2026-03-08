@@ -1,6 +1,6 @@
 "use client"
 
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
@@ -55,9 +55,33 @@ export default function ClasseDetailPage() {
     loadSubjects();
   }, [ctx.fetchClasses, ctx.fetchEleves, ctx.fetchEnseignants]);
 
+  const { setSelected, showModal, setShowModal, setEditType } = ctx || {};
+  const classe = useMemo(() => (ctx?.classes || []).find(c => String(c._id) === String(id)), [ctx?.classes, id]);
+
+  const currentYear = new Date().getFullYear();
+  const currentSchoolYear = (new Date().getMonth() + 1) < 7
+    ? `${currentYear - 1}-${currentYear}`
+    : `${currentYear}-${currentYear + 1}`;
+
+  const isCurrentYear = classe?.annee === currentSchoolYear;
+
+  const eleves = useMemo(() => {
+    if (!classe) return [];
+    return isCurrentYear
+      ? (ctx?.eleves || []).filter(e => e.current_classe === classe._id)
+      : (classe.eleves || []);
+  }, [isCurrentYear, ctx?.eleves, classe]);
+
+  const enseignants = useMemo(() => {
+    if (!classe) return [];
+    return isCurrentYear
+      ? (ctx?.enseignants || []).filter(e =>
+        Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
+      )
+      : (classe.professeur || []);
+  }, [isCurrentYear, ctx?.enseignants, classe]);
+
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
-  const { setSelected, showModal, setShowModal, setEditType } = ctx;
-  const classe = (ctx.classes || []).find(c => String(c._id) === String(id));
   if (!classe) return <div style={{ color: 'red' }}>Classe introuvable</div>;
 
   // Déterminer s'il y a des coefficients définis
@@ -71,23 +95,7 @@ export default function ClasseDetailPage() {
     setTimeout(() => setHighlightEdit(false), 3000);
   };
 
-  // Déterminer si c'est une classe de l'année actuelle ou historique
-  const currentYear = new Date().getFullYear();
-  const currentSchoolYear = (new Date().getMonth() + 1) < 7
-    ? `${currentYear - 1}-${currentYear}`
-    : `${currentYear}-${currentYear + 1}`;
 
-  const isCurrentYear = classe.annee === currentSchoolYear;
-
-  const eleves = isCurrentYear
-    ? (ctx.eleves || []).filter(e => e.current_classe === classe._id)
-    : classe.eleves || [];
-
-  const enseignants = isCurrentYear
-    ? (ctx.enseignants || []).filter(e =>
-      Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
-    )
-    : classe.professeur || [];
 
   const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
 
@@ -124,7 +132,9 @@ export default function ClasseDetailPage() {
           <div className="person-detail__header-content">
             <div className="person-detail__header-info">
               <h1 className="person-detail__title">
-                {classe.niveau} {classe.alias}
+                <Link href={`/classes/${classe._id}`}>
+                  {classe.niveau} {classe.alias}
+                </Link>
               </h1>
               <p className="person-detail__subtitle-text">
                 Année scolaire {classe.annee}
@@ -340,7 +350,7 @@ export default function ClasseDetailPage() {
                     onValidate={(data) => {
                       console.log("Validation en cours avec les données:", data);
                       setValidatedScannedData(data);
-                      setScanResult(null);
+                      // On ne ferme plus le scanResult ici pour permettre au ReviewModal de se réduire
                     }}
                   />
                 )}

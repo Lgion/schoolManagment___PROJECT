@@ -168,6 +168,26 @@
         gap: var(--spacing-sm);
         align-items: center;
         margin-top: var(--spacing-xs);
+        flex-wrap: wrap;
+    }
+
+    &__input--sub-name {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    &__coeff-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    &__input--sub-coeff {
+        width: 60px;
+        text-align: center;
     }
 
     // — BOUTONS —
@@ -339,6 +359,32 @@
         font-size: var(--font-size-sm);
         margin: 0;
         flex: 1;
+    }
+
+    &__lock-toggle {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius-sm);
+        background: var(--color-white);
+        border: 1px solid var(--color-border);
+        transition: all var(--transition-fast);
+
+        &:hover {
+            border-color: var(--color-primary);
+        }
+
+        input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
     }
 
     // — RESPONSIVE —

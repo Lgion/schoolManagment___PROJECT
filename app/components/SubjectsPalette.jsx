@@ -123,8 +123,9 @@ export default function SubjectsPalette({ onSubjectsChange }) {
     const handleSubjectSubmit = async (e) => {
         e.preventDefault()
         try {
-            const url = editingSubject ? `/api/subjects/${editingSubject._id}` : '/api/subjects'
-            const method = editingSubject ? 'PUT' : 'POST'
+            const subjectId = editingSubject ? (editingSubject._id || editingSubject.id) : null;
+            const url = subjectId ? `/api/subjects/${subjectId}` : '/api/subjects'
+            const method = subjectId ? 'PUT' : 'POST'
 
             const response = await fetch(url, {
                 method,
@@ -146,11 +147,12 @@ export default function SubjectsPalette({ onSubjectsChange }) {
         }
     }
 
-    const deleteSubject = async (subjectId) => {
+    const deleteSubject = async (subjectIdStr) => {
         if (!confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) return
 
+        const actualId = subjectIdStr.id || subjectIdStr._id || subjectIdStr; // Sécurisation pour deleteSubject
         try {
-            const response = await fetch(`/api/subjects/${subjectId}`, {
+            const response = await fetch(`/api/subjects/${actualId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             })

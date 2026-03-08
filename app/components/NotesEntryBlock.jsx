@@ -51,6 +51,20 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     const currentYear = getCurrentSchoolYear();
     const trimestreLabels = ['1er Trimestre', '2ème Trimestre', '3ème Trimestre'];
 
+    // Récupérer les compositions disponibles pour la classe (centralisé comme dans EntityModal)
+    const availableCompositions = useMemo(() => {
+        const currentClass = ctx.classes?.find(c => c._id === classeId);
+        if (!currentClass || !currentClass.compositions) return [];
+        return currentClass.compositions
+            .map(([timestamp, officiel]) => ({
+                timestamp,
+                officiel,
+                dateStr: new Date(Number(timestamp)).toLocaleDateString('fr-FR'),
+                value: String(timestamp)
+            }))
+            .sort((a, b) => b.timestamp - a.timestamp);
+    }, [ctx.classes, classeId]);
+
     // Fix #7: Generate timestamp once per session, stored in ref
     const sessionTimestampRef = useRef(Date.now().toString());
 
@@ -61,6 +75,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         isOfficiel: true,
         matieres: Object.keys(coefficients),
         surValeurs: { ...coefficients }, // Use actual coefficients as denominators
+        sessionDate: '', // Vide par défaut pour forcer la sélection
     });
 
     // Sync subjects if coefficients change
@@ -125,9 +140,11 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     const [publishing, setPublishing] = useState(false);
     const [publishError, setPublishError] = useState(null);
     const [publishSuccess, setPublishSuccess] = useState(false);
+    const [shouldLock, setShouldLock] = useState(true);
 
     // Gestion des matières
     const [newMatiere, setNewMatiere] = useState('');
+    const [newCoeff, setNewCoeff] = useState(2);
 
     // Fix #3: Déterminer si le trimestre courant est verrouillé
     const isCurrentTrimestreLocked = useMemo(() => {
@@ -148,7 +165,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
         setSessionConfig(prev => ({
             ...prev,
             matieres: [...prev.matieres, m],
-            surValeurs: { ...prev.surValeurs, [m]: coefficients[m] || 20 },
+            surValeurs: { ...prev.surValeurs, [m]: coefficients[m] || Number(newCoeff) || 2 },
         }));
         setNewMatiere('');
     };
@@ -185,7 +202,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
             if (val !== undefined && val !== '') {
                 subjects[matiere] = {
                     note: Number(val),
-                    sur: surValeurs[matiere] || 20,
+                    sur: getMaxNote(matiere),
                 };
             }
         });
@@ -252,13 +269,17 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
 
     // Fix #4: Use Promise.allSettled to detect errors directly instead of stale errorMap
     const handlePublish = async () => {
+        if (!sessionConfig.sessionDate) {
+            setPublishError("Veuillez sélectionner une composition liée à cette session.");
+            return;
+        }
         setPublishing(true);
         setPublishError(null);
 
         try {
-            // Save all notes WITH lock flag
+            // Save all notes based on shouldLock preference
             const results = await Promise.all(
-                elevesComplets.map(eleve => handleSaveEleve(eleve, { lock: true }))
+                elevesComplets.map(eleve => handleSaveEleve(eleve, { lock: shouldLock }))
             );
 
             // Check results directly (not stale errorMap)
@@ -395,7 +416,84 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         onChange={e => setSessionConfig(prev => ({ ...prev, annee: e.target.value }))}
                         pattern="\d{4}-\d{4}"
                         placeholder="2025-2026"
+                        readOnly
+                        style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6' }}
                     />
+                </div>
+
+                <div className="notes-entry__config-row">
+                    <label className="notes-entry__label" htmlFor="ne-sessionDate">Composition liée</label>
+                    <select
+                        id="ne-sessionDate"
+                        className="notes-entry__select"
+                        value={sessionConfig.sessionDate}
+                        onChange={e => {
+                            const val = e.target.value;
+                            setSessionConfig(prev => {
+                                const next = { ...prev, sessionDate: val };
+                                // Mise à jour automatique du type (officiel/non-officiel)
+                                const compo = availableCompositions.find(c => c.value === val);
+                                if (compo) {
+                                    next.isOfficiel = compo.officiel;
+                                }
+                                return next;
+                            });
+                            sessionTimestampRef.current = val;
+
+                            // Pré-remplissage automatique des données existantes (notes et absences déjà en BDD)
+                            if (val) {
+                                const compo = availableCompositions.find(c => c.value === val);
+                                const isOfficiel = compo ? compo.officiel : sessionConfig.isOfficiel;
+                                const category = isOfficiel ? 'officiel' : 'unOfficiel';
+
+                                const nextNotes = { ...notesDraft };
+                                const nextAbsences = { ...absencesDraft };
+
+                                elevesComplets.forEach(eleve => {
+                                    // 1. Extraire les notes existantes pour ce timestamp
+                                    const trimestres = eleve.compositions?.[sessionConfig.annee];
+                                    if (Array.isArray(trimestres)) {
+                                        const trimestre = trimestres[sessionConfig.trimestreIndex];
+                                        const existingNotes = trimestre?.[category]?.[val];
+                                        if (existingNotes) {
+                                            const studentNotes = { ...(nextNotes[eleve._id] || {}) };
+                                            Object.entries(existingNotes).forEach(([matiere, data]) => {
+                                                const noteValue = data?.note !== undefined ? data.note : data;
+                                                studentNotes[matiere] = noteValue;
+                                            });
+                                            nextNotes[eleve._id] = studentNotes;
+                                        }
+                                    }
+
+                                    // 2. Extraire les absences régulières pour ce trimestre
+                                    if (eleve.absences) {
+                                        const abs = eleve.absences.find(a =>
+                                            a.annee === sessionConfig.annee &&
+                                            a.trimestre === sessionConfig.trimestreIndex
+                                        );
+                                        if (abs && abs.count !== undefined) {
+                                            nextAbsences[eleve._id] = abs.count;
+                                        }
+                                    }
+                                });
+
+                                setNotesDraft(nextNotes);
+                                setAbsencesDraft(nextAbsences);
+                            }
+                        }}
+                        style={{ border: !sessionConfig.sessionDate ? '2px solid #ef4444' : '' }}
+                    >
+                        <option value="">-- Choisir une composition --</option>
+                        {availableCompositions.length === 0 ? (
+                            <option value="" disabled>⚠️ Aucune composition définie dans la classe</option>
+                        ) : (
+                            availableCompositions.map(compo => (
+                                <option key={compo.value} value={compo.value}>
+                                    {compo.dateStr} {compo.officiel ? '(Officiel)' : '(Non officiel)'}
+                                </option>
+                            ))
+                        )}
+                    </select>
                 </div>
 
                 <div className="notes-entry__config-row">
@@ -405,6 +503,8 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         className="notes-entry__select"
                         value={sessionConfig.trimestreIndex}
                         onChange={e => setSessionConfig(prev => ({ ...prev, trimestreIndex: Number(e.target.value) }))}
+                        disabled
+                        style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6', opacity: 1, color: '#374151' }}
                     >
                         {trimestreLabels.map((label, i) => (
                             <option key={i} value={i}>{label}</option>
@@ -418,7 +518,8 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         id="ne-officiel"
                         className="notes-entry__select"
                         value={sessionConfig.isOfficiel ? 'officiel' : 'unOfficiel'}
-                        onChange={e => setSessionConfig(prev => ({ ...prev, isOfficiel: e.target.value === 'officiel' }))}
+                        disabled
+                        style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6', opacity: 1, color: '#374151' }}
                     >
                         <option value="officiel">Officiel</option>
                         <option value="unOfficiel">Non officiel</option>
@@ -446,18 +547,32 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         ))}
                         <div className="notes-entry__add-matiere">
                             <input
-                                className="notes-entry__input"
+                                className="notes-entry__input notes-entry__input--sub-name"
                                 type="text"
                                 value={newMatiere}
                                 onChange={e => setNewMatiere(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addMatiere())}
-                                placeholder="Ajouter une matière..."
+                                placeholder="Nom matière..."
                                 aria-label="Nom de la nouvelle matière"
                             />
+                            <div className="notes-entry__coeff-input-wrapper">
+                                <label>Coeff:</label>
+                                <input
+                                    className="notes-entry__input notes-entry__input--sub-coeff"
+                                    type="number"
+                                    min="1"
+                                    max="10"
+                                    step="0.5"
+                                    value={newCoeff}
+                                    onChange={e => setNewCoeff(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addMatiere())}
+                                />
+                            </div>
                             <button
                                 type="button"
                                 className="notes-entry__btn notes-entry__btn--add"
                                 onClick={addMatiere}
+                                title="Ajouter cette matière à la session"
                             >+ Ajouter</button>
                         </div>
                     </div>
@@ -546,6 +661,16 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
             {/* Bouton Publier — only for authorized roles */}
             {canEdit && (
                 <div className="notes-entry__publish-bar">
+                    <label className="notes-entry__lock-toggle">
+                        <input
+                            type="checkbox"
+                            checked={shouldLock}
+                            onChange={e => setShouldLock(e.target.checked)}
+                            disabled={publishing}
+                        />
+                        Verrouiller ?
+                    </label>
+
                     <button
                         type="button"
                         className={`notes-entry__btn notes-entry__btn--publish${publishing ? ' notes-entry__btn--publishing' : ''}`}
@@ -553,7 +678,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         disabled={publishing || publishSuccess}
                         aria-live="polite"
                     >
-                        {publishing ? 'Publication en cours…' : publishSuccess ? '✓ Notes publiées !' : '🔒 Publier et verrouiller'}
+                        {publishing ? 'Publication en cours…' : publishSuccess ? '✓ Notes publiées !' : shouldLock ? '🔒 Publier et verrouiller' : '📢 Publier sans verrouiller'}
                     </button>
                     {publishError && (
                         <p className="notes-entry__publish-error" role="alert">{publishError}</p>

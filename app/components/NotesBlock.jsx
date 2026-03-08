@@ -1,4 +1,5 @@
 "use client"
+import Link from 'next/link';
 
 import { useState, useMemo, useContext } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
@@ -193,8 +194,8 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
           // Garder la note avec son coefficient d'origine
           eleveNotes.notes[matiere] = { note: noteValue, sur: sur };
           // Pour le calcul de moyenne (sur 10) :
-          // noteValue est sur (coeff * 10), donc noteSur10 = noteValue / coeff
-          const noteSur10 = noteValue / sur;
+          // noteValue est sur 'sur' (ex: 9 sur 10), donc noteSur10 = (noteValue / sur) * 10
+          const noteSur10 = (noteValue / sur) * 10;
           sum += noteSur10;
           count++;
         });
@@ -368,15 +369,11 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
                 {selectedMatiere === 'all' ? (
                   <>
                     {allMatieres.map(matiere => {
-                      const coeff = matiereCoefficients[matiere];
-                      // Si coeff est 20, c'est probablement l'ancien format legacy
-                      const maxNote = coeff === 20 ? 20 : (coeff * 10);
+                      const val = matiereCoefficients[matiere];
+                      const maxDisplay = val ? (val >= 10 ? val : val * 10) : '';
                       return (
                         <th key={matiere} className="notes-block__th">
-                          {getSubName(matiere)}
-                          {coeff && (
-                            <span className="notes-block__coefficient"> (/{maxNote})</span>
-                          )}
+                          {getSubName(matiere)} {maxDisplay ? `(/${maxDisplay})` : ''}
                         </th>
                       );
                     })}
@@ -387,7 +384,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
                     {getSubName(selectedMatiere)}
                     {matiereCoefficients[selectedMatiere] && (
                       <span className="notes-block__coefficient">
-                        (/{matiereCoefficients[selectedMatiere] === 20 ? 20 : matiereCoefficients[selectedMatiere] * 10})
+                        (/{matiereCoefficients[selectedMatiere] >= 10 ? matiereCoefficients[selectedMatiere] : matiereCoefficients[selectedMatiere] * 10})
                       </span>
                     )}
                   </th>
@@ -399,14 +396,17 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
                 <tr key={noteData.eleve._id} className="notes-block__tr">
                   <td className="notes-block__td notes-block__td--rang">{index + 1}</td>
                   <td className="notes-block__td notes-block__td--eleve">
-                    {noteData.eleve.nom} {noteData.eleve.prenoms}
+                    <Link href={`/eleves/${noteData.eleve._id}`} className="notes-block__link">
+                      {noteData.eleve.nom} {noteData.eleve.prenoms}
+                    </Link>
                   </td>
                   {selectedMatiere === 'all' ? (
                     <>
                       {allMatieres.map(matiere => {
                         const noteObj = noteData.notes[matiere];
                         if (!noteObj) return <td key={matiere} className="notes-block__td notes-block__td--note">-</td>;
-                        const maxNote = noteObj.sur === 20 ? 20 : (noteObj.sur * 10);
+                        const val = noteObj.sur;
+                        const maxNote = val >= 10 ? val : val * 10;
                         return (
                           <td key={matiere} className="notes-block__td notes-block__td--note">
                             {noteObj.note}/{maxNote}
@@ -420,7 +420,11 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
                   ) : (
                     <td className="notes-block__td notes-block__td--note">
                       {noteData.notes[selectedMatiere] !== undefined ?
-                        `${noteData.notes[selectedMatiere].note}/${noteData.notes[selectedMatiere].sur === 20 ? 20 : noteData.notes[selectedMatiere].sur * 10}` :
+                        (() => {
+                          const n = noteData.notes[selectedMatiere];
+                          const m = n.sur >= 10 ? n.sur : n.sur * 10;
+                          return `${n.note}/${m}`;
+                        })() :
                         '-'
                       }
                     </td>

@@ -268,17 +268,8 @@ export const AdminContextProvider = ({ children }) => {
   }, [fetchClasses]);
 
   // --- NOTES & ABSENCES (Story 1.4) ---
-  // Mise à jour optimiste des notes d'un élève (compositions)
+  // Mise à jour sécurisée des notes d'un élève (compositions)
   const saveEleveNotes = useCallback(async (eleveId, compositions) => {
-    // Optimistic Update : mettre à jour le store avant la réponse réseau
-    setEleves(prev => {
-      const newList = prev.map(e =>
-        e._id === eleveId ? { ...e, compositions } : e
-      );
-      setLSItem('eleves', newList);
-      return newList;
-    });
-
     try {
       const res = await fetch(`/api/school_ai/eleves/${eleveId}`, {
         method: 'PATCH',
@@ -290,7 +281,7 @@ export const AdminContextProvider = ({ children }) => {
         throw new Error(err.error || 'Request failed');
       }
       const updated = await res.json();
-      // Synchroniser avec la valeur réelle du serveur
+      // Synchroniser l'état et le LocalStorage SEULEMENT après validation (Confirmation back-end)
       setEleves(prev => {
         const newList = prev.map(e => e._id === eleveId ? updated : e);
         setLSItem('eleves', newList);
@@ -298,23 +289,14 @@ export const AdminContextProvider = ({ children }) => {
       });
       return updated;
     } catch (err) {
-      console.error('Optimistic UI revert for saveEleveNotes', err);
-      fetchEleves();
+      console.error('Erreur lors de la sauvegarde des notes:', err);
+      // Plus besoin de fetchEleves() en cas de revert car aucune donnée corrompue n'est injectée
       throw err;
     }
-  }, [fetchEleves]);
+  }, []);
 
-  // Mise à jour optimiste des absences d'un élève
+  // Mise à jour sécurisée des absences d'un élève
   const saveEleveAbsences = useCallback(async (eleveId, absences) => {
-    // Optimistic Update
-    setEleves(prev => {
-      const newList = prev.map(e =>
-        e._id === eleveId ? { ...e, absences } : e
-      );
-      setLSItem('eleves', newList);
-      return newList;
-    });
-
     try {
       const res = await fetch(`/api/school_ai/eleves/${eleveId}`, {
         method: 'PATCH',
@@ -326,6 +308,7 @@ export const AdminContextProvider = ({ children }) => {
         throw new Error(err.error || 'Request failed');
       }
       const updated = await res.json();
+      // Synchroniser l'état et le LocalStorage SEULEMENT après validation
       setEleves(prev => {
         const newList = prev.map(e => e._id === eleveId ? updated : e);
         setLSItem('eleves', newList);
@@ -333,11 +316,10 @@ export const AdminContextProvider = ({ children }) => {
       });
       return updated;
     } catch (err) {
-      console.error('Optimistic UI revert for saveEleveAbsences', err);
-      fetchEleves();
+      console.error('Erreur lors de la sauvegarde des absences:', err);
       throw err;
     }
-  }, [fetchEleves]);
+  }, []);
 
   // --- SUBJECTS ---
   const fetchSubjects = useCallback(async () => {

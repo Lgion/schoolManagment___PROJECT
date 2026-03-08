@@ -87,12 +87,15 @@ export async function POST(request) {
             ? `Les matières valides dans l'application sont : ${subjects.map(s => s.nom).join(', ')}. Essaie de faire correspondre les colonnes ou lignes du document à ces matières.`
             : "Identifie les matières présentes dans le document.";
 
-        const prompt = `Tu es un assistant spécialisé dans l'extraction de relevés de notes scolaires.
-Analyse cette image qui contient un tableau ou une liste de notes. 
-Pour chaque élève trouvé, extrais son nom et la liste de ses notes par matière.
+        const prompt = `Tu es un assistant expert en OCR de documents scolaires.
+Analyse ce relevé de notes. 
+RÈGLES CRITIQUES :
+1. Identifie TOUTES les colonnes de notes. Si deux colonnes ont des titres proches (ex: "MATH" et "COMPT" ou "FRANC" et "DICTEE"), traite-les comme des matières DISTINCTES.
+2. Ne fusionne JAMAIS deux colonnes de notes dans une seule matière.
+3. Pour chaque élève, extrais son nom exact et la liste complète de ses notes.
 ${subjectsPrompt}
-Retourne uniquement les notes individuelles par matière. Ne calcule pas de moyenne finale, l'application s'en chargera.
-Pour chaque note, fournis un score de confiance global pour l'élève.`;
+4. Retourne uniquement les notes brutes. Ne calcule pas de moyennes.
+5. Score de confiance global par élève obligatoire.`;
 
         const imageParts = [
             {

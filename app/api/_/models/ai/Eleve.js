@@ -10,7 +10,7 @@ let currentSchoolYearField = { [currentSchoolYear]: false }
 
 const studentSchema = mongoose.Schema({
   // current_classe_$_ref_µ_classes: { default: "", type: Object, required: true },
-  current_classe: { default: "", type: ObjectId, ref: Object.keys(schemaClasseForEleve.obj)[0], required: true },
+  current_classe: { type: ObjectId, ref: Object.keys(schemaClasseForEleve.obj)[0], required: true },
   nom: { default: "", type: String, required: true },
   prenoms: { default: [""], type: [Object], required: true },
   sexe: { default: "", type: String, required: true },

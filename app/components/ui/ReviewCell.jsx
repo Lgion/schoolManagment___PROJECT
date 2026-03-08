@@ -22,43 +22,44 @@ export default function ReviewCell({ index, row, students = [], onChange }) {
     };
 
     return (
-        <tr className={`review-modal__tr ${isWarning ? '--warning' : ''}`}>
-            <td className="review-modal__td-ocr">
-                <span className="ocr-text">{row.nom || "N/A"}</span>
-                {isWarning && <span className="warning-icon" title="L'IA n'est pas sûre du texte">⚠️</span>}
-            </td>
-            <td className="review-modal__td-match">
-                <select
-                    className="review-modal__select-student"
-                    value={row.matchedStudentId || ""}
-                    onChange={handleStudentMatchChange}
-                >
-                    <option value="">-- Ignorer cet élève --</option>
-                    {students.map(s => (
-                        <option key={s._id} value={s._id}>
-                            {s.nom} {Array.isArray(s.prenoms) ? s.prenoms[0] : s.prenoms}
-                        </option>
-                    ))}
-                </select>
-            </td>
-            <td className="review-modal__td-notes">
-                <div className="review-modal__notes-preview-grid">
-                    {(row.notes || []).map((n, i) => (
-                        <div key={i} className="review-modal__note-pill">
-                            <span className="ocr-matiere-label">{n.matiere}:</span>
-                            <input
-                                type="number"
-                                step="0.25"
-                                min="0"
-                                max={100}
-                                value={n.note}
-                                onChange={(e) => handleNoteValueChange(i, e.target.value)}
-                                className="review-modal__note-input-inline"
-                            />
-                        </div>
-                    ))}
+        <div className={`review-modal__student-card ${isWarning ? '--warning' : ''}`}>
+            <div className="review-modal__student-card-header">
+                <div className="review-modal__card-ocr">
+                    <span className="ocr-text">{row.nom || "N/A"}</span>
+                    {isWarning && <span className="warning-icon" title="L'IA n'est pas sûre du texte">⚠️</span>}
                 </div>
-            </td>
-        </tr>
+                <div className="review-modal__card-match">
+                    <select
+                        className="review-modal__select-student"
+                        value={row.matchedStudentId || ""}
+                        onChange={handleStudentMatchChange}
+                        style={{ border: !row.matchedStudentId ? '1px solid #ef4444' : '' }}
+                    >
+                        <option value="">-- Ignorer cet élève --</option>
+                        {students.map(s => (
+                            <option key={s._id} value={s._id}>
+                                {s.nom} {Array.isArray(s.prenoms) ? s.prenoms[0] : s.prenoms}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            <div className="review-modal__notes-preview-grid">
+                {(row.notes || []).map((n, i) => (
+                    <div key={i} className="review-modal__note-pill">
+                        <span className="ocr-matiere-label">{n.matiere}</span>
+                        <input
+                            type="number"
+                            step="0.25"
+                            min="0"
+                            max={100}
+                            value={n.note}
+                            onChange={(e) => handleNoteValueChange(i, e.target.value)}
+                            className="review-modal__note-input-inline"
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
     );
 }
