@@ -39,7 +39,7 @@ export const AdminContextProvider = ({ children }) => {
   const saveEleve = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
 
-    // Optimistic Update
+    // Mise à jour optimiste
     setEleves(prev => {
       let newList;
       if (data._id) {
@@ -60,18 +60,31 @@ export const AdminContextProvider = ({ children }) => {
       });
 
       if (!res.ok) throw new Error('Request failed');
+      const saved = await res.json();
 
-      const updated = await fetch('/api/school_ai/eleves');
-      const newList = await updated.json();
-      setEleves(newList);
-      setLSItem('eleves', newList);
-      return await res.json();
+      // Mise à jour finale avec les données du serveur (incluant les IDs réels, timestamps, etc.)
+      setEleves(prev => {
+        const newList = prev.map(e => (e._id === saved._id || (e._id && e._id.startsWith('temp_'))) ? saved : e);
+        // S'assurer de supprimer tout doublon temporaire si c'était une création
+        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
+        setLSItem('eleves', uniqueList);
+        return uniqueList;
+      });
+
+      // Mettre à jour 'selected' si c'est l'élément actuellement sélectionné
+      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
+
+      return saved;
     } catch (err) {
-      console.error("Optimistic UI revert for saveEleve", err);
-      fetchEleves();
+      console.error("Erreur saveEleve, annulation mise à jour optimiste", err);
+      // Forcer un rechargement propre en cas d'erreur
+      const res = await fetch('/api/school_ai/eleves', { cache: 'no-store' });
+      const freshData = await res.json();
+      setEleves(freshData);
+      setLSItem('eleves', freshData);
       throw err;
     }
-  }, [fetchEleves]);
+  }, []);
 
   const deleteEleve = useCallback(async (_id) => {
     // Optimistic Update
@@ -122,7 +135,6 @@ export const AdminContextProvider = ({ children }) => {
   const saveEnseignant = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
 
-    // Optimistic Update
     setEnseignants(prev => {
       let newList;
       if (data._id) {
@@ -143,18 +155,27 @@ export const AdminContextProvider = ({ children }) => {
       });
 
       if (!res.ok) throw new Error('Request failed');
+      const saved = await res.json();
 
-      const updated = await fetch('/api/school_ai/enseignants');
-      const newList = await updated.json();
-      setEnseignants(newList);
-      setLSItem('enseignants', newList);
-      return await res.json();
+      setEnseignants(prev => {
+        const newList = prev.map(e => (e._id === saved._id || (e._id && e._id.startsWith('temp_'))) ? saved : e);
+        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
+        setLSItem('enseignants', uniqueList);
+        return uniqueList;
+      });
+
+      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
+
+      return saved;
     } catch (err) {
-      console.error("Optimistic UI revert for saveEnseignant", err);
-      fetchEnseignants();
+      console.error("Erreur saveEnseignant, annulation mise à jour optimiste", err);
+      const res = await fetch('/api/school_ai/enseignants', { cache: 'no-store' });
+      const freshData = await res.json();
+      setEnseignants(freshData);
+      setLSItem('enseignants', freshData);
       throw err;
     }
-  }, [fetchEnseignants]);
+  }, []);
 
   const deleteEnseignant = useCallback(async (_id) => {
     // Optimistic Update
@@ -205,7 +226,6 @@ export const AdminContextProvider = ({ children }) => {
   const saveClasse = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
 
-    // Optimistic Update
     setClasses(prev => {
       let newList;
       if (data._id) {
@@ -226,18 +246,27 @@ export const AdminContextProvider = ({ children }) => {
       });
 
       if (!res.ok) throw new Error('Request failed');
+      const saved = await res.json();
 
-      const updated = await fetch('/api/school_ai/classes');
-      const newList = await updated.json();
-      setClasses(newList);
-      setLSItem('classes', newList);
-      return await res.json();
+      setClasses(prev => {
+        const newList = prev.map(c => (c._id === saved._id || (c._id && c._id.startsWith('temp_'))) ? saved : c);
+        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
+        setLSItem('classes', uniqueList);
+        return uniqueList;
+      });
+
+      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
+
+      return saved;
     } catch (err) {
-      console.error("Optimistic UI revert for saveClasse", err);
-      fetchClasses();
+      console.error("Erreur saveClasse, annulation mise à jour optimiste", err);
+      const res = await fetch('/api/school_ai/classes', { cache: 'no-store' });
+      const freshData = await res.json();
+      setClasses(freshData);
+      setLSItem('classes', freshData);
       throw err;
     }
-  }, [fetchClasses]);
+  }, []);
 
   const deleteClasse = useCallback(async (_id) => {
     // Optimistic Update

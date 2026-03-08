@@ -2005,6 +2005,7 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
   const [selectedDenominateur, setSelectedDenominateur] = useState(COEFFICIENTS_MATIERES['Mathématiques'].toString());
   const [selectedDate, setSelectedDate] = useState('');
   const [isOfficiel, setIsOfficiel] = useState(true);
+  const [editingNote, setEditingNote] = useState(null); // {trimestreIdx, category, timestamp, matiere, value}
 
   // Migration automatique si l'ancien format est détecté
   const [migratedCompositions, setMigratedCompositions] = useState(() => {
@@ -2161,15 +2162,14 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
           const sur = noteData.sur || 20;
 
           // Déterminer le coefficient réel
-          // Si sur est 20, le coefficient est 2 (format legacy)
-          // Sinon, sur est le coefficient (nouveau format)
-          const coefficient = sur === 20 ? 2 : sur;
+          // Si sur=20, coeff=2. Sinon si sur>=10, coeff = sur/10. Sinon coeff = sur (ancien format de coeff direct)
+          let coefficient = sur === 20 ? 2 : (sur >= 10 ? sur / 10 : sur);
+          // Sécurité anti-zéro
+          if (coefficient === 0) coefficient = 1;
 
-          if (typeof noteValue === 'number' && noteValue >= 0) {
-            // Note sur 10 :
-            // Si sur=20, noteValue est sur 20, donc noteSur10 = noteValue / 2
-            // Si sur=coeff, noteValue est sur coeff*10, donc noteSur10 = noteValue / coeff
-            const noteSur10 = sur === 20 ? (noteValue / 2) : (noteValue / sur);
+          if (typeof noteValue === 'number' && typeof sur === 'number' && sur > 0 && noteValue >= 0) {
+            // Note sur 10 : noteValue / sur * 10
+            const noteSur10 = (noteValue / sur) * 10;
 
             totalPoints += noteSur10 * coefficient;
             totalCoefficients += coefficient;
@@ -2401,17 +2401,62 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
 
     const newCompoArr = [...compoArr];
 
-    // Supprimer la matière spécifique
+    if (newCompoArr[trimestreIdx]?.[category]?.[timestamp]) {
+      delete newCompoArr[trimestreIdx][category][timestamp][matiere];
+
+      if (Object.keys(newCompoArr[trimestreIdx][category][timestamp]).length === 0) {
+        delete newCompoArr[trimestreIdx][category][timestamp];
+      }
+    }
+
+    const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
+    onChange(newCompositions);
+    setMigratedCompositions(newCompositions);
+  };
+
+  // Fonction pour préparer la modification d'une note
+  const handleEditNote = (trimestreIdx, category, timestamp, matiere, currentValue) => {
+    setEditingNote({ trimestreIdx, category, timestamp, matiere, value: currentValue });
+  };
+
+  // Fonction pour enregistrer la note modifiée
+  const handleSaveEdit = () => {
+    if (!editingNote || !onChange) return;
+    const { trimestreIdx, category, timestamp, matiere, value } = editingNote;
+    const noteNum = parseFloat(value);
+
+    if (isNaN(noteNum) || noteNum < 0) {
+      alert('Veuillez saisir une note valide.');
+      return;
+    }
+
+    const newCompoArr = [...compoArr];
+    if (newCompoArr[trimestreIdx]?.[category]?.[timestamp]?.[matiere]) {
+      newCompoArr[trimestreIdx][category][timestamp][matiere].note = noteNum;
+
+      const newCompositions = { ...migratedCompositions, [schoolYear]: newCompoArr };
+      onChange(newCompositions);
+      setMigratedCompositions(newCompositions);
+      setEditingNote(null);
+    }
+  };
+
+  // Fonction pour supprimer un bloc entier de composition (toutes les notes d'une date)
+  const handleRemoveComposition = (trimestreIdx, category, timestamp) => {
+    if (!onChange) return;
+
+    // Demander confirmation car l'action est destructrice
+    if (!window.confirm('Voulez-vous vraiment supprimer toutes les notes de cette composition ?')) {
+      return;
+    }
+
+    const newCompoArr = [...compoArr];
+
     if (newCompoArr[trimestreIdx] &&
       newCompoArr[trimestreIdx][category] &&
       newCompoArr[trimestreIdx][category][timestamp]) {
 
-      delete newCompoArr[trimestreIdx][category][timestamp][matiere];
-
-      // Si le timestamp n'a plus de matières, le supprimer
-      if (Object.keys(newCompoArr[trimestreIdx][category][timestamp]).length === 0) {
-        delete newCompoArr[trimestreIdx][category][timestamp];
-      }
+      delete newCompoArr[trimestreIdx][category][timestamp];
     }
 
     // Sauvegarder
@@ -2514,23 +2559,68 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
                         <span className={`compositions-block__note-badge ${dateGroup.isOfficiel ? 'compositions-block__note-badge--officiel' : 'compositions-block__note-badge--non-officiel'}`}>
                           {dateGroup.isOfficiel ? 'Officiel' : 'Non officiel'}
                         </span>
+
+                        {onChange && (
+                          <button
+                            type="button"
+                            className="compositions-block__remove-comp-btn"
+                            title="Supprimer toute la composition"
+                            onClick={() => handleRemoveComposition(idx, dateGroup.notes[0]?.category, timestamp)}
+                          >
+                            ✕ Supprimer la composition
+                          </button>
+                        )}
                       </div>
-                      {dateGroup.notes.map((note, noteIndex) => (
-                        <div key={`${timestamp}-${note.matiere}`} className="compositions-block__note">
-                          <span className="compositions-block__note-matiere">{getSubName(note.matiere)}:</span>
-                          <span className="compositions-block__note-value">
-                            {note.noteValue}/{note.denominateur >= 10 ? note.denominateur : note.denominateur * 10}
-                          </span>
-                          {onChange && (
-                            <button
-                              type="button"
-                              className="compositions-block__remove-btn"
-                              title="Supprimer"
-                              onClick={() => handleRemoveNew(idx, note.category, timestamp, note.matiere)}
-                            >×</button>
-                          )}
-                        </div>
-                      ))}
+                      {dateGroup.notes.map((note, noteIndex) => {
+                        const isEditing = editingNote &&
+                          editingNote.trimestreIdx === idx &&
+                          editingNote.category === note.category &&
+                          editingNote.timestamp === timestamp &&
+                          editingNote.matiere === note.matiere;
+
+                        return (
+                          <div key={`${timestamp}-${note.matiere}`} className={`compositions-block__note ${isEditing ? 'compositions-block__note--editing' : ''}`}>
+                            <span className="compositions-block__note-matiere">{getSubName(note.matiere)}:</span>
+
+                            {isEditing ? (
+                              <div className="compositions-block__edit-wrapper">
+                                <input
+                                  type="number"
+                                  className="compositions-block__edit-input"
+                                  value={editingNote.value}
+                                  onChange={e => setEditingNote({ ...editingNote, value: e.target.value })}
+                                  autoFocus
+                                />
+                                <span className="compositions-block__edit-sur">/{note.denominateur >= 10 ? note.denominateur : note.denominateur * 10}</span>
+                                <button className="compositions-block__save-edit-btn" onClick={handleSaveEdit}>✓</button>
+                                <button className="compositions-block__cancel-edit-btn" onClick={() => setEditingNote(null)}>✕</button>
+                              </div>
+                            ) : (
+                              <>
+                                <span className="compositions-block__note-value">
+                                  {note.noteValue}/{note.denominateur >= 10 ? note.denominateur : note.denominateur * 10}
+                                </span>
+                                {onChange && (
+                                  <div className="compositions-block__note-actions">
+                                    <button
+                                      type="button"
+                                      className="compositions-block__edit-btn"
+                                      title="Modifier la note"
+                                      onClick={() => handleEditNote(idx, note.category, timestamp, note.matiere, note.noteValue)}
+                                    >✎</button>
+                                    <button
+                                      type="button"
+                                      className="compositions-block__remove-btn"
+                                      title="Supprimer"
+                                      onClick={() => handleRemoveNew(idx, note.category, timestamp, note.matiere)}
+                                    >×</button>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ));
               })()

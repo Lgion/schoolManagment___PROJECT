@@ -72,6 +72,7 @@ $entityModal: (
     gap: 1rem;
     border-radius: map.get($entityModal, borderRadius);
   }
+
   &__loadingSpinner {
     display: inline-block;
     width: 20px;
@@ -117,13 +118,13 @@ $entityModal: (
     font-size: 0.85rem;
     min-width: 160px;
     cursor: pointer;
-    
+
     &:focus {
       outline: none;
       border-color: rgba(255, 255, 255, 0.6);
       box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
     }
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -149,12 +150,12 @@ $entityModal: (
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     &:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.3);
       transform: translateY(-1px);
     }
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -170,31 +171,31 @@ $entityModal: (
     font-size: 0.9rem;
     min-width: 120px;
     backdrop-filter: blur(4px);
-    
+
     option {
       background: #2c3e50;
       color: white;
-      
+
       &.option_green {
         background: #27ae60;
         font-weight: 600;
       }
-      
+
       &.option_red {
         background: #e74c3c;
       }
-      
+
       &.option_blue {
         background: #3498db;
       }
     }
-    
+
     &:focus {
       outline: none;
       border-color: rgba(255, 255, 255, 0.6);
       box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
     }
-    
+
     @media (max-width: 768px) {
       min-width: 100px;
       font-size: 0.8rem;
@@ -289,27 +290,27 @@ $entityModal: (
     font-size: 1rem;
     background-color: var(--input-bg);
     color: var(--text-color);
-    
+
     &:focus {
       outline: none;
       border-color: var(--primary-color);
       box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
     }
-    
+
     // Styles pour select multiple
     &[multiple] {
       min-height: 120px;
-      
+
       option {
         padding: 0.5rem;
         margin: 0.125rem 0;
         border-radius: 4px;
-        
+
         &:checked {
           background-color: var(--primary-color);
           color: white;
         }
-        
+
         &:hover {
           background-color: var(--hover-bg, #f0f0f0);
         }
@@ -544,11 +545,11 @@ $entityModal: (
     font-weight: 600;
     font-size: 0.85rem;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
     }
 
@@ -571,7 +572,7 @@ $entityModal: (
 
     &:hover {
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     &-matiere {
@@ -626,16 +627,112 @@ $entityModal: (
     }
   }
 
+  &__remove-comp-btn {
+    background: transparent;
+    color: map.get($entityModal, buttonDanger);
+    border: 1px solid map.get($entityModal, buttonDanger);
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-left: auto;
+
+    &:hover {
+      background: map.get($entityModal, buttonDanger);
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+    }
+  }
+
+  &__note-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-left: auto;
+  }
+
+  &__edit-btn {
+    background: transparent;
+    color: map.get($entityModal, buttonPrimary);
+    border: 1px solid map.get($entityModal, buttonPrimary);
+    border-radius: 4px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+
+    &:hover {
+      background: map.get($entityModal, buttonPrimary);
+      color: white;
+    }
+  }
+
+  &__edit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #fff;
+    padding: 2px;
+    border-radius: 4px;
+    border: 1px solid map.get($entityModal, inputFocus);
+  }
+
+  &__edit-input {
+    width: 45px;
+    border: none;
+    padding: 2px 4px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-align: center;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__edit-sur {
+    font-size: 0.8rem;
+    color: #666;
+    margin-right: 4px;
+  }
+
+  &__save-edit-btn {
+    background: map.get($entityModal, buttonSuccess);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  &__cancel-edit-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
   &__remove-btn {
-    position: absolute;
-    top: -5px;
-    right: -5px;
+    position: relative; // Changé de absolute pour le flex container
     background: linear-gradient(135deg, map.get($entityModal, buttonDanger), #c82333);
     color: white;
     border: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
     font-weight: bold;
@@ -658,6 +755,7 @@ $entityModal: (
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -693,7 +791,7 @@ $entityModal: (
   font-size: 1rem;
   transition: all 0.2s;
   background: white;
-  
+
   &:focus {
     outline: none;
     border-color: map.get($themeColors, primary);
@@ -736,7 +834,7 @@ $entityModal: (
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -746,7 +844,7 @@ $entityModal: (
 %entityModal__btn--primary {
   background: linear-gradient(135deg, map.get($themeColors, primary), color.scale(map.get($themeColors, primary), $lightness: -10%));
   color: white;
-  
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
@@ -762,7 +860,7 @@ $entityModal: (
   font-size: 0.9rem;
   min-width: 120px;
   backdrop-filter: blur(4px);
-  
+
   option {
     background: #2c3e50;
     color: white;
@@ -772,15 +870,13 @@ $entityModal: (
 /************************************************************/
 /**************************MIXIN**************************/
 /************************************************************/
-@mixin entityModal(
-  $paramMixi_: $entityModal,
+@mixin entityModal($paramMixi_: $entityModal,
   $background: map.get($entityModal, background),
-  $borderRadius: map.get($entityModal, borderRadius)
-) {
+  $borderRadius: map.get($entityModal, borderRadius)) {
   $paramMixi: entityModal(map.merge($entityModal, $paramMixi_));
 
   @extend %entityModal;
-  
+
   &__container {
     background: map.get($paramMixi, background);
     border-radius: map.get($paramMixi, borderRadius);
@@ -791,12 +887,9 @@ $entityModal: (
 /**************************FUNCTION**************************/
 /************************************************************/
 @function entityModal($defaultValues) {
-  @return map.merge(
-    $defaultValues,
-    (
-      // background-contrast: color.scale(map.get($defaultValues, background), $lightness: -17.2881355932%),
-    )
-  );
+  @return map.merge($defaultValues,
+    ( // background-contrast: color.scale(map.get($defaultValues, background), $lightness: -17.2881355932%),
+    ));
 }
 
 /************************************************************/
@@ -806,7 +899,7 @@ $entityModal: (
 // Styles BEM pour le bloc de compositions avec matières
 .compositions-block {
   margin: 1.5rem 0;
-  
+
   &__header {
     font-size: 1.2rem;
     font-weight: 600;
@@ -814,8 +907,8 @@ $entityModal: (
     color: map.get($themeColors, primary);
     font-family: map.get($entityModal, primaryFont);
   }
-  
-  
+
+
   &__moyenne-annuelle {
     display: flex;
     justify-content: space-between;
@@ -828,24 +921,25 @@ $entityModal: (
     font-size: 1rem;
     color: map.get($themeColors, primary);
     font-family: map.get($entityModal, primaryFont);
-    
+
     strong {
       font-weight: 600;
     }
-    span{
+
+    span {
       background: wheat;
       padding: .5em;
       font-size: 1.5em;
       font-weight: 900;
     }
   }
-  
+
   &__trimestre {
     margin-bottom: 1.5rem;
     border: 1px solid #e9ecef;
     border-radius: 8px;
     overflow: hidden;
-    
+
     &-header {
       background: #f8f9fa;
       padding: 1rem 1.5rem;
@@ -855,14 +949,14 @@ $entityModal: (
       align-items: center;
       flex-wrap: wrap;
       gap: 0.5rem;
-      
+
       &-title {
         font-weight: 600;
         color: #495057;
         font-size: 1.1rem;
         font-family: map.get($entityModal, primaryFont);
       }
-      
+
       &-score {
         font-size: 0.9rem;
         color: map.get($themeColors, success);
@@ -875,7 +969,7 @@ $entityModal: (
       }
     }
   }
-  
+
   &__notes {
     padding: 1rem;
     display: flex;
@@ -884,7 +978,7 @@ $entityModal: (
     min-height: 60px;
     align-items: flex-start;
   }
-  
+
   &__note {
     display: flex;
     align-items: center;
@@ -895,18 +989,18 @@ $entityModal: (
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
     transition: all 0.2s;
-    
+
     &:hover {
       border-color: map.get($entityModal, inputFocus);
       box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
     }
-    
+
     &-matiere {
       font-weight: 600;
       color: map.get($entityModal, buttonPrimary);
       font-family: map.get($entityModal, secondaryFont);
     }
-    
+
     &-value {
       font-weight: 700;
       color: #2d3748;
@@ -916,7 +1010,7 @@ $entityModal: (
       min-width: 30px;
       text-align: center;
     }
-    
+
     button {
       background: map.get($entityModal, buttonDanger);
       color: white;
@@ -930,14 +1024,14 @@ $entityModal: (
       cursor: pointer;
       font-size: 0.8rem;
       transition: all 0.2s;
-      
+
       &:hover {
         background: color.adjust(map.get($entityModal, buttonDanger), $lightness: -10%);
         transform: scale(1.1);
       }
     }
   }
-  
+
   &__no-compo {
     color: #6c757d;
     font-style: italic;
@@ -945,7 +1039,7 @@ $entityModal: (
     text-align: center;
     width: 100%;
   }
-  
+
   &__add-form {
     display: flex;
     gap: 0.5rem;
@@ -956,43 +1050,43 @@ $entityModal: (
     padding: 0.75rem;
     flex-wrap: wrap;
   }
-  
+
   &__matiere-select {
     @extend %entityModal__select;
     min-width: 140px;
     font-size: 0.9rem;
-    
+
     option {
       padding: 0.5rem;
     }
   }
-  
+
   &__denominateur-select {
     @extend %entityModal__select;
     min-width: 60px;
     font-size: 0.9rem;
-    
+
     option {
       padding: 0.5rem;
     }
   }
-  
+
   &__separator {
     font-weight: bold;
     color: map.get($themeColors, gray600);
     margin: 0 4px;
     font-size: 1rem;
   }
-  
+
   &__add-btn {
     @extend %entityModal__btn;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
     min-width: auto;
-    
+
     &--cancel {
       background: #6c757d;
-      
+
       &:hover:not(:disabled) {
         background: color.adjust(#6c757d, $lightness: -8%);
       }
@@ -1055,7 +1149,8 @@ $entityModal: (
     position: relative;
     display: inline-block;
     margin-top: 0.75rem;
-    >img{
+
+    >img {
       width: 100%;
       padding: 1em;
       box-sizing: border-box;
@@ -1115,13 +1210,13 @@ $entityModal: (
     border-radius: 8px;
     padding: 1rem;
     margin: 1rem 0;
-    
+
     p {
       margin: 0;
       color: map.get($entityModal, infoNoteColor);
       font-size: 0.9rem;
       line-height: 1.4;
-      
+
       strong {
         color: #007bff;
       }

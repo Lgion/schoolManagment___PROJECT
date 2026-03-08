@@ -191,13 +191,18 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
         Object.entries(compositionNotes).forEach(([matiere, noteData]) => {
           const noteValue = noteData.note;
           const sur = noteData.sur || 20;
+          // Déterminer le coefficient réel
+          let coefficient = sur === 20 ? 2 : (sur >= 10 ? sur / 10 : sur);
+          if (coefficient === 0) coefficient = 1;
+
           // Garder la note avec son coefficient d'origine
           eleveNotes.notes[matiere] = { note: noteValue, sur: sur };
+
           // Pour le calcul de moyenne (sur 10) :
           // noteValue est sur 'sur' (ex: 9 sur 10), donc noteSur10 = (noteValue / sur) * 10
           const noteSur10 = (noteValue / sur) * 10;
-          sum += noteSur10;
-          count++;
+          sum += noteSur10 * coefficient;
+          count += coefficient;
         });
       }
       // Ancien format (legacy)
@@ -208,10 +213,18 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
             if (matiere !== 'date' && matiere !== 'officiel' && typeof note === 'number') {
               // Ancien format : note directe sur 20, garder tel quel
               eleveNotes.notes[matiere] = { note: note, sur: 20 };
+
+              // Essayer d'utiliser le coefficient de config de classe pour l'ancien format
+              let coefficient = 2;
+              if (coefficients && coefficients[matiere]) {
+                coefficient = coefficients[matiere] >= 10 ? coefficients[matiere] / 10 : coefficients[matiere];
+              }
+              if (coefficient === 0) coefficient = 1;
+
               // Pour le calcul de moyenne, convertir vers /10
               const noteSur10 = (note / 20) * 10;
-              sum += noteSur10;
-              count++;
+              sum += noteSur10 * coefficient;
+              count += coefficient;
             }
           });
         }

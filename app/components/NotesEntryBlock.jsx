@@ -71,7 +71,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     // État du formulaire d'entrée de session
     const [sessionConfig, setSessionConfig] = useState({
         annee: currentYear,
-        trimestreIndex: 0,
+        trimestreIndex: '',
         isOfficiel: true,
         matieres: Object.keys(coefficients),
         surValeurs: { ...coefficients }, // Use actual coefficients as denominators
@@ -192,9 +192,13 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     // Construire la structure compositions à partir du brouillon
     // Fix #7: Use sessionTimestampRef instead of Date.now() for idempotency
     const buildCompositions = useCallback((eleve, notesDraftForEleve, { lock = false } = {}) => {
-        const { annee, trimestreIndex, isOfficiel, matieres, surValeurs } = sessionConfig;
+        const { annee, trimestreIndex, isOfficiel, matieres, surValeurs, sessionDate } = sessionConfig;
         const category = isOfficiel ? 'officiel' : 'unOfficiel';
-        const timestamp = sessionTimestampRef.current;
+        const timestamp = sessionDate;
+
+        if (!timestamp) {
+            throw new Error("Veuillez d'abord sélectionner une composition liée.");
+        }
 
         const subjects = {};
         matieres.forEach(matiere => {
@@ -271,6 +275,10 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     const handlePublish = async () => {
         if (!sessionConfig.sessionDate) {
             setPublishError("Veuillez sélectionner une composition liée à cette session.");
+            return;
+        }
+        if (sessionConfig.trimestreIndex === '') {
+            setPublishError("Veuillez sélectionner un trimestre.");
             return;
         }
         setPublishing(true);
@@ -479,6 +487,10 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
 
                                 setNotesDraft(nextNotes);
                                 setAbsencesDraft(nextAbsences);
+                            } else {
+                                // Vider les champs si aucune composition n'est sélectionnée
+                                setNotesDraft({});
+                                setAbsencesDraft({});
                             }
                         }}
                         style={{ border: !sessionConfig.sessionDate ? '2px solid #ef4444' : '' }}
@@ -502,10 +514,10 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         id="ne-trimestre"
                         className="notes-entry__select"
                         value={sessionConfig.trimestreIndex}
-                        onChange={e => setSessionConfig(prev => ({ ...prev, trimestreIndex: Number(e.target.value) }))}
-                        disabled
-                        style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6', opacity: 1, color: '#374151' }}
+                        onChange={e => setSessionConfig(prev => ({ ...prev, trimestreIndex: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    // style={{ cursor: 'not-allowed', backgroundColor: '#f3f4f6', opacity: 1, color: '#374151' }}
                     >
+                        <option value="">-- Choisir un trimestre --</option>
                         {trimestreLabels.map((label, i) => (
                             <option key={i} value={i}>{label}</option>
                         ))}
@@ -617,7 +629,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                                             value={notesDraft[eleve._id]?.[m] ?? ''}
                                             onChange={e => handleNoteChange(eleve._id, m, e.target.value)}
                                             aria-label={`Note de ${eleve.nom} en ${getSubName(m)}`}
-                                            disabled={savingMap[eleve._id] || !canEdit}
+                                            disabled={savingMap[eleve._id] || !canEdit || !sessionConfig.sessionDate || sessionConfig.trimestreIndex === ''}
                                         />
                                     </td>
                                 ))}
@@ -631,7 +643,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                                         value={absencesDraft[eleve._id] ?? ''}
                                         onChange={e => handleAbsenceChange(eleve._id, e.target.value)}
                                         aria-label={`Absences de ${eleve.nom}`}
-                                        disabled={savingMap[eleve._id] || !canEdit}
+                                        disabled={savingMap[eleve._id] || !canEdit || !sessionConfig.sessionDate || sessionConfig.trimestreIndex === ''}
                                     />
                                 </td>
 
@@ -642,7 +654,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                                             type="button"
                                             className={`notes-entry__btn notes-entry__btn--save${savingMap[eleve._id] ? ' notes-entry__btn--saving' : ''}`}
                                             onClick={() => handleSaveEleve(eleve)}
-                                            disabled={savingMap[eleve._id]}
+                                            disabled={savingMap[eleve._id] || !sessionConfig.sessionDate || sessionConfig.trimestreIndex === ''}
                                             aria-label={`Sauvegarder les notes de ${eleve.nom}`}
                                         >
                                             {savingMap[eleve._id] ? '…' : successMap[eleve._id] ? '✓' : 'Enreg.'}
@@ -675,7 +687,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         type="button"
                         className={`notes-entry__btn notes-entry__btn--publish${publishing ? ' notes-entry__btn--publishing' : ''}`}
                         onClick={handlePublish}
-                        disabled={publishing || publishSuccess}
+                        disabled={publishing || publishSuccess || sessionConfig.trimestreIndex === ''}
                         aria-live="polite"
                     >
                         {publishing ? 'Publication en cours…' : publishSuccess ? '✓ Notes publiées !' : shouldLock ? '🔒 Publier et verrouiller' : '📢 Publier sans verrouiller'}

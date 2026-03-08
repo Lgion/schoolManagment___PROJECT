@@ -1711,7 +1711,6 @@ section>div:has(.modal) {
 
     button {
       position: absolute;
-      right: 2px;
       top: 2px;
       border: none;
       background: transparent;
@@ -1719,6 +1718,18 @@ section>div:has(.modal) {
       font-weight: bold;
       font-size: 14px;
       cursor: pointer;
+
+      &:hover {
+        color: white;
+      }
+
+      &.compositions-block__edit-btn {
+        right: 20px;
+      }
+
+      &.compositions-block__remove-btn {
+        right: 2px;
+      }
     }
   }
 
