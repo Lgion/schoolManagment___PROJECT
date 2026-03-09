@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
 
-export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "" }) {
+export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "", apiEndpoint = '/api/school_ai/extract-notes' }) {
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -82,7 +82,7 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
             formData.append('image', uploadFile);
             formData.append('subjects', JSON.stringify(subjects));
 
-            const response = await fetch('/api/school_ai/extract-notes', {
+            const response = await fetch(apiEndpoint, {
                 method: 'POST',
                 body: formData,
             });
@@ -137,6 +137,7 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
                 style={{ display: 'none' }}
             />
             <button
+                type="button"
                 className={`image-scanner__btn ${disabled ? '--disabled' : ''}`}
                 onClick={handleButtonClick}
                 disabled={disabled}

@@ -7,6 +7,8 @@ import PermissionGate from '../components/PermissionGate';
 import EleveCard from './EleveCard';
 import './EleveCard.scss';
 import { getLSItem } from "../../utils/localStorageManager";
+import ImageScanner from '../components/ui/ImageScanner';
+import ReviewFeesModal from '../components/ui/ReviewFeesModal';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -21,6 +23,11 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
+
+    // IA Analyse Fees States
+    const [scanResult, setScanResult] = useState(null);
+    const [validatedScannedData, setValidatedScannedData] = useState(null);
+
     const classOrderPriority = {
         CP1: 0,
         CP2: 1,
@@ -113,6 +120,63 @@ export default function EcoleAdminEleveLayout({ children }) {
         ? eleves.filter(eleve => eleve.isInterne === true).length
         : 0;
     const externesCount = totalEleves - internesCount;
+
+    const handleValidateFees = async (validatedRows) => {
+        setValidatedScannedData(validatedRows);
+
+        // Obtenir l'année scolaire courante pour la clé
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const anneeKey = month < 7 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
+
+        // Mettre à jour chaque élève sélectionné
+        for (const row of validatedRows) {
+            if (!row.matchedStudentId) continue;
+
+            const eleveToUpdate = eleves.find(e => e._id === row.matchedStudentId);
+            if (!eleveToUpdate) continue;
+
+            // Format de la date de paiement
+            const paymentDate = row.date || now.toISOString().split('T')[0]; // Par défaut aujourd'hui
+
+            try {
+                // Prépare le nouvel objet scolarity_fees_$_checkbox
+                const existingFees = eleveToUpdate.scolarity_fees_$_checkbox || {};
+                const yearFees = existingFees[anneeKey] || {};
+                const dayFees = yearFees[paymentDate] || [];
+
+                // Normaliser dayFees en tableau si c'est un objet (ancien format)
+                const standardizedDayFees = Array.isArray(dayFees) ? [...dayFees] : [dayFees];
+
+                // Ajouter le nouveau paiement
+                standardizedDayFees.push({
+                    argent: row.argent,
+                    riz: row.riz,
+                    timestamp: Date.now()
+                });
+
+                const newScolarityFees = {
+                    ...existingFees,
+                    [anneeKey]: {
+                        ...yearFees,
+                        [paymentDate]: standardizedDayFees
+                    }
+                };
+
+                // Appeler ctx.saveEleve
+                await ctx.saveEleve({
+                    _id: eleveToUpdate._id,
+                    scolarity_fees_$_checkbox: newScolarityFees
+                });
+            } catch (error) {
+                console.error("Erreur lors de la mise à jour des frais pour", eleveToUpdate.nom, error);
+            }
+        }
+
+        // Fermer la fenetre
+        setScanResult(null);
+    };
 
     return (<>
         <h2>Liste des élèves</h2>
@@ -237,9 +301,34 @@ export default function EcoleAdminEleveLayout({ children }) {
             </div>
 
             <PermissionGate roles={['admin', 'prof']}>
-                <button onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <ImageScanner
+                        apiEndpoint="/api/school_ai/extract-fees"
+                        label="Analyse IA Paiements"
+                        className="--compact"
+                        title="Scanner une liste de paiements de scolarité avec l'IA"
+                        onScanComplete={(result) => {
+                            if (result.success) {
+                                setScanResult(result);
+                            } else {
+                                alert(result.error || "Erreur lors du scan");
+                            }
+                        }}
+                    />
+                    <button type="button" onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+                </div>
             </PermissionGate>
         </form>
+
+        {scanResult && scanResult.success && scanResult.file && (
+            <ReviewFeesModal
+                file={scanResult.file}
+                extractedData={scanResult.data}
+                students={eleves}
+                onClose={() => setScanResult(null)}
+                onValidate={handleValidateFees}
+            />
+        )}
 
         <hr />
 
