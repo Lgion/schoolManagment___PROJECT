@@ -93,14 +93,71 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
             return;
         }
 
-        // Vérifier les montants négatifs
         const hasNegativeAmounts = rows.some(r => (r.argent !== undefined && r.argent < 0) || (r.riz !== undefined && r.riz < 0));
         if (hasNegativeAmounts) {
             alert("⚠️ Erreur : Les montants d'argent et les quantités de riz ne peuvent pas être négatifs.");
             return;
         }
 
-        onValidate(rows);
+        // 3. Vérifier les paiements déjà complétés (100%)
+        const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
+        const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
+        const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
+        const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const anneeKey = month < 7 ? `${year - 1}-${year}` : `${year}-${year + 1}`;
+
+        let warnings = [];
+
+        const finalRows = rows.map(r => {
+            if (!r.matchedStudentId) return r;
+            const stu = students.find(s => s._id === r.matchedStudentId);
+            if (!stu) return r;
+
+            const existingFees = stu.scolarity_fees_$_checkbox?.[anneeKey] || {};
+            let totalArgent = 0;
+            let totalRiz = 0;
+            
+            Object.values(existingFees).forEach(deposits => {
+                const arr = Array.isArray(deposits) ? deposits : [deposits];
+                arr.forEach(d => {
+                   totalArgent += (d.argent ? Number(d.argent) : 0);
+                   totalRiz += (d.riz ? Number(d.riz) : 0);
+                });
+            });
+
+            const targetArgent = stu.isInterne ? interneArgent : externeArgent;
+            const targetRiz = stu.isInterne ? interneRiz : externeRiz;
+
+            const nameStr = `${stu.nom || ''} ${Array.isArray(stu.prenoms) ? stu.prenoms[0] : (stu.prenoms || '')}`.trim();
+            let skipArgent = false;
+            let skipRiz = false;
+
+            if (r.argent > 0 && totalArgent >= targetArgent) {
+                warnings.push(`- ${nameStr} : scolarité déjà payée à 100% (${totalArgent}F).`);
+                skipArgent = true;
+            }
+            if (r.riz > 0 && totalRiz >= targetRiz) {
+                warnings.push(`- ${nameStr} : riz déjà payé à 100% (${totalRiz}kg).`);
+                skipRiz = true;
+            }
+
+            return {
+                ...r,
+                argent: skipArgent ? 0 : r.argent,
+                riz: skipRiz ? 0 : r.riz
+            };
+        });
+
+        if (warnings.length > 0) {
+            const proceed = window.confirm(`⚠️ Attention : Certains élèves ont déjà payé la totalité de leurs frais.\n\n${warnings.join('\n')}\n\nUne fois l'enregistrement validé, ces nouveaux montants excédentaires NE SERONT PAS pris en compte.\n\nVoulez-vous continuer ?`);
+            if (!proceed) return;
+        }
+
+        onValidate(finalRows);
         setIsReduced(true); // Au lieu de fermer, on réduit
     };
 

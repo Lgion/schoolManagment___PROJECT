@@ -1686,7 +1686,7 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
         {entries.length === 0 && <span className="scolarity-fees-block__empty">Aucun dépôt enregistré</span>}
         {entries.sort((a, b) => Number(a.ts) - Number(b.ts)).map((e, globalIndex) => (
           <div className="scolarity-fees-block__entry" key={`${e.ts}-${e.index}-${globalIndex}`}>
-            <span className="scolarity-fees-block__entry-date">{new Date(Number(e.ts)).toLocaleDateString()}</span>
+            <span className="scolarity-fees-block__entry-date">{new Date(isNaN(Number(e.ts)) ? e.ts : Number(e.ts)).toLocaleDateString()}</span>
             {e.argent && <span className="scolarity-fees-block__entry-argent">{e.argent} F</span>}
             {e.riz && <span className="scolarity-fees-block__entry-riz">{e.riz} kg</span>}
             <span className="scolarity-fees-block__entry-time">

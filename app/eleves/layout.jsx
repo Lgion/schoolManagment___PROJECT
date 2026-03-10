@@ -137,30 +137,39 @@ export default function EcoleAdminEleveLayout({ children }) {
             const eleveToUpdate = eleves.find(e => e._id === row.matchedStudentId);
             if (!eleveToUpdate) continue;
 
-            // Format de la date de paiement
-            const paymentDate = row.date || now.toISOString().split('T')[0]; // Par défaut aujourd'hui
+            // Format de la date de paiement en timestamp (zéro heure) attendu par ScolarityFeesBlock
+            let parsedDate = new Date(now.getTime());
+            if (row.date) {
+                parsedDate = new Date(row.date);
+                if (isNaN(parsedDate.getTime())) {
+                    parsedDate = new Date(now.getTime());
+                }
+            }
+            parsedDate.setHours(0, 0, 0, 0);
+            const paymentDateKey = parsedDate.getTime().toString();
 
             try {
                 // Prépare le nouvel objet scolarity_fees_$_checkbox
                 const existingFees = eleveToUpdate.scolarity_fees_$_checkbox || {};
                 const yearFees = existingFees[anneeKey] || {};
-                const dayFees = yearFees[paymentDate] || [];
+                const dayFees = yearFees[paymentDateKey] || [];
 
                 // Normaliser dayFees en tableau si c'est un objet (ancien format)
                 const standardizedDayFees = Array.isArray(dayFees) ? [...dayFees] : [dayFees];
 
                 // Ajouter le nouveau paiement
-                standardizedDayFees.push({
-                    argent: row.argent,
-                    riz: row.riz,
-                    timestamp: Date.now()
-                });
+                if (row.argent > 0) {
+                    standardizedDayFees.push({ argent: row.argent, timestamp: Date.now() });
+                }
+                if (row.riz > 0) {
+                    standardizedDayFees.push({ riz: row.riz, timestamp: Date.now() });
+                }
 
                 const newScolarityFees = {
                     ...existingFees,
                     [anneeKey]: {
                         ...yearFees,
-                        [paymentDate]: standardizedDayFees
+                        [paymentDateKey]: standardizedDayFees
                     }
                 };
 
