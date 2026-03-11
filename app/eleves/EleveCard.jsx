@@ -65,8 +65,10 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
       >
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
         <div className="eleve-card__infos">
-          <div className="eleve-card__name">{eleve.nom} <span className="eleve-card__prenoms">{prenoms}</span></div>
-          <div className="eleve-card__classe">{classe.niveau} - {classe.alias}</div>
+          <div className="eleve-card__name_classe">
+            <div className="eleve-card__name">{eleve.nom} <span className="eleve-card__prenoms">{prenoms}</span></div>
+            <div className="eleve-card__classe">{classe.niveau} - {classe.alias}</div>
+          </div>
           <div className="eleve-card__isinterne">
             {isInterne ? <span className="eleve-card__isinterne-badge">Interne</span> : <span className="eleve-card__isinterne-badge eleve-card__isinterne-badge--externe">Externe</span>}
           </div>

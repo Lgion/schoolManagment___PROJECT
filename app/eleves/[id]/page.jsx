@@ -175,7 +175,7 @@ export default function ElevePage() {
                   Object.entries(allFees).map(([year, fees]) => (
                     <div key={year} style={{ marginBottom: '1.3em' }}>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
-                      <ScolarityFeesBlock fees={fees} schoolYear={year} />
+                      <ScolarityFeesBlock fees={fees} schoolYear={year} isInterne={eleve.isInterne || false} />
                     </div>
                   ))
                 }

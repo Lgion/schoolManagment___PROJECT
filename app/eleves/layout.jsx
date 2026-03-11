@@ -23,6 +23,7 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
+    const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false); // Toggle panneau des filtres
 
     // IA Analyse Fees States
     const [scanResult, setScanResult] = useState(null);
@@ -61,32 +62,42 @@ export default function EcoleAdminEleveLayout({ children }) {
                     label: 'Nombre d\'élèves',
                     data: values,
                     backgroundColor: [
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 99, 132, 0.2)',
+                        '#3b82f6', // Bleu vif pour Garçons
+                        '#ec4899', // Rose vif pour Filles
                     ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 99, 132, 1)',
-                    ],
-                    borderWidth: 1,
-                    hoverBackgroundColor: [
-                        'rgba(54, 162, 235, 0.4)',
-                        'rgba(255, 99, 132, 0.4)',
-                    ],
-                    hoverBorderWidth: 3
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 15
                 }]
             },
             options: {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Nombre d\'élèves: ' + (getLSItem('eleves')?.length || 0)
+                        text: 'Répartition par genre (Total: ' + (eleves.length || 0) + ')',
+                        color: '#1E3A8A',
+                        font: {
+                            family: "'Inter', sans-serif",
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        padding: {
+                            bottom: 20
+                        }
                     },
                     legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#495057',
+                            padding: 20,
+                            usePointStyle: true,
+                            font: {
+                                family: "'Poppins', sans-serif",
+                                size: 12
+                            }
+                        },
                         onClick: (e, legendItem, legend) => {
-                            // Empêcher le comportement par défaut de masquer les sections
                             e.stopPropagation();
-                            // Récupérer le genre cliqué
                             const clickedGender = Object.keys(data)[legendItem.index];
                             setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
                         }
@@ -94,22 +105,17 @@ export default function EcoleAdminEleveLayout({ children }) {
                 },
                 onClick: (event, elements) => {
                     if (elements.length > 0) {
-                        // Récupérer l'index de la section cliquée
                         const clickedElementIndex = elements[0].index;
                         const clickedGender = Object.keys(data)[clickedElementIndex];
-
-                        // Basculer le filtre par genre
                         setFilterByGender(filterByGender === clickedGender ? 'tous' : clickedGender);
-
-                        console.log(`Clic sur la section: ${clickedGender}`);
                     }
                 },
                 onHover: (event, elements) => {
-                    // Changer le curseur au survol
                     event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                 },
                 responsive: false,
                 maintainAspectRatio: false,
+                cutout: '65%' // Pour un effet anneau plus élégant
             }
         });
     }, [eleves])
@@ -194,139 +200,173 @@ export default function EcoleAdminEleveLayout({ children }) {
             height={320}
         ></canvas>
         <form className="infos_cards">
-            <div className="infos_cards__controls">
+            {/* --- Top Bar: Search and Actions --- */}
+            <div className="infos_cards__top-bar">
                 {/* Recherche textuelle */}
-                <div className="infos_cards__control-group">
-                    <label htmlFor="search-input" className="infos_cards__label">🔍 Rechercher :</label>
+                <div className="infos_cards__search-wrapper">
                     <input
                         id="search-input"
                         type="text"
                         className="infos_cards__search-input"
-                        placeholder="Nom, prénom..."
+                        placeholder="Rechercher : Nom, prénom..."
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                         aria-label="Rechercher un élève par nom ou prénom"
                     />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
                 </div>
 
-                {/* Filtres existants */}
-                <div className="infos_cards__control-group">
-                    <label htmlFor="filter-select" className="infos_cards__label">🏫 Filtrer par classe :</label>
-                    <select
-                        id="filter-select"
-                        className="infos_cards__select"
-                        value={filterByClasse}
-                        onChange={e => setFilterByClasse(e.target.value)}
-                        aria-label="Filtrer les élèves par classe"
+                <div className="infos_cards__top-bar-controls">
+                    <button 
+                        type="button" 
+                        className={`infos_cards__btn infos_cards__btn--icon ${isFilterPanelOpen ? 'infos_cards__btn--active' : ''}`}
+                        onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+                        title="Afficher/Masquer les filtres"
                     >
-                        <option value="toutes">Toutes les classes</option>
-                        <option value="CP1">CP1</option>
-                        <option value="CP2">CP2</option>
-                        <option value="CE1">CE1</option>
-                        <option value="CE2">CE2</option>
-                        <option value="CM1">CM1</option>
-                        <option value="CM2">CM2</option>
-                    </select>
-                </div>
-
-                <div className="infos_cards__control-group">
-                    <label htmlFor="gender-filter" className="infos_cards__label">👥 Filtrer par genre :</label>
-                    <select
-                        id="gender-filter"
-                        className="infos_cards__select"
-                        value={filterByGender}
-                        onChange={e => setFilterByGender(e.target.value)}
-                        aria-label="Filtrer les élèves par genre"
-                    >
-                        <option value="tous">Tous les genres</option>
-                        <option value="M">Garçons (M)</option>
-                        <option value="F">Filles (F)</option>
-                    </select>
-                </div>
-
-                {/* Contrôles de tri */}
-                <div className="infos_cards__control-group">
-                    <label htmlFor="sort-by" className="infos_cards__label">📊 Trier par :</label>
-                    <select
-                        id="sort-by"
-                        className="infos_cards__select"
-                        value={sortBy}
-                        onChange={e => setSortBy(e.target.value)}
-                        aria-label="Choisir le critère de tri"
-                    >
-                        <option value="nom">Nom de famille</option>
-                        <option value="classe">Classe</option>
-                    </select>
-                </div>
-
-                <div className="infos_cards__control-group">
-                    <label htmlFor="sort-order" className="infos_cards__label">🔄 Ordre :</label>
-                    <select
-                        id="sort-order"
-                        className="infos_cards__select"
-                        value={sortOrder}
-                        onChange={e => setSortOrder(e.target.value)}
-                        aria-label="Choisir l'ordre de tri"
-                    >
-                        <option value="asc">Croissant (A→Z)</option>
-                        <option value="desc">Décroissant (Z→A)</option>
-                    </select>
-                </div>
-
-                {/* Filtre par statut interne/externe */}
-                <div className="infos_cards__control-group">
-                    <label htmlFor="interne-filter" className="infos_cards__label">🏠 Interne({internesCount})/Externe({externesCount}) :</label>
-                    <select
-                        id="interne-filter"
-                        className="infos_cards__select"
-                        value={filterByInterne}
-                        onChange={e => setFilterByInterne(e.target.value)}
-                        aria-label="Filtrer les élèves par statut interne/externe"
-                    >
-                        <option value="tous">Tous les élèves</option>
-                        <option value="interne">Internes uniquement</option>
-                        <option value="externe">Externes uniquement</option>
-                    </select>
-                </div>
-
-                {/* Bouton de basculement d'affichage */}
-                <div className="infos_cards__control-group">
-                    <label className="infos_cards__label">👁️ Affichage :</label>
-                    <button
-                        type="button"
-                        className={`infos_cards__view-toggle ${viewMode === 'grid' ? 'infos_cards__view-toggle--active' : ''}`}
-                        onClick={() => setViewMode(viewMode === 'grid' ? 'inline' : 'grid')}
-                        aria-label={`Basculer vers l'affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
-                        title={`Affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
-                    >
-                        <span className="infos_cards__view-toggle-icon">
-                            {viewMode === 'grid' ? '📋' : '⊞'}
-                        </span>
-                        <span className="infos_cards__view-toggle-text">
-                            {viewMode === 'grid' ? 'Ligne' : 'Grille'}
-                        </span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="20" height="20">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5m4.5 12h9.75M10.5 18a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5m4.5-6h9.75M10.5 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5" />
+                        </svg>
+                        Filtres
                     </button>
+
+                    <PermissionGate roles={['admin', 'prof']}>
+                        <div className="infos_cards__actions">
+                            <ImageScanner
+                                apiEndpoint="/api/school_ai/extract-fees"
+                                label="Analyse IA"
+                                className="infos_cards__btn infos_cards__btn--primary"
+                                title="Scanner une liste de paiements de scolarité avec l'IA"
+                                onScanComplete={(result) => {
+                                    if (result.success) {
+                                        setScanResult(result);
+                                    } else {
+                                        alert(result.error || "Erreur lors du scan");
+                                    }
+                                }}
+                            />
+                            <button type="button" onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className="infos_cards__btn infos_cards__btn--primary">
+                                Ajouter un élève +
+                            </button>
+                        </div>
+                    </PermissionGate>
                 </div>
             </div>
 
-            <PermissionGate roles={['admin', 'prof']}>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <ImageScanner
-                        apiEndpoint="/api/school_ai/extract-fees"
-                        label="Analyse IA Paiements"
-                        className="--compact"
-                        title="Scanner une liste de paiements de scolarité avec l'IA"
-                        onScanComplete={(result) => {
-                            if (result.success) {
-                                setScanResult(result);
-                            } else {
-                                alert(result.error || "Erreur lors du scan");
-                            }
-                        }}
-                    />
-                    <button type="button" onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un élève</button>
+            {/* --- Filter Panel --- */}
+            <div className={`infos_cards__filter-panel ${isFilterPanelOpen ? 'infos_cards__filter-panel--open' : ''}`}>
+                <div className="infos_cards__filter-header">
+                    <h3 className="infos_cards__filter-title">Student Management Filter Panel</h3>
+                    <button type="button" className="infos_cards__filter-close" onClick={() => setIsFilterPanelOpen(false)}>✕</button>
                 </div>
-            </PermissionGate>
+
+                {/* Filtre Classes */}
+                <details className="infos_cards__control-group" open>
+                    <summary className="infos_cards__label">Filtrer par classe</summary>
+                    <div className="infos_cards__content">
+                        <select
+                            id="filter-select"
+                            className="infos_cards__select"
+                            value={filterByClasse}
+                            onChange={e => setFilterByClasse(e.target.value)}
+                            aria-label="Filtrer les élèves par classe"
+                        >
+                            <option value="toutes">Toutes les classes</option>
+                            <option value="CP1">CP1</option>
+                            <option value="CP2">CP2</option>
+                            <option value="CE1">CE1</option>
+                            <option value="CE2">CE2</option>
+                            <option value="CM1">CM1</option>
+                            <option value="CM2">CM2</option>
+                        </select>
+                    </div>
+                </details>
+
+                {/* Filtre Genre */}
+                <details className="infos_cards__control-group">
+                    <summary className="infos_cards__label">Filtrer par genre</summary>
+                    <div className="infos_cards__content">
+                        <select
+                            id="gender-filter"
+                            className="infos_cards__select"
+                            value={filterByGender}
+                            onChange={e => setFilterByGender(e.target.value)}
+                            aria-label="Filtrer les élèves par genre"
+                        >
+                            <option value="tous">Tous les genres</option>
+                            <option value="M">Garçons (M)</option>
+                            <option value="F">Filles (F)</option>
+                        </select>
+                    </div>
+                </details>
+
+                {/* Ordre d'affichage (Sort) */}
+                <details className="infos_cards__control-group" open>
+                    <summary className="infos_cards__label">Ordre d'affichage</summary>
+                    <div className="infos_cards__content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <select
+                            id="sort-order"
+                            className="infos_cards__select"
+                            style={{ width: '100%', maxWidth: '300px' }}
+                            value={sortOrder}
+                            onChange={e => setSortOrder(e.target.value)}
+                            aria-label="Choisir l'ordre de tri"
+                        >
+                            <option value="asc">Croissant (A → Z)</option>
+                            <option value="desc">Décroissant (Z → A)</option>
+                        </select>
+                        <select
+                            id="sort-by"
+                            className="infos_cards__select"
+                            style={{ width: '100%', maxWidth: '300px' }}
+                            value={sortBy}
+                            onChange={e => setSortBy(e.target.value)}
+                            aria-label="Choisir le critère de tri"
+                        >
+                            <option value="nom">Trier par: Nom de famille</option>
+                            <option value="classe">Trier par: Classe</option>
+                        </select>
+                        <small style={{ color: '#94a3b8', fontStyle: 'italic' }}>Le tri sera appliqué sur la sélection choisie ci-dessus</small>
+                    </div>
+                </details>
+
+                {/* Filtre par statut interne/externe */}
+                <details className="infos_cards__control-group" open>
+                    <summary className="infos_cards__label">Filtrer par Status</summary>
+                    <div className="infos_cards__content">
+                        <select
+                            id="interne-filter"
+                            className="infos_cards__select"
+                            value={filterByInterne}
+                            onChange={e => setFilterByInterne(e.target.value)}
+                            aria-label="Filtrer les élèves par statut interne/externe"
+                        >
+                            <option value="tous">Tous les status</option>
+                            <option value="interne">Internes uniquement</option>
+                            <option value="externe">Externes uniquement</option>
+                        </select>
+                    </div>
+                </details>
+
+                {/* Bouton de basculement d'affichage */}
+                <div className="infos_cards__control-group infos_cards__layout-control">
+                    <div className="infos_cards__label">Affichage</div>
+                    <div className="infos_cards__content">
+                        <button
+                            type="button"
+                            className={`infos_cards__view-toggle ${viewMode === 'grid' ? 'infos_cards__view-toggle--active' : ''}`}
+                            onClick={() => setViewMode(viewMode === 'grid' ? 'inline' : 'grid')}
+                            aria-label={`Basculer vers l'affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
+                            title={`Affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
+                        >
+                            <span className="infos_cards__view-toggle-icon">
+                                {viewMode === 'grid' ? '📋' : '⊞'}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </form>
 
         {scanResult && scanResult.success && scanResult.file && (

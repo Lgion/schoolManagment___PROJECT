@@ -18,6 +18,7 @@
 @use "./components/NAVIGATION/stickyNav.scss";
 @use "./components/CONTROLS/infosCardsControls.scss";
 @use "./components/CONTENT/homeContent.scss";
+@use "./components/CONTENT/teacherReport.scss";
 @use "./components/SCHEDULES/index";
 @use "./components/MEDIA/mediaManager.scss";
 @use 'components/MODALS/entityModal.scss';
@@ -29,13 +30,20 @@ $font-primary: $primaryFont;
 $font-secondary: $secondaryFont;
 
 #camembert {
-  // background: white;
-  // width: 200px !important;
-  // height: 200px !important;
-  // font-size: 2em;
-  margin: 0px auto;
-  background: black;
-  padding-bottom: 1em;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 16px;
+  display: block;
+  max-width: 100%;
+  transition: transform 0.3s ease;
+  border: 1px solid black;
+  box-shadow: 0 0 10px 1px black;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .person-detail {
@@ -1973,130 +1981,25 @@ section>div:has(.modal) {
 
 
 // --- Styles imbriqués BEM pour le layout admin école ---
+// Ce bloc a été refactoré dans layouts/headers.scss
 .ecole-admin {
-  padding: 32px;
-  margin-bottom: 5em;
+  // padding: 32px; // Retiré car casse le sticky header
   background: #f8f8fc;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px #e0e0e0cc;
   min-height: 100vh;
   position: relative;
 
   &:before {
     content: "";
     position: absolute;
-    // z-index: -1;
     inset: 0;
     opacity: .5;
     background: url("./fond_motif_ecole_a.jpg");
+    pointer-events: none;
   }
 
   >*:not(.modal):not(.detailModal) {
     position: relative;
     z-index: 1;
-  }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 4em;
-    flex-wrap: wrap;
-    gap: 1em;
-    position: sticky;
-    z-index: 10;
-    padding-bottom: 2em;
-  }
-
-  &__title {
-    display: flex;
-    flex-flow: row wrap;
-    font-size: 2.1em;
-    font-weight: 700;
-    margin-bottom: 0.6em;
-    color: $primary-color;
-    letter-spacing: 0.01em;
-    font-family: $font-primary;
-
-    >a:not(:first-of-type) {
-      width: 100%;
-    }
-  }
-
-  &__authSection {
-    display: flex;
-    align-items: center;
-    gap: 1em;
-  }
-
-  &__authButtons {
-    display: flex;
-    gap: 0.75em;
-    align-items: center;
-  }
-
-  &__authButton {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0.6em 1.2em;
-    border-radius: 8px;
-    border: 2px solid transparent;
-    font-family: $font-secondary;
-    font-weight: 600;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-
-    &--signIn {
-      background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 10%));
-      color: white;
-
-      &:hover {
-        background: linear-gradient(135deg, color.adjust($primary-color, $lightness: -5%), $primary-color);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($primary-color, 0.3);
-      }
-    }
-
-    &--signUp {
-      background: transparent;
-      color: $primary-color;
-      border-color: $primary-color;
-
-      &:hover {
-        background: $primary-color;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba($primary-color, 0.2);
-      }
-    }
-
-    &-icon {
-      font-size: 1.1em;
-    }
-
-    &-text {
-      white-space: nowrap;
-    }
-  }
-
-  &__userSection {
-    display: flex;
-    align-items: center;
-    gap: 0.75em;
-    padding: 0.5em 1em;
-    background: rgba($primary-color, 0.1);
-    border-radius: 25px;
-    border: 1px solid rgba($primary-color, 0.2);
-  }
-
-  &__userWelcome {
-    font-family: $font-secondary;
-    font-weight: 500;
-    color: $primary-color;
-    font-size: 0.9em;
   }
 
   &__userAvatar {

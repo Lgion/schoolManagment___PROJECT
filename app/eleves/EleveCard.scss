@@ -1,13 +1,15 @@
-.eleve-card,.enseignant-card,.classe-card {
+.eleve-card,
+.enseignant-card,
+.classe-card {
   box-sizing: border-box;
   background: #f8f8fc;
   border: 2px solid #e0e0e0;
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   padding: 1.1em 1.2em 1.2em 1.2em;
   // min-width: 220px;
   // max-width: 320px;
-  width:150px;
+  width: 150px;
   display: flex;
   flex-flow: column;
   margin: 0;
@@ -31,7 +33,7 @@
     height: 74px;
     object-fit: cover;
     border-radius: 50%;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
     background: #eaeaea;
   }
 
@@ -61,12 +63,18 @@
     margin-bottom: 0.2em;
     font-size: 1em;
   }
-  &__classe,&__name {
+
+  &__classe,
+  &__name {
+    padding: 5px 0;
+  }
+
+  &__name_classe {
     background: silver;
-    margin: -4px -7%;
-    display: block;
-    padding: 5px 5px;
+    padding: .75em;
+    box-shadow: 0 0 10px 1px inset black;
     border-radius: 5px;
+    text-align: center;
   }
 
   &__isinterne {
@@ -81,7 +89,8 @@
     padding: 0.18em 0.7em;
     font-size: 0.98em;
     font-weight: 600;
-    border:1px solid;
+    border: 1px solid;
+
     &--externe {
       background: #ffeaea;
       color: #b00;
@@ -94,7 +103,7 @@
     background: silver;
     box-shadow: 0 0 3px 1px black inset;
     border-radius: 3px;
-    border: 1px solid black;  
+    border: 1px solid black;
   }
 
   &__progress-label {
@@ -120,13 +129,16 @@
 
   &__progress-argent {
     background: #6c63ff;
-    top:0;
+    top: 0;
   }
+
   &__progress-riz {
     background: #f9b233;
-    bottom:0;
+    bottom: 0;
   }
-  &__progress-riz, &__progress-argent{
+
+  &__progress-riz,
+  &__progress-argent {
     position: absolute;
     left: 0;
     height: 50%;
@@ -138,17 +150,31 @@
     color: #666;
     margin-top: 0.1em;
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between;
   }
 
-  &__progress-valueArgent{background:#6c63ff;color:white;}
-  &__progress-valueRiz {background:#f9b233;color:black;}
-  &__progress-valueArgent,&__progress-valueRiz {
+  &__progress-valueArgent {
+    background: #6c63ff;
+    color: white;
+  }
+
+  &__progress-valueRiz {
+    background: #f9b233;
+    color: black;
+  }
+
+  &__progress-valueArgent,
+  &__progress-valueRiz {
     margin: 0 0.2em;
-    padding:2px;
+    padding: 2px;
     border: 1px solid black;
     border-radius: 0 0 5px 5px;
-    >span{font-size: 10px;color:red;font-weight: bold;}
+
+    >span {
+      font-size: 10px;
+      color: red;
+      font-weight: bold;
+    }
   }
 
   // Modificateur pour affichage en ligne
@@ -161,14 +187,16 @@
     margin: 0.5em 0;
     padding: 0.8em 1em;
     gap: 1em;
-    
-    .eleve-card__photo, &__photo {
+
+    .eleve-card__photo,
+    &__photo {
       width: 50px;
       height: 50px;
       flex-shrink: 0;
     }
-    
-    .eleve-card__infos, &__infos {
+
+    .eleve-card__infos,
+    &__infos {
       flex: 1;
       display: flex;
       flex-direction: row;
@@ -176,73 +204,89 @@
       gap: 1.5em;
       flex-wrap: wrap;
     }
-    
-    .eleve-card__name, &__name {
+
+    .eleve-card__name,
+    &__name {
       min-width: 200px;
       flex-shrink: 0;
       overflow: hidden;
       height: 1em;
     }
-    
-    .eleve-card__classe, &__classe {
+
+    .eleve-card__classe,
+    &__classe {
       min-width: 120px;
       flex-shrink: 0;
     }
-    
-    .eleve-card__isinterne, &__isinterne {
+
+    .eleve-card__isinterne,
+    &__isinterne {
       min-width: 80px;
       flex-shrink: 0;
     }
-    
-    .eleve-card__progress, &__progress {
+
+    .eleve-card__progress,
+    &__progress {
       display: flex;
-      gap:1em;
+      gap: 1em;
       min-width: 150px;
       flex-shrink: 0;
       margin-top: 0;
     }
-    
-    .eleve-card__progress-bar, &__progress-bar {
+
+    .eleve-card__progress-bar,
+    &__progress-bar {
       position: absolute;
-      bottom:0;
-      left:5%;
-      width:90%;
-      border:1px solid;
-      &:before,&:after{
+      bottom: 0;
+      left: 5%;
+      width: 90%;
+      border: 1px solid;
+
+      &:before,
+      &:after {
         position: absolute;
         text-align: center;
-        text-shadow: 0 0 3px BLACK,0 0 2px BLACK, 0 0 1px BLACK;
+        text-shadow: 0 0 3px BLACK, 0 0 2px BLACK, 0 0 1px BLACK;
       }
-      &:before{
+
+      &:before {
         content: attr(data-argent);
-        color:#6c63ff;
-        left:1em;
+        color: #6c63ff;
+        left: 1em;
         z-index: 1;
       }
-      &:after{
+
+      &:after {
         content: attr(data-riz);
-        color:#f9b233;
-        right:1em;
+        color: #f9b233;
+        right: 1em;
       }
     }
-    
+
     @media (max-width: 768px) {
-      .eleve-card__infos, &__infos {
+
+      .eleve-card__infos,
+      &__infos {
         flex-flow: column;
         align-items: flex-start;
         gap: 0.1em;
         height: 75px;
         overflow: hidden;
       }
-      
-      .eleve-card__name, &__name,
-      .eleve-card__classe, &__classe,
-      .eleve-card__isinterne, &__isinterne,
-      .eleve-card__progress, &__progress {
+
+      .eleve-card__name,
+      &__name,
+      .eleve-card__classe,
+      &__classe,
+      .eleve-card__isinterne,
+      &__isinterne,
+      .eleve-card__progress,
+      &__progress {
         min-width: auto;
         width: 100%;
       }
-      .eleve-card__isinterne{
+
+      .eleve-card__isinterne {
         width: 75px;
         position: absolute;
         bottom: 10px;
@@ -256,7 +300,9 @@
     align-items: flex-start;
     max-width: 98vw;
     gap: 0.7em;
-    .eleve-card__photo, &__photo {
+
+    .eleve-card__photo,
+    &__photo {
       width: 54px;
       height: 54px;
     }
@@ -269,32 +315,42 @@
   flex-wrap: wrap;
   gap: .5em;
   justify-content: space-evenly;
-  padding-left:0;
-  gap:2rem 0;
-  
+  padding-left: 0;
+  gap: 2rem 0;
+
   &--inline {
     flex-direction: column;
     gap: 0;
-    
+
     .eleve-card-wrapper {
       width: 100%;
     }
   }
+
   .eleve-card-wrapper {
     &.f {
-      >a{background:rgba(255, 99, 132, 0.5);}
-      .eleve-card__infos{
-        color:darkorange !important;
-        .eleve-card__name>span{
+      >a {
+        background: rgba(255, 99, 132, 0.5);
+      }
+
+      .eleve-card__infos {
+        color: darkorange !important;
+
+        .eleve-card__name>span {
           color: goldenrod !important;
         }
       }
     }
-    &.m{
-      >a{background:rgba(54, 162, 235, 0.5);}
-      .eleve-card__infos{
-        color:#5a64ff !important;
-        .eleve-card__name>span{
+
+    &.m {
+      >a {
+        background: rgba(54, 162, 235, 0.5);
+      }
+
+      .eleve-card__infos {
+        color: #5a64ff !important;
+
+        .eleve-card__name>span {
           color: blue !important;
         }
       }

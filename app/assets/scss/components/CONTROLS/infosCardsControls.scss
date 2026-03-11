@@ -1,339 +1,402 @@
 // Composant BEM pour les contrôles des cartes d'informations (filtres, tri, recherche)
 .infos_cards {
-  position: relative;
-  // height: 200px;
   display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-flow: wrap;
-  justify-content: center;
-  // margin-bottom: 200px;
-  &__controls {
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: var(--font-primary, 'Inter', sans-serif);
+  
+  // -- Sticky Behavior --
+  position: sticky;
+  top: 80px; // Collé juste en dessous du header (qui fait 80px au scroll)
+  z-index: 100;
+  background: #f8f8fc; // Fond de parent pour cacher le défilement (optionnel)
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+  // -- Top Bar (Search + Actions) --
+  &__top-bar {
     display: flex;
-    flex-flow: wrap;
-    gap: var(--spacing-md, 1rem);
-    padding: var(--spacing-md, 1rem);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
-    border: 2px solid var(--color-border, #e0e0e0);
-    border-radius: var(--border-radius-lg, 12px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    margin-bottom: var(--spacing-lg, 1.5rem);
-    backdrop-filter: blur(8px);
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 1rem;
     
     @media (max-width: 768px) {
-      // flex-direction: column;
-      gap: var(--spacing-sm, 0.75rem);
-      padding: var(--spacing-sm, 0.75rem);
-    }
-    
-    @media (max-width: 480px) {
-      gap: var(--spacing-xs, 0.5rem);
-      padding: var(--spacing-xs, 0.5rem);
+      flex-direction: column;
+      width: 100%;
     }
   }
 
-  // Groupe de contrôle (label + input/select)
-  &__control-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs, 0.5rem);
-    min-width: 200px;
+  // Search
+  &__search-wrapper {
     flex: 1;
-    
-    @media (max-width: 768px) {
-      min-width: 150px;
-    }
-    
-    @media (max-width: 480px) {
-      // min-width: 100%;
-    }
-  }
-
-  // Labels des contrôles
-  &__label {
-    font-family: var(--font-primary);
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-xs, 0.25rem);
+    position: relative;
+    background: #f1f5f9;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs, 0.25rem);
-    
-    @media (max-width: 480px) {
-      font-size: 0.8125rem;
-    }
-  }
+    padding: 0 1rem;
+    min-height: 48px;
+    width: 100%;
+    transition: border-color 0.2s;
 
-  // Select dropdown
-  &__select {
-    padding: var(--spacing-sm, 0.75rem);
-    border: 2px solid var(--color-border, #e0e0e0);
-    border-radius: var(--border-radius-md, 8px);
-    background: #ffffff;
-    font-family: var(--font-primary);
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-    
-    &:hover {
-      border-color: var(--color-primary);
-      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
+    &:hover, &:focus-within {
+      border-color: #3b82f6;
     }
-    
-    &:focus {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
-    }
-    
-    // Flèche personnalisée
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1rem;
-    padding-right: 2.5rem;
-    appearance: none;
-    
-    @media (max-width: 480px) {
-      padding: var(--spacing-xs, 0.5rem);
-      font-size: 0.8125rem;
-      padding-right: 2rem;
-      background-size: 0.875rem;
-    }
-    
-    // Options
-    option {
-      padding: var(--spacing-xs, 0.5rem);
-      background: #ffffff;
-      color: var(--color-text-primary);
-    }
-  }
 
-  // Input de recherche
-  &__search-input {
-    padding: var(--spacing-sm, 0.75rem);
-    border: 2px solid var(--color-border, #e0e0e0);
-    border-radius: var(--border-radius-md, 8px);
-    background: #ffffff;
-    font-family: var(--font-primary);
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-    
-    &::placeholder {
-      color: var(--color-text-secondary);
-      opacity: 0.7;
-    }
-    
-    &:hover {
-      border-color: var(--color-primary);
-      box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
-    }
-    
-    &:focus {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
-      background: #ffffff;
-    }
-    
-    // Icône de recherche intégrée
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cpath d='m21 21-4.35-4.35'%3e%3c/path%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 1rem;
-    padding-right: 2.5rem;
-    
-    @media (max-width: 480px) {
-      padding: var(--spacing-xs, 0.5rem);
-      font-size: 0.8125rem;
-      padding-right: 2rem;
-      background-size: 0.875rem;
-    }
-  }
-}
-
-// Animation d'entrée pour les contrôles
-@keyframes slideInFromLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.infos_cards__control-group {
-  animation: slideInFromLeft 0.3s ease-out;
-  
-  // Délai progressif pour effet cascade
-  &:nth-child(1) { animation-delay: 0.1s; }
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.3s; }
-  &:nth-child(4) { animation-delay: 0.4s; }
-  &:nth-child(5) { animation-delay: 0.5s; }
-}
-
-// Styles pour améliorer l'accessibilité
-@media (prefers-reduced-motion: reduce) {
-  .infos_cards__control-group {
-    animation: none;
-  }
-  
-  .infos_cards__select,
-  .infos_cards__search-input {
-    transition: none;
-  }
-}
-
-// Support pour le mode sombre
-@media (prefers-color-scheme: dark) {
-  .infos_cards {
-    &__controls {
-      background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(52, 73, 94, 0.95));
-      border-color: #5a6c7d;
-    }
-    
-    &__label {
-      color: #ecf0f1;
-    }
-    
-    &__select,
-    &__search-input {
-      background: #34495e;
-      border-color: #5a6c7d;
-      color: #ecf0f1;
+    input {
+      border: none;
+      background: transparent;
+      width: 100%;
+      outline: none;
+      color: #334155;
+      font-size: 1rem;
+      padding: 0.5rem 0;
       
       &::placeholder {
-        color: #bdc3c7;
-      }
-      
-      &:hover {
-        border-color: var(--color-primary);
-        background: #2c3e50;
-      }
-      
-      &:focus {
-        background: #2c3e50;
-        border-color: var(--color-primary);
+        color: #64748b;
       }
     }
-    
-    &__select option {
-      background: #34495e;
-      color: #ecf0f1;
+
+    svg {
+      color: #64748b;
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      flex-shrink: 0;
     }
-  
-    // Bouton de basculement d'affichage
-    &__view-toggle {
+  }
+
+  // Top Bar Controls (Filter Toggle + Actions)
+  &__top-bar-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
+
+  // Actions Container
+  &__actions {
+    display: flex;
+    flex-direction: row; // Boutons uniformes côte à côte
+    gap: 0.5rem;
+    align-items: stretch;
+
+    // Assurer que le conteneur ImageScanner prend 100% en hauteur et largeur équivalente
+    > *, > div {
       display: flex;
-      align-items: center;
-      gap: var(--spacing-xs, 0.5rem);
-      padding: var(--spacing-sm, 0.75rem);
-      border: 2px solid var(--color-border, #e0e0e0);
-      border-radius: var(--border-radius-md, 8px);
-      background: #ffffff;
-      font-family: var(--font-primary);
-      font-size: 0.875rem;
-      color: var(--color-text-primary);
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      outline: none;
-      
+      flex: 1;
+    }
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.875rem;
+    white-space: nowrap;
+    min-height: 48px;
+
+    &--primary {
+      background: #3b82f6; // Bleu vif des boutons
+      color: white;
+
       &:hover {
-        border-color: var(--color-primary);
-        box-shadow: 0 2px 8px rgba(var(--color-primary), 0.15);
-        background: rgba(var(--color-primary), 0.05);
-      }
-      
-      &:focus {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px rgba(var(--color-primary), 0.1);
+        background: #2563eb;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
       }
       
       &:active {
-        transform: translateY(1px);
-      }
-      
-      // État actif
-      &--active {
-        background: var(--color-primary);
-        border-color: var(--color-primary);
-        color: white;
-        
-        &:hover {
-          background: var(--color-primary-dark);
-          border-color: var(--color-primary-dark);
-        }
-      }
-      
-      @media (max-width: 480px) {
-        padding: var(--spacing-xs, 0.5rem);
-        font-size: 0.8125rem;
-        gap: var(--spacing-xs, 0.25rem);
+        transform: translateY(0);
       }
     }
-  
-    &__view-toggle-icon {
-      font-size: 1.125rem;
-      
-      @media (max-width: 480px) {
-        font-size: 1rem;
+
+    &--icon {
+      background: #e2e8f0;
+      color: #334155;
+
+      &:hover {
+        background: #cbd5e1;
       }
-    }
-  
-    &__view-toggle-text {
-      font-weight: 600;
-      
-      @media (max-width: 480px) {
-        display: none; // Masquer le texte sur très petit écran
+
+      &.infos_cards__btn--active {
+        background: #bfdbfe;
+        color: #1e3a8a;
       }
     }
   }
-}
 
-// États de validation et feedback
-.infos_cards {
-  &__search-input {
-    &--has-results {
-      border-color: #27ae60;
-      box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+  // -- Filter Panel --
+  &__filter-panel {
+    display: none; // Caché par défaut
+    background: #e0f2fe; // Fond bleu pastel
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #bae6fd;
+
+    &--open {
+      display: block; // Affiché quand isFilterPanelOpen est true
+      animation: fadeInDown 0.3s ease-out;
+    }
+  }
+
+  &__filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  &__filter-title {
+    color: #0f172a;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__filter-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+  }
+
+  // Group (Accordions)
+  &__control-group {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    border: none;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    
+    &:last-child {
+      margin-bottom: 0;
     }
     
-    &--no-results {
-      border-color: #e74c3c;
-      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    // Animation/Rotation du chevron
+    &[open] {
+      .infos_cards__label::after {
+        transform: rotate(180deg);
+      }
     }
   }
-}
 
-// Responsive breakpoints spécifiques
-@media (max-width: 1200px) {
-  .infos_cards__controls {
+  &__label {
+    // Style du <summary>
+    padding: 1rem;
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    list-style: none; // Cache le triangle natif sur Chrome/Firefox
+    margin: 0;
+    user-select: none;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: #f8fafc;
+    }
+    
+    // Cache le triangle natif sur Safari
+    &::-webkit-details-marker {
+      display: none;
+    }
+    
+    // Chevron personnalisé
+    &::after {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 20px;
+      // Icône chevron-down en data URI
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  &__content {
+    padding: 0 1rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1rem;
+  }
+
+  // Composant forme "Pilule" pour le select
+  &__select {
+    appearance: none;
+    background: #dbeafe; // Bleu très clair 
+    color: #1e3a8a;      // Texte bleu foncé
+    padding: 0.5rem 1rem;
+    border-radius: 9999px; // Pill shape
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    width: fit-content;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    
+    background-image: none; // Vrai look pilule du prototype
+
+    &:hover, &:focus {
+      background: #bfdbfe;
+    }
+  }
+
+  // Surcharge spécifique pour le bloc "Affichage" au bas
+  &__layout-control {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    display: flex;
+    padding: 1rem;
+    margin-bottom: 0; // C'est le dernier
+    
+    .infos_cards__label {
+      padding: 0;
+      &::after { display: none; } // Pas de chevron ici
+      cursor: default;
+      &:hover { background-color: transparent; }
+    }
+    
+    .infos_cards__content {
+      padding: 0;
+      border: none;
+    }
+  }
+
+  &__view-toggle {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #e2e8f0; // Gris léger pour l'état inactif
+    border: none;
+    border-radius: 8px;
+    color: #475569;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &--active {
+      background: #bfdbfe;
+      color: #1e3a8a;
+    }
+
+    &:hover:not(&--active) {
+      background: #cbd5e1;
+    }
   }
-  
-  .infos_cards__control-group {
-    min-width: 180px;
+
+  &__view-toggle-icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
   }
 }
 
-@media (max-width: 992px) {
-  .infos_cards__control-group {
-    min-width: 160px;
+// Animation
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@media (max-width: 576px) {
-  .infos_cards__controls {
-    padding: var(--spacing-xs, 0.5rem);
-  }
-  
-  .infos_cards__control-group {
-    // min-width: 100%;
+// Support mode sombre optionnel
+@media (prefers-color-scheme: dark) {
+  .infos_cards {
+    background: #1e293b;
+
+    &__search-wrapper {
+      background: #0f172a;
+      border-color: #334155;
+      
+      input { color: #f1f5f9; }
+    }
+    
+    &__filter-panel {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+    }
+    
+    &__filter-title {
+      color: #f1f5f9;
+    }
+    
+    &__control-group {
+      background: #1e293b;
+    }
+    
+    &__label {
+      color: #e2e8f0;
+      &:hover { background-color: #334155; }
+    }
+    
+    &__content {
+      border-color: #334155;
+    }
+    
+    &__select {
+      background: #334155;
+      color: #f1f5f9;
+      
+      &:hover, &:focus { background: #475569; }
+    }
+    
+    &__view-toggle {
+      background: #334155;
+      color: #94a3b8;
+      
+      &--active {
+        background: #3b82f6;
+        color: white;
+      }
+    }
   }
 }

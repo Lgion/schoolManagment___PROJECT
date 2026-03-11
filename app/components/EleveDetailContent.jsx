@@ -116,7 +116,7 @@ export default function EleveDetailContent({ entityId }) {
           Object.entries(allFees).map(([year, fees]) => (
             <div key={year} className="person-detail__fees-year">
               <div className="person-detail__fees-year-label">{year}</div>
-              <ScolarityFeesBlock fees={fees} schoolYear={year} />
+              <ScolarityFeesBlock fees={fees} schoolYear={year} isInterne={eleve.isInterne || false} />
             </div>
           ))
         }
