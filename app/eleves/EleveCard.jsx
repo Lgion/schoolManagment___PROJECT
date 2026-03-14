@@ -1,66 +1,68 @@
-import React from "react";
+import React, { useContext } from "react";
 import Link from "next/link";
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import './EleveCard.scss';
 import PermissionGate from "../components/PermissionGate";
+import { AiAdminContext } from '../../stores/ai_adminContext';
 
-// Utilitaire pour progression scolarité (argent/riz)
-function getScolarityProgress(fees, isInterne = false) {
-  // Récupérer les frais selon le statut interne/externe
-  const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
-  const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
+// Utilitaire pour progression scolarité (dynamique)
+function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem) {
+  // Calculate totals per fee type
+  const totals = {};
+  const targets = {};
+  feeDefinitions.forEach(def => {
+    totals[def.id] = 0;
+    targets[def.id] = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+  });
 
-  const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
-  const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
-
-  const targetArgent = isInterne ? interneArgent : externeArgent;
-  const targetRiz = isInterne ? interneRiz : externeRiz;
-
-  let totalArgent = 0, totalRiz = 0;
   if (fees && typeof fees === 'object') {
     Object.values(fees).forEach(yearData => {
       if (yearData && typeof yearData === 'object') {
         Object.values(yearData).forEach(dayData => {
-          if (Array.isArray(dayData)) {
-            // Nouveau format : array de dépôts
-            dayData.forEach(deposit => {
-              if (deposit.argent) totalArgent += Number(deposit.argent);
-              if (deposit.riz) totalRiz += Number(deposit.riz);
-            });
-          } else if (dayData && typeof dayData === 'object') {
-            // Ancien format : objet unique (rétrocompatibilité)
-            if (dayData.argent) totalArgent += Number(dayData.argent);
-            if (dayData.riz) totalRiz += Number(dayData.riz);
-          }
+          const deposits = Array.isArray(dayData) ? dayData : (dayData && typeof dayData === 'object' ? [dayData] : []);
+          deposits.forEach(deposit => {
+            const normalized = normalizeFeeItem(deposit);
+            if (normalized && totals[normalized.feeId] !== undefined) {
+              totals[normalized.feeId] += normalized.amount;
+            }
+          });
         });
       }
     });
   }
-  return {
-    argent: Math.min(100, Math.round((totalArgent / targetArgent) * 100)),
-    riz: Math.min(100, Math.round((totalRiz / targetRiz) * 100)),
-    totalArgent,
-    totalRiz,
-    targetArgent,
-    targetRiz
-  };
+
+  // Build per-fee progress
+  const progress = feeDefinitions.map(def => ({
+    id: def.id,
+    label: def.label,
+    unit: def.unit,
+    percent: targets[def.id] > 0 ? Math.min(100, Math.round((totals[def.id] / targets[def.id]) * 100)) : 0,
+    total: totals[def.id],
+    target: targets[def.id]
+  }));
+
+  return progress;
 }
 
 export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) {
+  const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
   const prenoms = Array.isArray(eleve.prenoms) ? eleve.prenoms.join(', ') : eleve.prenoms;
-  // Priorité : Cloudinary → Fichier local → Avatar par défaut
   const photoUrl = eleve.cloudinary?.url || eleve.photo_$_file || eleve.photo || '/default-avatar.png';
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
-  const progress = getScolarityProgress(fees, isInterne);
+  const progress = getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem);
+  const progressColors = ["#ff8c00", "#800080", "#00ff00", "#0000ff", "#ff0000", "#00ffff", "#ffff00", "#ff00ff", "#008000", "#000080", "#800000", "#808000", "#800080", "#008080", "#000000", "#ffffff"];
   const { openPortal } = useDetailPortal();
 
+  // Build title string dynamically
+  const titleParts = progress.map(p => `${p.label}: ${p.total} ${p.unit} / ${p.target} ${p.unit}`);
+  const isComplete = progress.every(p => p.percent === 100);
 
   return (
     <li className={"eleve-card-wrapper " + eleve.sexe.toLowerCase()} style={{ position: 'relative' }}>
       <Link
         href={`/eleves/${eleve._id}`}
-        className={`eleve-card ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`}
+        className={`eleve-card ${isComplete ? "eleve-card--isComplete" : ""} ${viewMode === 'inline' ? 'eleve-card--inline' : ''}`}
         tabIndex={0}
       >
         <img className="eleve-card__photo" src={photoUrl} alt={eleve.nom + ' ' + prenoms} />
@@ -74,13 +76,22 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
           </div>
           <div className="eleve-card__progress">
             <div className="eleve-card__progress-label">Frais Scolarité</div>
-            <div className="eleve-card__progress-bar" title={`Argent: ${progress.totalArgent} F / ${progress.targetArgent} F ||| Riz: ${progress.totalRiz} kg / ${progress.targetRiz} kg`} data-argent={progress.argent + '% argent versé'} data-riz={progress.riz + '% riz versé'}>
-              <div className="eleve-card__progress-argent" style={{ width: progress.argent + '%' }} title={`Argent: ${progress.totalArgent} F / ${progress.targetArgent} F`}></div>
-              <div className="eleve-card__progress-riz" style={{ width: progress.riz + '%' }} title={`Riz: ${progress.totalRiz} kg / ${progress.targetRiz} kg`}></div>
+            <div className="eleve-card__progress-bar" title={titleParts.join(' | ')}>
+              {progress.map((p, i) => (
+                <div
+                  key={p.id}
+                  className={`eleve-card__progress-segment eleve-card__progress-segment--${i}`}
+                  style={{ width: (p.percent) + '%', background: progressColors[i] }}
+                  title={`${p.label}: ${p.total} ${p.unit} / ${p.target} ${p.unit}`}
+                />
+              ))}
             </div>
             <div className="eleve-card__progress-values">
-              <span className="eleve-card__progress-valueArgent">{progress.totalArgent} F <span>({progress.argent + '%'})</span></span> |
-              <span className="eleve-card__progress-valueRiz">{progress.totalRiz} kg riz <span>({progress.riz + '%'})</span></span>
+              {progress.map((p, i) => (
+                <span key={p.id} className={`eleve-card__progress-value eleve-card__progress-value--${i}`} style={{ background: progressColors[i] }}>
+                  {p.total} {p.unit} ({p.percent}%)
+                </span>
+              ))}
             </div>
           </div>
         </div>

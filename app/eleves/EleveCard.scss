@@ -1,3 +1,20 @@
+$progressColors : "#ff8c00",
+"#800080",
+"#00ff00",
+"#0000ff",
+"#ff0000",
+"#00ffff",
+"#ffff00",
+"#ff00ff",
+"#008000",
+"#000080",
+"#800000",
+"#808000",
+"#800080",
+"#008080",
+"#000000",
+"#ffffff";
+
 .eleve-card,
 .enseignant-card,
 .classe-card {
@@ -26,6 +43,29 @@
     box-shadow: 0 4px 16px #6c63ff33;
     border: 2px solid #6c63ff;
     background: #f2f1fd;
+  }
+
+  &--isComplete {
+    border-color: green;
+    box-shadow: 0 0 10px 1px green inset;
+
+    &::before {
+      content: "Complet !";
+      z-index: 10;
+      width: 100px;
+      height: 25px;
+      background: green;
+      color: white;
+      border: solid white;
+      border-bottom: none;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      bottom: 1.5em;
+      right: calc(50% - 50px);
+    }
   }
 
   &__photo {
@@ -104,29 +144,55 @@
     box-shadow: 0 0 3px 1px black inset;
     border-radius: 3px;
     border: 1px solid black;
+
+    &-label {
+      font-size: 0.95em;
+      color: black;
+      margin-bottom: 0.1em;
+      // text-shadow: 0 0 1px black, 0 0 3px black, 0 0 4px black, 0 0 5px black;
+      font-weight: 900;
+    }
+
+    &-bar {
+      display: flex;
+      flex-direction: column;
+      height: 1em;
+      width: 100%;
+      background: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.13em;
+      position: relative;
+      border: 1px solid;
+      box-shadow: 0 0 3px 1px black;
+    }
+
+    &-segment {
+      flex-basis: 50%;
+    }
+
+    &-value {
+      color: white;
+      border: 1px solid black;
+      border-top: 0;
+      text-align: center;
+
+      &s {
+        gap: 5px;
+        display: flex;
+      }
+
+      // @each $color in $progressColors {
+      //   $i: index($progressColors, $color); // Récupère l'index (1, 2, 3...)
+      //   &--#{$i} {
+      //     background: $color;
+      //   }
+      // }
+    }
   }
 
-  &__progress-label {
-    font-size: 0.95em;
-    color: black;
-    margin-bottom: 0.1em;
-    // text-shadow: 0 0 1px black, 0 0 3px black, 0 0 4px black, 0 0 5px black;
-    font-weight: 900;
-  }
 
-  &__progress-bar {
-    display: flex;
-    height: 1em;
-    width: 100%;
-    background: #eee;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 0.13em;
-    position: relative;
-    border: 1px solid;
-    box-shadow: 0 0 3px 1px black;
-  }
-
+  /*
   &__progress-argent {
     background: #6c63ff;
     top: 0;
@@ -176,6 +242,7 @@
       font-weight: bold;
     }
   }
+  */
 
   // Modificateur pour affichage en ligne
   &--inline {

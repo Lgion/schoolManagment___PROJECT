@@ -27,7 +27,7 @@ export default function EleveDetailContent({ entityId }) {
     ctx.fetchSubjects && ctx.fetchSubjects();
   }, []);
 
-  const { setSelected, showModal, setShowModal, dynamicSubjects, subjectsLoaded, classes } = ctx;
+  const { setSelected, showModal, setShowModal, dynamicSubjects, subjectsLoaded, classes, feeDefinitions, normalizeFeeItem } = ctx;
   const { entity: eleve, classe } = useEntityDetail(entityId, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false);
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
@@ -38,14 +38,22 @@ export default function EleveDetailContent({ entityId }) {
   const allFees = eleve.scolarity_fees_$_checkbox || {};
   const onEdit = e => { setSelected(e); setShowModal(true); }
 
-  // Fusionne tous les dépôts pour une progression globale
-  let totalArgent = 0, totalRiz = 0;
-  Object.values(allFees).forEach(fees => {
-    Object.values(fees || {}).forEach(v => {
-      if (v.argent) totalArgent += Number(v.argent);
-      if (v.riz) totalRiz += Number(v.riz);
+  // Generic totals calculation
+  const totals = {};
+  feeDefinitions.forEach(def => totals[def.id] = 0);
+
+  Object.values(allFees).forEach(yearEntries => {
+    Object.values(yearEntries || {}).forEach(deposits => {
+      const entries = Array.isArray(deposits) ? deposits : [deposits];
+      entries.forEach(d => {
+        const normalized = normalizeFeeItem(d);
+        if (normalized && totals[normalized.feeId] !== undefined) {
+          totals[normalized.feeId] += normalized.amount;
+        }
+      });
     });
   });
+
   return (
     <main className="person-detail">
       <PermissionGate roles={['admin', 'prof']}>
@@ -121,7 +129,11 @@ export default function EleveDetailContent({ entityId }) {
           ))
         }
         <div className="person-detail__fees-total">
-          <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
+          <b>Total sur toutes années :</b> {feeDefinitions.map((def, idx) => (
+            <span key={def.id}>
+              {totals[def.id]} {def.unit}{idx < feeDefinitions.length - 1 ? ' | ' : ''}
+            </span>
+          ))}
         </div>
       </div>
       <div className="person-detail__block person-detail__block--commentaires">

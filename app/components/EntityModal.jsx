@@ -1593,142 +1593,126 @@ function SchoolHistoryBlock({ schoolHistory, onChange }) {
 }
 
 // --- Bloc de gestion des frais de scolarité par année ---
+// --- Bloc de gestion des frais de scolarité par année ---
 function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
+  const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
   const [showForm, setShowForm] = useState(false);
-  const [type, setType] = useState('argent');
+  const [selectedFeeId, setSelectedFeeId] = useState(feeDefinitions[0]?.id || '');
   const [val, setVal] = useState('');
-  const [date, setDate] = useState(() => {
-    const now = new Date();
-    return now.toISOString().slice(0, 10);
-  });
-  // Fonction pour convertir l'ancien format vers le nouveau (migration automatique)
-  const migrateFeesFormat = (fees) => {
-    if (!fees || typeof fees !== 'object') return {};
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
 
+  const migratedFees = (fees) => {
+    if (!fees || typeof fees !== 'object') return {};
     const migrated = {};
     Object.entries(fees).forEach(([ts, value]) => {
-      if (Array.isArray(value)) {
-        // Nouveau format : déjà un array
-        migrated[ts] = value;
-      } else if (value && typeof value === 'object') {
-        // Ancien format : objet unique → convertir en array
-        migrated[ts] = [value];
-      }
+      migrated[ts] = Array.isArray(value) ? value : [value];
     });
     return migrated;
   };
 
-  // Migrer automatiquement les données
-  const migratedFees = migrateFeesFormat(fees);
-
-  // Liste des dépôts : aplatir tous les arrays de dépôts
-  const entries = Object.entries(migratedFees || {}).flatMap(([ts, deposits]) =>
-    deposits.map((deposit, index) => ({ ts, index, ...deposit }))
-  );
-
-  // Récupérer les frais selon le statut interne/externe
-  const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
-  const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
-
-  const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
-  const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
-
-  const targetArgent = isInterne ? interneArgent : externeArgent;
-  const targetRiz = isInterne ? interneRiz : externeRiz;
-
-  const totalArgent = entries.reduce((sum, e) => sum + (e.argent ? Number(e.argent) : 0), 0);
-  const totalRiz = entries.reduce((sum, e) => sum + (e.riz ? Number(e.riz) : 0), 0);
-  const complete = totalArgent >= targetArgent && totalRiz >= targetRiz;
+  const processedFees = migratedFees(fees);
+  
+  // Normalize all entries to { feeId, amount, timestamp }
+  const entries = Object.entries(processedFees).flatMap(([ts, deposits]) =>
+    deposits.map((d, i) => ({ ...normalizeFeeItem(d), ts, index: i }))
+  ).filter(e => e !== null);
 
   const handleAdd = () => {
-    if (!val || isNaN(Number(val)) || Number(val) <= 0) return;
-    // Utiliser la date choisie, à minuit locale
+    if (!val || isNaN(Number(val)) || Number(val) <= 0 || !selectedFeeId) return;
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
     const ts = d.getTime();
 
-    const newDeposit = type === 'argent'
-      ? { argent: Number(val), timestamp: Date.now() }
-      : { riz: Number(val), timestamp: Date.now() };
+    const newDeposit = { 
+      feeId: selectedFeeId, 
+      amount: Number(val), 
+      timestamp: Date.now() 
+    };
 
-    // Ajouter le nouveau dépôt à la liste existante pour ce jour
-    const existingDeposits = migratedFees[ts] || [];
+    const existingDeposits = processedFees[ts] || [];
     const updatedFees = {
-      ...migratedFees,
+      ...processedFees,
       [ts]: [...existingDeposits, newDeposit]
     };
 
     onChange(updatedFees);
-    setShowForm(false); setType('argent'); setVal(''); setDate(new Date().toISOString().slice(0, 10));
+    setShowForm(false); 
+    setVal(''); 
+    setDate(new Date().toISOString().slice(0, 10));
   };
-  const handleRemove = (ts, depositIndex) => {
-    const updatedFees = { ...migratedFees };
-    if (updatedFees[ts] && updatedFees[ts].length > 1) {
-      // Supprimer seulement le dépôt spécifique
-      updatedFees[ts] = updatedFees[ts].filter((_, index) => index !== depositIndex);
+
+  const handleRemove = (ts, index) => {
+    const updatedFees = { ...processedFees };
+    if (updatedFees[ts]?.length > 1) {
+      updatedFees[ts] = updatedFees[ts].filter((_, i) => i !== index);
     } else {
-      // Supprimer toute la journée si c'est le dernier dépôt
       delete updatedFees[ts];
     }
     onChange(updatedFees);
   };
 
+  // Check if all fee types have reached their target
+  const isGlobalComplete = feeDefinitions.every(def => {
+    const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
+    const target = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+    return total >= target;
+  });
+
   return (
-    <div className={`scolarity-fees-block ${complete ? 'scolarity-fees-block--complete' : 'scolarity-fees-block--incomplete'}`}>
+    <div className={`scolarity-fees-block ${isGlobalComplete ? 'scolarity-fees-block--complete' : 'scolarity-fees-block--incomplete'}`}>
       <div className="scolarity-fees-block__header">
         Frais de scolarité – {schoolYear} ({isInterne ? 'Interne' : 'Externe'})
       </div>
+      
       <div className="scolarity-fees-block__totals">
-        <span>Argent : <b>{totalArgent} F</b> / {targetArgent} F</span>
-        <span>Riz : <b>{totalRiz} kg</b> / {targetRiz} kg</span>
+        {feeDefinitions.map(def => {
+          const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
+          const target = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+          return (
+            <div key={def.id} className="scolarity-fees-block__stat">
+              {def.label} : <b>{total} {def.unit}</b> / {target} {def.unit}
+            </div>
+          );
+        })}
       </div>
+
       <div className="scolarity-fees-block__list">
         {entries.length === 0 && <span className="scolarity-fees-block__empty">Aucun dépôt enregistré</span>}
-        {entries.sort((a, b) => Number(a.ts) - Number(b.ts)).map((e, globalIndex) => (
-          <div className="scolarity-fees-block__entry" key={`${e.ts}-${e.index}-${globalIndex}`}>
-            <span className="scolarity-fees-block__entry-date">{new Date(isNaN(Number(e.ts)) ? e.ts : Number(e.ts)).toLocaleDateString()}</span>
-            {e.argent && <span className="scolarity-fees-block__entry-argent">{e.argent} F</span>}
-            {e.riz && <span className="scolarity-fees-block__entry-riz">{e.riz} kg</span>}
-            <span className="scolarity-fees-block__entry-time">
-              {e.timestamp ? new Date(e.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
-            </span>
-            <button
-              type="button"
-              className="scolarity-fees-block__remove-btn"
-              title="Supprimer ce dépôt"
-              onClick={() => handleRemove(e.ts, e.index)}
-            >
-              ×
-            </button>
-          </div>
-        ))}
+        {entries.sort((a, b) => Number(a.ts) - Number(b.ts)).map((e, idx) => {
+          const def = feeDefinitions.find(d => d.id === e.feeId);
+          return (
+            <div className="scolarity-fees-block__entry" key={`${e.ts}-${e.index}-${idx}`}>
+              <span className="scolarity-fees-block__entry-date">{new Date(Number(e.ts)).toLocaleDateString()}</span>
+              <span className="scolarity-fees-block__entry-value">{e.amount} {def?.unit || ''}</span>
+              <span className="scolarity-fees-block__entry-label">({def?.label || e.feeId})</span>
+              <span className="scolarity-fees-block__entry-time">
+                {e.timestamp ? new Date(e.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : ''}
+              </span>
+              <button type="button" className="scolarity-fees-block__remove-btn" onClick={() => handleRemove(e.ts, e.index)}>×</button>
+            </div>
+          );
+        })}
       </div>
+
       {showForm ? (
         <div className="scolarity-fees-block__add-form">
-          <select
+          <select 
+            value={selectedFeeId} 
+            onChange={e => setSelectedFeeId(e.target.value)}
             className="scolarity-fees-block__type-select"
-            value={type}
-            onChange={e => setType(e.target.value)}
           >
-            <option value="argent">Argent (F)</option>
-            <option value="riz">Riz (kg)</option>
+            {feeDefinitions.map(def => <option key={def.id} value={def.id}>{def.label}</option>)}
           </select>
           <input
             type="number"
-            min="1"
             value={val}
             onChange={e => setVal(e.target.value)}
-            placeholder={type === 'argent' ? 'Montant en F' : 'Poids en kg'}
+            placeholder="Valeur"
             autoFocus
           />
-          <input
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-            className="scolarity-fees-block__add-date"
-          />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} />
           <button type="button" onClick={handleAdd}>Valider</button>
-          <button type="button" onClick={() => { setShowForm(false); setVal(''); setDate(new Date().toISOString().slice(0, 10)); }} className="scolarity-fees-block__add-cancel">Annuler</button>
+          <button type="button" onClick={() => setShowForm(false)} className="scolarity-fees-block__add-cancel">Annuler</button>
         </div>
       ) : (
         onChange && <button type="button" className="scolarity-fees-block__add-btn" onClick={() => setShowForm(true)}>Ajouter un dépôt</button>
@@ -1738,7 +1722,8 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   );
 }
 
-// --- Composant de gestion des coefficients par classe ---
+
+import FeeConfigManager from './FeeConfigManager';
 function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubjects, subjectsLoaded }) {
   const defaultCoeff = parseInt(process.env.NEXT_PUBLIC_SUBJECT_COEFF || '2');
 

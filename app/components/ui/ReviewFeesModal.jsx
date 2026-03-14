@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import '../../assets/scss/components/MODALS/reviewModal.scss';
+import { AiAdminContext } from '../../../stores/ai_adminContext';
 
 export default function ReviewFeesModal({ file, extractedData, students = [], onClose, onValidate }) {
+    const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
     const [imageUrl, setImageUrl] = useState(null);
     const [zoom, setZoom] = useState(1);
     const imgRef = useRef(null);
@@ -10,11 +12,10 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
 
     const [rows, setRows] = useState([]);
 
-    // Algorithme de matching initial
+    // Algorithme de matching initial + normalization des données extraites
     useEffect(() => {
         if (!extractedData) return;
 
-        // Préparer les lignes d'élèves (matching élèves seulement ici)
         const matched = extractedData.map(item => {
             const rawName = (item.nom || "").toLowerCase().trim();
             const bestMatch = students.find(s => {
@@ -23,39 +24,49 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                 return rawName.includes(sNom) || rawName.includes(sPrenom) || sNom.includes(rawName);
             });
 
+            // Normalize AI-extracted data: convert legacy keys to dynamic fees format
+            const fees = {};
+            feeDefinitions.forEach(def => {
+                fees[def.id] = 0;
+            });
+
+            // Map the known AI response fields to fee definitions
+            // The AI currently returns { argent, riz }, which maps to scol_cash and scol_nature
+            const LEGACY_MAP = { 'argent': 'scol_cash', 'riz': 'scol_nature' };
+            Object.entries(LEGACY_MAP).forEach(([key, feeId]) => {
+                if (item[key] !== undefined && fees[feeId] !== undefined) {
+                    fees[feeId] = Math.max(0, Number(item[key]) || 0);
+                }
+            });
+
             return {
-                ...item,
+                nom: item.nom,
+                date: item.date || "",
+                confiance: item.confiance,
+                fees,
                 matchedStudentId: bestMatch ? bestMatch._id : null
             };
         });
         setRows(matched);
-    }, [extractedData, students]);
+    }, [extractedData, students, feeDefinitions]);
 
-    // Réinitialiser le mode réduit UNIQUEMENT si de nouvelles données brut d'extraction arrivent
     useEffect(() => {
         setIsReduced(false);
     }, [extractedData]);
 
-    // Initialisation et focus trap basique + a11y (Escape)
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
         };
-
         document.addEventListener('keydown', handleEscape);
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-        };
+        return () => document.removeEventListener('keydown', handleEscape);
     }, [onClose]);
 
-    // Manage ObjectURL lifecycle for memory safety (Zero-Waste principle)
     useEffect(() => {
         if (file) {
             const url = URL.createObjectURL(file);
             setImageUrl(url);
-            return () => {
-                URL.revokeObjectURL(url);
-            };
+            return () => URL.revokeObjectURL(url);
         }
     }, [file]);
 
@@ -66,7 +77,12 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
     const handleRowChange = (index, field, value) => {
         setRows(prev => {
             const next = [...prev];
-            next[index] = { ...next[index], [field]: value };
+            if (field === 'matchedStudentId' || field === 'date') {
+                next[index] = { ...next[index], [field]: value };
+            } else {
+                // It's a fee field change
+                next[index] = { ...next[index], fees: { ...next[index].fees, [field]: value } };
+            }
             return next;
         });
     };
@@ -81,30 +97,27 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                 const stu = students.find(s => s._id === id);
                 return stu ? `${stu.nom} ${Array.isArray(stu.prenoms) ? stu.prenoms[0] : stu.prenoms}` : id;
             }))];
-            alert(`⚠️ Erreur : Les élèves suivants ont été liés à plusieurs lignes : ${duplicateNames.join(', ')}. Chaque élève ne peut apparaître qu'une seule fois. Si vous avez plusieurs paiements pour le même élève, veuillez les additionner sur une seule ligne.`);
+            alert(`⚠️ Erreur : Les élèves suivants ont été liés à plusieurs lignes : ${duplicateNames.join(', ')}.`);
             return;
         }
 
         // 2. Vérifier que tout est lié
         const allStudentsMapped = rows.every(r => !!r.matchedStudentId);
-
         if (!allStudentsMapped) {
             alert("⚠️ Attention : Certains élèves du document n'ont pas encore été associés à un compte étudiant.");
             return;
         }
 
-        const hasNegativeAmounts = rows.some(r => (r.argent !== undefined && r.argent < 0) || (r.riz !== undefined && r.riz < 0));
+        // 3. Vérifier les montants négatifs
+        const hasNegativeAmounts = rows.some(r => 
+            feeDefinitions.some(def => r.fees[def.id] !== undefined && r.fees[def.id] < 0)
+        );
         if (hasNegativeAmounts) {
-            alert("⚠️ Erreur : Les montants d'argent et les quantités de riz ne peuvent pas être négatifs.");
+            alert("⚠️ Erreur : Les montants ne peuvent pas être négatifs.");
             return;
         }
 
-        // 3. Vérifier les paiements déjà complétés (100%)
-        const interneFeesStr = process.env.NEXT_PUBLIC_INTERNE_FEES || '45000 50';
-        const externeFeesStr = process.env.NEXT_PUBLIC_EXTERNE_FEES || '18000 25';
-        const [interneArgent, interneRiz] = interneFeesStr.split(' ').map(Number);
-        const [externeArgent, externeRiz] = externeFeesStr.split(' ').map(Number);
-
+        // 4. Vérifier les paiements déjà complétés (100%)
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth() + 1;
@@ -118,52 +131,47 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
             if (!stu) return r;
 
             const existingFees = stu.scolarity_fees_$_checkbox?.[anneeKey] || {};
-            let totalArgent = 0;
-            let totalRiz = 0;
             
+            // Calculate existing totals per fee type
+            const existingTotals = {};
+            feeDefinitions.forEach(def => existingTotals[def.id] = 0);
+
             Object.values(existingFees).forEach(deposits => {
                 const arr = Array.isArray(deposits) ? deposits : [deposits];
                 arr.forEach(d => {
-                   totalArgent += (d.argent ? Number(d.argent) : 0);
-                   totalRiz += (d.riz ? Number(d.riz) : 0);
+                    const normalized = normalizeFeeItem(d);
+                    if (normalized && existingTotals[normalized.feeId] !== undefined) {
+                        existingTotals[normalized.feeId] += normalized.amount;
+                    }
                 });
             });
 
-            const targetArgent = stu.isInterne ? interneArgent : externeArgent;
-            const targetRiz = stu.isInterne ? interneRiz : externeRiz;
-
             const nameStr = `${stu.nom || ''} ${Array.isArray(stu.prenoms) ? stu.prenoms[0] : (stu.prenoms || '')}`.trim();
-            let skipArgent = false;
-            let skipRiz = false;
+            const skippedFees = {};
 
-            if (r.argent > 0 && totalArgent >= targetArgent) {
-                warnings.push(`- ${nameStr} : scolarité déjà payée à 100% (${totalArgent}F).`);
-                skipArgent = true;
-            }
-            if (r.riz > 0 && totalRiz >= targetRiz) {
-                warnings.push(`- ${nameStr} : riz déjà payé à 100% (${totalRiz}kg).`);
-                skipRiz = true;
-            }
+            feeDefinitions.forEach(def => {
+                const target = def.targets[stu.isInterne ? 'interne' : 'externe'] || 0;
+                if (r.fees[def.id] > 0 && existingTotals[def.id] >= target) {
+                    warnings.push(`- ${nameStr} : ${def.label} déjà payé à 100% (${existingTotals[def.id]} ${def.unit}).`);
+                    skippedFees[def.id] = 0;
+                } else {
+                    skippedFees[def.id] = r.fees[def.id];
+                }
+            });
 
-            return {
-                ...r,
-                argent: skipArgent ? 0 : r.argent,
-                riz: skipRiz ? 0 : r.riz
-            };
+            return { ...r, fees: skippedFees };
         });
 
         if (warnings.length > 0) {
-            const proceed = window.confirm(`⚠️ Attention : Certains élèves ont déjà payé la totalité de leurs frais.\n\n${warnings.join('\n')}\n\nUne fois l'enregistrement validé, ces nouveaux montants excédentaires NE SERONT PAS pris en compte.\n\nVoulez-vous continuer ?`);
+            const proceed = window.confirm(`⚠️ Attention : Certains élèves ont déjà payé la totalité de leurs frais.\n\n${warnings.join('\n')}\n\nVoulez-vous continuer ?`);
             if (!proceed) return;
         }
 
         onValidate(finalRows);
-        setIsReduced(true); // Au lieu de fermer, on réduit
+        setIsReduced(true);
     };
 
-    if (!file || !extractedData) {
-        return null;
-    }
+    if (!file || !extractedData) return null;
 
     if (isReduced) {
         return (
@@ -189,19 +197,8 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                         <span>✨</span> Vérification des Paiements
                     </h2>
                     <div className="review-modal__header-actions">
-                        <button
-                            className="review-modal__btn-cancel"
-                            onClick={onClose}
-                        >
-                            Abandonner
-                        </button>
-                        <button
-                            className="review-modal__btn-validate"
-                            onClick={triggerValidation}
-                            title="Valider la correspondance et appliquer les paiements"
-                        >
-                            Appliquer les Paiements
-                        </button>
+                        <button className="review-modal__btn-cancel" onClick={onClose}>Abandonner</button>
+                        <button className="review-modal__btn-validate" onClick={triggerValidation} title="Valider la correspondance et appliquer les paiements">Appliquer les Paiements</button>
                     </div>
                 </header>
 
@@ -209,13 +206,7 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                     <div className="review-modal__above-panel" style={{ height: '30vh', minHeight: '200px' }}>
                         <div className="review-modal__image-container">
                             {imageUrl && (
-                                <img
-                                    ref={imgRef}
-                                    src={imageUrl}
-                                    alt="Document original source"
-                                    style={{ transform: `scale(${zoom})` }}
-                                    draggable={false}
-                                />
+                                <img ref={imgRef} src={imageUrl} alt="Document original source" style={{ transform: `scale(${zoom})` }} draggable={false} />
                             )}
                             <div className="review-modal__zoom-controls">
                                 <button onClick={handleZoomOut} aria-label="Dézoomer">-</button>
@@ -242,15 +233,17 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                                         <tr>
                                             <th style={{ textAlign: 'left', padding: '12px 8px' }}>Texte lu (IA)</th>
                                             <th style={{ textAlign: 'left', padding: '12px 8px', width: '25%' }}>Élève Officiel</th>
-                                            <th style={{ textAlign: 'center', padding: '12px 8px', width: '15%' }}>Date Paiement (Optionnel)</th>
-                                            <th style={{ textAlign: 'right', padding: '12px 8px', width: '15%' }}>Argent Versé (F)</th>
-                                            <th style={{ textAlign: 'right', padding: '12px 8px', width: '15%' }}>Riz Versé (kg)</th>
+                                            <th style={{ textAlign: 'center', padding: '12px 8px', width: '12%' }}>Date</th>
+                                            {feeDefinitions.map(def => (
+                                                <th key={def.id} style={{ textAlign: 'right', padding: '12px 8px', width: `${Math.floor(40 / feeDefinitions.length)}%` }}>
+                                                    {def.label} ({def.unit})
+                                                </th>
+                                            ))}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {rows.map((row, index) => {
                                             const isDuplicateStudent = rows.filter(r => r.matchedStudentId === row.matchedStudentId && r.matchedStudentId !== null).length > 1;
-
                                             return (
                                                 <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                                                     <td className={`ocr-name-cell ${!row.matchedStudentId ? '--warning' : ''}`} style={{ padding: '8px', verticalAlign: 'middle' }}>
@@ -281,28 +274,18 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
                                                             style={{ width: '100%', padding: '6px', boxSizing: 'border-box' }}
                                                         />
                                                     </td>
-                                                    <td style={{ padding: '8px', verticalAlign: 'middle' }}>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            step="100"
-                                                            value={row.argent !== undefined ? row.argent : ""}
-                                                            onChange={(e) => handleRowChange(index, 'argent', e.target.value ? Number(e.target.value) : 0)}
-                                                            style={{ width: '100%', padding: '6px', textAlign: 'right', boxSizing: 'border-box' }}
-                                                            placeholder="0"
-                                                        />
-                                                    </td>
-                                                    <td style={{ padding: '8px', verticalAlign: 'middle' }}>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            step="1"
-                                                            value={row.riz !== undefined ? row.riz : ""}
-                                                            onChange={(e) => handleRowChange(index, 'riz', e.target.value ? Number(e.target.value) : 0)}
-                                                            style={{ width: '100%', padding: '6px', textAlign: 'right', boxSizing: 'border-box' }}
-                                                            placeholder="0"
-                                                        />
-                                                    </td>
+                                                    {feeDefinitions.map(def => (
+                                                        <td key={def.id} style={{ padding: '8px', verticalAlign: 'middle' }}>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                value={row.fees[def.id] !== undefined ? row.fees[def.id] : ""}
+                                                                onChange={(e) => handleRowChange(index, def.id, e.target.value ? Number(e.target.value) : 0)}
+                                                                style={{ width: '100%', padding: '6px', textAlign: 'right', boxSizing: 'border-box' }}
+                                                                placeholder="0"
+                                                            />
+                                                        </td>
+                                                    ))}
                                                 </tr>
                                             );
                                         })}
@@ -316,3 +299,4 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
         </div>
     );
 }
+

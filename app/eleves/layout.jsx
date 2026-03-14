@@ -163,12 +163,22 @@ export default function EcoleAdminEleveLayout({ children }) {
                 // Normaliser dayFees en tableau si c'est un objet (ancien format)
                 const standardizedDayFees = Array.isArray(dayFees) ? [...dayFees] : [dayFees];
 
-                // Ajouter le nouveau paiement
-                if (row.argent > 0) {
-                    standardizedDayFees.push({ argent: row.argent, timestamp: Date.now() });
-                }
-                if (row.riz > 0) {
-                    standardizedDayFees.push({ riz: row.riz, timestamp: Date.now() });
+                // Ajouter le nouveau paiement (dynamic fees format)
+                if (row.fees) {
+                    // New dynamic format: row.fees = { scol_cash: 15000, scol_nature: 25 }
+                    Object.entries(row.fees).forEach(([feeId, amount]) => {
+                        if (amount > 0) {
+                            standardizedDayFees.push({ feeId, amount, timestamp: Date.now() });
+                        }
+                    });
+                } else {
+                    // Legacy fallback (direct argent/riz from old callers)
+                    if (row.argent > 0) {
+                        standardizedDayFees.push({ feeId: 'scol_cash', amount: row.argent, timestamp: Date.now() });
+                    }
+                    if (row.riz > 0) {
+                        standardizedDayFees.push({ feeId: 'scol_nature', amount: row.riz, timestamp: Date.now() });
+                    }
                 }
 
                 const newScolarityFees = {

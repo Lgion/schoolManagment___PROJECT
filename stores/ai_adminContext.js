@@ -16,6 +16,40 @@ export const AdminContextProvider = ({ children }) => {
   const [dynamicSubjects, setDynamicSubjects] = useState([]);
   const [subjectsLoaded, setSubjectsLoaded] = useState(false);
 
+  // --- DYNAMIC FEES CONFIGURATION ---
+  // Default legacy mapping for runtime normalization
+  const LEGACY_FEE_MAP = { 'argent': 'scol_cash', 'riz': 'scol_nature' };
+
+  const [feeDefinitions, setFeeDefinitions] = useState([
+    {
+      id: 'scol_cash',
+      label: 'Frais Scolaires (Espèce)',
+      unit: 'F',
+      targets: { interne: 45000, externe: 18000 }
+    },
+    {
+      id: 'scol_nature',
+      label: 'Frais Scolaires (Nature)',
+      unit: 'kg',
+      targets: { interne: 50, externe: 25 }
+    }
+  ]);
+
+  // Utility to normalize legacy entries to the new dynamic format
+  const normalizeFeeItem = useCallback((item) => {
+    if (!item) return null;
+    // Check if it's a legacy item by looking for keys in LEGACY_FEE_MAP
+    const legacyKey = Object.keys(LEGACY_FEE_MAP).find(key => item[key] !== undefined);
+    if (legacyKey) {
+      return {
+        feeId: LEGACY_FEE_MAP[legacyKey],
+        amount: Number(item[legacyKey]),
+        timestamp: item.timestamp || Date.now()
+      };
+    }
+    return item; // Already new format
+  }, []);
+
 
 
   // --- ELEVE CRUD ---
@@ -428,6 +462,7 @@ export const AdminContextProvider = ({ children }) => {
         enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
         classes, fetchClasses, saveClasse, deleteClasse,
         dynamicSubjects, fetchSubjects, subjectsLoaded,
+        feeDefinitions, setFeeDefinitions, normalizeFeeItem,
         uploadFile,
         selected, setSelected, showModal, setShowModal, editType, setEditType
       }}

@@ -232,15 +232,16 @@ export default function HistoriqueBlock({ eleveId }) {
     const absForTrimestre = absencesForYear.filter(a => a.trimestre === selectedTrimestre);
 
     // FIX #2: Logique scolarité corrigée
-    // Schéma réel scolarity_fees_$_checkbox: { annee: Boolean } OU { annee: { argent, riz } }
+    // Schéma réel scolarity_fees_$_checkbox: { annee: Boolean } OU { annee: { argent, riz } } OU dynamic format
     // — Boolean true = payé
     // — Object avec paid: true = payé (futur format)
-    // — Object sans paid = on regarde argent > 0 comme indicateur de paiement partiel
+    // — Object avec argent > 0 ou amount > 0 = paiement partiel/complet
     const scolarityPaid =
         scolarityFee === true ||
         (typeof scolarityFee === 'object' && scolarityFee !== null && (
             scolarityFee.paid === true ||
-            Number(scolarityFee.argent) > 0
+            Number(scolarityFee.argent) > 0 ||
+            Number(scolarityFee.amount) > 0
         ));
 
     return (

@@ -5,6 +5,7 @@ import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useUserRole } from '../../stores/useUserRole';
 import PermissionGate from '../components/PermissionGate';
 import Link from 'next/link';
+import FeeConfigManager from '../components/FeeConfigManager';
 
 /**
  * Page d'Administration
@@ -19,7 +20,7 @@ export default function AdministrationPage() {
     } = useContext(AiAdminContext);
 
     const { isAdmin, loading: authLoading } = useUserRole();
-    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes'
+    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees'
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -100,6 +101,17 @@ export default function AdministrationPage() {
                         </div>
                     </div>
 
+                    <div className="admin-page__top-actions">
+                        <div className="admin-page__schoolConfigs">
+                            <button 
+                                className={`admin-page__config-btn ${activeTab === 'fees' ? '--active' : ''}`}
+                                onClick={() => setActiveTab('fees')}
+                            >
+                                ⚙️ Paramètres des Frais
+                            </button>
+                        </div>
+                    </div>
+
                     <nav className="admin-page__tabs">
                         <button
                             className={`admin-page__tab-btn ${activeTab === 'eleves' ? '--active' : ''}`}
@@ -121,114 +133,122 @@ export default function AdministrationPage() {
                         </button>
                     </nav>
 
-                    <div className="admin-page__controls">
-                        <div className="admin-page__search-wrapper">
-                            <input
-                                type="text"
-                                placeholder={`Rechercher un ${activeTab.slice(0, -1)}...`}
-                                className="admin-page__search-input"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                    {activeTab !== 'fees' && (
+                        <div className="admin-page__controls">
+                            <div className="admin-page__search-wrapper">
+                                <input
+                                    type="text"
+                                    placeholder={`Rechercher un ${activeTab.slice(0, -1)}...`}
+                                    className="admin-page__search-input"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            <button className="admin-page__add-btn" onClick={() => handleAdd(activeTab === 'eleves' ? 'eleve' : activeTab === 'enseignants' ? 'enseignant' : 'classe')}>
+                                + Ajouter {activeTab === 'eleves' ? 'un élève' : activeTab === 'enseignants' ? 'un enseignant' : 'une classe'}
+                            </button>
                         </div>
-                        <button className="admin-page__add-btn" onClick={() => handleAdd(activeTab === 'eleves' ? 'eleve' : activeTab === 'enseignants' ? 'enseignant' : 'classe')}>
-                            + Ajouter {activeTab === 'eleves' ? 'un élève' : activeTab === 'enseignants' ? 'un enseignant' : 'une classe'}
-                        </button>
-                    </div>
+                    )}
                 </header>
 
                 <main className="admin-page__content">
-                    <div className="admin-page__table-container">
-                        <table className="admin-page__table">
-                            <thead>
-                                {activeTab === 'eleves' && (
-                                    <tr>
-                                        <th>Élève</th>
-                                        <th>Sexe</th>
-                                        <th>Date de naissance</th>
-                                        <th>Classe Actuelle</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                )}
-                                {activeTab === 'enseignants' && (
-                                    <tr>
-                                        <th>Enseignant</th>
-                                        <th>Email / Tel</th>
-                                        <th>Sexe</th>
-                                        <th>Classes</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                )}
-                                {activeTab === 'classes' && (
-                                    <tr>
-                                        <th>Niveau / Alias</th>
-                                        <th>Année</th>
-                                        <th>Effectif</th>
-                                        <th>Prof. Principal</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                )}
-                            </thead>
-                            <tbody>
-                                {filteredData.length > 0 ? filteredData.map((item) => (
-                                    <tr key={item._id}>
-                                        {activeTab === 'eleves' && (
-                                            <>
-                                                <td>
-                                                    <div className="admin-page__item-identity">
-                                                        <strong>{item.nom} {item.prenoms}</strong>
-                                                        <span className="admin-page__item-id">{item._id.substring(0, 8)}</span>
-                                                    </div>
-                                                </td>
-                                                <td>{item.sexe}</td>
-                                                <td>{item.naissance_$_date ? new Date(item.naissance_$_date).toLocaleDateString() : '-'}</td>
-                                                <td>{classes.find(c => c._id === item.current_classe)?.niveau || '-'}</td>
-                                            </>
-                                        )}
-                                        {activeTab === 'enseignants' && (
-                                            <>
-                                                <td>
-                                                    <div className="admin-page__item-identity">
-                                                        <strong>{item.nom} {item.prenoms}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="admin-page__item-contact">
-                                                        <div>{item.email_$_email || '-'}</div>
-                                                        <div className="--phone">{item.phone_$_tel || '-'}</div>
-                                                    </div>
-                                                </td>
-                                                <td>{item.sexe}</td>
-                                                <td>{Array.isArray(item.current_classes) ? item.current_classes.length : 0}</td>
-                                            </>
-                                        )}
-                                        {activeTab === 'classes' && (
-                                            <>
-                                                <td>
-                                                    <div className="admin-page__item-identity">
-                                                        <strong>{item.niveau} {item.alias}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>{item.annee}</td>
-                                                <td>{eleves.filter(e => e.current_classe === item._id).length} élèves</td>
-                                                <td>{enseignants.find(e => e._id === item.prof_principal_id)?.nom || '-'}</td>
-                                            </>
-                                        )}
-                                        <td>
-                                            <div className="admin-page__actions">
-                                                <button className="admin-page__action-btn --edit" onClick={() => handleEdit(item, activeTab === 'eleves' ? 'eleve' : activeTab === 'enseignants' ? 'enseignant' : 'classe')}>Éditer</button>
-                                                <Link href={`/${activeTab}/${item._id}`} className="admin-page__action-btn --view">Voir</Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan="5" className="admin-page__empty">Aucune donnée trouvée</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    {activeTab === 'fees' ? (
+                        <div className="admin-page__dynamic-content">
+                            <FeeConfigManager />
+                        </div>
+                    ) : (
+                        <div className="admin-page__table-container">
+                            <table className="admin-page__table">
+                                <thead>
+                                    {activeTab === 'eleves' && (
+                                        <tr>
+                                            <th>Élève</th>
+                                            <th>Sexe</th>
+                                            <th>Date de naissance</th>
+                                            <th>Classe Actuelle</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    )}
+                                    {activeTab === 'enseignants' && (
+                                        <tr>
+                                            <th>Enseignant</th>
+                                            <th>Email / Tel</th>
+                                            <th>Sexe</th>
+                                            <th>Classes</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    )}
+                                    {activeTab === 'classes' && (
+                                        <tr>
+                                            <th>Niveau / Alias</th>
+                                            <th>Année</th>
+                                            <th>Effectif</th>
+                                            <th>Prof. Principal</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    )}
+                                </thead>
+                                <tbody>
+                                    {filteredData.length > 0 ? filteredData.map((item) => (
+                                        <tr key={item._id}>
+                                            {activeTab === 'eleves' && (
+                                                <>
+                                                    <td>
+                                                        <div className="admin-page__item-identity">
+                                                            <strong>{item.nom} {item.prenoms}</strong>
+                                                            <span className="admin-page__item-id">{item._id.substring(0, 8)}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td>{item.sexe}</td>
+                                                    <td>{item.naissance_$_date ? new Date(item.naissance_$_date).toLocaleDateString() : '-'}</td>
+                                                    <td>{classes.find(c => c._id === item.current_classe)?.niveau || '-'}</td>
+                                                </>
+                                            )}
+                                            {activeTab === 'enseignants' && (
+                                                <>
+                                                    <td>
+                                                        <div className="admin-page__item-identity">
+                                                            <strong>{item.nom} {item.prenoms}</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="admin-page__item-contact">
+                                                            <div>{item.email_$_email || '-'}</div>
+                                                            <div className="--phone">{item.phone_$_tel || '-'}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{item.sexe}</td>
+                                                    <td>{Array.isArray(item.current_classes) ? item.current_classes.length : 0}</td>
+                                                </>
+                                            )}
+                                            {activeTab === 'classes' && (
+                                                <>
+                                                    <td>
+                                                        <div className="admin-page__item-identity">
+                                                            <strong>{item.niveau} {item.alias}</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>{item.annee}</td>
+                                                    <td>{eleves.filter(e => e.current_classe === item._id).length} élèves</td>
+                                                    <td>{enseignants.find(e => e._id === item.prof_principal_id)?.nom || '-'}</td>
+                                                </>
+                                            )}
+                                            <td>
+                                                <div className="admin-page__actions">
+                                                    <button className="admin-page__action-btn --edit" onClick={() => handleEdit(item, activeTab === 'eleves' ? 'eleve' : activeTab === 'enseignants' ? 'enseignant' : 'classe')}>Éditer</button>
+                                                    <Link href={`/${activeTab}/${item._id}`} className="admin-page__action-btn --view">Voir</Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="5" className="admin-page__empty">Aucune donnée trouvée</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </main>
 
                 <style jsx>{`
@@ -259,6 +279,37 @@ export default function AdministrationPage() {
                         display: flex;
                         gap: 1.5rem;
                         margin-bottom: 2rem;
+                    }
+                    .admin-page__top-actions {
+                        display: flex;
+                        justify-content: flex-end;
+                        margin-bottom: 1rem;
+                    }
+                    .admin-page__schoolConfigs {
+                        display: flex;
+                        gap: 1rem;
+                    }
+                    .admin-page__config-btn {
+                        background: #f8f9fa;
+                        border: 1px solid #ddd;
+                        padding: 0.6rem 1.2rem;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        color: #1E3A8A;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    }
+                    .admin-page__config-btn:hover {
+                        background: #eee;
+                        transform: translateY(-1px);
+                    }
+                    .admin-page__config-btn.--active {
+                        background: #1E3A8A;
+                        color: white !important;
+                        border-color: #1E3A8A;
                     }
                     .admin-page__stat-card {
                         background: white;
@@ -378,6 +429,12 @@ export default function AdministrationPage() {
                         padding: 1.2rem;
                         border-bottom: 1px solid #f0f0f0;
                         vertical-align: middle;
+                        color: #2c3e50; /* Force dark text color */
+                    }
+                    .admin-page__item-identity strong {
+                        color: #1E3A8A;
+                        display: block;
+                        font-size: 1.05rem;
                     }
                     .admin-page__item-identity {
                         display: flex;

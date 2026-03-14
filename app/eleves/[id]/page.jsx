@@ -30,7 +30,7 @@ export default function ElevePage() {
     ctx.fetchSubjects && ctx.fetchSubjects();
   }, []);
 
-  const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes } = ctx;
+  const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes, feeDefinitions, normalizeFeeItem } = ctx;
 
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
@@ -161,11 +161,18 @@ export default function ElevePage() {
           {(() => {
             // Financial data computation - only executed for admins
             const allFees = eleve.scolarity_fees_$_checkbox || {};
-            let totalArgent = 0, totalRiz = 0;
-            Object.values(allFees).forEach(fees => {
-              Object.values(fees || {}).forEach(v => {
-                if (v.argent) totalArgent += Number(v.argent);
-                if (v.riz) totalRiz += Number(v.riz);
+            const totals = {};
+            feeDefinitions.forEach(def => totals[def.id] = 0);
+
+            Object.values(allFees).forEach(yearEntries => {
+              Object.values(yearEntries || {}).forEach(deposits => {
+                const entriesList = Array.isArray(deposits) ? deposits : [deposits];
+                entriesList.forEach(d => {
+                  const normalized = normalizeFeeItem(d);
+                  if (normalized && totals[normalized.feeId] !== undefined) {
+                    totals[normalized.feeId] += normalized.amount;
+                  }
+                });
               });
             });
             return (
@@ -180,7 +187,11 @@ export default function ElevePage() {
                   ))
                 }
                 <div style={{ marginTop: '1em', fontSize: '0.97em', color: '#444' }}>
-                  <b>Total sur toutes années :</b> {totalArgent} F | {totalRiz} kg riz
+                  <b>Total sur toutes années :</b> {feeDefinitions.map((def, idx) => (
+                    <span key={def.id}>
+                      {totals[def.id]} {def.unit}{idx < feeDefinitions.length - 1 ? ' | ' : ''}
+                    </span>
+                  ))}
                 </div>
               </div>
             );
