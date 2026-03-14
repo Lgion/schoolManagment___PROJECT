@@ -150,7 +150,7 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
             const skippedFees = {};
 
             feeDefinitions.forEach(def => {
-                const target = def.targets[stu.isInterne ? 'interne' : 'externe'] || 0;
+                const target = def.targets.find(t => t.key === (stu.isInterne ? 'interne' : 'externe'))?.amount || 0;
                 if (r.fees[def.id] > 0 && existingTotals[def.id] >= target) {
                     warnings.push(`- ${nameStr} : ${def.label} déjà payé à 100% (${existingTotals[def.id]} ${def.unit}).`);
                     skippedFees[def.id] = 0;

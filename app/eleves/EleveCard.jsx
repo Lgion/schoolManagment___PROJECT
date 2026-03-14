@@ -7,12 +7,15 @@ import { AiAdminContext } from '../../stores/ai_adminContext';
 
 // Utilitaire pour progression scolarité (dynamique)
 function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem) {
-  // Calculate totals per fee type
   const totals = {};
   const targets = {};
+  const targetKey = isInterne ? 'interne' : 'externe';
   feeDefinitions.forEach(def => {
     totals[def.id] = 0;
-    targets[def.id] = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+    const targetEntry = Array.isArray(def.targets)
+      ? def.targets.find(t => t.key === targetKey)
+      : null;
+    targets[def.id] = targetEntry?.amount || 0;
   });
 
   if (fees && typeof fees === 'object') {
@@ -31,8 +34,7 @@ function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem)
     });
   }
 
-  // Build per-fee progress
-  const progress = feeDefinitions.map(def => ({
+  return feeDefinitions.map(def => ({
     id: def.id,
     label: def.label,
     unit: def.unit,
@@ -40,17 +42,15 @@ function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem)
     total: totals[def.id],
     target: targets[def.id]
   }));
-
-  return progress;
 }
 
 export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) {
-  const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
+  const { feeDefinitions, feeDefinitionsLoaded, normalizeFeeItem } = useContext(AiAdminContext);
   const prenoms = Array.isArray(eleve.prenoms) ? eleve.prenoms.join(', ') : eleve.prenoms;
   const photoUrl = eleve.cloudinary?.url || eleve.photo_$_file || eleve.photo || '/default-avatar.png';
   const isInterne = eleve.isInterne;
   const fees = eleve.scolarity_fees_$_checkbox || {};
-  const progress = getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem);
+  const progress = feeDefinitionsLoaded ? getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem) : [];
   const progressColors = ["#ff8c00", "#800080", "#00ff00", "#0000ff", "#ff0000", "#00ffff", "#ffff00", "#ff00ff", "#008000", "#000080", "#800000", "#808000", "#800080", "#008080", "#000000", "#ffffff"];
   const { openPortal } = useDetailPortal();
 

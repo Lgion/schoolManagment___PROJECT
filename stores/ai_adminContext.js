@@ -17,28 +17,16 @@ export const AdminContextProvider = ({ children }) => {
   const [subjectsLoaded, setSubjectsLoaded] = useState(false);
 
   // --- DYNAMIC FEES CONFIGURATION ---
-  // Default legacy mapping for runtime normalization
-  const LEGACY_FEE_MAP = { 'argent': 'scol_cash', 'riz': 'scol_nature' };
+  const [feeDefinitions, setFeeDefinitions] = useState([]);
+  const [feeDefinitionsLoaded, setFeeDefinitionsLoaded] = useState(false);
 
-  const [feeDefinitions, setFeeDefinitions] = useState([
-    {
-      id: 'scol_cash',
-      label: 'Frais Scolaires (Espèce)',
-      unit: 'F',
-      targets: { interne: 45000, externe: 18000 }
-    },
-    {
-      id: 'scol_nature',
-      label: 'Frais Scolaires (Nature)',
-      unit: 'kg',
-      targets: { interne: 50, externe: 25 }
-    }
-  ]);
+  // LS key canonique pour les fee definitions
+  const FEE_DEFINITIONS_LS_KEY = 'school_fee_definitions';
 
-  // Utility to normalize legacy entries to the new dynamic format
+  // Normalize legacy entries ({ argent, riz }) to new dynamic format
   const normalizeFeeItem = useCallback((item) => {
     if (!item) return null;
-    // Check if it's a legacy item by looking for keys in LEGACY_FEE_MAP
+    const LEGACY_FEE_MAP = { argent: 'scol_cash', riz: 'scol_nature' };
     const legacyKey = Object.keys(LEGACY_FEE_MAP).find(key => item[key] !== undefined);
     if (legacyKey) {
       return {
@@ -48,6 +36,51 @@ export const AdminContextProvider = ({ children }) => {
       };
     }
     return item; // Already new format
+  }, []);
+
+  // Fetch fee definitions: LS first, then BD
+  const fetchFeeDefinitions = useCallback(async () => {
+    const cached = getLSItem(FEE_DEFINITIONS_LS_KEY);
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      setFeeDefinitions(cached);
+      setFeeDefinitionsLoaded(true);
+      return;
+    }
+    try {
+      const res = await fetch('/api/school_ai/ecole');
+      if (res.ok) {
+        const data = await res.json();
+        const defs = data.feeDefinitions ?? [];
+        setFeeDefinitions(defs);
+        if (defs.length > 0) {
+          setLSItem(FEE_DEFINITIONS_LS_KEY, defs);
+        }
+      }
+    } catch (err) {
+      console.error('Erreur fetchFeeDefinitions:', err);
+    } finally {
+      setFeeDefinitionsLoaded(true);
+    }
+  }, []);
+
+  // Save fee definitions to BD and LS
+  const saveFeeDefinitions = useCallback(async (defs) => {
+    try {
+      const res = await fetch('/api/school_ai/ecole', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feeDefinitions: defs }),
+      });
+      if (!res.ok) throw new Error('PUT /api/school_ai/ecole failed');
+      const data = await res.json();
+      const saved = data.feeDefinitions ?? defs;
+      setFeeDefinitions(saved);
+      setLSItem(FEE_DEFINITIONS_LS_KEY, saved);
+      return saved;
+    } catch (err) {
+      console.error('Erreur saveFeeDefinitions:', err);
+      throw err;
+    }
   }, []);
 
 
@@ -442,11 +475,12 @@ export const AdminContextProvider = ({ children }) => {
   useEffect(() => {
     // Initialisation
   }, [])
-  // --- AUTO FETCH CLASSES AU MONTAGE ---
+  // --- AUTO FETCH AU MONTAGE ---
   useEffect(() => {
     if (classes.length === 0) fetchClasses();
     if (dynamicSubjects.length === 0) fetchSubjects();
-  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects]);
+    if (!feeDefinitionsLoaded) fetchFeeDefinitions();
+  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects, feeDefinitionsLoaded, fetchFeeDefinitions]);
 
 
 
@@ -462,7 +496,7 @@ export const AdminContextProvider = ({ children }) => {
         enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
         classes, fetchClasses, saveClasse, deleteClasse,
         dynamicSubjects, fetchSubjects, subjectsLoaded,
-        feeDefinitions, setFeeDefinitions, normalizeFeeItem,
+        feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
         uploadFile,
         selected, setSelected, showModal, setShowModal, editType, setEditType
       }}

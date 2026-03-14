@@ -1654,7 +1654,7 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   // Check if all fee types have reached their target
   const isGlobalComplete = feeDefinitions.every(def => {
     const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
-    const target = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+    const target = def.targets.find(t => t.key === (isInterne ? 'interne' : 'externe'))?.amount || 0;
     return total >= target;
   });
 
@@ -1667,7 +1667,7 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
       <div className="scolarity-fees-block__totals">
         {feeDefinitions.map(def => {
           const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
-          const target = def.targets[isInterne ? 'interne' : 'externe'] || 0;
+          const target = def.targets.find(t => t.key === (isInterne ? 'interne' : 'externe'))?.amount || 0;
           return (
             <div key={def.id} className="scolarity-fees-block__stat">
               {def.label} : <b>{total} {def.unit}</b> / {target} {def.unit}

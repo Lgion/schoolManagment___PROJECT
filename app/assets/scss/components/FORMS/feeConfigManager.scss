@@ -1,0 +1,285 @@
+// FeeConfigManager styles
+.fee-config-manager {
+  background: #fff;
+  color: #1e293b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 760px;
+  margin: 0 auto;
+
+  &--loading {
+    text-align: center;
+    color: #64748b;
+    padding: 2rem;
+  }
+
+  &__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1E3A8A;
+    margin-bottom: 1.5rem;
+  }
+
+  // Error banner
+  &__error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  // Empty state
+  &__empty {
+    color: #64748b;
+    font-style: italic;
+    padding: 1rem 0;
+  }
+
+  // ── Existing fees list ────────────────────────────
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    color: #1e293b;
+    transition: border-color 0.2s;
+
+    &--editing {
+      border-color: #1E3A8A;
+      background: #f0f4ff;
+    }
+  }
+
+  &__item-info {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__item-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1E3A8A;
+  }
+
+  &__item-unit {
+    color: #64748b;
+    font-size: 0.85rem;
+  }
+
+  &__item-targets {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+
+  &__target-chip {
+    background: #e0e7ff;
+    color: #1e40af;
+    border-radius: 20px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+
+  &__item-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  &__edit-btn {
+    background: #e0e7ff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+    &:hover { background: #c7d2fe; }
+  }
+
+  &__remove-btn {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover:not(:disabled) { background: #fca5a5; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+  }
+
+  // ── Inline edit form ──────────────────────────────
+  &__edit-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__edit-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__edit-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__save-btn {
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover:not(:disabled) { background: #1e40af; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+
+  &__cancel-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    &:hover { background: #e2e8f0; }
+  }
+
+  // ── Add new fee form ──────────────────────────────
+  &__form {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #1e293b;
+  }
+
+  &__form-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1E3A8A;
+    margin-bottom: 0.75rem;
+  }
+
+  &__form-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__input {
+    flex: 1;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background: #fff;
+    &:focus { outline: 2px solid #1E3A8A; border-color: transparent; }
+  }
+
+  &__select {
+    padding: 0.55rem 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1e293b;
+    background: #fff;
+    &:focus { outline: 2px solid #1E3A8A; border-color: transparent; }
+  }
+
+  &__add-btn {
+    margin-top: 0.75rem;
+    background: #1E3A8A;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    &:hover:not(:disabled) { background: #1e40af; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+  }
+}
+
+// ── Targets editor ──────────────────────────────────
+.fcm-targets-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  &__row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  &__label-input,
+  &__key-input,
+  &__amount-input {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background: #fff;
+    &:focus { outline: 2px solid #1E3A8A; border-color: transparent; }
+  }
+
+  &__label-input { flex: 1.4; }
+  &__key-input   { flex: 1; }
+  &__amount-input { flex: 1; }
+
+  &__remove-btn {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: none;
+    border-radius: 6px;
+    padding: 0.3rem 0.65rem;
+    font-size: 1rem;
+    cursor: pointer;
+    &:hover:not(:disabled) { background: #fca5a5; }
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
+  }
+
+  &__add-btn {
+    align-self: flex-start;
+    background: none;
+    border: 1px dashed #94a3b8;
+    color: #475569;
+    border-radius: 7px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover { background: #f1f5f9; border-color: #475569; }
+  }
+}
