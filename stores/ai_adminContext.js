@@ -20,8 +20,13 @@ export const AdminContextProvider = ({ children }) => {
   const [feeDefinitions, setFeeDefinitions] = useState([]);
   const [feeDefinitionsLoaded, setFeeDefinitionsLoaded] = useState(false);
 
-  // LS key canonique pour les fee definitions
+  // --- DYNAMIC TARGETS PROFILING ---
+  const [targetDefinitions, setTargetDefinitions] = useState([]);
+  const [targetDefinitionsLoaded, setTargetDefinitionsLoaded] = useState(false);
+
+  // LS keys canoniques
   const FEE_DEFINITIONS_LS_KEY = 'school_fee_definitions';
+  const TARGET_DEFINITIONS_LS_KEY = 'school_target_definitions';
 
   // Normalize legacy entries ({ argent, riz }) to new dynamic format
   const normalizeFeeItem = useCallback((item) => {
@@ -38,28 +43,47 @@ export const AdminContextProvider = ({ children }) => {
     return item; // Already new format
   }, []);
 
-  // Fetch fee definitions: LS first, then BD
-  const fetchFeeDefinitions = useCallback(async () => {
-    const cached = getLSItem(FEE_DEFINITIONS_LS_KEY);
-    if (cached && Array.isArray(cached) && cached.length > 0) {
-      setFeeDefinitions(cached);
+  // Fetch fee definitions + target definitions: LS first, then BD
+  const fetchSchoolSettings = useCallback(async () => {
+    // Try LS cache for fees
+    const cachedFees = getLSItem(FEE_DEFINITIONS_LS_KEY);
+    if (cachedFees && Array.isArray(cachedFees) && cachedFees.length > 0) {
+      setFeeDefinitions(cachedFees);
       setFeeDefinitionsLoaded(true);
-      return;
     }
+    // Try LS cache for targets
+    const cachedTargets = getLSItem(TARGET_DEFINITIONS_LS_KEY);
+    if (cachedTargets && Array.isArray(cachedTargets) && cachedTargets.length > 0) {
+      setTargetDefinitions(cachedTargets);
+      setTargetDefinitionsLoaded(true);
+    }
+    // If both are cached, skip API call
+    if (cachedFees?.length > 0 && cachedTargets?.length > 0) return;
+
     try {
       const res = await fetch('/api/school_ai/ecole');
       if (res.ok) {
         const data = await res.json();
         const defs = data.feeDefinitions ?? [];
-        setFeeDefinitions(defs);
-        if (defs.length > 0) {
+        if (Array.isArray(defs) && defs.length > 0) {
+          setFeeDefinitions(defs);
           setLSItem(FEE_DEFINITIONS_LS_KEY, defs);
+        } else {
+          setFeeDefinitions([]);
+        }
+        const tgts = data.targets ?? [];
+        if (Array.isArray(tgts) && tgts.length > 0) {
+          setTargetDefinitions(tgts);
+          setLSItem(TARGET_DEFINITIONS_LS_KEY, tgts);
+        } else {
+          setTargetDefinitions([]);
         }
       }
     } catch (err) {
-      console.error('Erreur fetchFeeDefinitions:', err);
+      console.error('Erreur fetchSchoolSettings:', err);
     } finally {
       setFeeDefinitionsLoaded(true);
+      setTargetDefinitionsLoaded(true);
     }
   }, []);
 
@@ -82,6 +106,48 @@ export const AdminContextProvider = ({ children }) => {
       throw err;
     }
   }, []);
+
+  // Save target definitions to BD and LS
+  const saveTargetDefinitions = useCallback(async (targets, removedTargetKey = null) => {
+    try {
+      const payload = { targets };
+      if (removedTargetKey) payload.removedTargetKey = removedTargetKey;
+      const res = await fetch('/api/school_ai/ecole', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('PUT /api/school_ai/ecole (targets) failed');
+      const data = await res.json();
+      const saved = data.targets ?? targets;
+      setTargetDefinitions(saved);
+      setLSItem(TARGET_DEFINITIONS_LS_KEY, saved);
+      return saved;
+    } catch (err) {
+      console.error('Erreur saveTargetDefinitions:', err);
+      throw err;
+    }
+  }, []);
+
+  /**
+   * Resolve target amount for a specific fee definition based on student profile.
+   * Implements universal fallback for 'is*' (boolean) profiles.
+   */
+  const resolveTargetAmount = useCallback((feeDef, targetsList, targetDefs = targetDefinitions) => {
+    if (!feeDef || !Array.isArray(feeDef.targets)) return 0;
+
+    const activeTargets = Object.values(targetsList || {}).flat();
+    const match = feeDef.targets.find(t => activeTargets.includes(t.label));
+    if (match) return match.amount;
+
+    // Universal fallback: Check missing boolean 'is*' targets
+    // We look for any 'is*' target definition whose secondary (fallback) option is present in the fee's targets
+    const missingBooleans = (targetDefs || []).filter(td => td.key.startsWith('is') && !targetsList?.[td.key]);
+    const fallbackOptions = missingBooleans.map(td => td.options[1]);
+
+    const fallbackMatch = feeDef.targets.find(t => fallbackOptions.includes(t.label));
+    return fallbackMatch ? fallbackMatch.amount : 0;
+  }, [targetDefinitions]);
 
 
 
@@ -479,8 +545,8 @@ export const AdminContextProvider = ({ children }) => {
   useEffect(() => {
     if (classes.length === 0) fetchClasses();
     if (dynamicSubjects.length === 0) fetchSubjects();
-    if (!feeDefinitionsLoaded) fetchFeeDefinitions();
-  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects, feeDefinitionsLoaded, fetchFeeDefinitions]);
+    if (!feeDefinitionsLoaded || !targetDefinitionsLoaded) fetchSchoolSettings();
+  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects, feeDefinitionsLoaded, targetDefinitionsLoaded, fetchSchoolSettings]);
 
 
 
@@ -497,6 +563,8 @@ export const AdminContextProvider = ({ children }) => {
         classes, fetchClasses, saveClasse, deleteClasse,
         dynamicSubjects, fetchSubjects, subjectsLoaded,
         feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
+        targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
+        resolveTargetAmount,
         uploadFile,
         selected, setSelected, showModal, setShowModal, editType, setEditType
       }}

@@ -2,11 +2,6 @@
 @use 'sass:color';
 @use '../_variables' as *;
 
-
-div:has(.global_reset_btn) {
-  z-index: 3 !important;
-}
-
 // Header principal BEM
 .ecole-admin {
   &__header {
@@ -365,7 +360,6 @@ div:has(.global_reset_btn) {
       right: 0em;
       display: flex;
       align-items: center;
-      z-index: 1001;
 
       &-btn {
         display: flex;

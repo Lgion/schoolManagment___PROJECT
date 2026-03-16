@@ -3,7 +3,7 @@ import '../../assets/scss/components/MODALS/reviewModal.scss';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 
 export default function ReviewFeesModal({ file, extractedData, students = [], onClose, onValidate }) {
-    const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
+    const { feeDefinitions, normalizeFeeItem, resolveTargetAmount } = useContext(AiAdminContext);
     const [imageUrl, setImageUrl] = useState(null);
     const [zoom, setZoom] = useState(1);
     const imgRef = useRef(null);
@@ -150,7 +150,8 @@ export default function ReviewFeesModal({ file, extractedData, students = [], on
             const skippedFees = {};
 
             feeDefinitions.forEach(def => {
-                const target = def.targets.find(t => t.key === (stu.isInterne ? 'interne' : 'externe'))?.amount || 0;
+                const target = resolveTargetAmount(def, stu.targetsList);
+                
                 if (r.fees[def.id] > 0 && existingTotals[def.id] >= target) {
                     warnings.push(`- ${nameStr} : ${def.label} déjà payé à 100% (${existingTotals[def.id]} ${def.unit}).`);
                     skippedFees[def.id] = 0;

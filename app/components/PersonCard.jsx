@@ -1,12 +1,14 @@
 // Carte générique pour élève ou enseignant
-import React from 'react';
+import React, { useContext } from 'react';
+import { AiAdminContext } from '../../stores/ai_adminContext';
 import Link from "next/link";
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
-import PermissionGate from "../components/PermissionGate";
+import PermissionGate from "./PermissionGate";
 import './PersonCard.scss';
 
 export default function PersonCard({ person, classes, onClick, onEdit, type, viewMode = 'grid' }) {
+  const { targetDefinitions } = useContext(AiAdminContext);
   const photoUrl = type === 'eleve'
     ? getEleveImagePath(person)
     : type === 'enseignant'
@@ -44,11 +46,22 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
           </div>
           {/* Badge ou champ spécifique selon le type */}
           {type === 'eleve' && (
-            <div className="person-card__isinterne">
-              {person.isInterne
-                ? <span className="person-card__isinterne-badge">Interne</span>
-                : <span className="person-card__isinterne-badge person-card__isinterne-badge--externe">Externe</span>
-              }
+            <div className="person-card__isinterne" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {(() => {
+                const targetsList = person.targetsList || {};
+                const activeProfiling = [];
+                (targetDefinitions || []).forEach(td => {
+                  const val = targetsList[td.key];
+                  if (val) {
+                    activeProfiling.push(Array.isArray(val) ? val.join(', ') : val);
+                  } else if (td.key.startsWith('is')) {
+                    activeProfiling.push(td.options[1]);
+                  }
+                });
+                return activeProfiling.map((val, i) => (
+                  <span key={i} className={`person-card__isinterne-badge ${val === 'Externe' ? 'person-card__isinterne-badge--externe' : ''}`}>{val}</span>
+                ));
+              })()}
             </div>
           )}
         </div>

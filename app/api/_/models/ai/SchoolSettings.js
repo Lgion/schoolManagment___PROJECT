@@ -19,9 +19,18 @@ const feeDefinitionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const targetDefinitionSchema = new mongoose.Schema(
+  {
+    key:     { type: String, required: true },   // ex: 'isInterne', 'doCantinePlan', 'sport'
+    options: { type: [String], required: true },  // ex: ['Interne', 'Externe']
+  },
+  { _id: false }
+);
+
 const schoolSettingsSchema = new mongoose.Schema({
   schoolKey:      { type: String, unique: true, default: 'default' },
   feeDefinitions: { type: [feeDefinitionSchema], default: [] },
+  targets:        { type: [targetDefinitionSchema], default: [] },
   updatedAt:      { type: Date, default: Date.now },
 });
 

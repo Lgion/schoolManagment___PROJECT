@@ -2,7 +2,7 @@
 
 import { useContext, useEffect, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
+import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../components/EntityModal.jsx';
 import Gmap from '../_/Gmap_plus';
 import PermissionGate from "../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../utils/classeUtils';
@@ -96,7 +96,7 @@ export default function EleveDetailContent({ entityId }) {
 
       <Parent parents={eleve.parents} />
 
-      <IsInterneBlock form={eleve} />
+      <TargetsProfilingBlock form={eleve} />
 
       <AbsencesBlock absences={eleve.absences} />
 
@@ -124,7 +124,7 @@ export default function EleveDetailContent({ entityId }) {
           Object.entries(allFees).map(([year, fees]) => (
             <div key={year} className="person-detail__fees-year">
               <div className="person-detail__fees-year-label">{year}</div>
-              <ScolarityFeesBlock fees={fees} schoolYear={year} isInterne={eleve.isInterne || false} />
+              <ScolarityFeesBlock fees={fees} schoolYear={year} targetsList={eleve.targetsList || {}} />
             </div>
           ))
         }

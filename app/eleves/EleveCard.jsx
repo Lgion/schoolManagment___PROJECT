@@ -5,17 +5,15 @@ import './EleveCard.scss';
 import PermissionGate from "../components/PermissionGate";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 
-// Utilitaire pour progression scolarité (dynamique)
-function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem) {
+// Utilitaire pour progression scolarité (dynamique via targetsList)
+function getScolarityProgress(fees, targetsList, feeDefinitions, normalizeFeeItem, resolveTargetAmount) {
   const totals = {};
   const targets = {};
-  const targetKey = isInterne ? 'interne' : 'externe';
+  
   feeDefinitions.forEach(def => {
     totals[def.id] = 0;
-    const targetEntry = Array.isArray(def.targets)
-      ? def.targets.find(t => t.key === targetKey)
-      : null;
-    targets[def.id] = targetEntry?.amount || 0;
+    
+    targets[def.id] = resolveTargetAmount(def, targetsList);
   });
 
   if (fees && typeof fees === 'object') {
@@ -45,18 +43,36 @@ function getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem)
 }
 
 export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) {
-  const { feeDefinitions, feeDefinitionsLoaded, normalizeFeeItem } = useContext(AiAdminContext);
+  const { feeDefinitions, feeDefinitionsLoaded, normalizeFeeItem, resolveTargetAmount, targetDefinitions } = useContext(AiAdminContext);
   const prenoms = Array.isArray(eleve.prenoms) ? eleve.prenoms.join(', ') : eleve.prenoms;
   const photoUrl = eleve.cloudinary?.url || eleve.photo_$_file || eleve.photo || '/default-avatar.png';
-  const isInterne = eleve.isInterne;
+  
+  const targetsList = eleve.targetsList || {};
   const fees = eleve.scolarity_fees_$_checkbox || {};
-  const progress = feeDefinitionsLoaded ? getScolarityProgress(fees, isInterne, feeDefinitions, normalizeFeeItem) : [];
+  
+  const progress = feeDefinitionsLoaded 
+    ? getScolarityProgress(fees, targetsList, feeDefinitions, normalizeFeeItem, resolveTargetAmount) 
+    : [];
+
   const progressColors = ["#ff8c00", "#800080", "#00ff00", "#0000ff", "#ff0000", "#00ffff", "#ffff00", "#ff00ff", "#008000", "#000080", "#800000", "#808000", "#800080", "#008080", "#000000", "#ffffff"];
   const { openPortal } = useDetailPortal();
 
+  // Profiling badges to show (including fallbacks for is*)
+  const activeProfiling = [];
+  targetDefinitions.forEach(td => {
+    const val = targetsList[td.key];
+    if (val) {
+      activeProfiling.push({ key: td.key, value: Array.isArray(val) ? val.join(', ') : val });
+    } else if (td.key.startsWith('is')) {
+      // Fallback for boolean fields
+      activeProfiling.push({ key: td.key, value: td.options[1] });
+    }
+    // For do* or other, if missing, we don't add anything (user's request)
+  });
+
   // Build title string dynamically
   const titleParts = progress.map(p => `${p.label}: ${p.total} ${p.unit} / ${p.target} ${p.unit}`);
-  const isComplete = progress.every(p => p.percent === 100);
+  const isComplete = progress.length > 0 && progress.every(p => p.percent === 100);
 
   return (
     <li className={"eleve-card-wrapper " + eleve.sexe.toLowerCase()} style={{ position: 'relative' }}>
@@ -72,27 +88,37 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
             <div className="eleve-card__classe">{classe.niveau} - {classe.alias}</div>
           </div>
           <div className="eleve-card__isinterne">
-            {isInterne ? <span className="eleve-card__isinterne-badge">Interne</span> : <span className="eleve-card__isinterne-badge eleve-card__isinterne-badge--externe">Externe</span>}
+            {activeProfiling.map(p => (
+              <span key={p.key} className={`eleve-card__isinterne-badge ${p.value === 'Externe' ? 'eleve-card__isinterne-badge--externe' : ''}`}>
+                {p.value}
+              </span>
+            ))}
           </div>
           <div className="eleve-card__progress">
             <div className="eleve-card__progress-label">Frais Scolarité</div>
-            <div className="eleve-card__progress-bar" title={titleParts.join(' | ')}>
-              {progress.map((p, i) => (
-                <div
-                  key={p.id}
-                  className={`eleve-card__progress-segment eleve-card__progress-segment--${i}`}
-                  style={{ width: (p.percent) + '%', background: progressColors[i] }}
-                  title={`${p.label}: ${p.total} ${p.unit} / ${p.target} ${p.unit}`}
-                />
-              ))}
-            </div>
-            <div className="eleve-card__progress-values">
-              {progress.map((p, i) => (
-                <span key={p.id} className={`eleve-card__progress-value eleve-card__progress-value--${i}`} style={{ background: progressColors[i] }}>
-                  {p.total} {p.unit} ({p.percent}%)
-                </span>
-              ))}
-            </div>
+            {progress.length > 0 ? (
+               <>
+                <div className="eleve-card__progress-bar" title={titleParts.join(' | ')}>
+                  {progress.map((p, i) => (
+                    <div
+                      key={p.id}
+                      className={`eleve-card__progress-segment eleve-card__progress-segment--${i}`}
+                      style={{ width: (p.percent) + '%', background: progressColors[i] }}
+                      title={`${p.label}: ${p.total} ${p.unit} / ${p.target} ${p.unit}`}
+                    />
+                  ))}
+                </div>
+                <div className="eleve-card__progress-values">
+                  {progress.map((p, i) => (
+                    <span key={p.id} className={`eleve-card__progress-value eleve-card__progress-value--${i}`} style={{ background: progressColors[i] }}>
+                      {p.total} {p.unit} ({p.percent}%)
+                    </span>
+                  ))}
+                </div>
+               </>
+            ) : (
+              <div className="eleve-card__progress-empty">Aucun frais défini</div>
+            )}
           </div>
         </div>
         <PermissionGate roles={['admin', 'prof']}>

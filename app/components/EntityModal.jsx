@@ -205,7 +205,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
           naissance_$_date: '2006-01-01',
           adresse_$_map: { lat: 5.333333, lng: 3.866667 },
           parents: { mere: 'Jane', pere: 'Jean', phone: '01 23 45 67 89' },
-          isInterne: true,
+          targetsList: {},
 
         });
       }
@@ -914,7 +914,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 )}
               </div>
 
-              <IsInterneBlock form={form} setForm={setForm} />
+              <TargetsProfilingBlock form={form} setForm={setForm} />
               <AbsencesBlock absences={form.absences} setForm={setForm} />
               <BonusBlock bonus={form.bonus} setForm={setForm} />
               <ManusBlock manus={form.manus} setForm={setForm} />
@@ -961,7 +961,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   }
                 }))}
                 schoolYear={schoolYear}
-                isInterne={form.isInterne || false}
+                targetsList={form.targetsList || {}}
               />
               <textarea readOnly name="scolarity_fees_$_checkbox_" value={form.scolarity_fees_$_checkbox ? JSON.stringify(form.scolarity_fees_$_checkbox) : ''}
               // onChange={e => setForm(f => ({ ...f, scolarity_fees_$_checkbox: e.target.value ? JSON.parse(e.target.value) : {} }))} 
@@ -1593,9 +1593,8 @@ function SchoolHistoryBlock({ schoolHistory, onChange }) {
 }
 
 // --- Bloc de gestion des frais de scolarité par année ---
-// --- Bloc de gestion des frais de scolarité par année ---
-function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
-  const { feeDefinitions, normalizeFeeItem } = useContext(AiAdminContext);
+function ScolarityFeesBlock({ fees, onChange, schoolYear, targetsList = {} }) {
+  const { feeDefinitions, normalizeFeeItem, resolveTargetAmount } = useContext(AiAdminContext);
   const [showForm, setShowForm] = useState(false);
   const [selectedFeeId, setSelectedFeeId] = useState(feeDefinitions[0]?.id || '');
   const [val, setVal] = useState('');
@@ -1611,7 +1610,7 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   };
 
   const processedFees = migratedFees(fees);
-  
+
   // Normalize all entries to { feeId, amount, timestamp }
   const entries = Object.entries(processedFees).flatMap(([ts, deposits]) =>
     deposits.map((d, i) => ({ ...normalizeFeeItem(d), ts, index: i }))
@@ -1623,10 +1622,10 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
     d.setHours(0, 0, 0, 0);
     const ts = d.getTime();
 
-    const newDeposit = { 
-      feeId: selectedFeeId, 
-      amount: Number(val), 
-      timestamp: Date.now() 
+    const newDeposit = {
+      feeId: selectedFeeId,
+      amount: Number(val),
+      timestamp: Date.now()
     };
 
     const existingDeposits = processedFees[ts] || [];
@@ -1636,8 +1635,8 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
     };
 
     onChange(updatedFees);
-    setShowForm(false); 
-    setVal(''); 
+    setShowForm(false);
+    setVal('');
     setDate(new Date().toISOString().slice(0, 10));
   };
 
@@ -1654,20 +1653,21 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
   // Check if all fee types have reached their target
   const isGlobalComplete = feeDefinitions.every(def => {
     const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
-    const target = def.targets.find(t => t.key === (isInterne ? 'interne' : 'externe'))?.amount || 0;
+    const target = resolveTargetAmount(def, targetsList);
     return total >= target;
   });
 
   return (
     <div className={`scolarity-fees-block ${isGlobalComplete ? 'scolarity-fees-block--complete' : 'scolarity-fees-block--incomplete'}`}>
       <div className="scolarity-fees-block__header">
-        Frais de scolarité – {schoolYear} ({isInterne ? 'Interne' : 'Externe'})
+        Frais de scolarité – {schoolYear}
       </div>
-      
+
       <div className="scolarity-fees-block__totals">
         {feeDefinitions.map(def => {
           const total = entries.filter(e => e.feeId === def.id).reduce((sum, e) => sum + e.amount, 0);
-          const target = def.targets.find(t => t.key === (isInterne ? 'interne' : 'externe'))?.amount || 0;
+          const target = resolveTargetAmount(def, targetsList);
+
           return (
             <div key={def.id} className="scolarity-fees-block__stat">
               {def.label} : <b>{total} {def.unit}</b> / {target} {def.unit}
@@ -1696,8 +1696,8 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, isInterne = false }) {
 
       {showForm ? (
         <div className="scolarity-fees-block__add-form">
-          <select 
-            value={selectedFeeId} 
+          <select
+            value={selectedFeeId}
             onChange={e => setSelectedFeeId(e.target.value)}
             className="scolarity-fees-block__type-select"
           >
@@ -1819,7 +1819,7 @@ function CoefficientsManager({ coefficients, onChange, subjectGroup, dynamicSubj
           onClick={resetToDefault}
           title="Remettre tous les coefficients à la valeur par défaut"
         >
-          Réinitialiser ({defaultCoeff})
+          Retirer l'élève du profil ({defaultCoeff})
         </button>
       </div>
 
@@ -3222,17 +3222,110 @@ function AddNoteForm({ notes = {}, onAdd, onRemove }) {
   );
 }
 
-function IsInterneBlock({ form, setForm }) {
+function TargetsProfilingBlock({ form, setForm }) {
+  const { targetDefinitions, targetDefinitionsLoaded, resolveTargetAmount } = useContext(AiAdminContext);
+  const targetsList = form.targetsList || {};
+
+  const updateTarget = (key, value) => {
+    if (!setForm) return;
+    setForm(f => ({
+      ...f,
+      targetsList: { ...f.targetsList, [key]: value }
+    }));
+  };
+
+  const removeTarget = (key) => {
+    if (!setForm) return;
+    setForm(f => {
+      const next = { ...f.targetsList };
+      delete next[key];
+      return { ...f, targetsList: next };
+    });
+  };
+
+  if (!targetDefinitionsLoaded) return <div className="loading-small">Chargement profil...</div>;
 
   return (
-    <div className="isinterne-card">
-      <img src="/dortoir.png" alt="Dortoir" className="isinterne-img" />
-      <label className="isinterne-label">
-        <input type="checkbox" readOnly={!setForm ? true : false} name="isInterne" checked={!!form.isInterne}
-          onChange={setForm ? e => setForm(f => ({ ...f, isInterne: e.target.checked })) : undefined}
-        />
-        <span>Interne</span>
-      </label>
+    <div className="targets-profiling-block" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+      {targetDefinitions.map(td => {
+        const currentValue = targetsList[td.key];
+
+        // ── Booléens / Switches (is*) ─────────────────
+        if (td.key.startsWith('is')) {
+          const firstOpt = td.options[0];
+          const isSet = currentValue === firstOpt;
+          return (
+            <div key={td.key} className="isinterne-card profiling-card">
+              <label className="isinterne-label">
+                <input
+                  type="checkbox"
+                  checked={isSet}
+                  onChange={e => e.target.checked ? updateTarget(td.key, firstOpt) : removeTarget(td.key)}
+                  disabled={!setForm}
+                />
+                <span>{firstOpt}</span>
+              </label>
+            </div>
+          );
+        }
+
+        // ── Choix unique / Radio (do*) ─────────────────
+        if (td.key.startsWith('do')) {
+          return (
+            <div key={td.key} className="profiling-card" style={{ border: '1px solid #ddd', padding: '0.8rem', borderRadius: '8px', background: '#f8fafc' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <div style={{ fontWeight: 600, color: '#1E3A8A', fontSize: '0.9rem' }}>{td.key.replace(/^do/, '')}</div>
+                {setForm && currentValue && (
+                  <button type="button" onClick={() => removeTarget(td.key)} style={{ fontSize: '0.7rem', color: '#666', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                    Réinitialiser
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+                {td.options.map(opt => (
+                  <label key={opt} style={{ fontSize: '0.85rem', cursor: setForm ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <input
+                      type="radio"
+                      name={td.key}
+                      value={opt}
+                      checked={currentValue === opt}
+                      onChange={() => updateTarget(td.key, opt)}
+                      disabled={!setForm}
+                    /> {opt}
+                  </label>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // ── Multi-choix / Checkboxes (autre) ───────────
+        return (
+          <div key={td.key} className="profiling-card" style={{ border: '1px solid #ddd', padding: '0.8rem', borderRadius: '8px', background: '#f8fafc' }}>
+            <div style={{ fontWeight: 600, color: '#1E3A8A', marginBottom: '0.5rem', fontSize: '0.9rem' }}>{td.key}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+              {td.options.map(opt => {
+                const checked = Array.isArray(currentValue) ? currentValue.includes(opt) : false;
+                return (
+                  <label key={opt} style={{ fontSize: '0.85rem', cursor: setForm ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={e => {
+                        let next = Array.isArray(currentValue) ? [...currentValue] : [];
+                        if (e.target.checked) next.push(opt);
+                        else next = next.filter(o => o !== opt);
+                        updateTarget(td.key, next);
+                      }}
+                      disabled={!setForm}
+                    /> {opt}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -3431,4 +3524,4 @@ function CompositionsManager({ compositions = [], onChange }) {
   );
 }
 
-export { SchoolHistoryBlock, ScolarityFeesBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock, CompositionsManager } 
+export { SchoolHistoryBlock, ScolarityFeesBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, CommentairesBlock, Parent, AbsencesBlock, BonusBlock, ManusBlock, DocumentsBlock, CompositionsManager } 

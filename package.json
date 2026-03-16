@@ -25,6 +25,8 @@
     "fast-equals": "^5.2.2",
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "mongoose": "^8.15.1",
     "mongoose-unique": "^0.0.5",
     "mongoose-unique-validator": "^4.0.1",

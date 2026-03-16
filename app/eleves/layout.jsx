@@ -123,7 +123,7 @@ export default function EcoleAdminEleveLayout({ children }) {
     // Calculer les statistiques pour les filtres
     const totalEleves = Array.isArray(eleves) ? eleves.length : 0;
     const internesCount = Array.isArray(eleves)
-        ? eleves.filter(eleve => eleve.isInterne === true).length
+        ? eleves.filter(eleve => eleve.targetsList?.isInterne === "Interne").length
         : 0;
     const externesCount = totalEleves - internesCount;
 
@@ -412,9 +412,9 @@ export default function EcoleAdminEleveLayout({ children }) {
                         let matchesInterne = true;
                         if (filterByInterne !== 'tous') {
                             if (filterByInterne === 'interne') {
-                                matchesInterne = eleve.isInterne === true;
+                                matchesInterne = eleve.targetsList?.isInterne === "Interne";
                             } else if (filterByInterne === 'externe') {
-                                matchesInterne = eleve.isInterne === false;
+                                matchesInterne = !eleve.targetsList?.isInterne || eleve.targetsList?.isInterne !== "Interne";
                             }
                         }
 

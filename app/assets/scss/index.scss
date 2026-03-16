@@ -30,6 +30,10 @@
 $font-primary: $primaryFont;
 $font-secondary: $secondaryFont;
 
+#clerk-components+div {
+  z-index: 10;
+}
+
 #camembert {
   margin: 2rem auto;
   padding: 1.5rem;
@@ -2764,10 +2768,15 @@ section>div:has(.modal) {
     border-radius: 8px;
     padding: 1.2em;
     margin-bottom: 1.5em;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
-    &--complete { border-left: 5px solid #28a745; }
-    &--incomplete { border-left: 5px solid #ffc107; }
+    &--complete {
+      border-left: 5px solid #28a745;
+    }
+
+    &--incomplete {
+      border-left: 5px solid #ffc107;
+    }
 
     &__header {
       font-weight: bold;
@@ -2790,7 +2799,10 @@ section>div:has(.modal) {
 
     &__stat {
       font-size: 0.95em;
-      b { color: #2c3dce; }
+
+      b {
+        color: #2c3dce;
+      }
     }
 
     &__entry {
@@ -2801,10 +2813,26 @@ section>div:has(.modal) {
       border-bottom: 1px dashed #eee;
       font-size: 0.9em;
 
-      &-date { color: #666; width: 85px; }
-      &-value { font-weight: 600; width: 70px; }
-      &-label { color: #888; flex: 1; font-style: italic; }
-      &-time { color: #aaa; font-size: 0.85em; }
+      &-date {
+        color: #666;
+        width: 85px;
+      }
+
+      &-value {
+        font-weight: 600;
+        width: 70px;
+      }
+
+      &-label {
+        color: #888;
+        flex: 1;
+        font-style: italic;
+      }
+
+      &-time {
+        color: #aaa;
+        font-size: 0.85em;
+      }
     }
 
     &__add-btn {
@@ -2828,7 +2856,8 @@ section>div:has(.modal) {
       gap: 0.8em;
       align-items: center;
 
-      input, select {
+      input,
+      select {
         padding: 0.4em 0.6em;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -2838,7 +2867,12 @@ section>div:has(.modal) {
         padding: 0.4em 1em;
         border-radius: 4px;
         cursor: pointer;
-        &[type="button"] { background: #28a745; color: white; border: none; }
+
+        &[type="button"] {
+          background: #28a745;
+          color: white;
+          border: none;
+        }
       }
     }
 
@@ -2853,74 +2887,6 @@ section>div:has(.modal) {
     }
   }
 
-  .fee-config-manager {
-    padding: 1.5em;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    margin: 1em 0;
-
-    &__title {
-      margin-bottom: 1.2em;
-      color: #2c3dce;
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      &::before { content: "⚙️"; }
-    }
-
-    &__form {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr auto;
-      gap: 10px;
-      margin-bottom: 2em;
-      padding: 1.2em;
-      background: #f4f4fa;
-      border-radius: 8px;
-
-      input, select {
-        padding: 0.7em;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        outline: none;
-        &:focus { border-color: #6c63ff; }
-      }
-
-      button {
-        padding: 0 1.5em;
-        background: #2c3dce;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-    }
-
-    &__item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1em;
-      border-bottom: 1px solid #f0f0f0;
-      &:last-child { border-bottom: none; }
-
-      &-targets {
-        font-size: 0.85em;
-        color: #666;
-        margin-top: 4px;
-      }
-    }
-
-    &__remove-btn {
-      background: none;
-      border: none;
-      color: #ff6b6b;
-      font-size: 1.5em;
-      cursor: pointer;
-      &:disabled { opacity: 0.3; cursor: not-allowed; }
-    }
-  }
 
 
   // Styles pour __content maintenant dans components/CONTENT/homeContent.scss

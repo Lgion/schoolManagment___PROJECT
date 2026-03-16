@@ -39,7 +39,7 @@ const studentSchema = mongoose.Schema({
   // },
   bonus: { default: [], type: [Object], required: true },
   manus: { default: [], type: [Object], required: true },
-  isInterne: { default: false, type: Boolean, required: true },
+  targetsList: { default: {}, type: Object, required: false },
   commentaires: { default: [], type: [Object], required: true },
   documents: { default: [], type: [String], required: true },
   createdAt: { default: +new Date(), type: String },

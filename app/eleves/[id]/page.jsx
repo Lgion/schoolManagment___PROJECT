@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
-import { Parent, DocumentsBlock, IsInterneBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
+import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
 import Gmap from '../../_/Gmap_plus';
 import PermissionGate from "../../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
@@ -132,7 +132,7 @@ export default function ElevePage() {
 
         <Parent parents={eleve.parents} />
 
-        <IsInterneBlock form={eleve} />
+        <TargetsProfilingBlock form={eleve} />
 
         {/* <DocumentsBlock form={eleve} readOnly={true} /> */}
         <section>
@@ -182,7 +182,7 @@ export default function ElevePage() {
                   Object.entries(allFees).map(([year, fees]) => (
                     <div key={year} style={{ marginBottom: '1.3em' }}>
                       <div style={{ fontWeight: 600, marginBottom: 4 }}>{year}</div>
-                      <ScolarityFeesBlock fees={fees} schoolYear={year} isInterne={eleve.isInterne || false} />
+                      <ScolarityFeesBlock fees={fees} schoolYear={year} targetsList={eleve.targetsList || {}} />
                     </div>
                   ))
                 }

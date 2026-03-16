@@ -161,19 +161,6 @@ export default ({ children }) => {
 
   return <>
     <>
-      {/* Bouton de réinitialisation des données */}
-      <PermissionGate role="admin">
-        <div className="global_reset_btn ecole-admin__headerActions-reset">
-          <button
-            onClick={clearAllAppData}
-            className="ecole-admin__headerActions-reset-btn"
-            title="Réinitialiser toutes les données de l'application"
-          >
-            <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
-            <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
-          </button>
-        </div>
-      </PermissionGate>
       <header className="ecole-admin__header">
         <div className="ecole-admin__header-container">
           <div className="ecole-admin__branding">
@@ -206,6 +193,20 @@ export default ({ children }) => {
                 </a>
               </div>
             </div>
+
+            {/* Bouton de réinitialisation des données (Déplacé ici pour éviter les chevauchements) */}
+            <PermissionGate role="admin">
+              <div className="ecole-admin__headerActions-reset">
+                <button
+                  onClick={clearAllAppData}
+                  className="ecole-admin__headerActions-reset-btn"
+                  title="Réinitialiser toutes les données de l'application"
+                >
+                  <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
+                  <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
+                </button>
+              </div>
+            </PermissionGate>
 
 
             <div className="ecole-admin__authSection">
