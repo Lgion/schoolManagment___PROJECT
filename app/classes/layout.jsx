@@ -48,9 +48,9 @@ export default function ClassesPage({ children }) {
 
   return (<>
     <h2 className="ecole-admin__dashboardSubTitle">Liste des classes
-      <PermissionGate role="admin">
+      {/* <PermissionGate role="admin">
         <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button>
-      </PermissionGate>
+      </PermissionGate> */}
     </h2>
 
     <div className="ecole-admin__nav-actions">
@@ -60,6 +60,7 @@ export default function ClassesPage({ children }) {
     </div>
 
     {/* Badges de filtrage par année */}
+    {/* 
     {Array.isArray(classes) && classes.length > 0 && (
       <div className="year-filter">
         {selectedYear && (
@@ -87,6 +88,7 @@ export default function ClassesPage({ children }) {
         </div>
       </div>
     )}
+    */}
 
     {classes ?
       <div className="classes-list">
@@ -111,38 +113,48 @@ export default function ClassesPage({ children }) {
             return b.localeCompare(a);
           });
 
-          return sortedYears.map(year => (
-            <div key={year} className="classes-list__year-group">
-              <div className="classes-list__year-separator">
-                <span className="classes-list__year-label">{year}</span>
-                <hr className="classes-list__year-line" />
-              </div>
-              <div className="classes-list__year-content">
-                {classesByYear[year]
-                  .sort((a, b) => {
-                    // Ordre des niveaux scolaires au sein de chaque année
-                    const niveauOrder = ['CP1', 'CP2', 'CE1', 'CE2', 'CM1', 'CM2'];
-                    const indexA = niveauOrder.indexOf(a.niveau);
-                    const indexB = niveauOrder.indexOf(b.niveau);
+          return sortedYears.map(year => {
+            // Grouper par niveau au sein de l'année
+            const classesByLevel = classesByYear[year].reduce((acc, classe) => {
+              const level = classe.niveau || 'Sans niveau';
+              if (!acc[level]) acc[level] = [];
+              acc[level].push(classe);
+              return acc;
+            }, {});
 
-                    if (indexA !== -1 && indexB !== -1) {
-                      return indexA - indexB;
-                    }
-                    return a.niveau.localeCompare(b.niveau);
-                  })
-                  .map(classe => (
-                    <ClasseCard
-                      key={classe._id}
-                      classe={classe}
-                      enseignants={enseignants}
-                      eleves={eleves.filter(e => e.current_classe === classe._id)}
-                      onEdit={e => { setSelected(e); setEditType("classe"); setShowModal(true); }}
-                    />
-                  ))
-                }
+            const niveauOrder = ['CP1', 'CP2', 'CE1', 'CE2', 'CM1', 'CM2'];
+            const sortedLevels = Object.keys(classesByLevel).sort((a, b) => {
+              const indexA = niveauOrder.indexOf(a);
+              const indexB = niveauOrder.indexOf(b);
+              if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+              return a.localeCompare(b);
+            });
+
+            return (
+              <div key={year} className="classes-list__year-group">
+                <div className="classes-list__year-content">
+                  {sortedLevels.map(level => (
+                    <div key={level} className={`classes-list__level-group classes-list__level-group--multiple`}>
+                      {classesByLevel[level].length > 1 && (
+                        <h3 className="classes-list__level-title">{level}</h3>
+                      )}
+                      <div className="classes-list__level-content">
+                        {classesByLevel[level].map(classe => (
+                          <ClasseCard
+                            key={classe._id}
+                            classe={classe}
+                            enseignants={enseignants}
+                            eleves={eleves.filter(e => e.current_classe === classe._id)}
+                            onEdit={e => { setSelected(e); setEditType("classe"); setShowModal(true); }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ));
+            );
+          });
         })()}
       </div>
       :

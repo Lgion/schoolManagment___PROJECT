@@ -80,30 +80,28 @@ studentSchema.post('save', async function (doc, next) {
 
   if (hasChanged) {
     try {
-      // Ajouter l'élève à la nouvelle classe
+      const ClasseModel = mongoose.model('ai_Ecole_St_Martin');
+
+      // 1. Ajouter l'élève à la nouvelle classe
       if (doc.current_classe) {
-        await mongoose.model('ai_Ecole_St_Martin')
-          .findByIdAndUpdate(doc.current_classe, {
-            $addToSet: { eleves: doc._id }
-          })
-        console.log(`✅ Élève ${doc._id} ajouté à la classe ${doc.current_classe}`)
+        await ClasseModel.findByIdAndUpdate(doc.current_classe, {
+          $addToSet: { eleves: doc._id }
+        });
+        console.log(`✅ Élève ${doc._id} ajouté à la classe ${doc.current_classe}`);
       }
 
-      // Retirer l'élève de l'ancienne classe (Désactivé pour garder l'historique des effectifs par année)
-      /* 
+      // 2. Retirer l'élève de l'ancienne classe
       if (this._original?.current_classe && this._original.current_classe !== doc.current_classe) {
-        await mongoose.model('ai_Ecole_St_Martin')
-          .findByIdAndUpdate(this._original.current_classe, {
-            $pull: { eleves: doc._id }
-          })
-        console.log(`✅ Élève ${doc._id} retiré de l'ancienne classe ${this._original.current_classe}`)
+        await ClasseModel.findByIdAndUpdate(this._original.current_classe, {
+          $pull: { eleves: doc._id }
+        });
+        console.log(`✅ Élève ${doc._id} retiré de l'ancienne classe ${this._original.current_classe}`);
       }
-      */
     } catch (error) {
-      console.error('❌ Erreur lors de la synchronisation des classes pour élève:', error)
+      console.error('❌ Erreur lors de la synchronisation des classes pour élève:', error);
     }
   } else {
-    console.log('⚠️ DEBUG: current_classe non modifiée, middleware ignoré')
+    console.log('⚠️ DEBUG: current_classe non modifiée, middleware ignoré');
   }
   next()
 })

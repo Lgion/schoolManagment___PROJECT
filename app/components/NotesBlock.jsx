@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useMemo, useContext } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 
-export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubjects = [] }) {
+export default function NotesBlock({ eleves, classeId, isCurrentYear, annee, allSubjects = [] }) {
   const ctx = useContext(AiAdminContext);
   const [selectedComposition, setSelectedComposition] = useState('latest');
   const [sortBy, setSortBy] = useState('note'); // 'note', 'nom', 'moyenne'
@@ -27,14 +27,17 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, allSubject
     }).filter(Boolean); // Supprimer les undefined
   }, [eleves, ctx.eleves]);
 
-  // Extraire toutes les compositions de tous les élèves (nouvelle structure)
+  // Extraire toutes les compositions de tous les élèves filtrées par année
   const allCompositions = useMemo(() => {
     const compositions = new Map();
 
     elevesComplets.forEach(eleve => {
       if (!eleve.compositions) return;
 
-      Object.entries(eleve.compositions).forEach(([annee, trimestres]) => {
+      Object.entries(eleve.compositions).forEach(([year, trimestres]) => {
+        // Appliquer le filtre de l'année si fourni (ex: '2023-2024')
+        if (annee && year !== annee) return;
+        
         if (!Array.isArray(trimestres)) return;
 
         trimestres.forEach((trimestre, trimestreIndex) => {

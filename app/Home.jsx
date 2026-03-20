@@ -517,49 +517,7 @@ export default ({ children }) => {
 
         {children}
 
-        <style jsx>{`
-          .ecole-admin__birthday-banner {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
-            animation: slideInDown 0.5s ease-out;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-          }
-          .ecole-admin__birthday-icon {
-            font-size: 1.8rem;
-          }
-          .ecole-admin__birthday-text {
-            color: #d84315;
-            font-weight: 500;
-            margin: 0;
-            font-size: 1.1rem;
-          }
-          .ecole-admin__birthday-link {
-            color: #bf360c;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: inline-block;
-            padding: 2px 4px;
-            border-radius: 4px;
-          }
-          .ecole-admin__birthday-link:hover {
-            background: rgba(255, 255, 255, 0.4);
-            color: #e64a19;
-            transform: translateY(-1px);
-          }
-          .ecole-admin__birthday-link strong {
-            font-weight: 800;
-          }
-          @keyframes slideInDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-          }
-        `}</style>
+
       </main>
     </>
     {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}

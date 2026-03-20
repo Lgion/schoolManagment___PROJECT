@@ -54,6 +54,26 @@ export default function AdministrationPage() {
         return [];
     }, [activeTab, searchQuery, eleves, enseignants, classes]);
 
+    const handleMigrateYear = async () => {
+        if (!confirm('⚠️ ATTENTION : Êtes-vous sûr de vouloir migrer TOUTES les classes à l\'année scolaire suivante ?\n\nCette action va :\n1. Archiver les élèves actuels dans l\'historique de chaque classe.\n2. Vider la liste des élèves pour la nouvelle année.\n3. Retirer les professeurs principaux.\n4. Mettre à jour l\'année scolaire (ex: 2024-2025 -> 2025-2026).')) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/school_ai/admin/migrate', { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Erreur lors de la migration');
+            }
+            const data = await res.json();
+            alert(`✅ Succès : ${data.message}`);
+            fetchClasses(); // Recharger les classes
+        } catch (error) {
+            console.error('Erreur migration:', error);
+            alert(`❌ Erreur : ${error.message}`);
+        }
+    };
+
     const handleEdit = (item, type) => {
         setSelected(item);
         setEditType(type);
@@ -103,7 +123,7 @@ export default function AdministrationPage() {
 
                     <div className="admin-page__top-actions">
                         <div className="admin-page__schoolConfigs">
-                            <button 
+                            <button
                                 className={`admin-page__config-btn ${activeTab === 'fees' ? '--active' : ''}`}
                                 onClick={() => setActiveTab('fees')}
                             >
@@ -135,6 +155,13 @@ export default function AdministrationPage() {
 
                     {activeTab !== 'fees' && (
                         <div className="admin-page__controls">
+
+                            <button
+                                className="admin-page__config-btn --migrate"
+                                onClick={handleMigrateYear}
+                            >
+                                🚀 Migrer l'Année Scolaire
+                            </button>
                             <div className="admin-page__search-wrapper">
                                 <input
                                     type="text"
@@ -251,247 +278,6 @@ export default function AdministrationPage() {
                     )}
                 </main>
 
-                <style jsx>{`
-                    .admin-page {
-                        padding: 2rem;
-                        max-width: 1400px;
-                        margin: 0 auto;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .admin-page__header-top {
-                        display: flex;
-                        align-items: center;
-                        gap: 2rem;
-                        margin-bottom: 2rem;
-                    }
-                    .admin-page__back {
-                        text-decoration: none;
-                        color: #666;
-                        font-weight: 500;
-                    }
-                    .admin-page__title {
-                        font-size: 2rem;
-                        color: #1E3A8A;
-                        margin: 0;
-                        font-weight: 700;
-                    }
-                    .admin-page__stats-row {
-                        display: flex;
-                        gap: 1.5rem;
-                        margin-bottom: 2rem;
-                    }
-                    .admin-page__top-actions {
-                        display: flex;
-                        justify-content: flex-end;
-                        margin-bottom: 1rem;
-                    }
-                    .admin-page__schoolConfigs {
-                        display: flex;
-                        gap: 1rem;
-                    }
-                    .admin-page__config-btn {
-                        background: #f8f9fa;
-                        border: 1px solid #ddd;
-                        padding: 0.6rem 1.2rem;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        color: #1E3A8A;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        display: flex;
-                        align-items: center;
-                        gap: 0.5rem;
-                    }
-                    .admin-page__config-btn:hover {
-                        background: #eee;
-                        transform: translateY(-1px);
-                    }
-                    .admin-page__config-btn.--active {
-                        background: #1E3A8A;
-                        color: white !important;
-                        border-color: #1E3A8A;
-                    }
-                    .admin-page__stat-card {
-                        background: white;
-                        padding: 1.5rem;
-                        border-radius: 12px;
-                        display: flex;
-                        align-items: center;
-                        gap: 1rem;
-                        flex: 1;
-                        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-                        border: 1px solid #f0f0f0;
-                    }
-                    .admin-page__stat-icon {
-                        font-size: 2rem;
-                        background: #f8f9fa;
-                        width: 50px;
-                        height: 50px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        border-radius: 10px;
-                    }
-                    .admin-page__stat-value {
-                        display: block;
-                        font-size: 1.5rem;
-                        font-weight: 700;
-                        color: #2c3e50;
-                    }
-                    .admin-page__stat-label {
-                        color: #7f8c8d;
-                        font-size: 0.9rem;
-                    }
-                    .admin-page__tabs {
-                        display: flex;
-                        gap: 1rem;
-                        margin-bottom: 2rem;
-                        border-bottom: 2px solid #eee;
-                        padding-bottom: 0.5rem;
-                    }
-                    .admin-page__tab-btn {
-                        background: none;
-                        border: none;
-                        padding: 0.8rem 1.5rem;
-                        font-size: 1.1rem;
-                        font-weight: 600;
-                        color: #95a5a6;
-                        cursor: pointer;
-                        position: relative;
-                        transition: all 0.3s;
-                    }
-                    .admin-page__tab-btn.--active {
-                        color: #1E3A8A;
-                    }
-                    .admin-page__tab-btn.--active::after {
-                        content: '';
-                        position: absolute;
-                        bottom: -0.7rem;
-                        left: 0;
-                        right: 0;
-                        height: 3px;
-                        background: #F97316;
-                        border-radius: 3px;
-                    }
-                    .admin-page__controls {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 1.5rem;
-                        gap: 1rem;
-                    }
-                    .admin-page__search-wrapper {
-                        flex: 1;
-                        max-width: 500px;
-                    }
-                    .admin-page__search-input {
-                        width: 100%;
-                        padding: 0.8rem 1.2rem;
-                        border-radius: 8px;
-                        border: 1px solid #ddd;
-                        font-size: 1rem;
-                    }
-                    .admin-page__add-btn {
-                        background: #F97316;
-                        color: white;
-                        border: none;
-                        padding: 0.8rem 1.5rem;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                    }
-                    .admin-page__add-btn:hover {
-                        background: #ea580c;
-                        transform: translateY(-2px);
-                        box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
-                    }
-                    .admin-page__table-container {
-                        background: white;
-                        border-radius: 12px;
-                        overflow: hidden;
-                        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-                        border: 1px solid #eee;
-                    }
-                    .admin-page__table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        text-align: left;
-                    }
-                    .admin-page__table th {
-                        background: #f8f9fa;
-                        padding: 1.2rem;
-                        font-weight: 600;
-                        color: #1E3A8A;
-                        border-bottom: 2px solid #eee;
-                    }
-                    .admin-page__table td {
-                        padding: 1.2rem;
-                        border-bottom: 1px solid #f0f0f0;
-                        vertical-align: middle;
-                        color: #2c3e50; /* Force dark text color */
-                    }
-                    .admin-page__item-identity strong {
-                        color: #1E3A8A;
-                        display: block;
-                        font-size: 1.05rem;
-                    }
-                    .admin-page__item-identity {
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    .admin-page__item-id {
-                        font-size: 0.75rem;
-                        color: #95a5a6;
-                        font-family: monospace;
-                    }
-                    .admin-page__item-contact {
-                        font-size: 0.9rem;
-                    }
-                    .admin-page__item-contact .--phone {
-                        color: #7f8c8d;
-                        margin-top: 0.2rem;
-                    }
-                    .admin-page__actions {
-                        display: flex;
-                        gap: 0.8rem;
-                    }
-                    .admin-page__action-btn {
-                        padding: 0.5rem 1rem;
-                        border-radius: 6px;
-                        font-size: 0.85rem;
-                        font-weight: 600;
-                        cursor: pointer;
-                        text-decoration: none;
-                        display: inline-block;
-                        transition: all 0.2s;
-                    }
-                    .admin-page__action-btn.--edit {
-                        background: white;
-                        color: #1E3A8A;
-                        border: 1px solid #1E3A8A;
-                    }
-                    .admin-page__action-btn.--view {
-                        background: #f8f9fa;
-                        color: #4b5563;
-                        border: 1px solid #ddd;
-                    }
-                    .admin-page__action-btn:hover {
-                        opacity: 0.8;
-                    }
-                    .admin-page__empty {
-                        text-align: center;
-                        padding: 3rem;
-                        color: #95a5a6;
-                        font-style: italic;
-                    }
-                    .admin-page__loading, .admin-page__denied {
-                        padding: 5rem;
-                        text-align: center;
-                        font-size: 1.2rem;
-                        color: #666;
-                    }
-                `}</style>
             </div>
         </PermissionGate>
     );

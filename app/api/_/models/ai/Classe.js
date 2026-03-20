@@ -11,32 +11,29 @@ const classeSchema = mongoose.Schema({
   niveau: { default: "", type: String, required: true },
   alias: { default: "", type: String, required: true },
   photo: { default: "/school/classe.webp", type: String, required: false },
-  // photo: {
-  //   data: Buffer,
-  //   contentType: String,
-  // },
+  
   homework: { default: {}, type: Object, required: false },
-  // absences: { default: {}, type: Object, required: true },
   compositions: { default: [], type: Array, required: false },
   coefficients: {
     default: {},
     type: Object,
     required: false,
-    // Structure: {"0": 4, "1": 4, "2": 3, "3": 1} où les clés sont les indices des matières
   },
   moyenne_trimetriel: {
-    default: ["", "", ""], type: [String],
+    default: ["", "", ""], 
+    type: [String],
     validate: {
-      validator: function (eleves) {
-        return eleves.length === 3;
+      validator: function (val) {
+        return val.length === 3;
       },
-      message: 'Le champ "eleves" doit contenir exactement 3 valeurs.',
+      message: 'Le champ "moyenne_trimetriel" doit contenir exactement 3 valeurs.',
     },
   },
   commentaires: { default: [], type: [Object], required: false },
   schedules: [{ type: ObjectId, ref: 'Schedule' }],
   currentScheduleId: { type: ObjectId, ref: 'Schedule' },
   createdAt: { default: +new Date(), type: String },
+  
   // Objet Cloudinary pour les images optimisées
   cloudinary: {
     type: Object,
@@ -46,15 +43,15 @@ const classeSchema = mongoose.Schema({
   reports: {
     type: [Object],
     default: [],
-    /**
-     * Structure: {
-     *   teacherId: ObjectId,
-     *   teacherName: String,
-     *   content: String,
-     *   createdAt: Date
-     * }
-     */
+  },
+  // Nouveau champ historique pour stocker les captures des années précédentes
+  history: {
+    type: [Object],
+    default: [],
   }
+}, {
+  toJSON: { getters: true },
+  toObject: { getters: true }
 })
 
 // Middleware pour nettoyer les références dans les élèves et enseignants lors de la suppression d'une classe
@@ -93,6 +90,5 @@ let model
 if (!mongoose.modelNames().includes("ai_Ecole_St_Martin"))
   model = mongoose.model('ai_Ecole_St_Martin', classeSchema)
 else model = mongoose.model("ai_Ecole_St_Martin")
-// console.log("model classe");
-// console.log(model);
+
 module.exports = model

@@ -16,18 +16,18 @@ export default function CTA() {
     }
 
     useEffect(() => {
-        const tmp = document.querySelectorAll('.CTA>section>ul>li>a')
-        setLinksList(tmp)
-        // setLinksList(() => tmp)
-    }, [])
+        const tmp = document.querySelectorAll('.CTA>section>ul>li>a');
+        setLinksList(tmp);
+    }, []);
 
     useEffect(() => {
-        // console.log('zzzzzzzzzzzzzzzzz')
-        console.log(linksList)
-        if(linksList.length)
-            sto = setInterval(() => {handleTimeout(linksList,"dans useEffetc")}, 3000)
-        else console.log("waiting ...because linksList is empty")
-    }, [linksList])
+        if (linksList.length > 0) {
+            const interval = setInterval(() => {
+                handleTimeout(linksList, "dans useEffect");
+            }, 3000);
+            return () => clearInterval(interval);
+        }
+    }, [linksList]);
 
     return (
         <article className='CTA'>

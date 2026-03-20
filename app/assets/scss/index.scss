@@ -25,6 +25,8 @@
 @use 'components/MODALS/entityModal.scss';
 @use 'components/MODALS/detailModal.scss';
 @use 'components/MODALS/reviewModal.scss';
+@use 'pages/home.scss';
+@use 'pages/administration.scss';
 
 // Variables individuelles extraites des maps pour compatibilité
 $font-primary: $primaryFont;
@@ -2908,8 +2910,7 @@ section>div:has(.modal) {
           background: silver;
           padding: 1em;
 
-          >button {}
-        }
+                }
       }
     }
   }

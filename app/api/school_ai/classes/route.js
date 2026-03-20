@@ -58,7 +58,7 @@ export async function POST(request) {
     if (!body.annee || !body.niveau || !body.alias) {
       return NextResponse.json({ error: 'Données invalides : champs requis manquants.' }, { status: 400 });
     }
-    if (!/^\d{4}-\d{4}$/.test(body.annee)) {
+    if (typeof body.annee === 'string' && !/^\d{4}-\d{4}$/.test(body.annee)) {
       return NextResponse.json({ error: 'Format d\'année invalide (attendu: YYYY-YYYY).' }, { status: 400 });
     }
     console.log('📝 POST /api/school_ai/classes - Body reçu:', body);
@@ -84,7 +84,7 @@ export async function PUT(request) {
     if (!body._id) {
       return NextResponse.json({ error: 'L\'ID de la classe est requis pour la mise à jour.' }, { status: 400 });
     }
-    if (body.annee && !/^\d{4}-\d{4}$/.test(body.annee)) {
+    if (body.annee && typeof body.annee === 'string' && !/^\d{4}-\d{4}$/.test(body.annee)) {
       return NextResponse.json({ error: 'Format d\'année invalide (attendu: YYYY-YYYY).' }, { status: 400 });
     }
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useState, useMemo, useCallback, useEffect } from 'react';
 import { getLSItem, setLSItem, clearLS } from '../utils/localStorageManager';
 
 export const AiAdminContext = createContext({});
@@ -10,6 +10,7 @@ export const AdminContextProvider = ({ children }) => {
   const [eleves, setEleves] = useState([]);
   const [enseignants, setEnseignants] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [classesLoaded, setClassesLoaded] = useState(false);
   const [selected, setSelected] = useState(null);
   const [editType, setEditType] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -354,6 +355,7 @@ export const AdminContextProvider = ({ children }) => {
         setClasses([]);
       }
     }
+    setClassesLoaded(true);
   }, []);
 
   const saveClasse = useCallback(async (data) => {
@@ -543,32 +545,43 @@ export const AdminContextProvider = ({ children }) => {
   }, [])
   // --- AUTO FETCH AU MONTAGE ---
   useEffect(() => {
-    if (classes.length === 0) fetchClasses();
-    if (dynamicSubjects.length === 0) fetchSubjects();
+    if (!classesLoaded) fetchClasses();
+    if (!subjectsLoaded) fetchSubjects();
     if (!feeDefinitionsLoaded || !targetDefinitionsLoaded) fetchSchoolSettings();
-  }, [classes.length, fetchClasses, dynamicSubjects.length, fetchSubjects, feeDefinitionsLoaded, targetDefinitionsLoaded, fetchSchoolSettings]);
+  }, [classesLoaded, fetchClasses, subjectsLoaded, fetchSubjects, feeDefinitionsLoaded, targetDefinitionsLoaded, fetchSchoolSettings]);
 
 
 
 
 
 
+
+  const contextValue = useMemo(() => ({
+    eleves, fetchEleves, saveEleve, deleteEleve,
+    saveEleveNotes, saveEleveAbsences,
+    enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
+    classes, fetchClasses, saveClasse, deleteClasse,
+    dynamicSubjects, fetchSubjects, subjectsLoaded,
+    feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
+    targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
+    resolveTargetAmount,
+    uploadFile,
+    selected, setSelected, showModal, setShowModal, editType, setEditType
+  }), [
+    eleves, fetchEleves, saveEleve, deleteEleve,
+    saveEleveNotes, saveEleveAbsences,
+    enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
+    classes, fetchClasses, saveClasse, deleteClasse,
+    dynamicSubjects, fetchSubjects, subjectsLoaded,
+    feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
+    targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
+    resolveTargetAmount,
+    uploadFile,
+    selected, showModal, editType
+  ]);
 
   return (
-    <AiAdminContext.Provider
-      value={{
-        eleves, fetchEleves, saveEleve, deleteEleve,
-        saveEleveNotes, saveEleveAbsences,
-        enseignants, fetchEnseignants, saveEnseignant, deleteEnseignant,
-        classes, fetchClasses, saveClasse, deleteClasse,
-        dynamicSubjects, fetchSubjects, subjectsLoaded,
-        feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
-        targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
-        resolveTargetAmount,
-        uploadFile,
-        selected, setSelected, showModal, setShowModal, editType, setEditType
-      }}
-    >
+    <AiAdminContext.Provider value={contextValue}>
       {children}
     </AiAdminContext.Provider>
   );

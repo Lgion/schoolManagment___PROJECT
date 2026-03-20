@@ -66,8 +66,8 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
             <span className="detailModal__titleIcon">{icon}</span>
             <span className="detailModal__titleFullName">{title}</span>
           </h2>
-          
-          {/* Contrôles personnalisés du header */}
+
+          {/* Contrôles personnalisés du header (ex: sélecteur d'année) */}
           {headerControls && (
             <div className="detailModal__headerControls">
               {headerControls}

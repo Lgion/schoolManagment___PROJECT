@@ -97,6 +97,32 @@
     position: absolute;
     bottom: .25em;
   }
+
+  &__titleScolarityYear {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-family: var(--font-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    margin-left: 0.5rem;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    option {
+      background: var(--color-primary);
+      color: white;
+    }
+  }
+
   &__titleIcon {
     font-size: 2rem;
     

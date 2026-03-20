@@ -1,0 +1,297 @@
+@use '../variables' as *;
+
+.admin-page {
+    padding: 2rem;
+    max-width: 1400px;
+    width: calc(100% - 4rem);
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+
+    &__header-top {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    &__back {
+        text-decoration: none;
+        color: #666;
+        font-weight: 500;
+    }
+
+    &__title {
+        font-size: 2rem;
+        color: #1E3A8A;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    &__stats-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        overflow: scroll;
+        border: 1px solid white;
+        box-shadow: 0 0 5px 1px inset black;
+        padding: .5em;
+    }
+
+    &__top-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+    }
+
+    &__schoolConfigs {
+        display: flex;
+        gap: 1rem;
+    }
+
+    &__config-btn {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #1E3A8A;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &:hover {
+            background: #eee;
+            transform: translateY(-1px);
+        }
+
+        &.--active {
+            background: #1E3A8A;
+            color: white !important;
+            border-color: #1E3A8A;
+        }
+
+        &.--migrate {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+
+            &:hover {
+                background: #fee2e2;
+                border-color: #fca5a5;
+            }
+        }
+    }
+
+    &__stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f0f0f0;
+    }
+
+    &__stat-icon {
+        font-size: 2rem;
+        background: #f8f9fa;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+    }
+
+    &__stat-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    &__stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    &__tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+        overflow: scroll;
+    }
+
+    &__tab-btn {
+        background: none;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #95a5a6;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s;
+
+        &.--active {
+            color: #1E3A8A;
+
+            &::after {
+                content: '';
+                position: absolute;
+                bottom: -0.7rem;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: #F97316;
+                border-radius: 3px;
+            }
+        }
+    }
+
+    &__controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    &__search-wrapper {
+        flex: 1;
+        max-width: 500px;
+    }
+
+    &__search-input {
+        width: 100%;
+        padding: 0.8rem 1.2rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+    }
+
+    &__add-btn {
+        background: #F97316;
+        color: white;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(249, 115, 22, 0.2);
+        }
+    }
+
+    &__table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+
+        th {
+            background: #f8f9fa;
+            padding: 1.2rem;
+            font-weight: 600;
+            color: #1E3A8A;
+            border-bottom: 2px solid #eee;
+        }
+
+        td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+            color: #2c3e50;
+        }
+    }
+
+    &__item-identity {
+        display: flex;
+        flex-direction: column;
+
+        strong {
+            color: #1E3A8A;
+            display: block;
+            font-size: 1.05rem;
+        }
+    }
+
+    &__item-id {
+        font-size: 0.75rem;
+        color: #95a5a6;
+        font-family: monospace;
+    }
+
+    &__item-contact {
+        font-size: 0.9rem;
+
+        .--phone {
+            color: #7f8c8d;
+            margin-top: 0.2rem;
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: 0.8rem;
+    }
+
+    &__action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s;
+
+        &.--edit {
+            background: white;
+            color: #1E3A8A;
+            border: 1px solid #1E3A8A;
+        }
+
+        &.--view {
+            background: #f8f9fa;
+            color: #4b5563;
+            border: 1px solid #ddd;
+        }
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+
+    &__empty {
+        text-align: center;
+        padding: 3rem;
+        color: #95a5a6;
+        font-style: italic;
+    }
+
+    &__loading,
+    &__denied {
+        padding: 5rem;
+        text-align: center;
+        font-size: 1.2rem;
+        color: #666;
+    }
+}

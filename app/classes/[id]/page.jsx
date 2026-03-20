@@ -58,34 +58,66 @@ export default function ClasseDetailPage() {
   const { setSelected, showModal, setShowModal, setEditType } = ctx || {};
   const classe = useMemo(() => (ctx?.classes || []).find(c => String(c._id) === String(id)), [ctx?.classes, id]);
 
-  const currentYear = new Date().getFullYear();
-  const currentSchoolYear = (new Date().getMonth() + 1) < 7
-    ? `${currentYear - 1}-${currentYear}`
-    : `${currentYear}-${currentYear + 1}`;
+  const [selectedYear, setSelectedYear] = useState("");
 
-  const isCurrentYear = classe?.annee === currentSchoolYear;
+  // Initialisation de l'année sélectionnée
+  useEffect(() => {
+    if (classe && !selectedYear) {
+      setSelectedYear(classe.annee);
+    }
+  }, [classe]);
+
+  const historyOptions = useMemo(() => {
+    if (!classe) return [];
+    return [classe.annee, ...(classe.history || []).map(h => h.annee)];
+  }, [classe]);
+
+  const currentData = useMemo(() => {
+    if (!classe) return null;
+    if (selectedYear === classe.annee) return classe;
+    return (classe.history || []).find(h => h.annee === selectedYear) || classe;
+  }, [classe, selectedYear]);
+
+  const isViewCurrentYear = !classe || selectedYear === classe.annee;
 
   const eleves = useMemo(() => {
-    if (!classe) return [];
-    return isCurrentYear
-      ? (ctx?.eleves || []).filter(e => e.current_classe === classe._id)
-      : (classe.eleves || []);
-  }, [isCurrentYear, ctx?.eleves, classe]);
+    if (!currentData) return [];
+    return isViewCurrentYear
+      ? (ctx?.eleves || []).filter(e => e.current_classe === id)
+      : (currentData.eleves || []);
+  }, [isViewCurrentYear, ctx?.eleves, currentData, id]);
 
   const enseignants = useMemo(() => {
-    if (!classe) return [];
-    return isCurrentYear
+    if (!currentData) return [];
+    return isViewCurrentYear
       ? (ctx?.enseignants || []).filter(e =>
-        Array.isArray(e.current_classes) && e.current_classes.includes(classe._id)
+        Array.isArray(e.current_classes) && e.current_classes.includes(id)
       )
-      : (classe.professeur || []);
-  }, [isCurrentYear, ctx?.enseignants, classe]);
+      : (currentData.professeur || []);
+  }, [isViewCurrentYear, ctx?.enseignants, currentData, id]);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   if (!classe) return <div style={{ color: 'red' }}>Classe introuvable</div>;
+  if (!currentData) return <div>Chargement...</div>;
 
-  // Déterminer s'il y a des coefficients définis
-  const hasCoefficients = classe.coefficients && Object.keys(classe.coefficients).length > 0;
+  const hasCoefficients = currentData.coefficients && Object.keys(currentData.coefficients).length > 0;
+
+  const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
+
+  const yearSelect = historyOptions.length > 1 ? (
+    <select 
+      className="detailModal__titleScolarityYear"
+      value={selectedYear}
+      onChange={(e) => setSelectedYear(e.target.value)}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {historyOptions.map(yr => (
+        <option key={yr} value={yr}>{yr}</option>
+      ))}
+    </select>
+  ) : (
+    <span className="detailModal__titleScolarityYear">{classe.annee}</span>
+  );
 
   const scrollToEdit = (e) => {
     e.preventDefault();
@@ -95,23 +127,20 @@ export default function ClasseDetailPage() {
     setTimeout(() => setHighlightEdit(false), 3000);
   };
 
-
-
-  const onEdit = e => { setSelected(e); setEditType("classe"); setShowModal(true); }
-
   return !classe ? <div>....loading.....</div>
     :
     <DetailPortal
       isOpen={true}
       onClose={() => router.back()}
-      title={`Classe ${classe.niveau} ${classe.alias} (${classe.annee})`}
+      title={`${classe.niveau} ${classe.alias}`}
       icon={"🏦"}
       reduced={[isReduced, setIsReduced]}
+      headerControls={yearSelect}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
         <PermissionGate roles={['admin', 'prof']}>
-          {onEdit && !showModal && (
+          {onEdit && !showModal && isViewCurrentYear && (
             <button
-              ref={editBtnRef}
+               ref={editBtnRef}
               type="button"
               className={`person-detail__editbtn ${highlightEdit ? '--highlight' : ''}`}
               onClick={e => {
@@ -137,14 +166,14 @@ export default function ClasseDetailPage() {
                 </Link>
               </h1>
               <p className="person-detail__subtitle-text">
-                Année scolaire {classe.annee}
+                Année scolaire {currentData.annee}
               </p>
             </div>
             <div className="person-detail__header-image">
               <img
                 className="person-detail__photo"
-                src={getClasseImagePath(classe)}
-                alt={`${classe.niveau} ${classe.alias} - ${classe.annee}`}
+                src={getClasseImagePath(currentData)}
+                alt={`${classe.niveau} ${classe.alias} - ${currentData.annee}`}
                 onError={(e) => {
                   e.target.src = '/school/classe.webp';
                 }}
@@ -188,13 +217,15 @@ export default function ClasseDetailPage() {
             <span className="person-detail__subtitle-icon">👨‍🎓</span>
             Liste des élèves
             <PermissionGate roles={['admin', 'prof']}>
-              <button
-                className="person-detail__addBtn"
-                onClick={() => setShowAddStudentsModal(true)}
-                title="Ajouter des élèves à cette classe"
-              >
-                + Ajouter
-              </button>
+              {isViewCurrentYear && (
+                <button
+                  className="person-detail__addBtn"
+                  onClick={() => setShowAddStudentsModal(true)}
+                  title="Ajouter des élèves à cette classe"
+                >
+                  + Ajouter
+                </button>
+              )}
             </PermissionGate>
           </h2>
           {eleves.length === 0 ? (
@@ -288,7 +319,8 @@ export default function ClasseDetailPage() {
           <NotesBlock
             eleves={eleves}
             classeId={classe._id}
-            isCurrentYear={isCurrentYear}
+            isCurrentYear={isViewCurrentYear}
+            annee={currentData.annee}
             allSubjects={dynamicSubjects}
           />
           {/* Saisie manuelle des notes — Story 1.4 */}
@@ -320,7 +352,7 @@ export default function ClasseDetailPage() {
                   subjects={dynamicSubjects}
                   label="Scanner Notes IA"
                   className="--compact"
-                  disabled={!hasCoefficients}
+                  disabled={!hasCoefficients || !isViewCurrentYear}
                   title={!hasCoefficients ? "Veuillez définir les coefficients de la classe avant de scanner des notes (cliquez sur 'Définir maintenant')" : "Scanner une liste de notes avec l'IA"}
                   onScanComplete={(result) => {
                     console.log('Scan completed', result);
@@ -345,7 +377,7 @@ export default function ClasseDetailPage() {
                     extractedData={scanResult.data}
                     students={eleves}
                     subjects={dynamicSubjects}
-                    coefficients={classe.coefficients || {}}
+                    coefficients={currentData.coefficients || {}}
                     onClose={() => setScanResult(null)}
                     onValidate={(data) => {
                       console.log("Validation en cours avec les données:", data);
@@ -359,8 +391,8 @@ export default function ClasseDetailPage() {
               <NotesEntryBlock
                 eleves={eleves}
                 classeId={classe._id}
-                isCurrentYear={isCurrentYear}
-                coefficients={classe.coefficients || {}}
+                isCurrentYear={isViewCurrentYear}
+                coefficients={currentData.coefficients || {}}
                 prefilledData={validatedScannedData}
                 allSubjects={dynamicSubjects}
               />
