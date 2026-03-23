@@ -32,7 +32,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, annee, all
     const compositions = new Map();
 
     elevesComplets.forEach(eleve => {
-      if (!eleve.compositions) return;
+      if (!eleve || !eleve.compositions || typeof eleve.compositions !== 'object') return;
 
       Object.entries(eleve.compositions).forEach(([year, trimestres]) => {
         // Appliquer le filtre de l'année si fourni (ex: '2023-2024')
@@ -119,7 +119,7 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, annee, all
 
     // Parcourir tous les élèves pour extraire les coefficients
     elevesComplets.forEach(eleve => {
-      if (!eleve.compositions) return;
+      if (!eleve || !eleve.compositions || typeof eleve.compositions !== 'object') return;
 
       Object.entries(eleve.compositions).forEach(([annee, trimestres]) => {
         if (!Array.isArray(trimestres)) return;

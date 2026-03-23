@@ -46,7 +46,40 @@ export async function authWithFallback(request, context = 'API') {
     }
     
     // ÉTAPE 3: Validation finale
-    if (!userId || authStatus !== 'signed-in') {
+    let forceFalsy = false;
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      forceFalsy = cookieStore.get('force_falsy')?.value === 'true';
+    } catch(e) {
+      // Ignore if called without proper Next.js request context
+    }
+
+    // Bypass strict de sécurité : Un administrateur ne DOIT JAMAIS subir le mode Falsy
+    if (userId && authStatus === 'signed-in') {
+      const { currentUser } = await import('@clerk/nextjs/server');
+      const user = await currentUser();
+      const email = user?.primaryEmailAddress?.emailAddress;
+      const isAdminEmail = email && process.env.NEXT_PUBLIC_EMAIL_ADMIN && process.env.NEXT_PUBLIC_EMAIL_ADMIN.includes(email);
+      
+      if (isAdminEmail) {
+        forceFalsy = false; // L'Admin écrase le cookie falsy
+      } else {
+        forceFalsy = true;  // Visiteur non-admin
+      }
+    }
+
+    if (forceFalsy || !userId || authStatus !== 'signed-in') {
+      // DÉTECTION DU MODE FALSY (non authentifié ou forcé côté client/serveur)
+      if (forceFalsy || !userId) {
+        console.log('⚠️ Passage en MODE FALSY (Forcé ou non-authentifié)');
+        return {
+          success: true,
+          userId: 'user_fake_admin_123', // Correspond à l'admin créé dans la base Sample
+          response: null
+        }
+      }
+
       console.log('❌ Utilisateur non authentifié')
       console.log('  - userId final:', userId)
       console.log('  - authStatus:', authStatus)

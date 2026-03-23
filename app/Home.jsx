@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link';
-import { useContext, useEffect, Fragment, useMemo } from 'react';
+import { useContext, useEffect, useState, Fragment, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { AiAdminContext } from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
@@ -14,7 +14,9 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
+import LandingPage from './components/LandingPage';
 import { clearLS, setLSItem, initStorage } from '../utils/localStorageManager';
+import { useAuth } from '@clerk/nextjs';
 
 export default ({ children }) => {
   const router = useRouter();
@@ -40,6 +42,10 @@ export default ({ children }) => {
     clerkUser,
     syncUser
   } = useUserRole();
+
+  const { isSignedIn } = useAuth();
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Fonction pour gérer la navigation avec scroll automatique
   const handleNavClick = (path) => {
@@ -158,6 +164,17 @@ export default ({ children }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    // Re-évaluer le mode démo à chaque changement d'état d'authentification
+    // Le mode démo est déclenché EXPLICITEMENT par un clic sur la Landing Page (cookie is_landing_demo)
+    setIsDemoMode(document.cookie.includes('is_landing_demo=true'));
+    setMounted(true);
+  }, [isSignedIn]);
+
+  if (mounted && !isSignedIn && !isDemoMode) {
+    return <LandingPage />;
+  }
 
   return <>
     <>
@@ -497,10 +514,16 @@ export default ({ children }) => {
               {birthdayCelebrants.map((person, idx) => (
                 <Fragment key={person.id}>
                   {idx > 0 && idx === birthdayCelebrants.length - 1 ? ' et ' : idx > 0 ? ', ' : ''}
-                  <Link href={person.path} className="ecole-admin__birthday-link">
-                    {person.role} <strong>{person.name}</strong>
-                    {person.className && <Link href={"/classes/" + person.classId}>Classe: ${person.className}</Link>}
-                  </Link>
+                  <span className="ecole-admin__birthday-link-container">
+                    <Link href={person.path} className="ecole-admin__birthday-link">
+                      {person.role} <strong>{person.name}</strong>
+                    </Link>
+                    {person.className && (
+                      <span className="ecole-admin__birthday-class-link">
+                         - <Link href={"/classes/" + person.classId}>Classe: {person.className}</Link>
+                      </span>
+                    )}
+                  </span>
                 </Fragment>
               ))}
             </div>

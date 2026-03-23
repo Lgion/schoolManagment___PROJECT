@@ -331,8 +331,8 @@ export default function ClasseDetailPage() {
                   <span className="person-detail__subtitle-icon">✏️</span>
                   {hasCoefficients ? (
                     <div className="person-detail__coefficients-list" title="Coefficients configurés pour cette classe">
-                      {Object.entries(classe.coefficients).map(([subId, coeff]) => {
-                        const sub = dynamicSubjects.find(s => s.id === subId);
+                      {Object.entries(currentData.coefficients || {}).map(([subId, coeff]) => {
+                        const sub = dynamicSubjects.find(s => s.id === subId || s._id === subId);
                         return (
                           <span key={subId} className="person-detail__coeff-tag">
                             {sub ? sub.nom : `Mat. ${subId.slice(-4)}`}: <b>{coeff}</b>

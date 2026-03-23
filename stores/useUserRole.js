@@ -71,7 +71,22 @@ export function UserRoleProvider({ children }) {
         return;
       }
 
-      if (!isLoaded || !clerkUser) {
+      if (!isLoaded) {
+        return;
+      }
+      
+      if (!clerkUser) {
+        // Mode FALSY (Démo sans compte)
+        const falsyRole = 'admin';
+        setUserData({ 
+          id: 'falsy_admin', 
+          firstName: 'Guest', 
+          lastName: 'Sample', 
+          email: 'guest@sample.demo', 
+          role: falsyRole 
+        });
+        setUserRole(falsyRole);
+        setPermissions(getPermissionsByRole(falsyRole));
         setLoading(false);
         return;
       }

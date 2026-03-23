@@ -1,0 +1,104 @@
+[
+  {
+    "_id": "69beb5762d36e4b8ca59b0ef",
+    "nom": "DUPONT",
+    "prenoms": [
+      "Arsinoé"
+    ],
+    "naissance_$_date": 387616525605,
+    "adresse_$_map": "Tours",
+    "photo_$_file": "https://i.pravatar.cc/150?u=6c67bbc0-6d9b-43e2-9ed9-7c01345cf7ed",
+    "phone_$_tel": "+33 680920882",
+    "email_$_email": "Lothaire_Remy@gmail.com",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0f5",
+      "69beb5762d36e4b8ca59b0fb",
+      "69beb5762d36e4b8ca59b101"
+    ]
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f0",
+    "nom": "DURAND",
+    "prenoms": [
+      "Gui"
+    ],
+    "naissance_$_date": 578615372732,
+    "adresse_$_map": "Pessac",
+    "photo_$_file": "https://i.pravatar.cc/150?u=9eea7810-2bdf-4014-9931-9e235154ca19",
+    "phone_$_tel": "0707031260",
+    "email_$_email": "Ariel16@hotmail.fr",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0f6",
+      "69beb5762d36e4b8ca59b0fc",
+      "69beb5762d36e4b8ca59b102"
+    ]
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f1",
+    "nom": "LECLERCQ",
+    "prenoms": [
+      "Cyriaque"
+    ],
+    "naissance_$_date": 742566634909,
+    "adresse_$_map": "Villeneuve-d'Ascq",
+    "photo_$_file": "https://i.pravatar.cc/150?u=d7693fc4-4a8f-4e15-aa81-d87eb70ed2b4",
+    "phone_$_tel": "0268793079",
+    "email_$_email": "Oury_Rey@gmail.com",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0f7",
+      "69beb5762d36e4b8ca59b0fd",
+      "69beb5762d36e4b8ca59b103"
+    ]
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f2",
+    "nom": "MORIN",
+    "prenoms": [
+      "Adrien"
+    ],
+    "naissance_$_date": 742004533835,
+    "adresse_$_map": "Besançon",
+    "photo_$_file": "https://i.pravatar.cc/150?u=4a16dc27-df24-482d-b3ac-db2f174dd250",
+    "phone_$_tel": "+33 784796165",
+    "email_$_email": "Gilles_Gautier@hotmail.fr",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0f8",
+      "69beb5762d36e4b8ca59b0fe",
+      "69beb5762d36e4b8ca59b104"
+    ]
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f3",
+    "nom": "DUPUIS",
+    "prenoms": [
+      "Ysaline"
+    ],
+    "naissance_$_date": 391529275734,
+    "adresse_$_map": "Cholet",
+    "photo_$_file": "https://i.pravatar.cc/150?u=bff578f6-8d79-4a03-9ec9-c6c05ab1a145",
+    "phone_$_tel": "0515898856",
+    "email_$_email": "Stephane.Petit@hotmail.fr",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0f9",
+      "69beb5762d36e4b8ca59b0ff",
+      "69beb5762d36e4b8ca59b105"
+    ]
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f4",
+    "nom": "LE ROUX",
+    "prenoms": [
+      "Guérin"
+    ],
+    "naissance_$_date": 218966956087,
+    "adresse_$_map": "Montreuil",
+    "photo_$_file": "https://i.pravatar.cc/150?u=ff118c08-18de-413e-8701-dc86d142e6a5",
+    "phone_$_tel": "0400535227",
+    "email_$_email": "Ronan.Schmitt@gmail.com",
+    "current_classes": [
+      "69beb5762d36e4b8ca59b0fa",
+      "69beb5762d36e4b8ca59b100",
+      "69beb5762d36e4b8ca59b106"
+    ]
+  }
+]

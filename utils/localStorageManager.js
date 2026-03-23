@@ -4,7 +4,15 @@
  * Permet l'expiration automatique d'une session de cache et offre une interface simple.
  */
 
-const STORAGE_KEY = 'schoolManagment';
+const getStorageKey = () => {
+    if (typeof window === 'undefined') return 'schoolManagment';
+    // Si on a explicitement forcé le mode Falsy (ex: Non-admin connecté, ou pas connecté)
+    if (document.cookie.includes('force_falsy=true')) {
+        return 'schoolManagment__falsies';
+    }
+    // Sinon, c'est la vraie base de données.
+    return 'schoolManagment';
+};
 
 // Durée d'expiration par défaut (en heures) si NEXT_LS_EXPIRE_DURATION n'est pas définie
 const DEFAULT_EXPIRE_HOURS = 24;
@@ -15,7 +23,7 @@ const DEFAULT_EXPIRE_HOURS = 24;
 const getStorageObj = () => {
     if (typeof window === 'undefined') return { data: {} };
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = localStorage.getItem(getStorageKey());
         return stored ? JSON.parse(stored) : { data: {} };
     } catch (e) {
         console.warn(`[LocalStorageManager] Structure locale corrompue, réinitialisation.`);
@@ -29,7 +37,7 @@ const getStorageObj = () => {
 const saveStorageObj = (obj) => {
     if (typeof window === 'undefined') return;
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+        localStorage.setItem(getStorageKey(), JSON.stringify(obj));
     } catch (e) {
         console.error(`[LocalStorageManager] Erreur sauvegarde:`, e);
     }

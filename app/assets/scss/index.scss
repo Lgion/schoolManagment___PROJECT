@@ -25,12 +25,17 @@
 @use 'components/MODALS/entityModal.scss';
 @use 'components/MODALS/detailModal.scss';
 @use 'components/MODALS/reviewModal.scss';
-@use 'pages/home.scss';
-@use 'pages/administration.scss';
+@use 'pages/home';
+@use 'pages/administration';
+@use 'pages/landing';
 
 // Variables individuelles extraites des maps pour compatibilité
 $font-primary: $primaryFont;
 $font-secondary: $secondaryFont;
+
+body>[data-floating-ui-portal] {
+  z-index: 3 !important;
+}
 
 #clerk-components+div {
   z-index: 10;
@@ -2910,7 +2915,7 @@ section>div:has(.modal) {
           background: silver;
           padding: 1em;
 
-                }
+        }
       }
     }
   }

@@ -27,10 +27,20 @@ const targetDefinitionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const homepageSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: 'École de Démo' },
+    texts: { type: [String], default: ['Bienvenue sur l\'application de gestion scolaire.'] },
+    photo: { type: String, default: '/ecole_testes/photo.jpg' },
+  },
+  { _id: false }
+);
+
 const schoolSettingsSchema = new mongoose.Schema({
   schoolKey:      { type: String, unique: true, default: 'default' },
   feeDefinitions: { type: [feeDefinitionSchema], default: [] },
   targets:        { type: [targetDefinitionSchema], default: [] },
+  homepage:       { type: homepageSchema, default: () => ({}) },
   updatedAt:      { type: Date, default: Date.now },
 });
 

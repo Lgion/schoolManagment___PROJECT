@@ -2107,7 +2107,8 @@ function CompositionsBlock({ compositions = {}, schoolYear, onChange, studentDat
   // Génère la liste des années disponibles (utilise la fonction utilitaire)
   const { years, currentYearStart } = generateSchoolYears(migratedCompositions);
   // On récupère le tableau pour l'année courante avec la nouvelle structure
-  const compoArr = migratedCompositions[schoolYear] || [
+  const rawComps = migratedCompositions[schoolYear];
+  const compoArr = Array.isArray(rawComps) && rawComps.length > 0 ? rawComps : [
     { officiel: {}, unOfficiel: {} },
     { officiel: {}, unOfficiel: {} },
     { officiel: {}, unOfficiel: {} }

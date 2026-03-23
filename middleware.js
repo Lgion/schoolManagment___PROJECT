@@ -29,15 +29,21 @@ export default clerkMiddleware(async (auth, request) => {
 
   if (!isPublicRoute(request)) {
     const authObj = await auth();
-    if (!authObj.userId && request.nextUrl.pathname.startsWith('/api')) {
-      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
+    
+    // Si l'utilisateur n'est pas connecté via Clerk, on le laisse naviguer en mode "Sample Data" (Falsy)
+    // Au lieu de rejeter ou rediriger, on laisse simplement passer la requête, 
+    // et les apis / composants utiliseront MONGODB_sample_URI
+    if (!authObj.userId) {
+      // Optionnel : on peut set un header x-sample-mode pour être sûr,
+      // mais le checks se fera via auth() dans dbConnect.js
+      const requestHeaders = new Headers(request.headers);
+      requestHeaders.set('x-sample-mode', 'true');
+      
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
       });
-    } else if (!authObj.userId) {
-      // Manual redirect allows overriding Clerk's protect() which can throw 404s
-      const url = new URL('/', request.url);
-      return NextResponse.redirect(url);
     }
   }
 

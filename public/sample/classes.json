@@ -1,0 +1,614 @@
+[
+  {
+    "_id": "69beb5762d36e4b8ca59b0f5",
+    "annee": "2024-2025",
+    "niveau": "CP1",
+    "alias": "CP1 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f6",
+    "annee": "2024-2025",
+    "niveau": "CP2",
+    "alias": "CP2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f7",
+    "annee": "2024-2025",
+    "niveau": "CE1",
+    "alias": "CE1 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f8",
+    "annee": "2024-2025",
+    "niveau": "CE2",
+    "alias": "CE2 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0f9",
+    "annee": "2024-2025",
+    "niveau": "CM1",
+    "alias": "CM1 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0fa",
+    "annee": "2024-2025",
+    "niveau": "CM2",
+    "alias": "CM2 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2024-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2024-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2025-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0fb",
+    "annee": "2025-2026",
+    "niveau": "CP1",
+    "alias": "CP1 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0fc",
+    "annee": "2025-2026",
+    "niveau": "CP2",
+    "alias": "CP2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0fd",
+    "annee": "2025-2026",
+    "niveau": "CE1",
+    "alias": "CE1 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0fe",
+    "annee": "2025-2026",
+    "niveau": "CE2",
+    "alias": "CE2 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b0ff",
+    "annee": "2025-2026",
+    "niveau": "CM1",
+    "alias": "CM1 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b100",
+    "annee": "2025-2026",
+    "niveau": "CM2",
+    "alias": "CM2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2025-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2025-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2026-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b101",
+    "annee": "2026-2027",
+    "niveau": "CP1",
+    "alias": "CP1 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b102",
+    "annee": "2026-2027",
+    "niveau": "CP2",
+    "alias": "CP2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b103",
+    "annee": "2026-2027",
+    "niveau": "CE1",
+    "alias": "CE1 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b104",
+    "annee": "2026-2027",
+    "niveau": "CE2",
+    "alias": "CE2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b105",
+    "annee": "2026-2027",
+    "niveau": "CM1",
+    "alias": "CM1 A",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  },
+  {
+    "_id": "69beb5762d36e4b8ca59b106",
+    "annee": "2026-2027",
+    "niveau": "CM2",
+    "alias": "CM2 B",
+    "photo": "https://images.unsplash.com/photo-1544531586-fde5298cda4c?w=400",
+    "homework": {},
+    "compositions": [
+      {
+        "id": "comp1",
+        "label": "Compo 1",
+        "type": "officiel",
+        "date": "2026-11-15"
+      },
+      {
+        "id": "comp2",
+        "label": "Compo 2",
+        "type": "privé",
+        "date": "2026-12-20"
+      },
+      {
+        "id": "comp3",
+        "label": "Compo 3",
+        "type": "officiel",
+        "date": "2027-03-10"
+      }
+    ],
+    "moyenne_trimetriel": [
+      "12.5",
+      "13.0",
+      "14.2"
+    ],
+    "commentaires": []
+  }
+]

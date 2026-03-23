@@ -17,12 +17,17 @@ export default function LogSignIn() {
 
     useEffect(() => {
         console.log(user?.primaryEmailAddress?.emailAddress)
-        if (!isSignedIn)
+        if (!isSignedIn) {
             setIsAdmin(false)
-        if (process.env.NEXT_PUBLIC_EMAIL_ADMIN.indexOf(user?.primaryEmailAddress?.emailAddress) !== -1
-            // if(user?.primaryEmailAddress?.emailAddress == "hi.cyril@gmail.com"
-            // || true 
-        ) {
+            // On s'assure que si l'utilisateur vient juste de se déconnecter (ou n'est pas connecté sans avoir cliqué sur Démo)
+            // Il n'y a pas de problème. Le cookie `is_landing_demo` n'est géré QUE par la Landing Page.
+        } else if (process.env.NEXT_PUBLIC_EMAIL_ADMIN.indexOf(user?.primaryEmailAddress?.emailAddress) !== -1) {
+            // Utilisateur Connecté -> On tue la session démo de la Landing Page
+            document.cookie = "is_landing_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            
+            // Effacer le mode Falsy car c'est un compte Admin autorisé
+            document.cookie = "force_falsy=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
             const prev_email = user?.primaryEmailAddress?.emailAddress.substring(0, user?.primaryEmailAddress?.emailAddress.indexOf("@"))
             let myRole = ""
             console.log(user?.primaryEmailAddress?.emailAddress);
@@ -38,10 +43,15 @@ export default function LogSignIn() {
                     break;
             }
             console.log(myRole);
-            console.log(role);
             setRole(myRole)
-            console.log(role);
+        } else {
+            // Utilisateur Connecté -> On tue la session démo de la Landing Page
+            document.cookie = "is_landing_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
+            // Utilisateur connecté MAIS n'est pas dans la liste des admins :
+            // Le backend va le forcer en Falsy (cf. dbConnect.js).
+            // On ne stocke PLUS de cookie ici pour ne pas polluer l'historique quand il se déconnectera.
+            setIsAdmin(false);
         }
 
         // --- Ajout récupération/création user MongoDB et stockage localStorage ---

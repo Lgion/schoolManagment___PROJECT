@@ -1,8 +1,8 @@
-import dbConnect from '../../../../lib/dbConnect';
-import Classe from '../../../../_/models/ai/Classe';
+import dbConnect from '../../../lib/dbConnect';
+import Classe from '../../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
-import { checkRole, Roles } from '../../../../../../utils/roles';
-import { authWithFallback } from '../../../../lib/authWithFallback';
+import { checkRole, Roles } from '../../../../../utils/roles';
+import { authWithFallback } from '../../../lib/authWithFallback';
 
 export async function POST(request) {
   try {

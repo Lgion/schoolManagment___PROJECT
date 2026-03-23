@@ -6,9 +6,15 @@ import './ClasseCard.scss';
 import { getClasseImagePath } from '../../utils/imageUtils';
 import PermissionGate from "../components/PermissionGate";
 
-export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal }) {
+export default function ClasseCard({ classe, enseignants, eleves: elevesFromProp, onEdit, onOpenModal }) {
   if (!classe) return null;
   const { openPortal } = useDetailPortal();
+
+  // Déterminer l'effectif : priorité au tableau d'élèves passé en prop (filtré dynamiquement)
+  // Sinon on utilise le tableau d'IDs stocké dans le document de classe
+  const effectif = elevesFromProp 
+    ? elevesFromProp.length 
+    : (classe?.eleves?.length ?? 0);
 
   // Gestion sécurisée du professeur principal
   let enseignantObj = null
@@ -17,7 +23,7 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
   if (enseignants && enseignants.length > 0 && classe.professeur && classe.professeur.length > 0) {
     // Nouvelle logique : récupérer l'enseignant à partir du champ professeur de la classe
     const premierProfId = classe.professeur[0]
-    enseignantObj = enseignants.find(enseignant => enseignant._id === premierProfId)
+    enseignantObj = enseignants.find(enseignant => String(enseignant._id) === String(premierProfId))
 
     if (enseignantObj) {
       const nom = enseignantObj.nom || ''
@@ -32,10 +38,10 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
       const premierProf = classe.professeur[0]
 
       if (typeof premierProf === 'string') {
-        enseignantObj = enseignants.find(el => el._id === premierProf)
+        enseignantObj = enseignants.find(el => String(el._id) === String(premierProf))
       } else if (typeof premierProf === 'object' && premierProf !== null) {
         if (premierProf._id) {
-          enseignantObj = enseignants.find(el => el._id === premierProf._id)
+          enseignantObj = enseignants.find(el => String(el._id) === String(premierProf._id))
         } else if (premierProf.nom) {
           enseignantNom = `${premierProf.nom || ''} ${Array.isArray(premierProf.prenoms) ? premierProf.prenoms.join(' ') : premierProf.prenoms || ''}`.trim()
         }
@@ -73,7 +79,7 @@ export default function ClasseCard({ classe, enseignants, onEdit, onOpenModal })
             }}
           />
           <div className="classe-card__details">
-            <div><b>Effectif :</b> {classe?.eleves?.length ?? '—'}</div>
+            <div><b>Effectif :</b> {effectif}</div>
             <div><b>Professeur principal :</b> {enseignantNom}</div>
           </div>
         </div>
