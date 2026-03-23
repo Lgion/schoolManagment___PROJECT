@@ -24,6 +24,7 @@ export async function GET(request) {
     return NextResponse.json({
       feeDefinitions: settings?.feeDefinitions ?? [],
       targets: settings?.targets ?? [],
+      homepage: settings?.homepage ?? { title: '', texts: [], photo: '' },
     });
   } catch (error) {
     console.error('❌ GET /api/school_ai/ecole:', error);
@@ -58,6 +59,11 @@ export async function PUT(request) {
       updateFields.targets = body.targets;
     }
 
+    // Handle homepage update
+    if (body.homepage !== undefined) {
+      updateFields.homepage = body.homepage;
+    }
+
     // Handle cascade delete: if a target key was removed, clean all students
     if (body.removedTargetKey) {
       const key = body.removedTargetKey;
@@ -77,6 +83,7 @@ export async function PUT(request) {
     return NextResponse.json({
       feeDefinitions: updated.feeDefinitions,
       targets: updated.targets,
+      homepage: updated.homepage,
     });
   } catch (error) {
     console.error('❌ PUT /api/school_ai/ecole:', error);

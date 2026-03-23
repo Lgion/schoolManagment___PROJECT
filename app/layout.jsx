@@ -29,26 +29,22 @@ export default function RootLayout({ children }) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </head>
       <body className="ecole-admin">
-        <AdminContextProvider>
-
-          {/* <Goals /> */}
-
-          <ClerkProvider>
-            <UserRoleProvider>
-              <LoadingProvider>
-                <DetailPortalProvider>
+        <ClerkProvider>
+          <UserRoleProvider>
+            <LoadingProvider>
+              <DetailPortalProvider>
+                <AdminContextProvider>
                   <Home>
                     {children}
                   </Home>
-                  
+
                   <SpinLoader />
                   <NavigationInterceptor />
-                </DetailPortalProvider>
-              </LoadingProvider>
-            </UserRoleProvider>
-          </ClerkProvider>
-
-        </AdminContextProvider>
+                </AdminContextProvider>
+              </DetailPortalProvider>
+            </LoadingProvider>
+          </UserRoleProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

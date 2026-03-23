@@ -2,13 +2,18 @@
 
 import { createContext, useState, useMemo, useCallback, useEffect } from 'react';
 import { getLSItem, setLSItem, clearLS } from '../utils/localStorageManager';
+import { useAuth } from '@clerk/nextjs';
 
 export const AiAdminContext = createContext({});
 
 export const AdminContextProvider = ({ children }) => {
+  const { userId } = useAuth();
+
   // States
   const [eleves, setEleves] = useState([]);
+  const [elevesLoaded, setElevesLoaded] = useState(false);
   const [enseignants, setEnseignants] = useState([]);
+  const [enseignantsLoaded, setEnseignantsLoaded] = useState(false);
   const [classes, setClasses] = useState([]);
   const [classesLoaded, setClassesLoaded] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -25,9 +30,14 @@ export const AdminContextProvider = ({ children }) => {
   const [targetDefinitions, setTargetDefinitions] = useState([]);
   const [targetDefinitionsLoaded, setTargetDefinitionsLoaded] = useState(false);
 
+  // --- HOMEPAGE CONFIGURATION ---
+  const [homepage, setHomepage] = useState({ title: '', texts: [], photo: '' });
+  const [homepageLoaded, setHomepageLoaded] = useState(false);
+
   // LS keys canoniques
   const FEE_DEFINITIONS_LS_KEY = 'school_fee_definitions';
   const TARGET_DEFINITIONS_LS_KEY = 'school_target_definitions';
+  const HOMEPAGE_LS_KEY = 'school_homepage';
 
   // Normalize legacy entries ({ argent, riz }) to new dynamic format
   const normalizeFeeItem = useCallback((item) => {
@@ -45,21 +55,28 @@ export const AdminContextProvider = ({ children }) => {
   }, []);
 
   // Fetch fee definitions + target definitions: LS first, then BD
-  const fetchSchoolSettings = useCallback(async () => {
+  const fetchSchoolSettings = useCallback(async (bypassCache = false) => {
     // Try LS cache for fees
-    const cachedFees = getLSItem(FEE_DEFINITIONS_LS_KEY);
+    const cachedFees = !bypassCache ? getLSItem(FEE_DEFINITIONS_LS_KEY) : null;
     if (cachedFees && Array.isArray(cachedFees) && cachedFees.length > 0) {
       setFeeDefinitions(cachedFees);
       setFeeDefinitionsLoaded(true);
     }
     // Try LS cache for targets
-    const cachedTargets = getLSItem(TARGET_DEFINITIONS_LS_KEY);
+    const cachedTargets = !bypassCache ? getLSItem(TARGET_DEFINITIONS_LS_KEY) : null;
     if (cachedTargets && Array.isArray(cachedTargets) && cachedTargets.length > 0) {
       setTargetDefinitions(cachedTargets);
       setTargetDefinitionsLoaded(true);
     }
-    // If both are cached, skip API call
-    if (cachedFees?.length > 0 && cachedTargets?.length > 0) return;
+    // Try LS cache for homepage
+    const cachedHomepage = !bypassCache ? getLSItem(HOMEPAGE_LS_KEY) : null;
+    if (cachedHomepage && typeof cachedHomepage === 'object' && cachedHomepage.title) {
+        setHomepage(cachedHomepage);
+        setHomepageLoaded(true);
+    }
+
+    // If all are cached, skip API call
+    if (!bypassCache && cachedFees?.length > 0 && cachedTargets?.length > 0 && cachedHomepage?.title) return;
 
     try {
       const res = await fetch('/api/school_ai/ecole');
@@ -79,12 +96,19 @@ export const AdminContextProvider = ({ children }) => {
         } else {
           setTargetDefinitions([]);
         }
+
+        const hp = data.homepage ?? { title: '', texts: [], photo: '' };
+        if (hp && hp.title) {
+          setHomepage(hp);
+          setLSItem(HOMEPAGE_LS_KEY, hp);
+        }
       }
     } catch (err) {
       console.error('Erreur fetchSchoolSettings:', err);
     } finally {
       setFeeDefinitionsLoaded(true);
       setTargetDefinitionsLoaded(true);
+      setHomepageLoaded(true);
     }
   }, []);
 
@@ -153,8 +177,8 @@ export const AdminContextProvider = ({ children }) => {
 
 
   // --- ELEVE CRUD ---
-  const fetchEleves = useCallback(async () => {
-    let data = getLSItem('eleves');
+  const fetchEleves = useCallback(async (bypassCache = false) => {
+    let data = !bypassCache ? getLSItem('eleves') : null;
     if (data && Array.isArray(data) && data.length > 0) {
       setEleves(data);
     } else {
@@ -168,6 +192,7 @@ export const AdminContextProvider = ({ children }) => {
         setEleves([]);
       }
     }
+    setElevesLoaded(true);
   }, []);
 
   const saveEleve = useCallback(async (data) => {
@@ -249,8 +274,8 @@ export const AdminContextProvider = ({ children }) => {
   }, [fetchEleves]);
 
   // --- ENSEIGNANT CRUD ---
-  const fetchEnseignants = useCallback(async () => {
-    let data = getLSItem('enseignants');
+  const fetchEnseignants = useCallback(async (bypassCache = false) => {
+    let data = !bypassCache ? getLSItem('enseignants') : null;
     if (data && Array.isArray(data) && data.length > 0) {
       setEnseignants(data);
     } else {
@@ -264,6 +289,7 @@ export const AdminContextProvider = ({ children }) => {
         setEnseignants([]);
       }
     }
+    setEnseignantsLoaded(true);
   }, []);
 
   const saveEnseignant = useCallback(async (data) => {
@@ -340,8 +366,8 @@ export const AdminContextProvider = ({ children }) => {
   }, [fetchEnseignants]);
 
   // --- CLASSE CRUD ---
-  const fetchClasses = useCallback(async () => {
-    let data = getLSItem('classes');
+  const fetchClasses = useCallback(async (bypassCache = false) => {
+    let data = !bypassCache ? getLSItem('classes') : null;
     if (data && Array.isArray(data) && data.length > 0) {
       setClasses(data);
     } else {
@@ -486,11 +512,11 @@ export const AdminContextProvider = ({ children }) => {
   }, []);
 
   // --- SUBJECTS ---
-  const fetchSubjects = useCallback(async () => {
+  const fetchSubjects = useCallback(async (bypassCache = false) => {
     try {
-      const parsedSubjects = getLSItem('app_subjects');
-      if (parsedSubjects && Array.isArray(parsedSubjects) && parsedSubjects.length > 0) {
-        setDynamicSubjects(parsedSubjects);
+      const cachedData = !bypassCache ? getLSItem('app_subjects') : null;
+      if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+        setDynamicSubjects(cachedData);
         setSubjectsLoaded(true);
         return;
       }
@@ -541,14 +567,43 @@ export const AdminContextProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    // Reset all internal states if the user logs in or out
+    // This allows the context to re-fetch and re-sync with the correct LS branch
+    console.log(`[AiAdminContext] Auth state changed (userId: ${userId}). Clearing memory and re-syncing.`);
+    
+    // 1. On vide les états mémoire pour forcer un rafraîchissement visuel (écrans vides temporaires)
+    setEleves([]);
+    setEnseignants([]);
+    setClasses([]);
+    setDynamicSubjects([]);
+    setFeeDefinitions([]);
+    setTargetDefinitions([]);
+    setHomepage({ title: '', texts: [], photo: '' });
+
+    // 2. On baisse les drapeaux pour déclencher les fetch APRÈS un court délai
+    // On force le bypass du cache pour cette session car l'identité a changé
+    const timer = setTimeout(() => {
+      fetchClasses(true);
+      fetchEleves(true);
+      fetchEnseignants(true);
+      fetchSubjects(true);
+      fetchSchoolSettings(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [userId, fetchClasses, fetchEleves, fetchEnseignants, fetchSubjects, fetchSchoolSettings]);
+
+  useEffect(() => {
     // Initialisation
   }, [])
   // --- AUTO FETCH AU MONTAGE ---
   useEffect(() => {
     if (!classesLoaded) fetchClasses();
+    if (!elevesLoaded) fetchEleves();
+    if (!enseignantsLoaded) fetchEnseignants();
     if (!subjectsLoaded) fetchSubjects();
-    if (!feeDefinitionsLoaded || !targetDefinitionsLoaded) fetchSchoolSettings();
-  }, [classesLoaded, fetchClasses, subjectsLoaded, fetchSubjects, feeDefinitionsLoaded, targetDefinitionsLoaded, fetchSchoolSettings]);
+    if (!feeDefinitionsLoaded || !targetDefinitionsLoaded || !homepageLoaded) fetchSchoolSettings();
+  }, [classesLoaded, fetchClasses, elevesLoaded, fetchEleves, enseignantsLoaded, fetchEnseignants, subjectsLoaded, fetchSubjects, feeDefinitionsLoaded, targetDefinitionsLoaded, homepageLoaded, fetchSchoolSettings]);
 
 
 
@@ -564,6 +619,7 @@ export const AdminContextProvider = ({ children }) => {
     dynamicSubjects, fetchSubjects, subjectsLoaded,
     feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
     targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
+    homepage, homepageLoaded,
     resolveTargetAmount,
     uploadFile,
     selected, setSelected, showModal, setShowModal, editType, setEditType
@@ -575,6 +631,7 @@ export const AdminContextProvider = ({ children }) => {
     dynamicSubjects, fetchSubjects, subjectsLoaded,
     feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
     targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
+    homepage, homepageLoaded,
     resolveTargetAmount,
     uploadFile,
     selected, showModal, editType

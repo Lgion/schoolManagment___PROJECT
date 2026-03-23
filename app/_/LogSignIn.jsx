@@ -1,26 +1,40 @@
 "use client"
 
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import Link from "next/link";
-import { SignInButton, SignUpButton, UserProfile, UserButton, useAuth, isLoaded, useUser, SignedIn, SignedOut, useClerk } from "@clerk/nextjs"
+import { SignInButton, SignUpButton, UserProfile, UserButton, isLoaded, useUser, SignedIn, SignedOut, useClerk } from "@clerk/nextjs"
 
-import AuthContext from "../../stores/authContext.js"
+
 import { getLSItem, setLSItem } from '../../utils/localStorageManager.js';
 
 export default function LogSignIn() {
+    const wasSignedIn = useRef(null); // Pour tracker la transition de déconnexion
 
     const [isCartPage, setIsCartPage] = useState()
-        , { setIsAdmin, role, setRole } = useContext(AuthContext)
         // , { isLoaded, userId, sessionId, getToken } = useAuth()
         , { isSignedIn, user } = useUser()
         , { signOut } = useClerk();
 
     useEffect(() => {
+        // --- DETECTION LOGOUT ---
+        // Si on était connecté et qu'on ne l'est plus, on force un nettoyage total pour retomber sur la Landing Page
+        if (wasSignedIn.current === true && !isSignedIn) {
+            console.log("🚩 Détection Déconnexion : Nettoyage cookies et redirection Landing Page");
+            document.cookie = "is_landing_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            document.cookie = "force_falsy=true; path=/; max-age=86400";
+            
+            // On retombe sur la page racine en ignorant l'historique clerk pour être sûr
+            window.location.href = "/";
+            return;
+        }
+        wasSignedIn.current = isSignedIn;
+
         console.log(user?.primaryEmailAddress?.emailAddress)
         if (!isSignedIn) {
-            setIsAdmin(false)
-            // On s'assure que si l'utilisateur vient juste de se déconnecter (ou n'est pas connecté sans avoir cliqué sur Démo)
-            // Il n'y a pas de problème. Le cookie `is_landing_demo` n'est géré QUE par la Landing Page.
+            // L'utilisateur n'est PAS connecté. 
+            // On ne touche PAS au cookie 'is_landing_demo' ici car c'est lui qui permet le mode Visiteur/Démo.
+            // On se contente d'ajouter le cookie force_falsy pour isoler le cache.
+            document.cookie = "force_falsy=true; path=/; max-age=86400";
         } else if (process.env.NEXT_PUBLIC_EMAIL_ADMIN.indexOf(user?.primaryEmailAddress?.emailAddress) !== -1) {
             // Utilisateur Connecté -> On tue la session démo de la Landing Page
             document.cookie = "is_landing_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -33,7 +47,6 @@ export default function LogSignIn() {
             console.log(user?.primaryEmailAddress?.emailAddress);
             console.log(prev_email);
 
-            setIsAdmin(true)
             switch (prev_email) {
                 case "hi.cyril": case "legion.athenienne": myRole = "admin"
                     break;
@@ -43,15 +56,14 @@ export default function LogSignIn() {
                     break;
             }
             console.log(myRole);
-            setRole(myRole)
         } else {
             // Utilisateur Connecté -> On tue la session démo de la Landing Page
             document.cookie = "is_landing_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 
             // Utilisateur connecté MAIS n'est pas dans la liste des admins :
             // Le backend va le forcer en Falsy (cf. dbConnect.js).
-            // On ne stocke PLUS de cookie ici pour ne pas polluer l'historique quand il se déconnectera.
-            setIsAdmin(false);
+            // On ajoute le cookie pour que le cache reste isolé.
+            document.cookie = "force_falsy=true; path=/; max-age=86400";
         }
 
         // --- Ajout récupération/création user MongoDB et stockage localStorage ---
@@ -59,14 +71,10 @@ export default function LogSignIn() {
         if (email && !getLSItem('user')) {
             fetch(`/api/users?email=${encodeURIComponent(email)}`)
                 .then(async res => {
-                    alert(0)
                     if (res.ok) {
-                        alert(1)
                         const data = await res.json();
-                        alert(2)
                         setLSItem('user', data.user);
                     } else if (res.status === 404) {
-                        alert(11)
                         // Créer l'utilisateur si non trouvé
                         return fetch('/api/users', {
                             method: 'POST',
@@ -75,7 +83,6 @@ export default function LogSignIn() {
                         })
                             .then(res => res.json())
                             .then(data => {
-                                alert(22)
                                 setLSItem('user', data.user);
                             });
                     }

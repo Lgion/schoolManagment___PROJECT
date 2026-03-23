@@ -47,10 +47,16 @@ async function dbConnect() {
       useSample = true;
     }
   } catch (error) {
-    // Si l'erreur est liée au contexte Server Actions/Pages
+    // Si l'erreur est liée au contexte Server Actions/Pages (pas grave, on reste sur le mode par défaut)
   }
 
-  const MONGODB_URI = useSample && URI_SAMPLE ? URI_SAMPLE : (URI_MAIN || 'mongodb://localhost:27017/lpd');
+  // SÉCURITÉ CRITIQUE : Si on demande le mode Sample/Falsy mais que l'URI n'est pas définie,
+  // on ne DOIT PAS laisser Next.js basculer sur process.env.MONGODB_URI par erreur.
+  if (useSample && !URI_SAMPLE) {
+    throw new Error("CRITICAL SECURITY ERROR: MONGODB_sample_URI is not defined while attempting to access Sample Mode.");
+  }
+
+  const MONGODB_URI = useSample ? URI_SAMPLE : (URI_MAIN || 'mongodb://localhost:27017/lpd');
 
   // Si on est déjà connecté mais que l'URI demandée a changé : on force la déconnexion
   if (cached.conn && cached.uri !== MONGODB_URI) {

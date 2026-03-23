@@ -17,6 +17,7 @@ import EntityModal from './components/EntityModal';
 import LandingPage from './components/LandingPage';
 import { clearLS, setLSItem, initStorage } from '../utils/localStorageManager';
 import { useAuth } from '@clerk/nextjs';
+import LogSignIn from './_/LogSignIn';
 
 export default ({ children }) => {
   const router = useRouter();
@@ -209,20 +210,23 @@ export default ({ children }) => {
                   <i className="fas fa-phone"></i>
                 </a>
               </div>
+              <LogSignIn />
             </div>
 
-            {/* Bouton de réinitialisation des données (Déplacé ici pour éviter les chevauchements) */}
+            {/* Bouton de réinitialisation des données (Uniquement pour les admins enregistrés) */}
             <PermissionGate role="admin">
-              <div className="ecole-admin__headerActions-reset">
-                <button
-                  onClick={clearAllAppData}
-                  className="ecole-admin__headerActions-reset-btn"
-                  title="Réinitialiser toutes les données de l'application"
-                >
-                  <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
-                  <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
-                </button>
-              </div>
+              {userData?.email && process.env.NEXT_PUBLIC_EMAIL_ADMIN?.includes(userData.email) && (
+                <div className="ecole-admin__headerActions-reset">
+                  <button
+                    onClick={clearAllAppData}
+                    className="ecole-admin__headerActions-reset-btn"
+                    title="Réinitialiser toutes les données de l'application"
+                  >
+                    <span className="ecole-admin__headerActions-reset-btn-icon">🗑️</span>
+                    <span className="ecole-admin__headerActions-reset-btn-text">Reset App</span>
+                  </button>
+                </div>
+              )}
             </PermissionGate>
 
 
@@ -520,7 +524,7 @@ export default ({ children }) => {
                     </Link>
                     {person.className && (
                       <span className="ecole-admin__birthday-class-link">
-                         - <Link href={"/classes/" + person.classId}>Classe: {person.className}</Link>
+                        - <Link href={"/classes/" + person.classId}>Classe: {person.className}</Link>
                       </span>
                     )}
                   </span>
