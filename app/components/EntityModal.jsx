@@ -955,7 +955,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               onRemove={timestamp => setForm(f => { const newNotes = { ...f.notes }; delete newNotes[timestamp]; return { ...f, notes: newNotes }; })}
             /> */}
 
-              <label>Compositions (JSON)</label>
+              <label>Compositions</label>
               {/* Bloc de gestion des compositions par trimestre */}
               <CompositionsBlock
                 compositions={form.compositions || {}}
@@ -973,7 +973,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               {/* <label>Moyenne trimetriel (JSON)
               <textarea name="moyenne_trimetriel" value={form.moyenne_trimetriel ? JSON.stringify(form.moyenne_trimetriel) : ''} onChange={e => setForm(f => ({ ...f, moyenne_trimetriel: e.target.value ? JSON.parse(e.target.value) : {} }))} />
             </label> */}
-              <label>Scolarity fees (JSON)</label>
+              <label>Frais de scolarité</label>
               <ScolarityFeesBlock
                 fees={form.scolarity_fees_$_checkbox?.[schoolYear] || {}}
                 onChange={newFees => setForm(f => ({
@@ -989,7 +989,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               <textarea readOnly name="scolarity_fees_$_checkbox_" value={form.scolarity_fees_$_checkbox ? JSON.stringify(form.scolarity_fees_$_checkbox) : ''}
               // onChange={e => setForm(f => ({ ...f, scolarity_fees_$_checkbox: e.target.value ? JSON.parse(e.target.value) : {} }))} 
               />
-              <label>Bolobi class history (JSON)
+              <label>Historique scolaire
               </label>
               <SchoolHistoryBlock
                 schoolHistory={(() => {

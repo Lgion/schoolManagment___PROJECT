@@ -1011,6 +1011,31 @@ section>div:has(.modal) {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  // Champs Mère/Père : <input> sans type ni classe → on les rend pleine largeur et cohérents
+  label {
+    align-self: flex-start;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin: 0.5rem 0 0.2rem;
+  }
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    font: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
+    }
+  }
 }
 
 .parent-img {
@@ -1091,10 +1116,15 @@ section>div:has(.modal) {
     @extend %entityModal__label;
   }
 
+  // Libellés de section (Notes, Compositions, Frais…) : titre sobre plutôt que 2em souligné criard
   >label {
-    font-size: 2em;
-    text-decoration: underline;
-    text-decoration-color: $primary-color;
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-heading);
+    text-decoration: none;
+    padding-bottom: 0.35rem;
+    border-bottom: 2px solid var(--color-secondary);
   }
 
   >div:has(.modal__photo-preview) {
@@ -3463,8 +3493,16 @@ button.btn--primary {
   &__duplicateDate  { @extend %entityModal__duplicateDate; }
   &__duplicateBtn   { @extend %entityModal__duplicateBtn; }
   &__label          { @extend %entityModal__label; }
-  &__input          { @extend %entityModal__input; }
-  &__select         { @extend %entityModal__select; }
+  &__input {
+    @extend %entityModal__input;
+    box-sizing: border-box;
+    &:not([type="file"]) { width: 100%; }   // les champs Nom/Prénoms/Alias/Tél/Email restaient à leur largeur native étroite
+  }
+  &__select {
+    @extend %entityModal__select;
+    width: 100%;
+    box-sizing: border-box;
+  }
   &__btn            { @extend %entityModal__btn; }
   &__btn--secondary { @extend %entityModal__btn--secondary; }
   &__errorMessage   { @extend %entityModal__errorMessage; }
@@ -3508,7 +3546,7 @@ button.btn--primary {
     align-items: center;
     flex-wrap: wrap;
   }
-  &__input--file { flex: 1; min-width: 200px; }
+  &__input--file { flex: 1 1 200px; min-width: 200px; }
 
   &__camera-btn {
     display: inline-flex;
@@ -3562,6 +3600,49 @@ button.btn--primary {
 
     &:hover { background: var(--color-danger-dark); transform: scale(1.1); }
   }
+}
+
+/* === Champs fichier natifs (« Choisir un fichier » / « Sélec. fichiers ») ===
+   Le bouton natif du navigateur est gris et hors-charte. On habille le champ et,
+   surtout, le bouton interne via ::file-selector-button (dégradé de marque).
+   Couvre la photo (.modal__input--file) ET les documents (<input type=file> nu). */
+#modalPersonForm input[type="file"] {
+  max-width: 100%;
+  padding: 0.5rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+#modalPersonForm input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--gradient-brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: filter .18s, box-shadow .18s;
+}
+#modalPersonForm input[type="file"]::file-selector-button:hover {
+  filter: brightness(1.06);
+  box-shadow: var(--shadow-small);
+}
+/* Compat WebKit (Safari/anciens Chromium) */
+#modalPersonForm input[type="file"]::-webkit-file-upload-button {
+  margin-right: 0.75rem;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--gradient-brand);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 /* === FILET DE SÉCURITÉ ===
