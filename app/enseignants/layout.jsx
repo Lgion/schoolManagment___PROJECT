@@ -20,13 +20,11 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
 
-    console.log(enseignants);
-    console.log(enseignants);
     return (<>
         {/* <PermissionGate roles={['admin', 'prof']}>
             <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
         </PermissionGate> */}
-        <h2>Liste des enseignants </h2>
+        <h2 className="page-title">Liste des enseignants</h2>
 
         {/* Contrôles de filtrage et tri */}
         {/*
@@ -147,7 +145,10 @@ export default function EcoleAdminEleveLayout({ children }) {
                     ))}
             </div>
             :
-            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
+            <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
+                <span className="loading-state__spinner" aria-hidden="true" />
+                Chargement des enseignants…
+            </div>
         }
 
         {children}

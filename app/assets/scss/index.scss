@@ -53,12 +53,12 @@ body>[data-floating-ui-portal] {
   display: block;
   max-width: 100%;
   transition: transform 0.3s ease;
-  border: 1px solid black;
-  box-shadow: 0 0 10px 1px black;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-medium);
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-large);
   }
 }
 
@@ -608,9 +608,16 @@ body>[data-floating-ui-portal] {
   position: fixed !important;
   inset: 0;
   z-index: 10000;
+  // Centrage de la modale d'édition (overlay) — le container restait collé en haut-gauche
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
 
   &__container {
-    box-shadow: 0 0 22px .1px !important;
+    box-shadow: var(--shadow-large) !important;
   }
 }
 
@@ -620,14 +627,15 @@ body>[data-floating-ui-portal] {
   overflow: hidden;
 
   &__container {
-    max-width: 95vw;
     width: auto;
+    max-width: min(920px, 95vw);
     padding: 0;
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    box-shadow: var(--shadow-large);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     overflow: hidden;
-    height: 90vh;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
   }
@@ -1033,18 +1041,24 @@ section>div:has(.modal) {
   }
 }
 
+// Listes élèves / enseignants : grille fluide (cartes plus larges, ~1 de moins par ligne)
+// Remplace l'ancien display:flex + overflow-x:scroll qui écrasait le flex-wrap et tassait les cartes.
+.eleves-list,
 .enseignants-list {
-  flex-flow: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 1.5rem;
+  align-items: stretch;
+  margin: 2em 0 1em 0;
+  padding: 0;
+  list-style: none;
 }
 
-.eleves-list,
-.enseignants-list,
+// Liste des classes : groupes par année empilés (les séparateurs d'année l'attendent)
 .classes-list {
   display: flex;
-  // flex-flow: nowrap;
-  overflow-x: scroll;
-  gap: 1.3em 2.1em;
-  justify-content: space-evenly;
+  flex-direction: column;
+  gap: 2rem;
   margin: 2em 0 1em 0;
 }
 
@@ -1085,8 +1099,8 @@ section>div:has(.modal) {
 
   >div:has(.modal__photo-preview) {
     max-height: 400px;
-    overflow: scroll;
-    background: wheat;
+    overflow: auto;
+    background: var(--color-surface-warm);
     padding: 1em;
   }
 
@@ -1094,8 +1108,8 @@ section>div:has(.modal) {
     flex-flow: column;
     display: flex;
     padding: 1em;
-    background: whitesmoke;
-    border: 1px solid;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     margin: 1em 0;
 
     &:has(#input-adresse) {
@@ -1171,8 +1185,8 @@ section>div:has(.modal) {
 }
 
 .isinterne-label:hover {
-  background: rgba(0, 0, 0, 0.13);
-  color: black;
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
 }
 
 .isinterne-label input[type="checkbox"] {
@@ -1192,8 +1206,8 @@ section>div:has(.modal) {
 }
 
 .isinterne-label input[type="checkbox"]:checked {
-  border-color: black;
-  background: black;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
 }
 
 .isinterne-label input[type="checkbox"]:checked:after {
@@ -1252,7 +1266,7 @@ section>div:has(.modal) {
 }
 
 .add-entry-btn {
-  background: #6c63ff;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -1264,7 +1278,7 @@ section>div:has(.modal) {
 }
 
 .add-entry-btn:hover {
-  background: #554fc6;
+  background: var(--color-primary-700);
 }
 
 .entry-month {
@@ -1273,7 +1287,7 @@ section>div:has(.modal) {
 
 .entry-title {
   font-weight: 500;
-  color: #6c63ff;
+  color: var(--color-primary);
   margin-bottom: 0.2em;
   font-size: 1.01em;
 }
@@ -1322,9 +1336,9 @@ section>div:has(.modal) {
 }
 
 .entry-picker-modal {
-  background: #fff;
-  border: 2px solid #6c63ff;
-  box-shadow: 0 2px 16px rgba(108, 99, 255, 0.09);
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  box-shadow: var(--shadow-medium);
   border-radius: 12px;
   padding: 1.2em 2em 1.2em 2em;
   margin: 1em auto;
@@ -1557,7 +1571,7 @@ section>div:has(.modal) {
   }
 
   &__add-btn {
-    background: #0a0;
+    background: var(--color-success);
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -1573,9 +1587,9 @@ section>div:has(.modal) {
     gap: 8px;
     margin-top: 4px;
     flex-flow: wrap;
-    background: silver;
+    background: var(--color-surface-muted);
     padding: .5em;
-    box-shadow: 0 0 3px 1px black inset;
+    box-shadow: inset 0 0 0 1px var(--color-border);
 
     select,
     input[type='number'] {
@@ -1647,7 +1661,7 @@ section>div:has(.modal) {
 
   &__add-btn {
     margin-left: 8px;
-    background: #0a0;
+    background: var(--color-success);
     color: #fff;
     border: none;
     border-radius: 4px;
@@ -1656,8 +1670,8 @@ section>div:has(.modal) {
     cursor: pointer;
 
     &--cancel {
-      background: #ccc;
-      color: #222;
+      background: var(--color-border-strong);
+      color: var(--color-text-primary);
     }
   }
 
@@ -1668,9 +1682,9 @@ section>div:has(.modal) {
 
     &Date {
       padding: .5em;
-      border: 1px solid;
-      background: whitesmoke;
-      box-shadow: 0 0 5px 1px black;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-muted);
+      box-shadow: var(--shadow-small);
       border-radius: 3px;
     }
 
@@ -1680,8 +1694,8 @@ section>div:has(.modal) {
 
       >span {
         padding: .5em;
-        box-shadow: 0 0 3px 1Px black inset;
-        border: 1px solid #e8f6e8;
+        box-shadow: inset 0 0 0 1px var(--color-border);
+        border: 1px solid var(--color-success-light);
       }
     }
   }
@@ -1741,7 +1755,7 @@ section>div:has(.modal) {
     padding: 1em;
 
     &:not(:empty) {
-      background: silver;
+      background: var(--color-surface-muted);
     }
 
     >* {
@@ -1776,7 +1790,7 @@ section>div:has(.modal) {
 }
 
 .add-note-btn {
-  background: #0a0;
+  background: var(--color-success);
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -1785,7 +1799,7 @@ section>div:has(.modal) {
 }
 
 .add-note-error {
-  color: red;
+  color: var(--color-danger);
   margin-left: 8px;
 }
 
@@ -2062,10 +2076,10 @@ section>div:has(.modal) {
   }
 
   &--prof {
-    background: linear-gradient(135deg, #4834d4, #686de0);
+    background: var(--gradient-brand);
     color: white;
-    border-color: #4834d4;
-    box-shadow: 0 2px 8px rgba(#4834d4, 0.3);
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
   }
 
   &--eleve {
@@ -2578,7 +2592,7 @@ section>div:has(.modal) {
 
   &__stats {
     // margin-bottom: 2.2em;
-    background: silver;
+    background: var(--color-surface-muted);
     padding: 1em;
 
     &-row {
@@ -2692,7 +2706,7 @@ section>div:has(.modal) {
     &__add-btn {
       margin-top: 1em;
       padding: 0.5em 1em;
-      background: #6c63ff;
+      background: var(--color-primary);
       color: white;
       border: none;
       border-radius: 4px;
@@ -2750,16 +2764,16 @@ section>div:has(.modal) {
     &:not(.home) {
       margin-top: 32px;
       background: rgba(255, 255, 255, .9);
-      border: 1px solid;
+      border: 1px solid var(--color-border);
       border-width: 0 1px;
-      box-shadow: 0 5px 10px 1px black;
+      box-shadow: var(--shadow-medium);
 
       >div {
         >h1 {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background: silver;
+          background: var(--color-surface-muted);
           padding: 1em;
 
         }
@@ -3021,23 +3035,54 @@ textarea:focus-visible,
 /* Carte classe : liseré supérieur orange cohérent */
 .classe-card { border-top: 3px solid var(--color-secondary); }
 
-/* Badges de profilage : échelle maîtrisée (fini l'arc-en-ciel) */
+/* Liens-cartes : annule le bleu/violet natif du <a>/<Link> (les cartes sont des liens).
+   Couleur de texte EXPLICITE (pas `inherit`) : les cartes ont un fond clair (blanc ou
+   teinte de genre pâle), elles doivent toujours afficher du texte foncé quel que soit
+   le conteneur. `inherit` faisait disparaître le nom de famille (.person-card__name
+   sans couleur propre) lorsqu'un ancêtre imposait un texte clair. */
+.person-card,
+.eleve-card,
+.classe-card {
+  color: var(--color-text-primary);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  &:visited { color: var(--color-text-primary); }
+}
+
+/* Indice de genre unifié (élèves ET enseignants) : liseré coloré franc + fond teinté lisible.
+   Le wrapper reçoit la classe .f / .m (dérivée du sexe) côté JSX. */
+.eleve-card-wrapper.f > a,
+.person-card-wrapper.f > a {
+  background: var(--color-genre-f-bg);
+  border-top: 4px solid var(--color-genre-f);
+}
+.eleve-card-wrapper.m > a,
+.person-card-wrapper.m > a {
+  background: var(--color-genre-m-bg);
+  border-top: 4px solid var(--color-genre-m);
+}
+
+/* Badges de profilage : statut interne (bleu) vs externe (orange) nettement distincts.
+   Source unique — ne PAS redéfinir dans EleveCard.scss / PersonCard.scss (cascade). */
 .person-card__isinterne-badge,
-.eleve-card__isinterne-badge,
-.eleve-card__badge {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary-soft);
+.eleve-card__isinterne-badge {
+  display: inline-block;
+  background: var(--color-interne-bg);
+  color: var(--color-interne-fg);
+  border: 1px solid var(--color-interne-fg); // fallback navigateurs sans color-mix
+  border-color: color-mix(in srgb, var(--color-interne-fg) 30%, transparent);
   border-radius: var(--radius-pill);
-  font-weight: 600;
-  font-size: 0.7rem;
-  padding: 0.15rem 0.55rem;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 0.18rem 0.6rem;
+  letter-spacing: 0.01em;
 }
 .person-card__isinterne-badge--externe,
 .eleve-card__isinterne-badge--externe {
-  background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
-  border-color: var(--color-border);
+  background: var(--color-externe-bg);
+  color: var(--color-externe-fg);
+  border-color: var(--color-externe-fg); // fallback
+  border-color: color-mix(in srgb, var(--color-externe-fg) 30%, transparent);
 }
 
 /* --- Boutons : langage unique --- */
@@ -3136,4 +3181,49 @@ button.btn--primary {
     &:hover:not(:disabled) { background: var(--color-danger); color: #fff; }
   }
   &:disabled { opacity: .6; cursor: not-allowed; }
+}
+
+/* === Titres de page (« Liste des élèves », etc.) ===
+   Lisibilité garantie : couleur de marque + petit liseré accent, sur surface neutre. */
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 1.5rem 0 0.5rem;
+  padding-left: 0.85rem;
+  border-left: 4px solid var(--color-secondary);
+}
+@media (max-width: 600px) {
+  .page-title { font-size: 1.3rem; }
+}
+
+/* === État de chargement accessible (remplace les « Chargement... » bruts inline) === */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.loading-state__spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-primary-soft);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: loading-state-spin 0.8s linear infinite;
+}
+@keyframes loading-state-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-state__spinner { animation-duration: 1.6s; }
 }

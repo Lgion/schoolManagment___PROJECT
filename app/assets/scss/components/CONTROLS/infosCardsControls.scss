@@ -14,7 +14,8 @@
   position: sticky;
   top: 80px; // Collé juste en dessous du header (qui fait 80px au scroll)
   z-index: 100;
-  background: var(--color-surface-muted); // Fond de parent pour cacher le défilement (optionnel)
+  background: var(--color-surface); // Barre-outil propre (surface) — évite le clash gris/bleu
+  border: 1px solid var(--color-border);
   padding: 10px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-small);
@@ -104,7 +105,7 @@
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.875rem;
     border-radius: var(--radius-md);
     border: none;
     font-weight: 500;
@@ -112,7 +113,12 @@
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.875rem;
     white-space: nowrap;
-    min-height: 48px;
+    min-height: 40px;
+
+    @media (max-width: 768px) {
+      padding: 0.4rem 0.7rem;
+      min-height: 36px;
+    }
 
     &--primary {
       background: var(--color-primary); // Bleu vif des boutons
@@ -264,22 +270,27 @@
   &__select {
     appearance: none;
     background: var(--color-primary-soft); // Bleu très clair
-    color: var(--color-primary);      // Texte bleu foncé
+    color: var(--color-primary-dark);  // Texte bleu foncé (contraste AA renforcé)
     padding: 0.5rem 1rem;
     border-radius: var(--radius-pill); // Pill shape
     font-family: inherit;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     outline: none;
     width: fit-content;
     border: 1px solid transparent;
     transition: all 0.2s;
-    
+
     background-image: none; // Vrai look pilule du prototype
 
-    &:hover, &:focus {
+    &:hover {
       background: var(--color-primary-light);
+    }
+
+    &:focus-visible {
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring-primary);
     }
   }
 
@@ -348,55 +359,6 @@
   }
 }
 
-// Support mode sombre optionnel
-@media (prefers-color-scheme: dark) {
-  .infos_cards {
-    background: #1e293b;
-
-    &__search-wrapper {
-      background: #0f172a;
-      border-color: #334155;
-      
-      input { color: #f1f5f9; }
-    }
-    
-    &__filter-panel {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-    }
-    
-    &__filter-title {
-      color: #f1f5f9;
-    }
-    
-    &__control-group {
-      background: #1e293b;
-    }
-    
-    &__label {
-      color: #e2e8f0;
-      &:hover { background-color: #334155; }
-    }
-    
-    &__content {
-      border-color: #334155;
-    }
-    
-    &__select {
-      background: #334155;
-      color: #f1f5f9;
-      
-      &:hover, &:focus { background: #475569; }
-    }
-    
-    &__view-toggle {
-      background: #334155;
-      color: #94a3b8;
-      
-      &--active {
-        background: var(--color-primary);
-        color: var(--color-surface);
-      }
-    }
-  }
-}
+// Mode sombre : volontairement non géré (thème clair unique « École chaleureux »).
+// Le bloc dark partiel assombrissait la barre de recherche/filtres alors que le reste
+// restait clair. Rendu clair forcé via `color-scheme: light` (_variables.scss).

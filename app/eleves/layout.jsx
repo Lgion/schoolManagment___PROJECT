@@ -269,10 +269,12 @@ export default function EcoleAdminEleveLayout({ children }) {
     }, [eleves, classesById, filterByClasse, filterByGender, filterByInterne, searchText, sortBy, sortOrder]);
 
     return (<>
-        <h2>Liste des élèves</h2>
+        <h2 className="page-title">Liste des élèves</h2>
         <canvas ref={canvasRef} id="camembert"
             width={320}
             height={320}
+            role="img"
+            aria-label={`Répartition des élèves par genre (total : ${totalEleves})`}
         ></canvas>
         <form className="infos_cards">
             {/* --- Top Bar: Search and Actions --- */}
@@ -332,8 +334,8 @@ export default function EcoleAdminEleveLayout({ children }) {
             {/* --- Filter Panel --- */}
             <div className={`infos_cards__filter-panel ${isFilterPanelOpen ? 'infos_cards__filter-panel--open' : ''}`}>
                 <div className="infos_cards__filter-header">
-                    <h3 className="infos_cards__filter-title">Student Management Filter Panel</h3>
-                    <button type="button" className="infos_cards__filter-close" onClick={() => setIsFilterPanelOpen(false)}>✕</button>
+                    <h3 className="infos_cards__filter-title">Filtrer les élèves</h3>
+                    <button type="button" className="infos_cards__filter-close" onClick={() => setIsFilterPanelOpen(false)} aria-label="Fermer le panneau de filtrage">✕</button>
                 </div>
 
                 {/* Filtre Classes */}
@@ -435,8 +437,19 @@ export default function EcoleAdminEleveLayout({ children }) {
                             aria-label={`Basculer vers l'affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
                             title={`Affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
                         >
-                            <span className="infos_cards__view-toggle-icon">
-                                {viewMode === 'grid' ? '📋' : '⊞'}
+                            <span className="infos_cards__view-toggle-icon" aria-hidden="true">
+                                {viewMode === 'grid' ? (
+                                    // Icône « liste » (passer en affichage en ligne)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                ) : (
+                                    // Icône « grille » (passer en affichage en grille)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                                    </svg>
+                                )}
                             </span>
                         </button>
                     </div>
@@ -469,7 +482,10 @@ export default function EcoleAdminEleveLayout({ children }) {
                 ))}
             </ul>
             :
-            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
+            <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
+                <span className="loading-state__spinner" aria-hidden="true" />
+                Chargement des élèves…
+            </div>
         }
 
         {children}

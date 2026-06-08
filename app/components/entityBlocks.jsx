@@ -1796,7 +1796,7 @@ function AddNoteForm({ notes = {}, onAdd, onRemove }) {
             </select>
             <input type="number" min="0" max="20" className="add-note-note" placeholder="Note" value={note} onChange={e => setNote(e.target.value)} />
             <button type="button" className="add-note-btn" onClick={handleValidate}>Valider</button>
-            <button type="button" className="add-note-btn" style={{ background: '#ccc', color: '#222' }} onClick={handleCancel}>Annuler</button>
+            <button type="button" className="add-note-btn" style={{ background: 'var(--color-border-strong)', color: 'var(--color-text-primary)' }} onClick={handleCancel}>Annuler</button>
             {err && <span className="add-note-error">{err}</span>}
           </div>
         )

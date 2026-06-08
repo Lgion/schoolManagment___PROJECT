@@ -14,23 +14,21 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
       ? getEnseignantImagePath(person)
       : person.photo_$_file || '/default-photo.png';
 
-  // Couleur de fond selon le sexe
-  const getBackgroundColor = (sexe) => {
-    if (sexe === 'Garçon' || sexe === 'garcon' || sexe === 'M' || sexe === 'Masculin') {
-      return 'rgba(54, 162, 235, 0.1)'; // Bleu très léger
-    } else if (sexe === 'Fille' || sexe === 'fille' || sexe === 'F' || sexe === 'Féminin') {
-      return 'rgba(255, 99, 132, 0.1)'; // Rose très léger
-    }
-    return 'transparent';
-  };
+  // Classe « sexe » pour la teinte de la carte (gérée par le CSS tokenisé,
+  // identique aux cartes élèves — voir couche de cohérence index.scss)
+  const genreClass = (() => {
+    const s = person.sexe;
+    if (s === 'M' || s === 'Garçon' || s === 'garcon' || s === 'Masculin') return 'm';
+    if (s === 'F' || s === 'Fille' || s === 'fille' || s === 'Féminin') return 'f';
+    return '';
+  })();
 
   return (
-    <div className="person-card-wrapper" style={{ position: 'relative' }}>
+    <div className={`person-card-wrapper ${genreClass}`} style={{ position: 'relative' }}>
       <Link
         href={`/${type}s/${person._id}`}
         className={`person-card ${viewMode === 'inline' ? 'person-card--inline' : ''}`}
         tabIndex={0}
-        style={{ backgroundColor: getBackgroundColor(person.sexe) }}
       >
         <img className="person-card__photo" src={photoUrl} alt={person.nom + ' ' + person.prenoms} />
         <div className="person-card__infos">

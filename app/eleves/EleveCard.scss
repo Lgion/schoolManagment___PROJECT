@@ -23,7 +23,7 @@ $progressColors : "#ff8c00",
   border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: var(--shadow-small);
-  width: 165px;
+  width: auto;
   display: flex;
   flex-flow: column;
   margin: 0;
@@ -87,7 +87,7 @@ $progressColors : "#ff8c00",
   }
 
   &__prenoms {
-    color: #555;
+    color: var(--color-text-secondary);
     font-weight: normal;
     font-size: 1em;
     margin-left: 0.2em;
@@ -118,22 +118,7 @@ $progressColors : "#ff8c00",
     margin-bottom: 0.25em;
   }
 
-  &__isinterne-badge {
-    display: inline-block;
-    background: var(--color-primary-light);
-    color: var(--color-primary);
-    border-radius: 999px;
-    padding: 0.15em 0.7em;
-    font-size: 0.78rem;
-    font-weight: 600;
-    border: 1px solid var(--color-primary-soft);
-
-    &--externe {
-      background: var(--color-surface-muted);
-      color: var(--color-text-secondary);
-      border-color: var(--color-border);
-    }
-  }
+  // Badges interne/externe centralisés dans la couche de cohérence (index.scss)
 
   &__editbtn {
     position: absolute;
@@ -219,58 +204,6 @@ $progressColors : "#ff8c00",
   }
 
 
-  /*
-  &__progress-argent {
-    background: #6c63ff;
-    top: 0;
-  }
-
-  &__progress-riz {
-    background: #f9b233;
-    bottom: 0;
-  }
-
-  &__progress-riz,
-  &__progress-argent {
-    position: absolute;
-    left: 0;
-    height: 50%;
-    transition: width 0.25s;
-  }
-
-  &__progress-values {
-    font-size: 0.93em;
-    color: #666;
-    margin-top: 0.1em;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  &__progress-valueArgent {
-    background: #6c63ff;
-    color: white;
-  }
-
-  &__progress-valueRiz {
-    background: #f9b233;
-    color: black;
-  }
-
-  &__progress-valueArgent,
-  &__progress-valueRiz {
-    margin: 0 0.2em;
-    padding: 2px;
-    border: 1px solid black;
-    border-radius: 0 0 5px 5px;
-
-    >span {
-      font-size: 10px;
-      color: red;
-      font-weight: bold;
-    }
-  }
-  */
-
   // Modificateur pour affichage en ligne
   &--inline {
     flex-direction: row;
@@ -303,8 +236,10 @@ $progressColors : "#ff8c00",
     &__name {
       min-width: 200px;
       flex-shrink: 0;
+      height: auto;
       overflow: hidden;
-      height: 1em;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .eleve-card__classe,
@@ -330,31 +265,9 @@ $progressColors : "#ff8c00",
 
     .eleve-card__progress-bar,
     &__progress-bar {
-      position: absolute;
-      bottom: 0;
-      left: 5%;
-      width: 90%;
+      position: relative;
+      width: 100%;
       border: 1px solid var(--color-border);
-
-      &:before,
-      &:after {
-        position: absolute;
-        text-align: center;
-        text-shadow: 0 0 3px BLACK, 0 0 2px BLACK, 0 0 1px BLACK;
-      }
-
-      &:before {
-        content: attr(data-argent);
-        color: #6c63ff;
-        left: 1em;
-        z-index: 1;
-      }
-
-      &:after {
-        content: attr(data-riz);
-        color: #f9b233;
-        right: 1em;
-      }
     }
 
     @media (max-width: 768px) {
@@ -363,9 +276,9 @@ $progressColors : "#ff8c00",
       &__infos {
         flex-flow: column;
         align-items: flex-start;
-        gap: 0.1em;
-        height: 75px;
-        overflow: hidden;
+        gap: 0.3em;
+        height: auto;
+        overflow: visible;
       }
 
       .eleve-card__name,
@@ -378,13 +291,6 @@ $progressColors : "#ff8c00",
       &__progress {
         min-width: auto;
         width: 100%;
-      }
-
-      .eleve-card__isinterne {
-        width: 75px;
-        position: absolute;
-        bottom: 10px;
-        right: 0px;
       }
     }
   }
@@ -403,34 +309,26 @@ $progressColors : "#ff8c00",
   }
 }
 
-// Container pour la liste d'élèves
+// Container pour la liste d'élèves : grille fluide (cartes plus larges, ~1 de moins par ligne)
 .eleves-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5em;
-  justify-content: space-evenly;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 1.5rem;
   padding-left: 0;
-  gap: 2rem 0;
+  list-style: none;
+  align-items: stretch;
+
+  // La carte (lien <a>) remplit sa cellule de grille
+  .eleve-card { width: 100%; }
 
   &--inline {
-    flex-direction: column;
-    gap: 0;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
 
     .eleve-card-wrapper {
       width: 100%;
     }
   }
-
-  // Indice de genre subtil : légère teinte + liseré supérieur (pas de fond saturé)
-  .eleve-card-wrapper {
-    &.f > a {
-      background: #FFF5F7;
-      border-top: 3px solid #EC4899;
-    }
-
-    &.m > a {
-      background: #F2F7FF;
-      border-top: 3px solid #3B82F6;
-    }
-  }
 }
+// La teinte « sexe » est gérée dans la couche de cohérence (index.scss) pour rester
+// identique entre cartes élèves et enseignants.

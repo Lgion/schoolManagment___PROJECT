@@ -16,7 +16,6 @@ export default function ClassesPage({ children }) {
   const [detailModalType, setDetailModalType] = useState(null);
   const [detailModalEntityId, setDetailModalEntityId] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null); // null = toutes les années
-  console.log(classes);
 
   {/*
   // Fonction pour ouvrir la modale de détail
@@ -47,7 +46,7 @@ export default function ClassesPage({ children }) {
   */}
 
   return (<>
-    <h2 className="ecole-admin__dashboardSubTitle">Liste des classes
+    <h2 className="page-title">Liste des classes
       {/* <PermissionGate role="admin">
         <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button>
       </PermissionGate> */}
@@ -158,7 +157,10 @@ export default function ClassesPage({ children }) {
         })()}
       </div>
       :
-      <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
+      <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
+        <span className="loading-state__spinner" aria-hidden="true" />
+        Chargement des classes…
+      </div>
     }
 
     {/* Modale d'édition EntityModal */}

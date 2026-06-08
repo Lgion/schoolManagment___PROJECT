@@ -277,38 +277,10 @@
   }
 }
 
-// Mode sombre
-@media (prefers-color-scheme: dark) {
-  .ecole-admin__content.home {
-    color: var(--color-surface);
-    background: linear-gradient(145deg, rgba(44, 62, 80, 0.98), rgba(52, 73, 94, 0.95));
-    box-shadow: var(--shadow-large);
-
-    h2 {
-      color: var(--color-primary-600);
-    }
-
-    p {
-      // color: #ecf0f1;
-
-      &::before {
-        background: var(--color-primary-600);
-      }
-
-      &:first-of-type::first-letter {
-        color: var(--color-primary-600);
-      }
-    }
-
-    picture {
-      box-shadow: var(--shadow-large);
-
-      &:hover {
-        box-shadow: var(--shadow-large);
-      }
-    }
-  }
-}
+// Mode sombre : volontairement non géré.
+// Le thème « École chaleureux » est un thème clair unique. Un bloc dark partiel
+// (fond sombre sans adaptation des titres/textes) cassait le contraste — voir
+// `color-scheme: light` déclaré dans _variables.scss qui force le rendu clair.
 
 // Styles pour l'impression
 @media print {

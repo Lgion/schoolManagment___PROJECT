@@ -6,6 +6,12 @@ $secondaryFont: 'Poppins', 'Arial', sans-serif;
 
 // Variables CSS pour les composants
 :root {
+  // Thème clair unique « École chaleureux » : on opte explicitement pour le rendu
+  // clair afin que le navigateur (et son « auto dark mode ») n'assombrisse ni la page
+  // ni les contrôles natifs. Sans cela, une page claire non déclarée pouvait être
+  // auto-inversée → fonds bleu marine, titres et noms de cartes illisibles.
+  color-scheme: light;
+
   // Polices
   --font-primary: #{$primaryFont};
   --font-secondary: #{$secondaryFont};
@@ -59,6 +65,18 @@ $secondaryFont: 'Poppins', 'Arial', sans-serif;
   --color-border: #E7E5E4;
   --color-border-strong: #D6D3D1;
   --color-white: #ffffff;
+
+  // Couleurs sémantiques « sexe » — affirmées mais accessibles (texte foncé sur fond clair)
+  --color-genre-f: #DB2777;       // rose/magenta prononcé (liseré + accents)
+  --color-genre-f-bg: #FCE7F3;    // fond rose pâle lisible
+  --color-genre-m: #1D4ED8;       // bleu prononcé (liseré + accents)
+  --color-genre-m-bg: #DBEAFE;    // fond bleu pâle lisible
+
+  // Couleurs sémantiques « statut » interne / externe — nettement distinctes
+  --color-interne-bg: #DBEAFE;    // bleu pâle
+  --color-interne-fg: #1E40AF;    // bleu foncé (contraste AA sur fond pâle)
+  --color-externe-bg: #FFEDD5;    // orange pâle (= secondary-light)
+  --color-externe-fg: #9A3412;    // orange foncé (contraste AA confortable ~5.9:1 sur fond pâle)
 
   // Anneau de focus accessible (visible, contrasté)
   --focus-ring: 0 0 0 3px rgba(249, 115, 22, 0.45);
