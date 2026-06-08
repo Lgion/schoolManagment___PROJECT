@@ -4,8 +4,55 @@ https://gemini.google.com/app/951a0c213d4a23a1?hl=fr
 
 
 
+- Permettre un système de bons points 
+
+- Rendre fonctionnel l'ajout de fichiers PDF par le prof à sa classe
+
+- La page affiche pour un parent ou un élève connecté toi aussi inclure les pages élèves prof classe mais avec beaucoup plus de restrictions dans les infos affichées ou avoir une section spéciale en en-tête pour regrouper les infos et actions importantes ou utiles pour le rôle parents élèves 
 
 
+- Il faut pouvoir créer des groupes d'élèves de parents, de profshe ou mixtes. 
+
+- Sur la page d'une classe, il faut un bouton permettant de générer les bulletins scolaires de chaque élève ainsi qu'un bouton pour le bulletin le bilan annuel.
+
+- Permettre de faire l'appel comme sur klassly
+
+- Permet de lancer une visio pour l'école (sur la page des classes) et pour un classe (sur la page d'une classe) 
+
+- Pareil pour lancer un sondage 
+=> si possibilité d'envoyer SMS pour être certain que tous soit notifié du sondage 
+
+- Permettre au prof de remplir le cahier de texte des élèves 
+=> Le cahier de texte éteint aurait avec les clés représentant le timestamp du jour
+
+- Il faut un calendrier pour l'école, il permettra d'y planifier des événements 
+
+- En plus de pouvoir créer un Evans pour l'école, chaque classe peut créer un Evans qui sera dynamiquement rajouté à l'emploi du temps de la classe 
+
+- Prendre rendez-vous avec un prof sur son agenda 
+
+- un prof peut Convoquer un parent
+=> Les profs doivent aussi avoir personel un emploi du temps afin d'optimiser le responsabilité et vie scolaire 
+
+- Il faut une page blog de l'école ou les élèves parents dont les profs, comme les admines peuvent y créer un article de blog 
+
+- Dans les pages d'une classe en plus de pouvoir scanner le bilan d'une composition, il faut pouvoir générer la feuille de bilan en PDF 
+
+- Fonctionnalités de classe lit pour album photo de classe => ajouter une section dédiée dans la page d'une classe ou de son édition 
+=> Les élèves aussi auront une section comme klassly avec “livre de classe” mais dédié à l'élève “livre d'élèves” spécifiquement d'année en année
+
+- Un menu jeux pédagogique directement accessible dans le menu principal. Juste pour les users connectés en tant que parents élèves, pour tous les rôles, ils seront accessibles dans chaque section de classe sur la page des classes
+
+- La fonctionnalité de création d'école en bac à sable vivant temporairement dans le local session 
+
+- La fonctionnalité de générer l'école via formulaire 
+
+- Communication: si l'élève et le parent ne partage pas le même compte (quand il a été créé le compte de l'élève -> rajouter cette fonction dans la page d'un élève) l'élève peut directement voir ses communications avec son prof. Sinon ce sera une sous-section de la page d'accueil et ou quelque part d'autres….
+=> Il faut non seulement concevoir une interface pour le parent d'élève et une version plus spécifique dédiée à l'élève 
+
+- Pour l'emploi du temps permettre de changer un peu de charger, un PDF de l'emploi du temps d'une classe afin qu'il soit généré et modifié dans l'emploi du temps de la classe sur l'application
+
+___________________________________________________________________________________________________________
 - rajouter une date aux notes, et s'assurer que y'a des coefficients dans la moyenne affichée
 DONE
 - dans la page Eleves permettre de créer la liste de toutes les matières en un clic, et définir si c'est une composition officiel ou pas
