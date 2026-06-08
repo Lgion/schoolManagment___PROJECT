@@ -1,9 +1,7 @@
 "use client";
-import React, { useState, useEffect, useContext, useMemo, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useContext, Fragment } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres'; // Keep for structure mapping only
-import { getLSItem, setLSItem } from '../../utils/localStorageManager';
-import FeeConfigManager from './FeeConfigManager';
+import { COEFFICIENTS_MATIERES } from '../../utils/matieres';
 
 function Parent({ form, setForm, parents }) {
 
@@ -1478,117 +1476,112 @@ function AbsencesBlock({ absences, setForm }) {
 }
 
 // Bloc gestion des bonus (édition ou read-only)
-function BonusBlock({ bonus, setForm }) {
-  const [showBonusForm, setShowBonusForm] = useState(false);
-  const [bonusDate, setBonusDate] = useState('');
-  const [bonusLabel, setBonusLabel] = useState('');
+// Bloc générique pour entrées horodatées (bonus / malus), édition ou lecture seule.
+// BonusBlock et ManusBlock étaient deux copies de ce composant (~125 lignes chacune) :
+// seuls le nom de champ, les libellés et les préfixes de classes CSS différaient.
+function TimedEntriesBlock({ field, label, singular, entries, setForm }) {
+  const [showForm, setShowForm] = useState(false);
+  const [date, setDate] = useState('');
+  const [reason, setReason] = useState('');
+
   // Gérer les deux formats : objet direct ou array d'objets
-  const items = bonus && typeof bonus === 'object'
-    ? (Array.isArray(bonus)
-      ? bonus.flatMap(obj => Object.entries(obj))
-      : Object.entries(bonus))
+  const items = entries && typeof entries === 'object'
+    ? (Array.isArray(entries)
+      ? entries.flatMap(obj => Object.entries(obj))
+      : Object.entries(entries))
     : [];
 
-  if (!setForm) {
-    // Groupement par mois pour l'affichage lecture seule
-    const groupedByMonth = items.reduce((acc, [ts, txt]) => {
-      const d = new Date(Number(ts));
-      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push([ts, txt]);
-      return acc;
-    }, {});
+  // Groupement par mois (clé "YYYY-MM")
+  const groupByMonth = (list) => list.reduce((acc, [ts, txt]) => {
+    const d = new Date(Number(ts));
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push([ts, txt]);
+    return acc;
+  }, {});
 
+  if (!setForm) {
+    // Affichage lecture seule
+    const groupedByMonth = groupByMonth(items);
     return (
-      <div className="bonus-block">
-        <div className="bonus-header">
-          <span>Bonus : <b>{items.length}</b></span>
+      <div className={`${field}-block`}>
+        <div className={`${field}-header`}>
+          <span>{label} : <b>{items.length}</b></span>
         </div>
-        <div className="bonus-list">
-          {Object.entries(groupedByMonth).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
-            <div key={month} className="bonus-month">
-              <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
-              <div className="month-bonus">
-                {entries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
-                  <div className="bonus-entry" key={ts}>
-                    <span className="bonus-date">{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
-                    <span className="bonus-txt">{typeof txt === 'string' ? txt : (typeof txt === 'object' ? Object.values(txt)[0] || JSON.stringify(txt) : String(txt))}</span>
+        <div className={`${field}-list`}>
+          {Object.entries(groupedByMonth).sort((a, b) => b[0].localeCompare(a[0])).map(([month, monthEntries]) => (
+            <div key={month} className={`${field}-month`}>
+              <div className="month-title">{new Date(Number(monthEntries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+              <div className={`month-${field}`}>
+                {monthEntries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
+                  <div className={`${field}-entry`} key={ts}>
+                    <span className={`${field}-date`}>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
+                    <span className={`${field}-txt`}>{typeof txt === 'string' ? txt : (typeof txt === 'object' ? Object.values(txt)[0] || JSON.stringify(txt) : String(txt))}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
-        <input type="hidden" name="bonus" value={JSON.stringify(bonus || {})} />
+        <input type="hidden" name={field} value={JSON.stringify(entries || {})} />
       </div>
     );
   }
 
   return (
-    <div className="bonus-block">
-      <input type="hidden" name="bonus" value={JSON.stringify(bonus || {})} />
-      <div className="bonus-header">
-        <span>Bonus : <b>{items.length}</b></span>
-        <button type="button" className="add-bonus-btn" onClick={() => setShowBonusForm(true)}>Ajouter</button>
+    <div className={`${field}-block`}>
+      <input type="hidden" name={field} value={JSON.stringify(entries || {})} />
+      <div className={`${field}-header`}>
+        <span>{label} : <b>{items.length}</b></span>
+        <button type="button" className={`add-${field}-btn`} onClick={() => setShowForm(true)}>Ajouter</button>
       </div>
-      {showBonusForm && (
-        <div className="bonus-picker-modal">
-          <input type="date" value={bonusDate} onChange={e => setBonusDate(e.target.value)} />
-          <input type="text" placeholder="Raison du bonus" value={bonusLabel} onChange={e => setBonusLabel(e.target.value)} />
+      {showForm && (
+        <div className={`${field}-picker-modal`}>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+          <input type="text" placeholder={`Raison du ${singular}`} value={reason} onChange={e => setReason(e.target.value)} />
           <button type="button" className="add-entry-btn" onClick={() => {
-            if (bonusDate && bonusLabel) {
-              const ts = new Date(bonusDate).setHours(0, 0, 0, 0);
+            if (date && reason) {
+              const ts = new Date(date).setHours(0, 0, 0, 0);
               setForm(f => {
                 // Gérer les deux formats : array d'objets ou objet direct
-                const currentBonus = f.bonus || [];
-                if (Array.isArray(currentBonus)) {
-                  // Format array d'objets - ajouter un nouvel objet
-                  return { ...f, bonus: [...currentBonus, { [ts]: bonusLabel }] };
+                const current = f[field] || [];
+                if (Array.isArray(current)) {
+                  return { ...f, [field]: [...current, { [ts]: reason }] };
                 } else {
-                  // Format objet direct - convertir en array puis ajouter
-                  const bonusArray = Object.keys(currentBonus).length > 0
-                    ? [currentBonus, { [ts]: bonusLabel }]
-                    : [{ [ts]: bonusLabel }];
-                  return { ...f, bonus: bonusArray };
+                  const arr = Object.keys(current).length > 0
+                    ? [current, { [ts]: reason }]
+                    : [{ [ts]: reason }];
+                  return { ...f, [field]: arr };
                 }
               });
-              setShowBonusForm(false);
-              setBonusDate('');
-              setBonusLabel('');
+              setShowForm(false);
+              setDate('');
+              setReason('');
             }
           }}>Valider</button>
-          <button type="button" className="entry-cancel-btn" onClick={() => setShowBonusForm(false)}>Annuler</button>
+          <button type="button" className="entry-cancel-btn" onClick={() => setShowForm(false)}>Annuler</button>
         </div>
       )}
-      <div className="bonus-list">
-        {/* Groupement par mois comme avant */}
-        {Object.entries(items.reduce((acc, [ts, txt]) => {
-          const d = new Date(Number(ts));
-          const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-          if (!acc[key]) acc[key] = [];
-          acc[key].push([ts, txt]);
-          return acc;
-        }, {})).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
-          <div key={month} className="bonus-month">
-            <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
-            <div className="month-bonus">
-              {entries.sort((a, b) => a[0] - b[0]).map(([ts, txt]) => (
-                <div className="bonus-entry" key={ts} style={{ position: 'relative', display: 'inline-block', margin: '0 6px 6px 0' }}>
+      <div className={`${field}-list`}>
+        {Object.entries(groupByMonth(items)).sort((a, b) => b[0].localeCompare(a[0])).map(([month, monthEntries]) => (
+          <div key={month} className={`${field}-month`}>
+            <div className="month-title">{new Date(Number(monthEntries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+            <div className={`month-${field}`}>
+              {monthEntries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
+                <div className={`${field}-entry`} key={ts} style={{ position: 'relative', display: 'inline-block', margin: '0 6px 6px 0' }}>
                   <span>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
-                  <span className="bonus-txt">{txt}</span>
-                  <button type="button" className="remove-bonus-btn" title="Supprimer" onClick={() => {
-                    if (window.confirm('Supprimer ce bonus ?')) {
+                  <span className={`${field}-txt`}>{txt}</span>
+                  <button type="button" className={`remove-${field}-btn`} title="Supprimer" onClick={() => {
+                    if (window.confirm(`Supprimer ce ${singular} ?`)) {
                       setForm(f => {
-                        const currentBonus = f.bonus || [];
-                        if (Array.isArray(currentBonus)) {
-                          // Format array d'objets - filtrer l'objet qui contient ce timestamp
-                          const newBonus = currentBonus.filter(obj => !obj.hasOwnProperty(ts));
-                          return { ...f, bonus: newBonus };
+                        const current = f[field] || [];
+                        if (Array.isArray(current)) {
+                          const next = current.filter(obj => !obj.hasOwnProperty(ts));
+                          return { ...f, [field]: next };
                         } else {
-                          // Format objet direct - supprimer la clé
-                          const o = { ...currentBonus };
+                          const o = { ...current };
                           delete o[ts];
-                          return { ...f, bonus: o };
+                          return { ...f, [field]: o };
                         }
                       });
                     }
@@ -1603,130 +1596,14 @@ function BonusBlock({ bonus, setForm }) {
   );
 }
 
-// Bloc gestion des manuscrits (édition ou read-only)
+// Enveloppes fines : conservent l'API publique (réexportées depuis EntityModal).
+function BonusBlock({ bonus, setForm }) {
+  return <TimedEntriesBlock field="bonus" label="Bonus" singular="bonus" entries={bonus} setForm={setForm} />;
+}
+
+// Bloc gestion des malus (édition ou read-only)
 function ManusBlock({ manus, setForm }) {
-  const [showManusForm, setShowManusForm] = useState(false);
-  const [manusDate, setManusDate] = useState('');
-  const [manusLabel, setManusLabel] = useState('');
-  // Gérer les deux formats : objet direct ou array d'objets
-  const items = manus && typeof manus === 'object'
-    ? (Array.isArray(manus)
-      ? manus.flatMap(obj => Object.entries(obj))
-      : Object.entries(manus))
-    : [];
-
-  if (!setForm) {
-    // Groupement par mois pour l'affichage lecture seule
-    const groupedByMonth = items.reduce((acc, [ts, txt]) => {
-      const d = new Date(Number(ts));
-      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push([ts, txt]);
-      return acc;
-    }, {});
-
-    return (
-      <div className="manus-block">
-        <div className="manus-header">
-          <span>Malus : <b>{items.length}</b></span>
-        </div>
-        <div className="manus-list">
-          {Object.entries(groupedByMonth).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
-            <div key={month} className="manus-month">
-              <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
-              <div className="month-manus">
-                {entries.sort((a, b) => Number(a[0]) - Number(b[0])).map(([ts, txt]) => (
-                  <div className="manus-entry" key={ts}>
-                    <span className="manus-date">{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
-                    <span className="manus-txt">{typeof txt === 'string' ? txt : (typeof txt === 'object' ? Object.values(txt)[0] || JSON.stringify(txt) : String(txt))}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        <input type="hidden" name="manus" value={JSON.stringify(manus || {})} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="manus-block">
-      <input type="hidden" name="manus" value={JSON.stringify(manus || {})} />
-      <div className="manus-header">
-        <span>Malus : <b>{items.length}</b></span>
-        <button type="button" className="add-manus-btn" onClick={() => setShowManusForm(true)}>Ajouter</button>
-      </div>
-      {showManusForm && (
-        <div className="manus-picker-modal">
-          <input type="date" value={manusDate} onChange={e => setManusDate(e.target.value)} />
-          <input type="text" placeholder="Raison du malus" value={manusLabel} onChange={e => setManusLabel(e.target.value)} />
-          <button type="button" className="add-entry-btn" onClick={() => {
-            if (manusDate && manusLabel) {
-              const ts = new Date(manusDate).setHours(0, 0, 0, 0);
-              setForm(f => {
-                // Gérer les deux formats : array d'objets ou objet direct
-                const currentManus = f.manus || [];
-                if (Array.isArray(currentManus)) {
-                  // Format array d'objets - ajouter un nouvel objet
-                  return { ...f, manus: [...currentManus, { [ts]: manusLabel }] };
-                } else {
-                  // Format objet direct - convertir en array puis ajouter
-                  const manusArray = Object.keys(currentManus).length > 0
-                    ? [currentManus, { [ts]: manusLabel }]
-                    : [{ [ts]: manusLabel }];
-                  return { ...f, manus: manusArray };
-                }
-              });
-              setShowManusForm(false);
-              setManusDate('');
-              setManusLabel('');
-            }
-          }}>Valider</button>
-          <button type="button" className="entry-cancel-btn" onClick={() => setShowManusForm(false)}>Annuler</button>
-        </div>
-      )}
-      <div className="manus-list">
-        {/* Groupement par mois comme avant */}
-        {Object.entries(items.reduce((acc, [ts, txt]) => {
-          const d = new Date(Number(ts));
-          const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-          if (!acc[key]) acc[key] = [];
-          acc[key].push([ts, txt]);
-          return acc;
-        }, {})).sort((a, b) => b[0].localeCompare(a[0])).map(([month, entries]) => (
-          <div key={month} className="manus-month">
-            <div className="month-title">{new Date(Number(entries[0][0])).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })}</div>
-            <div className="month-manus">
-              {entries.sort((a, b) => a[0] - b[0]).map(([ts, txt]) => (
-                <div className="manus-entry" key={ts} style={{ position: 'relative', display: 'inline-block', margin: '0 6px 6px 0' }}>
-                  <span>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
-                  <span className="manus-txt">{txt}</span>
-                  <button type="button" className="remove-manus-btn" title="Supprimer" onClick={() => {
-                    if (window.confirm('Supprimer ce malus ?')) {
-                      setForm(f => {
-                        const currentManus = f.manus || [];
-                        if (Array.isArray(currentManus)) {
-                          // Format array d'objets - filtrer l'objet qui contient ce timestamp
-                          const newManus = currentManus.filter(obj => !obj.hasOwnProperty(ts));
-                          return { ...f, manus: newManus };
-                        } else {
-                          // Format objet direct - supprimer la clé
-                          const o = { ...currentManus };
-                          delete o[ts];
-                          return { ...f, manus: o };
-                        }
-                      });
-                    }
-                  }}>&times;</button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <TimedEntriesBlock field="manus" label="Malus" singular="malus" entries={manus} setForm={setForm} />;
 }
 // --- Composant pour ajouter une note ---
 function AddNoteForm({ notes = {}, onAdd, onRemove }) {

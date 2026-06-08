@@ -14,7 +14,6 @@ export default function EnseignantDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
-  const [isReduced, setIsReduced] = useState(false);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   useEffect(() => {

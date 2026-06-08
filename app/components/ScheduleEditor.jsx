@@ -204,12 +204,16 @@ const ScheduleEditor = ({
   }
 
   // Vérifier si un créneau horaire est une pause (basé sur MongoDB)
+  // NB : les breakTimes viennent du JSON de l'API, donc la méthode Mongoose
+  // isInTimeRange() n'existe plus côté client -> on compare les bornes inline.
   const isBreakTime = (heure) => {
     if (!breakTimes || breakTimes.length === 0) return false
 
-    return breakTimes.some(breakTime => {
-      return breakTime.isActive && breakTime.isInTimeRange && breakTime.isInTimeRange(heure.debut)
-    })
+    return breakTimes.some(breakTime =>
+      breakTime.isActive &&
+      heure.debut >= breakTime.heureDebut &&
+      heure.debut < breakTime.heureFin
+    )
   }
 
   // Obtenir les informations de la pause pour un créneau

@@ -2,11 +2,16 @@
 import dbConnect from '../../lib/dbConnect';
 import Classe from '../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
+import { requireAuth } from '../../lib/authWithFallback';
+import { checkRole, Roles } from '../../../../utils/roles';
 
 export async function GET(request, { params }) {
   try {
+    const auth = await requireAuth(request, 'GET /api/classes/[id]');
+    if (auth instanceof NextResponse) return auth;
+
     await dbConnect();
-    
+
     const { id } = await params;
     console.log('🎓 [API] Récupération de la classe:', id);
     
@@ -51,8 +56,20 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    const auth = await requireAuth(request, 'PUT /api/classes/[id]');
+    if (auth instanceof NextResponse) return auth;
+
+    // Modifier les coefficients de notation est réservé aux administrateurs
+    const isAdmin = await checkRole(Roles.ADMIN, request);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Accès refusé - réservé aux administrateurs' },
+        { status: 403 }
+      );
+    }
+
     await dbConnect();
-    
+
     const { id } = await params;
     const body = await request.json();
     

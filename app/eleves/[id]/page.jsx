@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
+import { generateSchoolYears } from '../../components/entityBlocks';
 import Gmap from '../../_/Gmap_plus';
 import PermissionGate from "../../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
@@ -15,7 +16,6 @@ export default function ElevePage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
-  const [isReduced, setIsReduced] = useState(false);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
   const getDefaultSchoolYear = (compositions) => {
@@ -47,22 +47,7 @@ export default function ElevePage() {
       onChange={e => setSchoolYear(e.target.value)}
     >
       {(() => {
-        // Utilise la même logique que CompositionsBlock
-        const generateSchoolYears = (existingCompositions = {}) => {
-          const now = new Date();
-          const currentYearStart = (now.getMonth() + 1) < 7 ? now.getFullYear() - 1 : now.getFullYear();
-
-          const yearRange = Array.from({ length: 21 }, (_, i) => {
-            const start = currentYearStart - 10 + i;
-            return `${start}-${start + 1}`;
-          });
-
-          const yearsSet = new Set([...yearRange, ...Object.keys(existingCompositions || {})]);
-          const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
-
-          return { years, currentYearStart };
-        };
-
+        // generateSchoolYears est désormais partagé depuis entityBlocks (même logique que CompositionsBlock)
         const { years, currentYearStart } = generateSchoolYears(eleve?.compositions);
 
         return years.map(y => {

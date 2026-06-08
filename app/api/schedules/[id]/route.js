@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
       return userId
     }
 
-    const { id } = params
+    const { id } = await params
 
     const schedule = await Schedule.findById(id)
       .populate('planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId')
@@ -59,8 +59,9 @@ export async function PUT(request, { params }) {
       return userId
     }
 
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
+    const { label, planning } = body
 
     const schedule = await Schedule.findById(id)
 

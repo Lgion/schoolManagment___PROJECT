@@ -6,6 +6,12 @@ import { useAuth } from '@clerk/nextjs';
 
 export const AiAdminContext = createContext({});
 
+// Compteur monotone pour des _id temporaires uniques : deux créations dans la même
+// milliseconde produisaient le même 'temp_<ms>', et la réconciliation optimiste
+// (qui remplaçait *tout* item temp_) en perdait alors une.
+let tempIdCounter = 0;
+const nextTempId = () => `temp_${Date.now()}_${++tempIdCounter}`;
+
 export const AdminContextProvider = ({ children }) => {
   const { userId } = useAuth();
 
@@ -203,6 +209,7 @@ export const AdminContextProvider = ({ children }) => {
 
   const saveEleve = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
+    const tempId = data._id ? null : nextTempId();
 
     // Mise à jour optimiste
     setEleves(prev => {
@@ -210,7 +217,6 @@ export const AdminContextProvider = ({ children }) => {
       if (data._id) {
         newList = prev.map(e => e._id === data._id ? { ...e, ...data } : e);
       } else {
-        const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
       setLSItem('eleves', newList);
@@ -229,8 +235,8 @@ export const AdminContextProvider = ({ children }) => {
 
       // Mise à jour finale avec les données du serveur (incluant les IDs réels, timestamps, etc.)
       setEleves(prev => {
-        const newList = prev.map(e => (e._id === saved._id || (e._id && e._id.startsWith('temp_'))) ? saved : e);
-        // S'assurer de supprimer tout doublon temporaire si c'était une création
+        const newList = prev.map(e => (e._id === saved._id || e._id === tempId) ? saved : e);
+        // Supprimer tout doublon temporaire si c'était une création
         const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
         setLSItem('eleves', uniqueList);
         return uniqueList;
@@ -306,13 +312,13 @@ export const AdminContextProvider = ({ children }) => {
 
   const saveEnseignant = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
+    const tempId = data._id ? null : nextTempId();
 
     setEnseignants(prev => {
       let newList;
       if (data._id) {
         newList = prev.map(e => e._id === data._id ? { ...e, ...data } : e);
       } else {
-        const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
       setLSItem('enseignants', newList);
@@ -330,7 +336,7 @@ export const AdminContextProvider = ({ children }) => {
       const saved = await res.json();
 
       setEnseignants(prev => {
-        const newList = prev.map(e => (e._id === saved._id || (e._id && e._id.startsWith('temp_'))) ? saved : e);
+        const newList = prev.map(e => (e._id === saved._id || e._id === tempId) ? saved : e);
         const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
         setLSItem('enseignants', uniqueList);
         return uniqueList;
@@ -404,13 +410,13 @@ export const AdminContextProvider = ({ children }) => {
 
   const saveClasse = useCallback(async (data) => {
     const method = data._id ? 'PUT' : 'POST';
+    const tempId = data._id ? null : nextTempId();
 
     setClasses(prev => {
       let newList;
       if (data._id) {
         newList = prev.map(c => c._id === data._id ? { ...c, ...data } : c);
       } else {
-        const tempId = 'temp_' + Date.now();
         newList = [...prev, { ...data, _id: tempId }];
       }
       setLSItem('classes', newList);
@@ -428,7 +434,7 @@ export const AdminContextProvider = ({ children }) => {
       const saved = await res.json();
 
       setClasses(prev => {
-        const newList = prev.map(c => (c._id === saved._id || (c._id && c._id.startsWith('temp_'))) ? saved : c);
+        const newList = prev.map(c => (c._id === saved._id || c._id === tempId) ? saved : c);
         const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
         setLSItem('classes', uniqueList);
         return uniqueList;

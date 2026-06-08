@@ -35,42 +35,6 @@ export const ClasseDisplay = ({ classe, label = "Classe :" }) => {
 };
 
 /**
- * Composant d'affichage de plusieurs classes (pour les enseignants)
- * @param {Array} classes - Liste des classes à afficher
- * @param {Array} classeIds - IDs des classes assignées
- * @param {string} label - Label à afficher avant les classes
- * @returns {JSX.Element} - Élément JSX pour l'affichage des classes
- */
-export const MultiClasseDisplay = ({ classes, classeIds, label = "Classes assignées :" }) => {
-  if (!Array.isArray(classeIds) || classeIds.length === 0) {
-    return (
-      <div className="person-detail__classe" style={{marginBottom:'1em'}}>
-        <u>{label}</u> <span style={{color:'grey'}}>Aucune classe assignée</span>
-      </div>
-    );
-  }
-
-  const assignedClasses = classeIds.map(id => findClasseById(classes, id)).filter(Boolean);
-
-  return (
-    <div className="person-detail__classe" style={{marginBottom:'1em'}}>
-      <u>{label}</u> 
-      {assignedClasses.length > 0 ? (
-        <div style={{marginTop:'0.5em'}}>
-          {assignedClasses.map(classe => (
-            <div key={classe._id} style={{marginBottom:'0.25em'}}>
-              <Link href={`/classes/${classe._id}`}>{classe.niveau} - {classe.alias}</Link>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <span style={{color:'grey'}}>Aucune classe assignée</span>
-      )}
-    </div>
-  );
-};
-
-/**
  * Hook personnalisé pour gérer la logique commune des pages de détail
  * @param {string} id - ID de l'entité
  * @param {Object} ctx - Contexte de l'application

@@ -1,9 +1,13 @@
 import dbConnect from '../../../lib/dbConnect';
+import { requireAuth } from '../../../lib/authWithFallback';
 import Classe from '../../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
 
 export async function POST(request, { params }) {
     try {
+        const auth = await requireAuth(request, 'POST /api/classes/[id]/add-report');
+        if (auth instanceof NextResponse) return auth;
+
         await dbConnect();
 
         const { id } = await params;

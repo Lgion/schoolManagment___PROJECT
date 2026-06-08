@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import mongoose from 'mongoose';
+import dbConnect from '../../lib/dbConnect';
 import { Datas } from '../../_/models/Datas';
 
 export async function GET(request) {
@@ -19,12 +19,9 @@ export async function GET(request) {
 
     console.log('🗑️ [API] Suppression des fallbacks Cloudinary...');
 
-    // Connexion à MongoDB si pas déjà connectée
-    if (mongoose.connection.readyState !== 1) {
-      const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/school_management';
-      await mongoose.connect(MONGODB_URI);
-      console.log('🔌 Connecté à MongoDB');
-    }
+    // Connexion mutualisée (respecte le cache + le mode sample), au lieu d'un
+    // mongoose.connect() brut qui bind la connexion globale sur une autre base
+    await dbConnect();
 
     // Compter les entrées avant suppression
     const countBefore = await Datas.countDocuments({ key: 'cloudinaryFallback' });

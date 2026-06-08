@@ -11,7 +11,7 @@ function generateKey(label) {
   if (!label) return '';
   return label.toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove accents
-    .replace(/[^a-z0-z0-9]/g, '_') // replace non-alphanumeric with _
+    .replace(/[^a-z0-9]/g, '_') // replace non-alphanumeric with _
     .replace(/_+/g, '_') // collapse underscores
     .replace(/^_|_$/g, ''); // trim underscores
 }

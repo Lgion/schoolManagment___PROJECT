@@ -1,8 +1,28 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+
+/**
+ * Verrou de scroll partagé : compteur de référence au niveau module pour gérer
+ * proprement les portails imbriqués (le dernier fermé restaure le scroll).
+ */
+let openPortalCount = 0;
+
+function lockBodyScroll() {
+  if (openPortalCount === 0) {
+    document.body.style.overflow = 'hidden';
+  }
+  openPortalCount += 1;
+}
+
+function unlockBodyScroll() {
+  openPortalCount = Math.max(0, openPortalCount - 1);
+  if (openPortalCount === 0) {
+    document.body.style.overflow = '';
+  }
+}
 
 /**
  * Composant Portal générique pour wrapper le contenu des pages /[id] dans une modale.
@@ -11,20 +31,22 @@ import { useRouter } from 'next/navigation';
 export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", headerControls }) {
   const [isClosing, setIsClosing] = useState(false);
   const router = useRouter();
+  const closeTimeoutRef = useRef(null);
+  const closeBtnRef = useRef(null);
 
-  // Fermeture avec animation
-  const handleClose = () => {
+  // Fermeture avec animation — stabilisée pour ne pas capturer un onClose périmé
+  const handleClose = useCallback(() => {
     setIsClosing(true);
-    setTimeout(() => {
+    closeTimeoutRef.current = setTimeout(() => {
       if (onClose) {
         onClose();
       } else {
         router.back();
       }
     }, 250);
-  };
+  }, [onClose, router]);
 
-  // Échap pour fermer + verrou du scroll de l'arrière-plan
+  // Échap pour fermer + verrou du scroll de l'arrière-plan (ref-counté)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -32,13 +54,22 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
       if (e.key === 'Escape') handleClose();
     };
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
+    lockBodyScroll();
+    // Déplace le focus dans la modale pour l'accessibilité
+    closeBtnRef.current?.focus();
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      unlockBodyScroll();
     };
-  }, [isOpen]);
+  }, [isOpen, handleClose]);
+
+  // Nettoie le timeout de fermeture si le composant est démonté avant la fin de l'animation
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
 
   // Clic sur l'overlay (uniquement l'arrière-plan, pas le contenu)
   const handleOverlayClick = (e) => {
@@ -70,6 +101,7 @@ export default function DetailPortal({ children, isOpen, onClose, title, icon = 
           )}
 
           <button
+            ref={closeBtnRef}
             className="detailModal__closeBtn"
             onClick={handleClose}
             aria-label="Fermer la fenêtre"

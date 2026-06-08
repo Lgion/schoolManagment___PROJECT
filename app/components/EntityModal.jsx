@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext, useMemo, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import { MATIERES_SCOLAIRES, COEFFICIENTS_MATIERES } from '../../utils/matieres'; // Keep for structure mapping only
 import { getLSItem, setLSItem } from '../../utils/localStorageManager';
+import Gmap from '../_/Gmap_plus';
+import CameraCapture from './CameraCapture';
 import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, CoefficientsManager, CompositionsBlock, AbsencesBlock, BonusBlock, ManusBlock, AddNoteForm, TargetsProfilingBlock, DocumentsBlock, CompositionsManager, generateSchoolYears } from './entityBlocks';
 
 // type: 'eleve' | 'enseignant' | 'classe'

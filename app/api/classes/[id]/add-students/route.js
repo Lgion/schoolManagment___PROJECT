@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/dbConnect';
+import { requireAuth } from '../../../lib/authWithFallback';
 import Classe from '../../../_/models/ai/Classe';
 import Eleve from '../../../_/models/ai/Eleve';
 
 export async function PATCH(request, { params }) {
   const { id } = await params;
-  
+
   try {
+    const auth = await requireAuth(request, 'PATCH /api/classes/[id]/add-students');
+    if (auth instanceof NextResponse) return auth;
+
     await dbConnect();
     
     const { studentIds } = await request.json();

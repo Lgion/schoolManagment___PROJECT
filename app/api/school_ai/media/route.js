@@ -137,8 +137,8 @@ const getTargetDir = (type, payload) => {
 
 export async function POST(request) {
   try {
-    const isAdmin = await checkRole(Roles.ADMIN);
-    const isTeacher = await checkRole(Roles.TEACHER);
+    const isAdmin = await checkRole(Roles.ADMIN, request);
+    const isTeacher = await checkRole(Roles.TEACHER, request);
     if (!isAdmin && !isTeacher) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }

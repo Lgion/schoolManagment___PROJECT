@@ -74,23 +74,22 @@ const ScheduleManager = ({
     if (!currentYearClasses || currentYearClasses.length === 0) return
 
     try {
-      const stats = {}
-      
-      for (const classe of currentYearClasses) {
-        const response = await fetch(`/api/schedules?classeId=${classe._id}&includeArchived=true`)
-        const data = await response.json()
-        
-        if (data.success) {
+      // Requêtes en parallèle (au lieu d'un for...of await séquentiel = N allers-retours en série)
+      const entries = await Promise.all(
+        currentYearClasses.map(async (classe) => {
+          const response = await fetch(`/api/schedules?classeId=${classe._id}&includeArchived=true`)
+          const data = await response.json()
+          if (!data.success) return null
           const schedules = data.data
-          stats[classe._id] = {
+          return [classe._id, {
             total: schedules.length,
             active: schedules.filter(s => !s.isArchived).length,
             archived: schedules.filter(s => s.isArchived).length
-          }
-        }
-      }
-      
-      setScheduleStats(stats)
+          }]
+        })
+      )
+
+      setScheduleStats(Object.fromEntries(entries.filter(Boolean)))
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error)
     } finally {

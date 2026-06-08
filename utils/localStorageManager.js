@@ -51,17 +51,23 @@ const computeNewExpireAt = () => {
     return Date.now() + (hours * 60 * 60 * 1000); // actuel + n heures en millisecondes
 }
 
+// Les deux buckets possibles (réelle base vs mode falsy/démo)
+const STORAGE_KEYS = ['schoolManagment', 'schoolManagment__falsies'];
+
 /**
  * Vide le localStorage de l'application.
+ * On vide les DEUX buckets : lors d'un changement d'identité (démo <-> réel),
+ * laisser le bucket inactif intact servait le cache d'une autre identité.
  */
 export const clearLS = () => {
     if (typeof window === 'undefined') return;
 
-    // On conserve un objet propre avec un nouveau expireAt
-    saveStorageObj({
-        expireAt: computeNewExpireAt(),
-        data: {}
-    });
+    const fresh = JSON.stringify({ expireAt: computeNewExpireAt(), data: {} });
+    try {
+        STORAGE_KEYS.forEach((key) => localStorage.setItem(key, fresh));
+    } catch (e) {
+        console.error(`[LocalStorageManager] Erreur lors du vidage:`, e);
+    }
     console.log(`🗑️ [LocalStorageManager] Cache de l'application vidé.`);
 };
 
@@ -71,8 +77,14 @@ export const clearLS = () => {
  * - Si l'heure actuelle dépasse `expireAt`, vide le cache.
  * - Sinon, prolonge ou initialise le `expireAt`.
  */
+let storageInitialized = false;
+
 export const initStorage = () => {
     if (typeof window === 'undefined') return;
+    // #72 : l'init (parse URL + contrôle d'expiration) ne doit tourner qu'une fois
+    // par session, pas à chaque getLSItem/setLSItem.
+    if (storageInitialized) return;
+    storageInitialized = true;
 
     const urlParams = new URLSearchParams(window.location.search);
     const shouldForceReset = urlParams.get('data') === 'reset';
@@ -119,16 +131,4 @@ export const setLSItem = (key, value) => {
     const storageObj = getStorageObj();
     storageObj.data[key] = value;
     saveStorageObj(storageObj);
-};
-
-/**
- * Supprime une clé spécifique.
- */
-export const removeLSItem = (key) => {
-    if (typeof window === 'undefined') return;
-    const storageObj = getStorageObj();
-    if (storageObj.data[key] !== undefined) {
-        delete storageObj.data[key];
-        saveStorageObj(storageObj);
-    }
 };

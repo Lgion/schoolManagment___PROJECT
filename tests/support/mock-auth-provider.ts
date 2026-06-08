@@ -17,7 +17,7 @@ const mockAuthProvider: AuthProvider = {
         const identifier = options.userIdentifier || 'default-user';
         let role = 'user';
         if (identifier === 'admin-user') role = 'admin';
-        if (identifier === 'enseignant-user') role = 'enseignant';
+        if (identifier === 'enseignant-user') role = 'prof'; // l'app utilise Roles.TEACHER = 'prof' (pas 'enseignant')
 
         const token = `mock-token-${role}`;
         return {

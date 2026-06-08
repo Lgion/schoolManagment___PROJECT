@@ -22,7 +22,6 @@ export default function ClasseDetailPage() {
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
   const { userRole, userData, isProf } = useUserRole();
-  const [isReduced, setIsReduced] = useState(false);
   const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [validatedScannedData, setValidatedScannedData] = useState(null);
