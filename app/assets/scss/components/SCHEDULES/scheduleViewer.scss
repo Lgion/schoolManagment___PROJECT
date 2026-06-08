@@ -14,7 +14,7 @@
   }
 
   &__header {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    background: var(--gradient-brand);
     color: var(--color-white);
     padding: var(--spacing-md) var(--spacing-lg);
     display: flex;
@@ -196,14 +196,14 @@
     }
 
     // Couleurs dynamiques par matière
-    &--math { background: #e74c3c; }
-    &--french { background: #3498db; }
-    &--science { background: #2ecc71; }
-    &--history { background: #f39c12; }
-    &--english { background: #9b59b6; }
-    &--sport { background: #1abc9c; }
-    &--art { background: #e67e22; }
-    &--music { background: #95a5a6; }
+    &--math { background: var(--color-danger); }
+    &--french { background: var(--color-primary); }
+    &--science { background: var(--color-success); }
+    &--history { background: var(--color-secondary); }
+    &--english { background: var(--color-primary-600); }
+    &--sport { background: var(--color-info); }
+    &--art { background: var(--color-secondary-dark); }
+    &--music { background: var(--color-text-muted); }
   }
 
   &__empty {

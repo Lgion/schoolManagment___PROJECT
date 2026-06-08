@@ -4,7 +4,7 @@
 
 .historique-block {
     // — Wrapper principal —
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--color-border);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     background: var(--color-surface);
@@ -36,9 +36,9 @@
         margin-left: auto;
 
         &--readonly {
-            background: var(--color-gray-100);
+            background: var(--color-surface-muted);
             color: var(--color-text-secondary);
-            border: 1px solid var(--color-gray-300);
+            border: 1px solid var(--color-border-strong);
         }
     }
 
@@ -48,15 +48,15 @@
         flex-wrap: wrap;
         gap: var(--spacing-xs);
         margin-bottom: var(--spacing-md);
-        border-bottom: 2px solid var(--color-gray-200);
+        border-bottom: 2px solid var(--color-border);
         padding-bottom: var(--spacing-sm);
     }
 
     &__year-tab {
         padding: var(--spacing-xs) var(--spacing-md);
-        border: 1px solid var(--color-gray-300);
+        border: 1px solid var(--color-border-strong);
         border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
-        background: var(--color-gray-50);
+        background: var(--color-surface-muted);
         color: var(--color-text-secondary);
         font-size: var(--font-size-sm);
         font-weight: 500;
@@ -75,7 +75,7 @@
 
         &--active {
             background: var(--color-primary);
-            color: var(--color-white);
+            color: var(--color-surface);
             border-color: var(--color-primary);
         }
     }
@@ -87,7 +87,7 @@
         gap: var(--spacing-sm) var(--spacing-xl);
         margin-bottom: var(--spacing-md);
         padding: var(--spacing-md);
-        background: var(--color-gray-50);
+        background: var(--color-surface-muted);
         border-radius: var(--border-radius-md);
     }
 
@@ -108,7 +108,7 @@
         color: var(--color-text-primary);
 
         &--empty {
-            color: var(--color-text-tertiary);
+            color: var(--color-text-muted);
         }
     }
 
@@ -139,7 +139,7 @@
 
     &__trimestre-tab {
         padding: var(--spacing-xs) var(--spacing-md);
-        border: 1px solid var(--color-gray-300);
+        border: 1px solid var(--color-border-strong);
         border-radius: var(--border-radius-sm);
         background: var(--color-surface);
         color: var(--color-text-secondary);
@@ -158,9 +158,9 @@
         }
 
         &--active {
-            background: var(--color-accent);
-            color: var(--color-white);
-            border-color: var(--color-accent);
+            background: var(--color-secondary);
+            color: var(--color-surface);
+            border-color: var(--color-secondary);
             font-weight: 600;
         }
     }
@@ -190,7 +190,7 @@
     }
 
     &__session {
-        border: 1px solid var(--color-gray-200);
+        border: 1px solid var(--color-border);
         border-radius: var(--border-radius-md);
         overflow: hidden;
     }
@@ -200,8 +200,8 @@
         align-items: center;
         gap: var(--spacing-md);
         padding: var(--spacing-sm) var(--spacing-md);
-        background: var(--color-gray-50);
-        border-bottom: 1px solid var(--color-gray-200);
+        background: var(--color-surface-muted);
+        border-bottom: 1px solid var(--color-border);
     }
 
     &__session-date {
@@ -222,7 +222,7 @@
         }
 
         &--unofficiel {
-            background: var(--color-gray-100);
+            background: var(--color-surface-muted);
             color: var(--color-text-secondary);
         }
     }
@@ -241,13 +241,13 @@
         color: var(--color-text-secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        background: var(--color-gray-50);
-        border-bottom: 1px solid var(--color-gray-200);
+        background: var(--color-surface-muted);
+        border-bottom: 1px solid var(--color-border);
     }
 
     &__tr {
         &:nth-child(even) {
-            background: var(--color-gray-50);
+            background: var(--color-surface-muted);
         }
 
         &:hover {
@@ -259,7 +259,7 @@
         padding: var(--spacing-xs) var(--spacing-md);
         font-size: var(--font-size-sm);
         color: var(--color-text-primary);
-        border-bottom: 1px solid var(--color-gray-100);
+        border-bottom: 1px solid var(--color-border);
 
         &--matiere {
             font-weight: 500;
@@ -271,12 +271,12 @@
         }
 
         &--sur {
-            color: var(--color-text-tertiary);
+            color: var(--color-text-muted);
         }
 
         &--dix {
             font-weight: 600;
-            color: var(--color-accent);
+            color: var(--color-secondary);
         }
     }
 
@@ -289,7 +289,7 @@
         padding: var(--spacing-lg);
         color: var(--color-text-secondary);
         font-size: var(--font-size-sm);
-        background: var(--color-gray-50);
+        background: var(--color-surface-muted);
         border-radius: var(--border-radius-md);
     }
 
@@ -303,10 +303,10 @@
         align-items: center;
         gap: var(--spacing-md);
         padding: var(--spacing-lg);
-        background: var(--color-error-light);
-        border: 1px solid var(--color-error);
+        background: var(--color-danger-light);
+        border: 1px solid var(--color-danger);
         border-radius: var(--border-radius-md);
-        color: var(--color-error);
+        color: var(--color-danger);
         font-size: var(--font-size-sm);
     }
 
@@ -333,8 +333,8 @@
         }
 
         &--retry {
-            background: var(--color-error);
-            color: var(--color-white);
+            background: var(--color-danger);
+            color: var(--color-surface);
             margin-left: auto;
         }
     }
@@ -346,9 +346,9 @@
 
     &__skeleton-bar {
         background: linear-gradient(90deg,
-                var(--color-gray-200) 0%,
-                var(--color-gray-100) 50%,
-                var(--color-gray-200) 100%);
+                var(--color-border) 0%,
+                var(--color-surface-muted) 50%,
+                var(--color-border) 100%);
         background-size: 200% 100%;
         border-radius: var(--border-radius-sm);
         animation: historique-skeleton-shimmer 1.5s infinite;

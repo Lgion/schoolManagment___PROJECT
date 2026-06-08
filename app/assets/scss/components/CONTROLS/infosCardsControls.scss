@@ -14,10 +14,10 @@
   position: sticky;
   top: 80px; // Collé juste en dessous du header (qui fait 80px au scroll)
   z-index: 100;
-  background: #f8f8fc; // Fond de parent pour cacher le défilement (optionnel)
+  background: var(--color-surface-muted); // Fond de parent pour cacher le défilement (optionnel)
   padding: 10px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-small);
 
   // -- Top Bar (Search + Actions) --
   &__top-bar {
@@ -36,9 +36,9 @@
   &__search-wrapper {
     flex: 1;
     position: relative;
-    background: #f1f5f9;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
     display: flex;
     align-items: center;
     padding: 0 1rem;
@@ -47,7 +47,7 @@
     transition: border-color 0.2s;
 
     &:hover, &:focus-within {
-      border-color: #3b82f6;
+      border-color: var(--color-primary);
     }
 
     input {
@@ -55,17 +55,17 @@
       background: transparent;
       width: 100%;
       outline: none;
-      color: #334155;
+      color: var(--color-text-primary);
       font-size: 1rem;
       padding: 0.5rem 0;
-      
+
       &::placeholder {
-        color: #64748b;
+        color: var(--color-text-muted);
       }
     }
 
     svg {
-      color: #64748b;
+      color: var(--color-text-muted);
       width: 20px;
       height: 20px;
       margin-left: 10px;
@@ -105,7 +105,7 @@
     gap: 0.5rem;
     width: 100%;
     padding: 0.75rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: none;
     font-weight: 500;
     cursor: pointer;
@@ -115,31 +115,31 @@
     min-height: 48px;
 
     &--primary {
-      background: #3b82f6; // Bleu vif des boutons
-      color: white;
+      background: var(--color-primary); // Bleu vif des boutons
+      color: var(--color-surface);
 
       &:hover {
-        background: #2563eb;
+        background: var(--color-primary-700);
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        box-shadow: var(--shadow-brand);
       }
-      
+
       &:active {
         transform: translateY(0);
       }
     }
 
     &--icon {
-      background: #e2e8f0;
-      color: #334155;
+      background: var(--color-surface-muted);
+      color: var(--color-text-primary);
 
       &:hover {
-        background: #cbd5e1;
+        background: var(--color-border-strong);
       }
 
       &.infos_cards__btn--active {
-        background: #bfdbfe;
-        color: #1e3a8a;
+        background: var(--color-primary-soft);
+        color: var(--color-primary);
       }
     }
   }
@@ -147,10 +147,10 @@
   // -- Filter Panel --
   &__filter-panel {
     display: none; // Caché par défaut
-    background: #e0f2fe; // Fond bleu pastel
-    border-radius: 12px;
+    background: var(--color-primary-light); // Fond bleu pastel
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
-    border: 1px solid #bae6fd;
+    border: 1px solid var(--color-primary-soft);
 
     &--open {
       display: block; // Affiché quand isFilterPanelOpen est true
@@ -166,7 +166,7 @@
   }
 
   &__filter-title {
-    color: #0f172a;
+    color: var(--color-heading);
     font-size: 1.125rem;
     font-weight: 600;
     margin: 0;
@@ -176,7 +176,7 @@
     background: none;
     border: none;
     font-size: 1.25rem;
-    color: #64748b;
+    color: var(--color-text-muted);
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 50%;
@@ -186,16 +186,16 @@
     transition: all 0.2s;
 
     &:hover {
-      background: #cbd5e1;
-      color: #0f172a;
+      background: var(--color-border-strong);
+      color: var(--color-text-primary);
     }
   }
 
   // Group (Accordions)
   &__control-group {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-small);
     border: none;
     margin-bottom: 0.75rem;
     overflow: hidden;
@@ -216,7 +216,7 @@
     // Style du <summary>
     padding: 1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--color-heading);
     font-size: 0.95rem;
     display: flex;
     justify-content: space-between;
@@ -228,9 +228,9 @@
     transition: background-color 0.2s;
     
     &:hover {
-      background-color: #f8fafc;
+      background-color: var(--color-surface-muted);
     }
-    
+
     // Cache le triangle natif sur Safari
     &::-webkit-details-marker {
       display: none;
@@ -256,17 +256,17 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--color-border);
     padding-top: 1rem;
   }
 
   // Composant forme "Pilule" pour le select
   &__select {
     appearance: none;
-    background: #dbeafe; // Bleu très clair 
-    color: #1e3a8a;      // Texte bleu foncé
+    background: var(--color-primary-soft); // Bleu très clair
+    color: var(--color-primary);      // Texte bleu foncé
     padding: 0.5rem 1rem;
-    border-radius: 9999px; // Pill shape
+    border-radius: var(--radius-pill); // Pill shape
     font-family: inherit;
     font-size: 0.875rem;
     font-weight: 500;
@@ -279,7 +279,7 @@
     background-image: none; // Vrai look pilule du prototype
 
     &:hover, &:focus {
-      background: #bfdbfe;
+      background: var(--color-primary-light);
     }
   }
 
@@ -311,21 +311,21 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #e2e8f0; // Gris léger pour l'état inactif
+    background: var(--color-surface-muted); // Gris léger pour l'état inactif
     border: none;
-    border-radius: 8px;
-    color: #475569;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 
     &--active {
-      background: #bfdbfe;
-      color: #1e3a8a;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
     }
 
     &:hover:not(&--active) {
-      background: #cbd5e1;
+      background: var(--color-border-strong);
     }
   }
 
@@ -394,8 +394,8 @@
       color: #94a3b8;
       
       &--active {
-        background: #3b82f6;
-        color: white;
+        background: var(--color-primary);
+        color: var(--color-surface);
       }
     }
   }

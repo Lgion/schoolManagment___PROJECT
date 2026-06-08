@@ -3,15 +3,11 @@
   &__content {
     &.home {
       margin-top: var(--spacing-XXl, 1.5rem);
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+      background: var(--color-surface);
       border: none;
       border-radius: var(--border-radius-xl, 16px);
-      box-shadow:
-        0 10px 40px rgba(0, 0, 0, 0.08),
-        0 4px 20px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      box-shadow: var(--shadow-medium);
       padding: var(--spacing-xl, 2rem);
-      backdrop-filter: blur(12px);
       position: relative;
       // overflow: hidden; Removed to allow position: sticky on children
 
@@ -26,9 +22,9 @@
         height: 4px;
         background: linear-gradient(90deg,
             var(--color-primary),
-            #3498db,
-            #e74c3c,
-            #f39c12,
+            var(--color-primary-600),
+            var(--color-secondary),
+            var(--color-secondary-dark),
             var(--color-primary));
         background-size: 200% 100%;
         animation: gradientShift 8s ease-in-out infinite;
@@ -66,7 +62,7 @@
           transform: translateX(-50%);
           width: 80px;
           height: 3px;
-          background: linear-gradient(90deg, var(--color-primary), #3498db);
+          background: linear-gradient(90deg, var(--color-primary), var(--color-primary-600));
           border-radius: 2px;
         }
 
@@ -152,17 +148,13 @@
         margin: var(--spacing-xl, 2rem) 0;
         border-radius: var(--border-radius-lg, 12px);
         overflow: hidden;
-        box-shadow:
-          0 15px 35px rgba(0, 0, 0, 0.1),
-          0 5px 15px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-medium);
         position: relative;
 
         // Effet de survol
         &:hover {
           transform: translateY(-4px);
-          box-shadow:
-            0 20px 45px rgba(0, 0, 0, 0.15),
-            0 8px 20px rgba(0, 0, 0, 0.1);
+          box-shadow: var(--shadow-large);
         }
 
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -288,38 +280,31 @@
 // Mode sombre
 @media (prefers-color-scheme: dark) {
   .ecole-admin__content.home {
-    color: white;
+    color: var(--color-surface);
     background: linear-gradient(145deg, rgba(44, 62, 80, 0.98), rgba(52, 73, 94, 0.95));
-    box-shadow:
-      0 10px 40px rgba(0, 0, 0, 0.3),
-      0 4px 20px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-large);
 
     h2 {
-      color: #3498db;
+      color: var(--color-primary-600);
     }
 
     p {
       // color: #ecf0f1;
 
       &::before {
-        background: linear-gradient(180deg, #3498db, rgba(52, 152, 219, 0.3));
+        background: var(--color-primary-600);
       }
 
       &:first-of-type::first-letter {
-        color: #3498db;
+        color: var(--color-primary-600);
       }
     }
 
     picture {
-      box-shadow:
-        0 15px 35px rgba(0, 0, 0, 0.4),
-        0 5px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--shadow-large);
 
       &:hover {
-        box-shadow:
-          0 20px 45px rgba(0, 0, 0, 0.5),
-          0 8px 20px rgba(0, 0, 0, 0.4);
+        box-shadow: var(--shadow-large);
       }
     }
   }
@@ -328,7 +313,7 @@
 // Styles pour l'impression
 @media print {
   .ecole-admin__content.home {
-    background: white !important;
+    background: var(--color-surface) !important;
     box-shadow: none !important;
     padding: 1rem !important;
 
@@ -352,7 +337,7 @@
 
     picture {
       box-shadow: none !important;
-      border: 1px solid #ccc;
+      border: 1px solid var(--color-border);
     }
   }
 }

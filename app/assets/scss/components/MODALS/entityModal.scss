@@ -6,24 +6,25 @@
 /**************************VARIABLES**************************/
 /************************************************************/
 $entityModal: (
-  background: #ffffff,
+  background: var(--color-surface),
   overlayBackground: rgba(0, 0, 0, 0.6),
   borderRadius: 16px,
-  boxShadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+  boxShadow: var(--shadow-medium),
   maxWidth: 800px,
   padding: 2rem,
-  headerBackground: #1E3A8A,
-  headerColor: #ffffff,
-  inputBorder: #e1e5e9,
-  inputFocus: #1E3A8A,
+  headerBackground: var(--color-primary),
+  headerColor: var(--color-surface),
+  inputBorder: var(--color-border),
+  inputFocus: var(--color-primary),
+  // valeurs passées à color.adjust() -> doivent rester des couleurs Sass statiques
   buttonPrimary: #F97316,
   buttonDanger: #ff4757,
   buttonSuccess: #2ed573,
   primaryFont: 'Inter, Segoe UI, sans-serif',
   secondaryFont: 'Poppins, Arial, sans-serif',
-  infoNoteBackground: #f8f9fa,
-  infoNoteBorder: #dee2e6,
-  infoNoteColor: #495057
+  infoNoteBackground: var(--color-surface-muted),
+  infoNoteBorder: var(--color-border),
+  infoNoteColor: var(--color-text-secondary)
 );
 
 /************************************************************/
@@ -61,7 +62,7 @@ $entityModal: (
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -77,7 +78,7 @@ $entityModal: (
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 2px solid #ffffff;
+    border: 2px solid var(--color-surface);
     border-top-color: transparent;
     animation: spin 1s ease-in-out infinite;
   }
@@ -114,7 +115,7 @@ $entityModal: (
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.9);
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.85rem;
     min-width: 160px;
     cursor: pointer;
@@ -131,8 +132,8 @@ $entityModal: (
     }
 
     option {
-      background: white;
-      color: #2d3748;
+      background: var(--color-surface);
+      color: var(--color-text-primary);
       padding: 0.25rem;
     }
   }
@@ -173,20 +174,20 @@ $entityModal: (
     backdrop-filter: blur(4px);
 
     option {
-      background: #2c3e50;
+      background: var(--color-heading);
       color: white;
 
       &.option_green {
-        background: #27ae60;
+        background: var(--color-success);
         font-weight: 600;
       }
 
       &.option_red {
-        background: #e74c3c;
+        background: var(--color-danger);
       }
 
       &.option_blue {
-        background: #3498db;
+        background: var(--color-primary);
       }
     }
 
@@ -259,7 +260,7 @@ $entityModal: (
 
   &__label {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--color-heading);
     font-size: 0.95rem;
     margin-bottom: 0.25rem;
   }
@@ -275,7 +276,7 @@ $entityModal: (
     &:focus {
       outline: none;
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+      box-shadow: var(--focus-ring);
     }
 
     &--error {
@@ -312,7 +313,7 @@ $entityModal: (
         }
 
         &:hover {
-          background-color: var(--hover-bg, #f0f0f0);
+          background-color: var(--hover-bg, var(--color-surface-muted));
         }
       }
     }
@@ -343,18 +344,18 @@ $entityModal: (
     padding: 2rem;
     border: 2px dashed map.get($entityModal, inputBorder);
     border-radius: 8px;
-    background: #fafbfc;
+    background: var(--color-surface-muted);
     transition: border-color 0.2s;
     cursor: pointer;
 
     &:hover {
       border-color: map.get($entityModal, inputFocus);
-      background: #f0f4ff;
+      background: var(--color-primary-light);
     }
 
     &--hasFile {
       border-color: map.get($entityModal, buttonSuccess);
-      background: #f0fff4;
+      background: var(--color-success-light);
     }
   }
 
@@ -364,7 +365,7 @@ $entityModal: (
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid map.get($entityModal, inputBorder);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-medium);
   }
 
   &__uploadIcon {
@@ -374,7 +375,7 @@ $entityModal: (
 
   &__uploadText {
     font-size: 0.9rem;
-    color: #6c757d;
+    color: var(--color-text-muted);
     text-align: center;
   }
 
@@ -383,8 +384,8 @@ $entityModal: (
     gap: 1rem;
     justify-content: flex-end;
     padding: 1.5rem 2rem;
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-muted);
     border-radius: 0 0 map.get($entityModal, borderRadius) map.get($entityModal, borderRadius);
   }
 
@@ -416,7 +417,7 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
 
@@ -427,12 +428,12 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonDanger), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
 
     &--secondary {
-      background: #6c757d;
+      background: var(--color-text-secondary);
       color: white;
 
       &:hover:not(:disabled) {
@@ -448,16 +449,16 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonSuccess), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
   }
 
 
   &__errorMessage {
-    background: #fff5f5;
-    border: 1px solid #fed7d7;
-    color: #c53030;
+    background: var(--color-danger-light);
+    border: 1px solid var(--color-danger-light);
+    color: var(--color-danger-dark);
     padding: 0.75rem;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -478,7 +479,7 @@ $entityModal: (
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background: #e8e6ff;
+    background: var(--color-primary-soft);
     border-radius: map.get($entityModal, borderRadius);
     margin-top: 0.5rem;
     flex-wrap: wrap;
@@ -506,7 +507,7 @@ $entityModal: (
       border: 2px solid map.get($entityModal, inputBorder);
       border-radius: map.get($entityModal, borderRadius);
       background: map.get($entityModal, background);
-      color: #7f8c8d;
+      color: var(--color-text-muted);
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: map.get($entityModal, secondaryFont);
@@ -519,10 +520,10 @@ $entityModal: (
       }
 
       &--active {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: var(--color-success);
         color: white;
-        border-color: #28a745;
-        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        border-color: var(--color-success);
+        box-shadow: var(--shadow-small);
       }
     }
   }
@@ -545,11 +546,11 @@ $entityModal: (
     font-weight: 600;
     font-size: 0.85rem;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-small);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-medium);
       background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
     }
 
@@ -572,7 +573,7 @@ $entityModal: (
 
     &:hover {
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow-small);
     }
 
     &-matiere {
@@ -584,7 +585,7 @@ $entityModal: (
     &-value {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #2c3e50;
+      color: var(--color-heading);
       font-family: map.get($entityModal, secondaryFont);
     }
 
@@ -597,9 +598,9 @@ $entityModal: (
 
     &-date {
       font-size: 0.8rem;
-      color: #7f8c8d;
+      color: var(--color-text-muted);
       font-family: map.get($entityModal, secondaryFont);
-      background: #e8e6ff;
+      background: var(--color-primary-soft);
       padding: 2px 0.5rem;
       border-radius: 4px;
     }
@@ -614,15 +615,15 @@ $entityModal: (
       letter-spacing: 0.5px;
 
       &--officiel {
-        background: linear-gradient(135deg, #28a745, #20c997);
+        background: var(--color-success);
         color: white;
-        box-shadow: 0 1px 3px rgba(40, 167, 69, 0.3);
+        box-shadow: var(--shadow-small);
       }
 
       &--non-officiel {
-        background: linear-gradient(135deg, #6c757d, #868e96);
+        background: var(--color-text-secondary);
         color: white;
-        box-shadow: 0 1px 3px rgba(108, 117, 125, 0.3);
+        box-shadow: var(--shadow-small);
       }
     }
   }
@@ -646,7 +647,7 @@ $entityModal: (
       background: map.get($entityModal, buttonDanger);
       color: white;
       transform: scale(1.05);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+      box-shadow: var(--shadow-medium);
     }
   }
 
@@ -680,7 +681,7 @@ $entityModal: (
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    background: #fff;
+    background: var(--color-surface);
     padding: 2px;
     border-radius: 4px;
     border: 1px solid map.get($entityModal, inputFocus);
@@ -701,7 +702,7 @@ $entityModal: (
 
   &__edit-sur {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--color-text-secondary);
     margin-right: 4px;
   }
 
@@ -716,7 +717,7 @@ $entityModal: (
   }
 
   &__cancel-edit-btn {
-    background: #6c757d;
+    background: var(--color-text-secondary);
     color: white;
     border: none;
     border-radius: 3px;
@@ -727,7 +728,7 @@ $entityModal: (
 
   &__remove-btn {
     position: relative; // Changé de absolute pour le flex container
-    background: linear-gradient(135deg, map.get($entityModal, buttonDanger), #c82333);
+    background: var(--color-danger);
     color: white;
     border: none;
     width: 22px;
@@ -740,11 +741,11 @@ $entityModal: (
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+    box-shadow: var(--shadow-small);
 
     &:hover {
       transform: scale(1.1);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+      box-shadow: var(--shadow-medium);
     }
   }
 }
@@ -786,16 +787,16 @@ $entityModal: (
 
 %entityModal__input {
   padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s;
-  background: white;
+  background: var(--color-surface);
 
   &:focus {
     outline: none;
     border-color: map.get($themeColors, primary);
-    box-shadow: 0 0 0 3px rgba(map.get($themeColors, primary), 0.1);
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -817,7 +818,7 @@ $entityModal: (
 
 %entityModal__label {
   font-weight: 600;
-  color: #374151;
+  color: var(--color-heading);
   margin-bottom: 0.5rem;
   display: block;
 }
@@ -842,12 +843,12 @@ $entityModal: (
 }
 
 %entityModal__btn--primary {
-  background: linear-gradient(135deg, map.get($themeColors, primary), color.scale(map.get($themeColors, primary), $lightness: -10%));
+  background: var(--gradient-brand);
   color: white;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
+    box-shadow: var(--shadow-brand);
   }
 }
 
@@ -862,7 +863,7 @@ $entityModal: (
   backdrop-filter: blur(4px);
 
   option {
-    background: #2c3e50;
+    background: var(--color-heading);
     color: white;
   }
 }
@@ -915,8 +916,8 @@ $entityModal: (
     align-items: center;
     margin-bottom: 1.5rem;
     padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     font-size: 1rem;
     color: map.get($themeColors, primary);
@@ -927,7 +928,7 @@ $entityModal: (
     }
 
     span {
-      background: wheat;
+      background: var(--color-secondary-light);
       padding: .5em;
       font-size: 1.5em;
       font-weight: 900;
@@ -936,14 +937,14 @@ $entityModal: (
 
   &__trimestre {
     margin-bottom: 1.5rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
 
     &-header {
-      background: #f8f9fa;
+      background: var(--color-surface-muted);
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #e9ecef;
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -952,19 +953,19 @@ $entityModal: (
 
       &-title {
         font-weight: 600;
-        color: #495057;
+        color: var(--color-text-secondary);
         font-size: 1.1rem;
         font-family: map.get($entityModal, primaryFont);
       }
 
       &-score {
         font-size: 0.9rem;
-        color: map.get($themeColors, success);
+        color: var(--color-success);
         font-weight: 500;
-        background: rgba(40, 167, 69, 0.1);
+        background: var(--color-success-light);
         padding: 0.25rem 0.5rem;
         border-radius: 4px;
-        border: 1px solid rgba(40, 167, 69, 0.2);
+        border: 1px solid var(--color-success-light);
         font-family: map.get($entityModal, secondaryFont);
       }
     }
@@ -983,8 +984,8 @@ $entityModal: (
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    border: 1px solid #dee2e6;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
@@ -992,7 +993,7 @@ $entityModal: (
 
     &:hover {
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
+      box-shadow: var(--shadow-small);
     }
 
     &-matiere {
@@ -1003,8 +1004,8 @@ $entityModal: (
 
     &-value {
       font-weight: 700;
-      color: #2d3748;
-      background: #e2e8f0;
+      color: var(--color-text-primary);
+      background: var(--color-surface-muted);
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
       min-width: 30px;
@@ -1033,7 +1034,7 @@ $entityModal: (
   }
 
   &__no-compo {
-    color: #6c757d;
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 1rem;
     text-align: center;
@@ -1044,8 +1045,8 @@ $entityModal: (
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    background: #f8f9fa;
-    border: 2px dashed #dee2e6;
+    background: var(--color-surface-muted);
+    border: 2px dashed var(--color-border);
     border-radius: 6px;
     padding: 0.75rem;
     flex-wrap: wrap;
@@ -1085,7 +1086,7 @@ $entityModal: (
     min-width: auto;
 
     &--cancel {
-      background: #6c757d;
+      background: var(--color-text-secondary);
 
       &:hover:not(:disabled) {
         background: color.adjust(#6c757d, $lightness: -8%);
@@ -1110,7 +1111,7 @@ $entityModal: (
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--gradient-brand);
     color: white;
     border: none;
     padding: 0.75rem 1rem;
@@ -1119,18 +1120,18 @@ $entityModal: (
     cursor: pointer;
     transition: all 0.3s ease;
     font-family: map.get($entityModal, primaryFont);
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    box-shadow: var(--shadow-small);
     white-space: nowrap;
 
     &:hover {
-      background: linear-gradient(135deg, #20c997, #17a2b8);
+      background: var(--gradient-brand);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+      box-shadow: var(--shadow-medium);
     }
 
     &:active {
       transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+      box-shadow: var(--shadow-small);
     }
 
     &-icon {
@@ -1163,13 +1164,13 @@ $entityModal: (
     max-height: 200px;
     object-fit: cover;
     border-radius: 8px;
-    border: 2px solid #e1e5e9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-small);
     transition: all 0.3s ease;
 
     &:hover {
       transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--shadow-medium);
     }
   }
 
@@ -1177,7 +1178,7 @@ $entityModal: (
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #dc3545;
+    background: var(--color-danger);
     color: white;
     border: none;
     border-radius: 50%;
@@ -1190,12 +1191,12 @@ $entityModal: (
     font-size: 0.9rem;
     font-weight: bold;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+    box-shadow: var(--shadow-small);
 
     &:hover {
-      background: #c82333;
+      background: var(--color-danger-dark);
       transform: scale(1.1);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
+      box-shadow: var(--shadow-medium);
     }
 
     &:active {
@@ -1218,7 +1219,7 @@ $entityModal: (
       line-height: 1.4;
 
       strong {
-        color: #007bff;
+        color: var(--color-primary);
       }
     }
   }

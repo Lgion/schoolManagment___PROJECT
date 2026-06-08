@@ -176,15 +176,17 @@ export default ({ children }) => {
                   href="mailto:sanctuaire.rosaire.bolobi@gmail.com"
                   className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
                   data-tooltip="sanctuaire.rosaire.bolobi@gmail.com"
+                  aria-label="Nous écrire par email"
                 >
-                  <i className="fas fa-envelope"></i>
+                  <i className="fas fa-envelope" aria-hidden="true"></i>
                 </a>
                 <a
                   href="tel:+2250704763132"
                   className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--contact"
                   data-tooltip="+225 07 04 76 31 32"
+                  aria-label="Nous appeler au +225 07 04 76 31 32"
                 >
-                  <i className="fas fa-phone"></i>
+                  <i className="fas fa-phone" aria-hidden="true"></i>
                 </a>
               </div>
               <LogSignIn />
@@ -211,13 +213,13 @@ export default ({ children }) => {
               <SignedOut>
                 <div className="ecole-admin__headerActions-iconGroup">
                   <SignInButton mode="modal">
-                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="Se connecter">
-                      <i className="fas fa-sign-in-alt"></i>
+                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="Se connecter" aria-label="Se connecter">
+                      <i className="fas fa-sign-in-alt" aria-hidden="true"></i>
                     </button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="S'inscrire">
-                      <i className="fas fa-user-plus"></i>
+                    <button className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--auth" data-tooltip="S'inscrire" aria-label="S'inscrire">
+                      <i className="fas fa-user-plus" aria-hidden="true"></i>
                     </button>
                   </SignUpButton>
                 </div>
