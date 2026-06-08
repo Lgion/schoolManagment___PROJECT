@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useContext, useEffect, useState, Fragment, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import { AiAdminContext } from '../stores/ai_adminContext';
 import { useUserRole } from '../stores/useUserRole';
 import PermissionGate, { RoleIndicator } from './components/PermissionGate';
@@ -20,7 +19,6 @@ import { useAuth } from '@clerk/nextjs';
 import LogSignIn from './_/LogSignIn';
 
 export default ({ children }) => {
-  const router = useRouter();
   const {
     selected,
     setSelected,
@@ -30,9 +28,6 @@ export default ({ children }) => {
     eleves,
     enseignants,
     classes,
-    fetchEleves,
-    fetchEnseignants,
-    fetchClasses,
   } = useContext(AiAdminContext)
 
   const {
@@ -47,21 +42,6 @@ export default ({ children }) => {
   const { isSignedIn } = useAuth();
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  // Fonction pour gérer la navigation avec scroll automatique
-  const handleNavClick = (path) => {
-    router.push(path);
-    // Scroll vers le contenu après un délai pour permettre la navigation
-    setTimeout(() => {
-      const contentElement = document.querySelector('.ecole-admin__content');
-      if (contentElement) {
-        contentElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    }, 100);
-  };
 
   // --- LOGIQUE ANNIVERSAIRES ---
   const birthdayCelebrants = useMemo(() => {
@@ -147,12 +127,9 @@ export default ({ children }) => {
   useEffect(() => {
     initStorage()
 
-    // Le cache est-il valide ? On s'assure d'appeler local storage d'abord
-    // fetch... sera bloqué dans le contexte par les fonctions elles-mêmes ou si besoin,
-    // on appelle les datas initales ici
-    fetchClasses()
-    fetchEleves()
-    fetchEnseignants()
+    // Le chargement initial des données (élèves/profs/classes) est entièrement
+    // géré par AiAdminContext (effet d'auto-fetch). On évite ici tout fetch
+    // redondant qui déclenchait auparavant un triple appel au montage.
 
     const handleScroll = () => {
       if (window.scrollY > 10) {

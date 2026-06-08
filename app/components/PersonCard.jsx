@@ -26,9 +26,6 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
     return 'transparent';
   };
 
-  console.log(person.nom);
-  console.log(classes);
-
   return (
     <div className="person-card-wrapper" style={{ position: 'relative' }}>
       <Link
@@ -53,13 +50,13 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
                 (targetDefinitions || []).forEach(td => {
                   const val = targetsList[td.key];
                   if (val) {
-                    activeProfiling.push(Array.isArray(val) ? val.join(', ') : val);
+                    activeProfiling.push({ key: td.key, value: Array.isArray(val) ? val.join(', ') : val });
                   } else if (td.key.startsWith('is')) {
-                    activeProfiling.push(td.options[1]);
+                    activeProfiling.push({ key: td.key, value: td.options[1] });
                   }
                 });
-                return activeProfiling.map((val, i) => (
-                  <span key={i} className={`person-card__isinterne-badge ${val === 'Externe' ? 'person-card__isinterne-badge--externe' : ''}`}>{val}</span>
+                return activeProfiling.map((p) => (
+                  <span key={p.key} className={`person-card__isinterne-badge ${p.value === 'Externe' ? 'person-card__isinterne-badge--externe' : ''}`}>{p.value}</span>
                 ));
               })()}
             </div>

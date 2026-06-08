@@ -16,8 +16,21 @@ export async function POST(request) {
     const formData = await request.formData();
     const files = formData.getAll('files');
     const entityType = formData.get('entityType'); // eleve, enseignant, classe
-    const entityData = JSON.parse(formData.get('entityData') || '{}');
-    const tags = JSON.parse(formData.get('tags') || '[]');
+    // Parsing défensif : un payload JSON malformé ne doit pas faire planter la route
+    let entityData = {};
+    try {
+      const rawEntityData = formData.get('entityData');
+      if (rawEntityData) entityData = JSON.parse(rawEntityData);
+    } catch {
+      return NextResponse.json({ error: 'entityData JSON invalide' }, { status: 400 });
+    }
+    let tags = [];
+    try {
+      const rawTags = formData.get('tags');
+      if (rawTags) tags = JSON.parse(rawTags);
+    } catch {
+      return NextResponse.json({ error: 'tags JSON invalide' }, { status: 400 });
+    }
 
     console.log('📤 Upload request:', {
       filesCount: files.length,

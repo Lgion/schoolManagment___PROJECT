@@ -820,7 +820,6 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
               )}
               <Parent form={form} setForm={setForm} />
-              {console.log(ctx.classes)}
               <label htmlFor="input-classe">Classe actuelle</label>
               <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} required>
                 <option value="">Sélectionnez une classe</option>

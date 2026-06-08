@@ -9,6 +9,12 @@ import Eleve from '../../_/models/ai/Eleve';
 // Fonction pour déterminer le rôle selon votre logique
 async function determineUserRole(email) {
   try {
+    // Garde : sans email valide, ne pas lancer de requêtes (findOne({email: undefined})
+    // pourrait matcher des documents sans ce champ).
+    if (!email || typeof email !== 'string') {
+      return { role: 'public', ref: null };
+    }
+
     // 1. Vérifier si c'est un admin via variable d'environnement
     const adminEmails = process.env.NEXT_PUBLIC_EMAIL_ADMIN?.split(' ') || [];
     if (adminEmails.includes(email)) {
@@ -45,6 +51,12 @@ async function determineUserRole(email) {
 
 export async function POST(req) {
   try {
+    // Garde : sans secret configuré, le constructeur Webhook échouerait de façon opaque
+    if (!process.env.CLERK_WEBHOOK_SECRET) {
+      console.error('CLERK_WEBHOOK_SECRET non configuré');
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+    }
+
     // Vérification de la signature Clerk
     const headerPayload = headers();
     const svixId = headerPayload.get("svix-id");

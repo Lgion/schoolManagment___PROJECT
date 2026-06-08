@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useContext, createContext } from 'react';
+import { useState, useEffect, useContext, createContext, useMemo } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { getLSItem, setLSItem } from '../utils/localStorageManager';
 
@@ -280,7 +280,8 @@ export function UserRoleProvider({ children }) {
     }
   };
 
-  const contextValue = {
+  // Mémoïsé pour éviter de re-render les ~12 consommateurs à chaque render du provider
+  const contextValue = useMemo(() => ({
     userData,
     userRole,
     permissions,
@@ -295,7 +296,7 @@ export function UserRoleProvider({ children }) {
     clerkUser,
     isAuthenticated: !!clerkUser && !!userData,
     syncUser
-  };
+  }), [userData, userRole, permissions, loading, clerkUser]);
 
   return (
     <UserRoleContext.Provider value={contextValue}>

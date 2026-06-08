@@ -6,7 +6,7 @@ import './ClasseCard.scss';
 import { getClasseImagePath } from '../../utils/imageUtils';
 import PermissionGate from "../components/PermissionGate";
 
-export default function ClasseCard({ classe, enseignants, eleves: elevesFromProp, onEdit, onOpenModal }) {
+function ClasseCard({ classe, enseignants, eleves: elevesFromProp, onEdit, onOpenModal }) {
   if (!classe) return null;
   const { openPortal } = useDetailPortal();
 
@@ -96,3 +96,7 @@ export default function ClasseCard({ classe, enseignants, eleves: elevesFromProp
     </div>
   );
 }
+
+// Mémoïsé : évite de recalculer la recherche du professeur principal pour chaque
+// carte à chaque render de la liste quand ses props n'ont pas changé.
+export default React.memo(ClasseCard);

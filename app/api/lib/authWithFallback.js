@@ -25,12 +25,12 @@ export async function authWithFallback(request, context = 'API') {
     let userId = null
     
     // ÉTAPE 1: Essayer d'abord la méthode standard auth()
+    // auth() est asynchrone dans l'App Router : sans await, userId était toujours undefined
     try {
-      const authResult = auth()
+      const authResult = await auth()
       userId = authResult.userId
-      console.log('  - userId (auth()):', userId)
     } catch (authError) {
-      console.log('  - Erreur auth():', authError.message)
+      console.error('  - Erreur auth():', authError.message)
     }
     
     // ÉTAPE 2: Si auth() échoue, essayer de décoder le token manuellement

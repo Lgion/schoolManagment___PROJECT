@@ -13,7 +13,6 @@ import "./assets/scss/index.scss"
 import Home from "./Home"
 import Goals from "./Goals"
 import SpinLoader from "./components/SpinLoader";
-import NavigationInterceptor from "./components/NavigationInterceptor";
 
 import {AdminContextProvider} from '../stores/ai_adminContext';
 
@@ -39,7 +38,6 @@ export default function RootLayout({ children }) {
                   </Home>
 
                   <SpinLoader />
-                  <NavigationInterceptor />
                 </AdminContextProvider>
               </DetailPortalProvider>
             </LoadingProvider>

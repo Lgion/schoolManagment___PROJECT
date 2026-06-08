@@ -56,35 +56,23 @@ export async function PUT(request, { params }) {
     const { id } = await params;
     const body = await request.json();
     
-    console.log('🔄 [API] Début mise à jour classe:', id);
-    console.log('📊 [API] Body reçu:', JSON.stringify(body, null, 2));
-    console.log('📊 [API] Coefficients à sauvegarder:', JSON.stringify(body.coefficients, null, 2));
-    
     // Vérifier que la classe existe d'abord
     const existingClasse = await Classe.findById(id);
     if (!existingClasse) {
-      console.log('❌ [API] Classe non trouvée:', id);
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Classe non trouvée' 
+      return NextResponse.json({
+        success: false,
+        error: 'Classe non trouvée'
       }, { status: 404 });
     }
-    
-    console.log('📋 [API] Classe trouvée, coefficients actuels:', existingClasse.coefficients);
-    
+
     const updated = await Classe.findByIdAndUpdate(
       id, 
       { $set: { coefficients: body.coefficients } },
       { new: true, runValidators: true }
     );
     
-    console.log('✅ [API] Mise à jour réussie, nouveaux coefficients:', updated.coefficients);
-    console.log('🔍 [API] Classe complète après mise à jour:', JSON.stringify(updated, null, 2));
-    
-    // Vérification supplémentaire : relire la classe depuis la base
-    const verification = await Classe.findById(id);
-    console.log('🔍 [API] Vérification coefficients en base:', verification.coefficients);
-    
+    // findByIdAndUpdate avec { new: true } renvoie déjà le document à jour :
+    // pas besoin d'une requête de relecture supplémentaire (N+1).
     return NextResponse.json({
       success: true,
       data: {

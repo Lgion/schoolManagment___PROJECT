@@ -203,8 +203,8 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: 'Erreur lors de la synchronisation',
-        details: error.message,
-        name: error.name,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        name: process.env.NODE_ENV === 'development' ? error.name : undefined,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       { status: 500 }

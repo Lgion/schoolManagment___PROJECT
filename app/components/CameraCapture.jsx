@@ -286,8 +286,10 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
    */
   const switchCamera = () => {
     const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-    setCurrentFacingMode(newFacingMode);
+    // Stopper proprement la caméra AVANT de changer le mode (évite un cleanup
+    // redondant déclenché par le changement de state et une éventuelle fuite de stream)
     stopCamera();
+    setCurrentFacingMode(newFacingMode);
   };
 
   /**
@@ -320,15 +322,24 @@ export default function CameraCapture({ onCapture, onClose, facingMode = 'user' 
   useEffect(() => {
     // N'essayer que si on a un stream mais pas encore de vidéo prête
     if (streamRef.current && videoRef.current && !isVideoReady && !isLoading) {
-      console.log('🎥 [CameraCapture] Tentative d\'attachement via useEffect');
-      // Petit délai pour s'assurer que le DOM est à jour
-      setTimeout(() => {
-        if (streamRef.current && !isVideoReady) {
-          attachStreamToVideo(streamRef.current);
+      // Capturer la référence courante pour se prémunir contre une race condition
+      // si un nouveau démarrage de caméra survient pendant le délai
+      const currentStream = streamRef.current;
+      const timeoutId = setTimeout(() => {
+        if (currentStream === streamRef.current && !isVideoReady) {
+          attachStreamToVideo(currentStream);
         }
       }, 100);
+      return () => clearTimeout(timeoutId);
     }
   }, [stream, isVideoReady, isLoading]);
+
+  // Libère l'ObjectURL de prévisualisation (et le stream) quand ils changent / au démontage
+  useEffect(() => {
+    return () => {
+      if (capturedImage) URL.revokeObjectURL(capturedImage);
+    };
+  }, [capturedImage]);
 
   return (
     <div className="camera-capture">

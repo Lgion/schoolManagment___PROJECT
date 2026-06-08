@@ -1,7 +1,7 @@
 "use client"
 
 import Chart from "chart.js/auto"
-import { useContext, useRef, useEffect, useState } from "react";
+import { useContext, useRef, useEffect, useState, useMemo } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import PermissionGate from '../components/PermissionGate';
 import EleveCard from './EleveCard';
@@ -203,6 +203,71 @@ export default function EcoleAdminEleveLayout({ children }) {
         setScanResult(null);
     };
 
+    // Index classe par id (lookup O(1) au lieu d'un .find() par carte/comparaison)
+    const classesById = useMemo(() => {
+        const m = new Map();
+        (ctx.classes || []).forEach(c => m.set(c._id, c));
+        return m;
+    }, [ctx.classes]);
+
+    // Liste filtrée + triée mémoïsée : ne recalcule que si une dépendance change
+    const displayedEleves = useMemo(() => {
+        if (!Array.isArray(eleves)) return [];
+        return eleves
+            .filter(eleve => {
+                let matchesClasse = true;
+                if (filterByClasse !== 'toutes') {
+                    const classe = classesById.get(eleve.current_classe);
+                    matchesClasse = classe?.niveau === filterByClasse;
+                }
+
+                let matchesGender = true;
+                if (filterByGender !== 'tous') {
+                    matchesGender = eleve.sexe === filterByGender;
+                }
+
+                let matchesInterne = true;
+                if (filterByInterne !== 'tous') {
+                    if (filterByInterne === 'interne') {
+                        matchesInterne = eleve.targetsList?.isInterne === "Interne";
+                    } else if (filterByInterne === 'externe') {
+                        matchesInterne = !eleve.targetsList?.isInterne || eleve.targetsList?.isInterne !== "Interne";
+                    }
+                }
+
+                let matchesSearch = true;
+                if (searchText.trim()) {
+                    const searchLower = searchText.toLowerCase().trim();
+                    const nom = eleve.nom || '';
+                    const prenom = (Array.isArray(eleve.prenoms) ? eleve.prenoms.join('') : eleve.prenoms || '')
+                        .normalize('NFD').replace(/[̀-ͯ]/g, "");
+                    const nomComplet = `${nom} ${prenom}`.toLowerCase();
+                    matchesSearch = nomComplet.includes(searchLower);
+                }
+
+                return matchesClasse && matchesGender && matchesInterne && matchesSearch;
+            })
+            .sort((a, b) => {
+                let comparison = 0;
+                if (sortBy === 'nom') {
+                    const nomA = a.nom || '';
+                    const nomB = b.nom || '';
+                    const prenomA = (Array.isArray(a.prenoms) ? a.prenoms.join(' ') : a.prenoms) || '';
+                    const prenomB = (Array.isArray(b.prenoms) ? b.prenoms.join(' ') : b.prenoms) || '';
+                    comparison = nomA.localeCompare(nomB) || prenomA.localeCompare(prenomB);
+                } else if (sortBy === 'classe') {
+                    const niveauA = classesById.get(a.current_classe)?.niveau || '';
+                    const niveauB = classesById.get(b.current_classe)?.niveau || '';
+                    const priorityA = classOrderPriority?.[niveauA] ?? Number.MAX_SAFE_INTEGER;
+                    const priorityB = classOrderPriority?.[niveauB] ?? Number.MAX_SAFE_INTEGER;
+                    const nomA = a.nom || '';
+                    const nomB = b.nom || '';
+                    comparison = priorityA - priorityB || nomA.localeCompare(nomB);
+                }
+                return sortOrder === 'desc' ? -comparison : comparison;
+            });
+    }, [eleves, classesById, filterByClasse, filterByGender, filterByInterne, searchText, sortBy, sortOrder]);
+
     return (<>
         <h2>Liste des élèves</h2>
         <canvas ref={canvasRef} id="camembert"
@@ -393,78 +458,15 @@ export default function EcoleAdminEleveLayout({ children }) {
 
         {Array.isArray(eleves) ?
             <ul className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
-                {eleves
-                    .filter(eleve => {
-                        // Filtre par classe
-                        let matchesClasse = true;
-                        if (filterByClasse !== 'toutes') {
-                            const classe = (ctx.classes || []).find(c => c._id === eleve.current_classe);
-                            matchesClasse = classe?.niveau === filterByClasse;
-                        }
-
-                        // Filtre par genre
-                        let matchesGender = true;
-                        if (filterByGender !== 'tous') {
-                            matchesGender = eleve.sexe === filterByGender;
-                        }
-
-                        // Filtre par statut interne/externe
-                        let matchesInterne = true;
-                        if (filterByInterne !== 'tous') {
-                            if (filterByInterne === 'interne') {
-                                matchesInterne = eleve.targetsList?.isInterne === "Interne";
-                            } else if (filterByInterne === 'externe') {
-                                matchesInterne = !eleve.targetsList?.isInterne || eleve.targetsList?.isInterne !== "Interne";
-                            }
-                        }
-
-                        // Filtre par recherche textuelle
-                        let matchesSearch = true;
-                        if (searchText.trim()) {
-                            const searchLower = searchText.toLowerCase().trim();
-                            const nom = eleve.nom || '';
-                            const prenom = eleve.prenoms.join('').normalize('NFD').replace(/[\u0300-\u036f]/g, "") || '';
-                            const nomComplet = `${nom} ${prenom}`.toLowerCase();
-                            matchesSearch = nomComplet.includes(searchLower);
-                        }
-
-                        return matchesClasse && matchesGender && matchesInterne && matchesSearch;
-                    })
-                    .sort((a, b) => {
-                        let comparison = 0;
-
-                        if (sortBy === 'nom') {
-                            // Tri par nom de famille puis prénom (avec vérifications de sécurité)
-                            const nomA = a.nom || '';
-                            const nomB = b.nom || '';
-                            const prenomA = a.prenom || '';
-                            const prenomB = b.prenom || '';
-                            comparison = nomA.localeCompare(nomB) || prenomA.localeCompare(prenomB);
-                        } else if (sortBy === 'classe') {
-                            // Tri par classe (niveau) selon ordre défini
-                            const classeA = (ctx.classes || []).find(c => c._id === a.current_classe);
-                            const classeB = (ctx.classes || []).find(c => c._id === b.current_classe);
-                            const niveauA = classeA?.niveau || '';
-                            const niveauB = classeB?.niveau || '';
-                            const priorityA = classOrderPriority?.[niveauA] ?? Number.MAX_SAFE_INTEGER;
-                            const priorityB = classOrderPriority?.[niveauB] ?? Number.MAX_SAFE_INTEGER;
-                            const nomA = a.nom || '';
-                            const nomB = b.nom || '';
-                            comparison = priorityA - priorityB || nomA.localeCompare(nomB);
-                        }
-
-                        // Inverser l'ordre si décroissant
-                        return sortOrder === 'desc' ? -comparison : comparison;
-                    })
-                    .map(eleve => (
-                        <EleveCard
-                            key={eleve._id}
-                            classe={(ctx.classes || []).find(c => c._id === eleve.current_classe) || {}}
-                            eleve={eleve}
-                            onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
-                            viewMode={viewMode}
-                        />
-                    ))}
+                {displayedEleves.map(eleve => (
+                    <EleveCard
+                        key={eleve._id}
+                        classe={classesById.get(eleve.current_classe) || {}}
+                        eleve={eleve}
+                        onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
+                        viewMode={viewMode}
+                    />
+                ))}
             </ul>
             :
             <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>

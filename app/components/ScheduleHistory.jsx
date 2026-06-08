@@ -18,6 +18,13 @@ const ScheduleHistory = ({
   const [loading, setLoading] = useState(true)
   const [archiving, setArchiving] = useState(null)
   const [reactivating, setReactivating] = useState(null)
+  const [showActive, setShowActive] = useState(true)
+  const [showArchived, setShowArchived] = useState(true)
+
+  // Liste filtrée selon les cases à cocher actifs / archivés
+  const visibleSchedules = schedules.filter(s =>
+    (showActive && !s.isArchived) || (showArchived && s.isArchived)
+  )
 
   useEffect(() => {
     loadScheduleHistory()
@@ -171,18 +178,20 @@ const ScheduleHistory = ({
       <div className="scheduleHistory__filters">
         <div className="scheduleHistory__filter-group">
           <label className="scheduleHistory__filter-label">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               className="scheduleHistory__filter-checkbox"
-              defaultChecked={true}
+              checked={showActive}
+              onChange={e => setShowActive(e.target.checked)}
             />
             Emplois du temps actifs
           </label>
           <label className="scheduleHistory__filter-label">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               className="scheduleHistory__filter-checkbox"
-              defaultChecked={true}
+              checked={showArchived}
+              onChange={e => setShowArchived(e.target.checked)}
             />
             Emplois du temps archivés
           </label>
@@ -190,7 +199,7 @@ const ScheduleHistory = ({
       </div>
 
       <div className="scheduleHistory__timeline">
-        {schedules.map((schedule, index) => (
+        {visibleSchedules.map((schedule, index) => (
           <div 
             key={schedule._id}
             className={`scheduleHistory__item ${schedule.isArchived ? 'scheduleHistory__item--archived' : 'scheduleHistory__item--active'}`}

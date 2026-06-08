@@ -30,41 +30,30 @@ export default function AddStudentsModal({
   // Filtrer les élèves selon la recherche et le type
   useEffect(() => {
     let filtered = [...availableStudents];
-    
-    console.log('🔍 Debug filtrage:', {
-      availableStudents: availableStudents.length,
-      currentStudents,
-      filterType
-    });
-    
+
     // Exclure les élèves déjà dans cette classe
-    const beforeExclusion = filtered.length;
     filtered = filtered.filter(eleve => {
       const eleveId = String(eleve._id);
       const isInCurrentClass = currentStudents.some(id => String(id) === eleveId);
       return !isInCurrentClass;
     });
-    console.log(`📊 Après exclusion classe actuelle: ${beforeExclusion} → ${filtered.length}`);
-    
+
     // Appliquer le filtre par type
     if (filterType === 'no-class') {
-      const beforeTypeFilter = filtered.length;
       filtered = filtered.filter(eleve => !eleve.current_classe);
-      console.log(`📊 Après filtre "sans classe": ${beforeTypeFilter} → ${filtered.length}`);
     }
-    
-    // Appliquer la recherche
+
+    // Appliquer la recherche (prenoms peut être un tableau ou une chaîne)
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const beforeSearch = filtered.length;
-      filtered = filtered.filter(eleve => 
+      filtered = filtered.filter(eleve =>
         eleve.nom?.toLowerCase().includes(query) ||
-        eleve.prenoms?.some(p => p.toLowerCase().includes(query))
+        (Array.isArray(eleve.prenoms)
+          ? eleve.prenoms.some(p => p.toLowerCase().includes(query))
+          : (typeof eleve.prenoms === 'string' && eleve.prenoms.toLowerCase().includes(query)))
       );
-      console.log(`📊 Après recherche "${searchQuery}": ${beforeSearch} → ${filtered.length}`);
     }
-    
-    console.log('✅ Élèves filtrés finaux:', filtered.length);
+
     setFilteredStudents(filtered);
   }, [searchQuery, filterType, availableStudents, currentStudents]);
 
@@ -267,7 +256,7 @@ export default function AddStudentsModal({
                 />
                 <div className="addStudentsModal__studentInfo">
                   <span className="addStudentsModal__studentName">
-                    {eleve.nom} {eleve.prenoms?.join(' ')}
+                    {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : (eleve.prenoms || '')}
                   </span>
                   {eleve.current_classe && (
                     <span className="addStudentsModal__studentClass">

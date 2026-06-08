@@ -28,15 +28,6 @@ export default function ClasseDetailContent({ entityId }) {
 
   const isCurrentYear = classe.annee === currentSchoolYear;
 
-  // DEBUG: Logs pour comprendre pourquoi le bouton n'apparaît pas
-  console.log('🔍 Debug bouton ajout élèves:', {
-    userRole,
-    isCurrentYear,
-    classeAnnee: classe.annee,
-    currentSchoolYear,
-    condition: userRole === 'admin' && isCurrentYear
-  });
-
   // Liste des élèves selon le contexte (actuel vs historique)
   const eleves = isCurrentYear
     ? (ctx.eleves || []).filter(e => e.current_classe === classe._id) // Relations dynamiques

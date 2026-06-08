@@ -116,7 +116,7 @@ body>[data-floating-ui-portal] {
     border-radius: 5px;
     font-size: 2em;
     cursor: pointer;
-    z-index: 10
+    z-index: 10;
   }
 
   // En-tête moderne de la classe
@@ -2094,7 +2094,7 @@ section>div:has(.modal) {
   }
 
   &--admin {
-    background: linear-gradi ent(135deg, #ff6b6b, #ee5a24);
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
     border-color: #ff6b6b;
   }

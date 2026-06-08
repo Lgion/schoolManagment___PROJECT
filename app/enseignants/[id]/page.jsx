@@ -29,6 +29,9 @@ export default function EnseignantDetailPage() {
 
   if (!enseignant) return <div style={{ color: 'red' }}>Enseignant introuvable</div>;
 
+  // Normalisation de l'affichage des prénoms (tableau ou chaîne)
+  const prenomsDisplay = Array.isArray(enseignant.prenoms) ? enseignant.prenoms.join(' ') : (enseignant.prenoms || '');
+
   // Récupérer les classes assignées à cet enseignant
   const classesAssignees = (ctx.classes || []).filter(c =>
     Array.isArray(enseignant.current_classes) && enseignant.current_classes.includes(c._id)
@@ -44,7 +47,7 @@ export default function EnseignantDetailPage() {
     <DetailPortal
       isOpen={true}
       onClose={() => router.back()}
-      title={`Enseignant ${enseignant.nom} ${enseignant.prenoms}`}
+      title={`Enseignant ${enseignant.nom} ${prenomsDisplay}`}
       icon={"👨‍🏫"}
       reduced={[isReduced, setIsReduced]}
     ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
@@ -69,7 +72,7 @@ export default function EnseignantDetailPage() {
           <div className="person-detail__header-content">
             <div className="person-detail__header-info">
               <h1 className="person-detail__title">
-                {enseignant.nom} {enseignant.prenoms}
+                {enseignant.nom} {prenomsDisplay}
               </h1>
               <p className="person-detail__subtitle-text">
                 Enseignant • {enseignant.sexe === 'M' ? 'Homme' : 'Femme'}
@@ -86,7 +89,7 @@ export default function EnseignantDetailPage() {
               <img
                 className="person-detail__photo"
                 src={getEnseignantImagePath(enseignant)}
-                alt={`${enseignant.nom} ${enseignant.prenoms}`}
+                alt={`${enseignant.nom} ${prenomsDisplay}`}
                 onError={(e) => {
                   e.target.src = '/school/default-teacher.webp';
                 }}

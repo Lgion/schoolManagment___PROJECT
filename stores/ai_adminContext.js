@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useState, useMemo, useCallback, useEffect } from 'react';
+import { createContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { getLSItem, setLSItem, clearLS } from '../utils/localStorageManager';
 import { useAuth } from '@clerk/nextjs';
 
@@ -178,21 +178,27 @@ export const AdminContextProvider = ({ children }) => {
 
   // --- ELEVE CRUD ---
   const fetchEleves = useCallback(async (bypassCache = false) => {
-    let data = !bypassCache ? getLSItem('eleves') : null;
-    if (data && Array.isArray(data) && data.length > 0) {
-      setEleves(data);
-    } else {
-      const res = await fetch('/api/school_ai/eleves');
-      data = await res.json();
-      if (Array.isArray(data)) {
+    try {
+      let data = !bypassCache ? getLSItem('eleves') : null;
+      if (data && Array.isArray(data) && data.length > 0) {
         setEleves(data);
-        setLSItem('eleves', data);
       } else {
-        console.error('Erreur lors du fetch des élèves:', data);
-        setEleves([]);
+        const res = await fetch('/api/school_ai/eleves');
+        if (!res.ok) throw new Error(`GET /api/school_ai/eleves -> ${res.status}`);
+        data = await res.json();
+        if (Array.isArray(data)) {
+          setEleves(data);
+          setLSItem('eleves', data);
+        } else {
+          console.error('Erreur lors du fetch des élèves:', data);
+          setEleves([]);
+        }
       }
+    } catch (err) {
+      console.error('Erreur fetchEleves:', err);
+    } finally {
+      setElevesLoaded(true);
     }
-    setElevesLoaded(true);
   }, []);
 
   const saveEleve = useCallback(async (data) => {
@@ -268,28 +274,34 @@ export const AdminContextProvider = ({ children }) => {
       setLSItem('eleves', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteEleve", err);
-      fetchEleves();
+      await fetchEleves();
       throw err;
     }
   }, [fetchEleves]);
 
   // --- ENSEIGNANT CRUD ---
   const fetchEnseignants = useCallback(async (bypassCache = false) => {
-    let data = !bypassCache ? getLSItem('enseignants') : null;
-    if (data && Array.isArray(data) && data.length > 0) {
-      setEnseignants(data);
-    } else {
-      const res = await fetch('/api/school_ai/enseignants');
-      data = await res.json();
-      if (Array.isArray(data)) {
+    try {
+      let data = !bypassCache ? getLSItem('enseignants') : null;
+      if (data && Array.isArray(data) && data.length > 0) {
         setEnseignants(data);
-        setLSItem('enseignants', data);
       } else {
-        console.error('Erreur lors du fetch des enseignants:', data);
-        setEnseignants([]);
+        const res = await fetch('/api/school_ai/enseignants');
+        if (!res.ok) throw new Error(`GET /api/school_ai/enseignants -> ${res.status}`);
+        data = await res.json();
+        if (Array.isArray(data)) {
+          setEnseignants(data);
+          setLSItem('enseignants', data);
+        } else {
+          console.error('Erreur lors du fetch des enseignants:', data);
+          setEnseignants([]);
+        }
       }
+    } catch (err) {
+      console.error('Erreur fetchEnseignants:', err);
+    } finally {
+      setEnseignantsLoaded(true);
     }
-    setEnseignantsLoaded(true);
   }, []);
 
   const saveEnseignant = useCallback(async (data) => {
@@ -360,28 +372,34 @@ export const AdminContextProvider = ({ children }) => {
       setLSItem('enseignants', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteEnseignant", err);
-      fetchEnseignants();
+      await fetchEnseignants();
       throw err;
     }
   }, [fetchEnseignants]);
 
   // --- CLASSE CRUD ---
   const fetchClasses = useCallback(async (bypassCache = false) => {
-    let data = !bypassCache ? getLSItem('classes') : null;
-    if (data && Array.isArray(data) && data.length > 0) {
-      setClasses(data);
-    } else {
-      const res = await fetch('/api/school_ai/classes');
-      data = await res.json();
-      if (Array.isArray(data)) {
+    try {
+      let data = !bypassCache ? getLSItem('classes') : null;
+      if (data && Array.isArray(data) && data.length > 0) {
         setClasses(data);
-        setLSItem('classes', data);
       } else {
-        console.error('Erreur lors du fetch des classes:', data);
-        setClasses([]);
+        const res = await fetch('/api/school_ai/classes');
+        if (!res.ok) throw new Error(`GET /api/school_ai/classes -> ${res.status}`);
+        data = await res.json();
+        if (Array.isArray(data)) {
+          setClasses(data);
+          setLSItem('classes', data);
+        } else {
+          console.error('Erreur lors du fetch des classes:', data);
+          setClasses([]);
+        }
       }
+    } catch (err) {
+      console.error('Erreur fetchClasses:', err);
+    } finally {
+      setClassesLoaded(true);
     }
-    setClassesLoaded(true);
   }, []);
 
   const saveClasse = useCallback(async (data) => {
@@ -452,7 +470,7 @@ export const AdminContextProvider = ({ children }) => {
       setLSItem('classes', newList);
     } catch (err) {
       console.error("Optimistic UI revert for deleteClasse", err);
-      fetchClasses();
+      await fetchClasses();
       throw err;
     }
   }, [fetchClasses]);
@@ -522,6 +540,7 @@ export const AdminContextProvider = ({ children }) => {
       }
 
       const response = await fetch('/api/subjects');
+      if (!response.ok) throw new Error(`GET /api/subjects -> ${response.status}`);
       const data = await response.json();
       if (data.success && data.data) {
         const sortedData = data.data
@@ -566,12 +585,19 @@ export const AdminContextProvider = ({ children }) => {
     return await res.json(); // { paths }
   }, []);
 
+  // Ne déclenche le reset/re-sync que sur un VRAI changement d'identité,
+  // pas au montage initial (le chargement initial est géré par l'auto-fetch
+  // cache-first plus bas). Évite de vider le cache à chaque rechargement de page.
+  const isFirstAuthRun = useRef(true);
   useEffect(() => {
-    // Reset all internal states if the user logs in or out
-    // This allows the context to re-fetch and re-sync with the correct LS branch
-    console.log(`[AiAdminContext] Auth state changed (userId: ${userId}). Clearing memory and re-syncing.`);
-    
-    // 1. On vide les états mémoire pour forcer un rafraîchissement visuel (écrans vides temporaires)
+    if (isFirstAuthRun.current) {
+      isFirstAuthRun.current = false;
+      return;
+    }
+
+    // L'identité a changé (login/logout) : on purge le cache LS lié à l'ancien
+    // utilisateur, on vide les états mémoire, puis on re-fetch en bypass.
+    clearLS();
     setEleves([]);
     setEnseignants([]);
     setClasses([]);
@@ -580,8 +606,6 @@ export const AdminContextProvider = ({ children }) => {
     setTargetDefinitions([]);
     setHomepage({ title: '', texts: [], photo: '' });
 
-    // 2. On baisse les drapeaux pour déclencher les fetch APRÈS un court délai
-    // On force le bypass du cache pour cette session car l'identité a changé
     const timer = setTimeout(() => {
       fetchClasses(true);
       fetchEleves(true);

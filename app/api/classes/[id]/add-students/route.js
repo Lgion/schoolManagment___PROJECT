@@ -95,7 +95,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json(
       { 
         error: 'Erreur lors de l\'ajout des élèves',
-        details: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       { status: 500 }

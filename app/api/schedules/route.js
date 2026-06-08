@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '../lib/authWithFallback'
+import dbConnect from '../lib/dbConnect'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../_/models/ai/Schedule')
@@ -13,11 +14,13 @@ export async function GET(request) {
   try {
     // Authentification avec fallback robuste
     const userId = await requireAuth(request, 'GET /api/schedules')
-    
+
     // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const { searchParams } = new URL(request.url)
     const classeId = searchParams.get('classeId')
@@ -64,11 +67,13 @@ export async function POST(request) {
   try {
     // Authentification avec fallback robuste
     const userId = await requireAuth(request, 'POST /api/schedules')
-    
+
     // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const body = await request.json()
     const { classeId, label, planning, } = body

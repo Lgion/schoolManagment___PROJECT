@@ -139,7 +139,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                         <PersonCard
                             key={enseignant._id}
                             person={enseignant}
-                            classes={(enseignant?.current_classes || []).map(el => Array.isArray(classes) ? classes.find(c => c._id === el) : null).filter(Boolean)}
+                            classes={(enseignant?.current_classes && Array.isArray(classes) && classes.length > 0) ? enseignant.current_classes.map(el => classes.find(c => c._id === el)).filter(Boolean) : []}
                             type="enseignant"
                             onEdit={e => { setSelected(e); setEditType("enseignant"); setShowModal(true); }}
                             viewMode={viewMode}
