@@ -801,36 +801,50 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
               </div>
 
-              <label htmlFor="input-adresse">Adresse (facultatif): </label>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <input
-                  id="input-adresse"
-                  name="adresse_$_map"
-                  value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
-                    ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
-                    : (form.adresse_$_map || '')}
-                  onChange={handleChange}
-                  placeholder="Adresse"
-                  required
-                  style={{ flex: 1 }}
-                />
-                <button type="button" onClick={() => setShowMap(true)} style={{ marginLeft: 8 }}>
-                  📍
-                </button>
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif)</label>
+                <div className="modal__fieldGroup modal__fieldGroup--row">
+                  <input
+                    id="input-adresse"
+                    name="adresse_$_map"
+                    value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
+                      ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
+                      : (form.adresse_$_map || '')}
+                    onChange={handleChange}
+                    placeholder="Adresse"
+                    className="modal__input"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowMap(true)}
+                    className="modal__btn modal__btn--secondary input-adresseBtn"
+                    title="Ouvrir la carte"
+                  >
+                    📍
+                  </button>
+                </div>
               </div>
               {showMap && (
-                <div style={{ margin: '10px 0' }}>
+                <div className="modal__map-container">
                   <Gmap
                     // Pass initial center based on current state (which might be from datas)
                     // initialCenter={{ lat: parseFloat(latitude) || 5.36, lng: parseFloat(longitude) || -4.00 }}
                     onCoordinatesClick={handleMapClick} // Pass the callback function
                   />
-                  <button type="button" onClick={() => setShowMap(false)}>Fermer la carte</button>
+                  <button
+                    type="button"
+                    onClick={() => setShowMap(false)}
+                    className="modal__btn modal__btn--secondary"
+                  >
+                    Fermer la carte
+                  </button>
                 </div>
               )}
               <Parent form={form} setForm={setForm} />
-              <label htmlFor="input-classe">Classe actuelle</label>
-              <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} required>
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-classe" className="modal__label">Classe actuelle</label>
+                <select id="input-classe" name="current_classe" value={form.current_classe || ''} onChange={handleChange} className="modal__select" required>
                 <option value="">Sélectionnez une classe</option>
                 {ctx.classes && (() => {
                   // Logique dynamique : filtrer les classes de l'année courante et suivante
@@ -870,7 +884,8 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                       </option>
                     ));
                 })()}
-              </select>
+                </select>
+              </div>
 
               <div className="modal__fieldGroup">
                 <label className="modal__label">Photo de l'élève</label>

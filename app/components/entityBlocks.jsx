@@ -101,7 +101,7 @@ function CommentairesBlock({ commentaires, setForm }) {
           onChange={e => setNewComment(e.target.value)}
           placeholder="Ajouter un commentaire..."
         />
-        <button type="button" onClick={handleAdd} disabled={!newComment.trim()}>Ajouter</button>
+        <button type="button" className="add-entry-btn" onClick={handleAdd} disabled={!newComment.trim()}>Ajouter</button>
       </div>
     </div>
   );
@@ -164,7 +164,7 @@ function SchoolHistoryBlock({ schoolHistory, onChange }) {
           onChange={e => setEcole(e.target.value)}
           placeholder="Nom de l'école"
         />
-        <button type="button" onClick={handleAdd} disabled={!selectedYear || !ecole.trim()}>Ajouter</button>
+        <button type="button" className="add-entry-btn" onClick={handleAdd} disabled={!selectedYear || !ecole.trim()}>Ajouter</button>
       </div>
         <input type="hidden" name="school_history" value={(() => {
           const now = new Date();
@@ -298,8 +298,8 @@ function ScolarityFeesBlock({ fees, onChange, schoolYear, targetsList = {} }) {
             autoFocus
           />
           <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-          <button type="button" onClick={handleAdd}>Valider</button>
-          <button type="button" onClick={() => setShowForm(false)} className="scolarity-fees-block__add-cancel">Annuler</button>
+          <button type="button" className="add-entry-btn" onClick={handleAdd}>Valider</button>
+          <button type="button" onClick={() => setShowForm(false)} className="entry-cancel-btn scolarity-fees-block__add-cancel">Annuler</button>
         </div>
       ) : (
         onChange && <button type="button" className="scolarity-fees-block__add-btn" onClick={() => setShowForm(true)}>Ajouter un dépôt</button>
@@ -1450,7 +1450,7 @@ function AbsencesBlock({ absences, setForm }) {
                     <span>{new Date(Number(ts)).toLocaleDateString('fr-FR')}</span>
                     <button type="button" className="remove-absence-btn" title="Supprimer" onClick={() => {
                       if (window.confirm('Supprimer cette absence ?')) setForm(f => ({ ...f, absences: f.absences.filter(x => x !== ts) }));
-                    }} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#b00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1em', lineHeight: '1em' }}>&times;</button>
+                    }}>&times;</button>
                   </div>
                 ))}
               </div>
@@ -1461,7 +1461,7 @@ function AbsencesBlock({ absences, setForm }) {
       {showAbsencePicker && (
         <div className="absence-picker-modal">
           <input type="date" onChange={e => setNewAbsenceDate(e.target.value)} />
-          <button type="button" onClick={() => {
+          <button type="button" className="add-entry-btn" onClick={() => {
             if (newAbsenceDate) {
               const ts = new Date(newAbsenceDate).setHours(0, 0, 0, 0);
               const absencesArr = Array.isArray(items) ? items : [];
@@ -1470,7 +1470,7 @@ function AbsencesBlock({ absences, setForm }) {
               setNewAbsenceDate('');
             }
           }}>Valider</button>
-          <button type="button" onClick={() => setShowAbsencePicker(false)} style={{ marginLeft: 8 }}>Annuler</button>
+          <button type="button" className="entry-cancel-btn" onClick={() => setShowAbsencePicker(false)}>Annuler</button>
         </div>
       )}
     </div>
@@ -1535,7 +1535,7 @@ function BonusBlock({ bonus, setForm }) {
         <div className="bonus-picker-modal">
           <input type="date" value={bonusDate} onChange={e => setBonusDate(e.target.value)} />
           <input type="text" placeholder="Raison du bonus" value={bonusLabel} onChange={e => setBonusLabel(e.target.value)} />
-          <button type="button" onClick={() => {
+          <button type="button" className="add-entry-btn" onClick={() => {
             if (bonusDate && bonusLabel) {
               const ts = new Date(bonusDate).setHours(0, 0, 0, 0);
               setForm(f => {
@@ -1557,7 +1557,7 @@ function BonusBlock({ bonus, setForm }) {
               setBonusLabel('');
             }
           }}>Valider</button>
-          <button type="button" onClick={() => setShowBonusForm(false)} style={{ marginLeft: 8 }}>Annuler</button>
+          <button type="button" className="entry-cancel-btn" onClick={() => setShowBonusForm(false)}>Annuler</button>
         </div>
       )}
       <div className="bonus-list">
@@ -1592,7 +1592,7 @@ function BonusBlock({ bonus, setForm }) {
                         }
                       });
                     }
-                  }} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#b00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1em', lineHeight: '1em' }}>&times;</button>
+                  }}>&times;</button>
                 </div>
               ))}
             </div>
@@ -1661,7 +1661,7 @@ function ManusBlock({ manus, setForm }) {
         <div className="manus-picker-modal">
           <input type="date" value={manusDate} onChange={e => setManusDate(e.target.value)} />
           <input type="text" placeholder="Raison du malus" value={manusLabel} onChange={e => setManusLabel(e.target.value)} />
-          <button type="button" onClick={() => {
+          <button type="button" className="add-entry-btn" onClick={() => {
             if (manusDate && manusLabel) {
               const ts = new Date(manusDate).setHours(0, 0, 0, 0);
               setForm(f => {
@@ -1683,7 +1683,7 @@ function ManusBlock({ manus, setForm }) {
               setManusLabel('');
             }
           }}>Valider</button>
-          <button type="button" onClick={() => setShowManusForm(false)} style={{ marginLeft: 8 }}>Annuler</button>
+          <button type="button" className="entry-cancel-btn" onClick={() => setShowManusForm(false)}>Annuler</button>
         </div>
       )}
       <div className="manus-list">
@@ -1718,7 +1718,7 @@ function ManusBlock({ manus, setForm }) {
                         }
                       });
                     }
-                  }} style={{ position: 'absolute', top: 0, right: 0, background: 'none', border: 'none', color: '#b00', fontWeight: 'bold', cursor: 'pointer', fontSize: '1.1em', lineHeight: '1em' }}>&times;</button>
+                  }}>&times;</button>
                 </div>
               ))}
             </div>
@@ -1833,7 +1833,7 @@ function TargetsProfilingBlock({ form, setForm }) {
   if (!targetDefinitionsLoaded) return <div className="loading-small">Chargement profil...</div>;
 
   return (
-    <div className="targets-profiling-block" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+    <div className="targets-profiling-block">
       {targetDefinitions.map(td => {
         const currentValue = targetsList[td.key];
 
@@ -1859,18 +1859,18 @@ function TargetsProfilingBlock({ form, setForm }) {
         // ── Choix unique / Radio (do*) ─────────────────
         if (td.key.startsWith('do')) {
           return (
-            <div key={td.key} className="profiling-card" style={{ border: '1px solid #ddd', padding: '0.8rem', borderRadius: '8px', background: '#f8fafc' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <div style={{ fontWeight: 600, color: '#1E3A8A', fontSize: '0.9rem' }}>{td.key.replace(/^do/, '')}</div>
+            <div key={td.key} className="profiling-card">
+              <div className="profiling-card__head">
+                <div className="profiling-card__title">{td.key.replace(/^do/, '')}</div>
                 {setForm && currentValue && (
-                  <button type="button" onClick={() => removeTarget(td.key)} style={{ fontSize: '0.7rem', color: '#666', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+                  <button type="button" className="profiling-card__reset" onClick={() => removeTarget(td.key)}>
                     Réinitialiser
                   </button>
                 )}
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+              <div className="profiling-card__options">
                 {td.options.map(opt => (
-                  <label key={opt} style={{ fontSize: '0.85rem', cursor: setForm ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <label key={opt} className="profiling-card__option">
                     <input
                       type="radio"
                       name={td.key}
@@ -1888,13 +1888,13 @@ function TargetsProfilingBlock({ form, setForm }) {
 
         // ── Multi-choix / Checkboxes (autre) ───────────
         return (
-          <div key={td.key} className="profiling-card" style={{ border: '1px solid #ddd', padding: '0.8rem', borderRadius: '8px', background: '#f8fafc' }}>
-            <div style={{ fontWeight: 600, color: '#1E3A8A', marginBottom: '0.5rem', fontSize: '0.9rem' }}>{td.key}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+          <div key={td.key} className="profiling-card">
+            <div className="profiling-card__title">{td.key}</div>
+            <div className="profiling-card__options">
               {td.options.map(opt => {
                 const checked = Array.isArray(currentValue) ? currentValue.includes(opt) : false;
                 return (
-                  <label key={opt} style={{ fontSize: '0.85rem', cursor: setForm ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <label key={opt} className="profiling-card__option">
                     <input
                       type="checkbox"
                       checked={checked}

@@ -3227,3 +3227,378 @@ button.btn--primary {
 @media (prefers-reduced-motion: reduce) {
   .loading-state__spinner { animation-duration: 1.6s; }
 }
+
+/* ============================================================================
+   COHÉRENCE DES MODALES D'ÉDITION (EntityModal + sous-blocs entityBlocks)
+   Objectif : plus aucun contrôle natif « brut » (bouton/menu/champ) dans les
+   modales élève / enseignant / classe. On réutilise les bases existantes
+   (.add-entry-btn, tokens du design system) plutôt que d'inventer des styles.
+   ========================================================================== */
+
+/* --- Boutons « Ajouter » des sous-blocs alignés sur la base commune --- */
+.add-absence-btn,
+.add-bonus-btn,
+.add-manus-btn {
+  @extend .add-entry-btn;
+}
+
+/* --- Bouton « Annuler » neutre des pickers (absence/bonus/malus, frais) --- */
+.entry-cancel-btn {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  padding: 0.32em 1.1em;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.entry-cancel-btn:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+/* --- Bloc « Coefficients des matières » (modale classe) : n'était stylé nulle part --- */
+.coefficients-manager {
+  margin-top: 0.5rem;
+
+  &__loading {
+    color: var(--color-text-muted);
+    font-style: italic;
+    padding: 1rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--color-heading);
+      font-family: var(--font-primary);
+    }
+  }
+
+  &__reset-btn {
+    background: var(--color-surface);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+
+    &:hover { background: var(--color-danger); color: #fff; box-shadow: var(--shadow-small); }
+  }
+
+  &__configured {
+    margin-top: 1rem;
+
+    h4 {
+      margin: 0 0 0.6rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__configured-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.55rem 0.75rem;
+  }
+
+  &__subject-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    flex: 1;
+  }
+
+  &__coefficient {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    background: var(--color-primary-soft);
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
+
+  &__remove-btn {
+    background: var(--color-danger);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: transform .15s, box-shadow .15s;
+
+    &:hover { transform: scale(1.1); box-shadow: var(--shadow-small); }
+  }
+
+  &__empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  &__info {
+    margin-top: 1rem;
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-secondary);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+
+    p {
+      margin: 0.2rem 0;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+
+      strong { color: var(--color-heading); }
+    }
+  }
+}
+
+/* --- Cartes de profilage (modale élève) : remplacent les styles inline codés en dur --- */
+.targets-profiling-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.profiling-card {
+  flex: 1 1 220px;
+  min-width: 200px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  padding: 0.85rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: var(--color-heading);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  &__head &__title { margin-bottom: 0; }
+
+  &__reset {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+
+    &:hover { color: var(--color-danger); }
+  }
+
+  &__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 0.8rem;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+    cursor: pointer;
+
+    &:has(:disabled) { cursor: default; }
+  }
+}
+
+/* === PONT .modal__* → placeholders %entityModal__* ===
+   Le JSX d'EntityModal a été migré en BEM (.modal__closeBtn, .modal__camera-btn,
+   .modal__duplicateBtn…) mais le SCSS ne définissait que des placeholders
+   %entityModal__* jamais reliés à .modal__*. Résultat : bouton de fermeture,
+   bouton caméra, contrôles de duplication (menu + bouton), bouton de retrait de
+   photo, titres de section… s'affichaient SANS style. On relie ici chaque classe
+   à son placeholder existant, et on écrit des règles fraîches (tokenisées) pour
+   les éléments photo/caméra qui n'avaient été définis que sous .compositions-block. */
+.modal {
+  &__title          { @extend %entityModal__title; }
+  &__closeBtn       { @extend %entityModal__closeBtn; }
+  &__headerControls { @extend %entityModal__headerControls; }
+  &__duplicateControls { @extend %entityModal__duplicateControls; }
+  &__duplicateDate  { @extend %entityModal__duplicateDate; }
+  &__duplicateBtn   { @extend %entityModal__duplicateBtn; }
+  &__label          { @extend %entityModal__label; }
+  &__input          { @extend %entityModal__input; }
+  &__select         { @extend %entityModal__select; }
+  &__btn            { @extend %entityModal__btn; }
+  &__btn--secondary { @extend %entityModal__btn--secondary; }
+  &__errorMessage   { @extend %entityModal__errorMessage; }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__fieldGroup--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  &__fieldGroup--coefficients,
+  &__fieldGroup--compositions {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  &__sectionTitle {
+    margin: 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-heading);
+    font-family: var(--font-heading);
+  }
+  &__sectionDescription {
+    margin: 0 0 0.75rem;
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+  }
+
+  &__photo-controls {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  &__input--file { flex: 1; min-width: 200px; }
+
+  &__camera-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--gradient-brand);
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    white-space: nowrap;
+    transition: transform .18s, box-shadow .18s, filter .18s;
+
+    &:hover { transform: translateY(-1px); box-shadow: var(--shadow-medium); filter: brightness(1.04); }
+    &:active { transform: translateY(0); }
+
+    &-icon { font-size: 1.1rem; line-height: 1; }
+    &-text { @media (max-width: 480px) { display: none; } }
+  }
+
+  &__preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-small);
+  }
+
+  &__remove-photo-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--color-danger);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    box-shadow: var(--shadow-small);
+    transition: transform .18s, background .18s;
+
+    &:hover { background: var(--color-danger-dark); transform: scale(1.1); }
+  }
+}
+
+/* === FILET DE SÉCURITÉ ===
+   Tout contrôle natif SANS classe dans une modale d'édition hérite d'un style
+   cohérent. Spécificité volontairement très basse (:where) : n'importe quelle
+   classe BEM reprend la main, et les règles #modalPersonForm input[type=...]
+   existantes priment toujours. C'est la garantie « aucun élément sans style ». */
+:where(#modalPersonForm, .modal) button:not([class]) {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
+}
+:where(#modalPersonForm, .modal) button:not([class]):hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+:where(#modalPersonForm, .modal) button:not([class]):disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+:where(#modalPersonForm) :is(input, select, textarea):not([class]):not([type="hidden"]):not([type="checkbox"]):not([type="radio"]) {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+:where(#modalPersonForm) :is(input, select, textarea):not([class]):not([type="hidden"]):focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
