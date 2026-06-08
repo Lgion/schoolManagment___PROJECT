@@ -28,7 +28,8 @@ $secondaryFont: 'Poppins', 'Arial', sans-serif;
 
   // Dégradés signature (un seul langage de dégradé pour tout le site)
   --gradient-brand: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-  --gradient-brand-soft: linear-gradient(135deg, #1E3A8A 0%, #3B5BB5 100%);
+  // « soft » = teinte CLAIRE pour fonds derrière du texte foncé (bleu très pâle → crème)
+  --gradient-brand-soft: linear-gradient(135deg, #EEF3FC 0%, #FFF6EC 100%);
   --gradient-accent: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
 
   // Couleurs d'état (harmonisées, lisibles)

@@ -53,6 +53,12 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
       formData.naissance_$_date = timestampToDateString(formData.naissance_$_date);
     }
 
+    // Normaliser l'adresse (objet {lat,lng} → chaîne "lat,lng") pour éviter "[object Object]" dans l'input
+    if (formData.adresse_$_map && typeof formData.adresse_$_map === 'object') {
+      const { lat, lng } = formData.adresse_$_map;
+      formData.adresse_$_map = (lat != null && lng != null) ? `${lat},${lng}` : '';
+    }
+
     // S'assurer que les coefficients sont toujours initialisés pour les classes
     if (type === 'classe' && !formData.coefficients) {
       formData.coefficients = {};
@@ -799,7 +805,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 <input
                   id="input-adresse"
                   name="adresse_$_map"
-                  value={form.adresse_$_map}
+                  value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
+                    ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
+                    : (form.adresse_$_map || '')}
                   onChange={handleChange}
                   placeholder="Adresse"
                   required
@@ -1097,7 +1105,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   <input
                     id="input-adresse"
                     name="adresse_$_map"
-                    value={form.adresse_$_map}
+                    value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
+                      ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
+                      : (form.adresse_$_map || '')}
                     onChange={handleChange}
                     placeholder="Adresse"
                     className="modal__input"

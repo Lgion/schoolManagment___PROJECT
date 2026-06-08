@@ -14,9 +14,18 @@
   position: relative;
   transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
   cursor: pointer;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
     width: 420px;
+  }
+
+  // Mobile : la carte remplit la largeur disponible et ne déborde jamais
+  @media (max-width: 600px) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 1em 1.1em 1.2em;
   }
 }
 
@@ -29,11 +38,14 @@
 
 .classe-card__header {
   display: flex;
-  gap: 1.1em;
+  flex-wrap: wrap;
+  gap: 0.5em 1.1em;
   align-items: baseline;
   font-size: 1.18em;
   font-weight: 700;
   color: var(--color-heading);
+  // Réserve la place du bouton « Éditer » (absolu en haut à droite)
+  padding-right: 5em;
 }
 
 .classe-card__niveau {
@@ -42,7 +54,7 @@
 
 .classe-card__alias {
   font-size: 1.1em;
-  color: #3b3b3b;
+  color: var(--color-text-secondary);
 }
 
 .classe-card__annee {
@@ -93,4 +105,9 @@
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
+}
+
+.classe-card__editbtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }

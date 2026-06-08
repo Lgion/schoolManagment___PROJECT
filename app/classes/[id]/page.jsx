@@ -134,9 +134,8 @@ export default function ClasseDetailPage() {
       onClose={() => router.back()}
       title={`${classe.niveau} ${classe.alias}`}
       icon={"🏦"}
-      reduced={[isReduced, setIsReduced]}
       headerControls={yearSelect}
-    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
+    ><main className="person-detail">
         <PermissionGate roles={['admin', 'prof']}>
           {onEdit && !showModal && isViewCurrentYear && (
             <button
@@ -176,10 +175,6 @@ export default function ClasseDetailPage() {
                 alt={`${classe.niveau} ${classe.alias} - ${currentData.annee}`}
                 onError={(e) => {
                   e.target.src = '/school/classe.webp';
-                }}
-                onClick={e => {
-                  e.preventDefault();
-                  setIsReduced(!isReduced);
                 }}
               />
             </div>

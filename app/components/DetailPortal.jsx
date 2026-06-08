@@ -5,96 +5,82 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 
 /**
- * Composant Portal générique pour wrapper le contenu des pages /[id] dans une modale
- * Réutilise les styles existants de DetailModal
+ * Composant Portal générique pour wrapper le contenu des pages /[id] dans une modale.
+ * Une seule action de fermeture (✕ ou Échap ou clic sur l'arrière-plan).
  */
-export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", reduced = [false, () => {}], headerControls  }) {
+export default function DetailPortal({ children, isOpen, onClose, title, icon = "📋", headerControls }) {
   const [isClosing, setIsClosing] = useState(false);
   const router = useRouter();
-  const [isReduced,setIsReduced] = reduced
-  
-  // Gestion de la fermeture avec animation
+
+  // Fermeture avec animation
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       if (onClose) {
         onClose();
       } else {
-        // Fallback : navigation back si pas de onClose fourni
         router.back();
       }
-    }, 300); // Durée de l'animation de fermeture
+    }, 250);
   };
 
-  // Gestion des touches clavier
+  // Échap pour fermer + verrou du scroll de l'arrière-plan
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
+      if (e.key === 'Escape') handleClose();
     };
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = !isReduced ? 'hidden' : "visible"; // Empêcher le scroll du body
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
-  }, [isOpen, isReduced]);
+  }, [isOpen]);
 
-  // Gestion du clic sur l'overlay
+  // Clic sur l'overlay (uniquement l'arrière-plan, pas le contenu)
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
+    if (e.target === e.currentTarget) handleClose();
   };
 
-  // Ne pas rendre si pas ouvert ou côté serveur
   if (!isOpen || typeof window === 'undefined') return null;
 
   return createPortal(
-    <div 
-      className={`detailModal ${isClosing ? 'detailModal--closing' : ''} ${isReduced ? 'off' : ''}`}
+    <div
+      className={`detailModal ${isClosing ? 'detailModal--closing' : ''}`}
       onClick={handleOverlayClick}
+      role="dialog"
+      aria-modal="true"
+      aria-label={typeof title === 'string' ? title : undefined}
     >
-      <div className={"detailModal__overlay"+(isReduced ? ' off' : '')} />
-      <div className={"detailModal__container"+(isReduced ? ' off' : '')}>
-        <div className={"detailModal__header"+(isReduced ? ' off' : '')}>
+      <div className="detailModal__overlay" />
+      <div className="detailModal__container">
+        <div className="detailModal__header">
           <h2 className="detailModal__title">
-            <span className="detailModal__titleIcon">{icon}</span>
+            <span className="detailModal__titleIcon" aria-hidden="true">{icon}</span>
             <span className="detailModal__titleFullName">{title}</span>
           </h2>
 
-          {/* Contrôles personnalisés du header (ex: sélecteur d'année) */}
           {headerControls && (
             <div className="detailModal__headerControls">
               {headerControls}
             </div>
           )}
-          
+
           <button
-            // className="person-detail__reduce"
-            className="detailModal__closeBtn reduce"
-            aria-label="Fermer"
-            title="Réduire la fenêtre"
-            onClick={e => {
-              e.preventDefault();
-              // e.target.parentNode.classList.toggle('--reduce')
-              setIsReduced(!isReduced)
-            }}
-          >_</button>
-          <button 
             className="detailModal__closeBtn"
             onClick={handleClose}
-            aria-label="Fermer la modale"
+            aria-label="Fermer la fenêtre"
+            title="Fermer"
+            type="button"
           >
             ✕
           </button>
         </div>
-        
-        <div className={"detailModal__content"+(isReduced ? ' off' : '')}>
+
+        <div className="detailModal__content">
           {children}
         </div>
       </div>

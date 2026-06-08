@@ -2,7 +2,6 @@
 import React, { useContext } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import Link from "next/link";
-import { useDetailPortal } from '../../stores/useDetailPortal';
 import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
 import PermissionGate from "./PermissionGate";
 import './PersonCard.scss';
@@ -14,7 +13,6 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
     : type === 'enseignant'
       ? getEnseignantImagePath(person)
       : person.photo_$_file || '/default-photo.png';
-  const { openPortal } = useDetailPortal();
 
   // Couleur de fond selon le sexe
   const getBackgroundColor = (sexe) => {

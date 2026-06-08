@@ -82,61 +82,34 @@ body>[data-floating-ui-portal] {
     }
   }
 
-  &.--reduce {
-    inset: 150px 0px 55% 85%;
-    padding: 0;
-    overflow: hidden;
-    background: transparent;
-    box-shadow: none;
-
-    &.-- {
-      inset: 160px 0px 60% 90%;
-    }
-
-    .person-detail__header {
-      padding: 0;
-    }
-  }
-
-  &.--reduce>*:not(.person-detail__photo):not(.person-detail__header),
-  &.--reduce .person-detail__header-info {
-    display: none !important;
-  }
-
-  &__close,
-  &__reduce {
-    padding: .1em .45em;
-    position: absolute;
-    left: calc(50% + 3em);
-    top: 0px;
-    // left: 50%;
-    color: red;
-    background: black;
-    border: none;
-    border-radius: 5px;
-    font-size: 2em;
-    cursor: pointer;
-    z-index: 10;
-  }
-
-  // En-tête moderne de la classe
+  // En-tête « résumé » de la classe/enseignant — surface claire, cohérent avec la marque
+  // (le titre principal est déjà affiché dans l'en-tête de la modale)
   &__header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 16px 16px 0 0;
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background: var(--color-surface-warm, #FFF7ED);
+    color: var(--color-text-primary);
+    padding: 1.5rem;
+    border-radius: var(--radius-lg, 14px);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-secondary);
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow-small);
 
     &-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 2rem;
+      gap: 1.5rem;
+
+      @media (max-width: 640px) {
+        flex-direction: column-reverse;
+        text-align: center;
+        gap: 1rem;
+      }
     }
 
     &-info {
       flex: 1;
+      min-width: 0;
     }
 
     &-image {
@@ -145,54 +118,53 @@ body>[data-floating-ui-portal] {
   }
 
   &__title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 0 0 0.35rem 0;
+    color: var(--color-heading);
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
   }
 
   &__subtitle-text {
-    font-size: 1.1rem;
-    opacity: 0.9;
+    font-size: 1.05rem;
+    color: var(--color-text-secondary);
     margin: 0;
-    font-weight: 300;
+    font-weight: 500;
   }
 
   &__photo {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
     border-radius: 50%;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  }
-
-  &.--reduce {
-
-    .person-detail__photo,
-    .person-detail__header {
-      object-fit: cover;
-      border: solid red;
-      filter: drop-shadow(2px 4px 6px gold);
-    }
+    border: 4px solid var(--color-surface);
+    box-shadow: var(--shadow-medium);
   }
 
   &__editbtn {
     position: absolute;
-    right: calc(50% - 3em);
-    top: 0px;
-    // left: 50%;
-    z-index: 2;
-    padding: 0.3em 0.7em;
-    font-size: 1.5em;
-    background: #fff;
-    border: 1px solid #bbb;
-    border-radius: 6px;
+    right: 1.25rem;
+    top: 1rem;
+    z-index: 5;
+    padding: 0.45em 1.1em;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md, 8px);
     cursor: pointer;
-    box-shadow: 0 1px 4px #0001;
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow-small);
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
 
     &:hover {
-      background: #f5f5f5;
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
     }
 
     &.--highlight {
@@ -332,9 +304,9 @@ body>[data-floating-ui-portal] {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--gradient-brand);
     border-radius: 50%;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: var(--shadow-brand);
   }
 
   &__stat-content {
@@ -409,8 +381,8 @@ body>[data-floating-ui-portal] {
 
     // Style spécifique pour le titre emploi du temps
     .person-detail__block--schedule & {
-      color: #6c63ff;
-      border-bottom: 2px solid #6c63ff;
+      color: var(--color-primary);
+      border-bottom: 2px solid var(--color-primary);
       padding-bottom: 0.3em;
       margin-bottom: 1em;
     }
@@ -443,13 +415,13 @@ body>[data-floating-ui-portal] {
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      border-color: #667eea;
+      border-color: var(--color-primary);
     }
 
     &-avatar {
       width: 50px;
       height: 50px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      background: var(--gradient-brand);
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -630,25 +602,15 @@ body>[data-floating-ui-portal] {
 
 
 
-// Styles pour les modales de listes (classes et enseignants)
-.person-detail,
+// .person-detail coule naturellement dans .detailModal__content (plus de position:fixed).
+// .modal (EntityModal d'édition) garde son positionnement plein écran.
 .modal {
   position: fixed !important;
-  top: 150px;
-  left: 1.5em;
-  right: 1.5em;
-  bottom: 0;
-  z-index: 10;
-  overflow-y: scroll;
-  box-shadow: 0 0 22px .1px;
-  padding: 1em;
+  inset: 0;
+  z-index: 10000;
 
   &__container {
     box-shadow: 0 0 22px .1px !important;
-  }
-
-  &.modal {
-    inset: 0;
   }
 }
 
@@ -672,7 +634,7 @@ body>[data-floating-ui-portal] {
 
   // En-tête de la modale
   &__header {
-    background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+    background: var(--gradient-brand);
     color: white;
     padding: 1.5rem 2rem;
     margin: 0;
@@ -3124,3 +3086,41 @@ button.btn--primary {
 
 /* --- Liens de contenu --- */
 .ecole-admin__content a:not([class]) { color: var(--color-primary-600); text-underline-offset: 2px; }
+
+/* === Boutons d'action des modales d'édition (footer EntityModal) ===
+   Ces classes (.modal__actions-btn*) n'étaient stylées nulle part : on fixe
+   une hiérarchie claire — bleu de marque pour l'action principale, neutre pour
+   Annuler, rouge pour la suppression. */
+.modal__actions-btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: var(--radius-md, 8px);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background .18s, color .18s, border-color .18s, box-shadow .18s, transform .18s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-width: 120px;
+
+  &--primary {
+    background: var(--gradient-brand);
+    color: #fff;
+    &:hover:not(:disabled) { box-shadow: var(--shadow-brand); transform: translateY(-1px); }
+  }
+  &--secondary {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border-strong);
+    &:hover:not(:disabled) { background: var(--color-surface-muted); color: var(--color-text-primary); }
+  }
+  &--danger {
+    background: var(--color-surface);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
+    &:hover:not(:disabled) { background: var(--color-danger); color: #fff; }
+  }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}

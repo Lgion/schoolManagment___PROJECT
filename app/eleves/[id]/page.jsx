@@ -82,11 +82,10 @@ export default function ElevePage() {
     <DetailPortal
       isOpen={true}
       onClose={() => router.back()}
-      title={`Élève ${eleve.nom} ${eleve.prenoms}`}
+      title={`${eleve.nom} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}`}
       icon="🎓"
-      reduced={[isReduced, setIsReduced]}
       headerControls={yearSelectControl}
-    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
+    ><main className="person-detail">
 
         <PermissionGate roles={['admin', 'prof']}>
           {onEdit && (
@@ -105,11 +104,7 @@ export default function ElevePage() {
         </PermissionGate>
         <img className="person-detail__photo"
           src={getEleveImagePath(eleve)}
-          alt=""
-          title="Réduire la fenêtre"
-          onClick={e => {
-            setIsReduced(!isReduced)
-          }}
+          alt={`${eleve.nom} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}`}
         />
         <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
         <ClasseDisplay classe={classe} label="En classe de:" />

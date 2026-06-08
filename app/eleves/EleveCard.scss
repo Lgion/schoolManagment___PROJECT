@@ -135,6 +135,34 @@ $progressColors : "#ff8c00",
     }
   }
 
+  &__editbtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    padding: 0.3em 0.8em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md, 8px);
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+  }
+
   &__progress {
     margin-top: 0.2em;
     padding: .35em .45em;
@@ -168,8 +196,12 @@ $progressColors : "#ff8c00",
 
     &-value {
       color: white;
-      border: 1px solid black;
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-top: 0;
+      border-radius: 0 0 6px 6px;
+      padding: 1px 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
       text-align: center;
 
       &s {
@@ -302,7 +334,7 @@ $progressColors : "#ff8c00",
       bottom: 0;
       left: 5%;
       width: 90%;
-      border: 1px solid;
+      border: 1px solid var(--color-border);
 
       &:before,
       &:after {

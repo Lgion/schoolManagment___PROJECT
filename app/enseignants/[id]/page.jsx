@@ -47,10 +47,9 @@ export default function EnseignantDetailPage() {
     <DetailPortal
       isOpen={true}
       onClose={() => router.back()}
-      title={`Enseignant ${enseignant.nom} ${prenomsDisplay}`}
+      title={`${enseignant.nom} ${prenomsDisplay}`}
       icon={"👨‍🏫"}
-      reduced={[isReduced, setIsReduced]}
-    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
+    ><main className="person-detail">
         <PermissionGate roles={['admin', 'prof']}>
           {setSelected && !showModal && (
             <button
@@ -92,12 +91,6 @@ export default function EnseignantDetailPage() {
                 alt={`${enseignant.nom} ${prenomsDisplay}`}
                 onError={(e) => {
                   e.target.src = '/school/default-teacher.webp';
-                }}
-                onClick={e => {
-                  e.preventDefault();
-                  // e.target.closest('.person-detail').classList.toggle('--reduce')
-                  // e.target.closest('.person-detail').classList.toggle('--')
-                  setIsReduced(!isReduced)
                 }}
               />
             </div>

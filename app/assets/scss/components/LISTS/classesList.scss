@@ -198,7 +198,12 @@
       position: relative;
       transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
       box-shadow: var(--shadow-small);
-      
+
+      @media (max-width: 600px) {
+        padding: 2rem 0.75rem 1rem;
+        border-radius: 18px;
+      }
+
       &::before {
         content: '';
         position: absolute;
