@@ -5,6 +5,7 @@ import { useContext, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useDetailPortal } from '../../stores/useDetailPortal';
 import PersonCard from '../components/PersonCard';
+import LoadingState from '../components/ui/LoadingState';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -71,10 +72,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                     ))}
             </div>
             :
-            <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
-                <span className="loading-state__spinner" aria-hidden="true" />
-                Chargement des enseignants…
-            </div>
+            <LoadingState label="Chargement des enseignants…" />
         }
 
         {children}

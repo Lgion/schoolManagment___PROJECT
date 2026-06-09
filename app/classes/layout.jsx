@@ -4,6 +4,7 @@ import { useContext, useState } from 'react';
 import Link from 'next/link';
 import ClasseCard from './ClasseCard';
 import { AiAdminContext } from '../../stores/ai_adminContext';
+import LoadingState from '../components/ui/LoadingState';
 
 export default function ClassesPage({ children }) {
 
@@ -90,10 +91,7 @@ export default function ClassesPage({ children }) {
         })()}
       </div>
       :
-      <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
-        <span className="loading-state__spinner" aria-hidden="true" />
-        Chargement des classes…
-      </div>
+      <LoadingState label="Chargement des classes…" />
     }
 
     {children}

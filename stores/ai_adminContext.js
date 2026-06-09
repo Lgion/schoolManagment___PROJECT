@@ -12,6 +12,130 @@ export const AiAdminContext = createContext({});
 let tempIdCounter = 0;
 const nextTempId = () => `temp_${Date.now()}_${++tempIdCounter}`;
 
+/**
+ * Hook-factory CRUD partagé par élèves / enseignants / classes : ces trois
+ * ressources avaient exactement la même logique (fetch + cache LocalStorage,
+ * save optimiste avec _id temporaire puis réconciliation serveur, delete
+ * optimiste avec re-fetch en cas d'échec). Seuls le segment de route — qui sert
+ * aussi de clé LS — et le setter d'état changeaient.
+ *
+ * Appelé une fois par ressource au niveau racine du Provider (jamais en boucle
+ * ni conditionnellement) : l'ordre des hooks reste donc stable, comme trois
+ * hooks personnalisés distincts.
+ *
+ * @param {string} resource - 'eleves' | 'enseignants' | 'classes' (route + clé LS)
+ * @param {Function} setList - setter d'état de la liste
+ * @param {Function} setLoaded - setter du flag "chargé"
+ * @param {Function} setSelected - setter de l'élément sélectionné (partagé)
+ */
+const useResourceCrud = (resource, setList, setLoaded, setSelected) => {
+  const url = `/api/school_ai/${resource}`;
+
+  const fetchList = useCallback(async (bypassCache = false) => {
+    try {
+      let data = !bypassCache ? getLSItem(resource) : null;
+      if (data && Array.isArray(data) && data.length > 0) {
+        setList(data);
+      } else {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
+        data = await res.json();
+        if (Array.isArray(data)) {
+          setList(data);
+          setLSItem(resource, data);
+        } else {
+          console.error(`Erreur lors du fetch des ${resource}:`, data);
+          setList([]);
+        }
+      }
+    } catch (err) {
+      console.error(`Erreur fetch ${resource}:`, err);
+    } finally {
+      setLoaded(true);
+    }
+  }, [resource, url, setList, setLoaded]);
+
+  const save = useCallback(async (data) => {
+    const method = data._id ? 'PUT' : 'POST';
+    const tempId = data._id ? null : nextTempId();
+
+    // Mise à jour optimiste
+    setList(prev => {
+      let newList;
+      if (data._id) {
+        newList = prev.map(it => it._id === data._id ? { ...it, ...data } : it);
+      } else {
+        newList = [...prev, { ...data, _id: tempId }];
+      }
+      setLSItem(resource, newList);
+      return newList;
+    });
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+      const saved = await res.json();
+
+      // Réconciliation finale avec les données serveur (IDs réels, timestamps…)
+      setList(prev => {
+        const newList = prev.map(it => (it._id === saved._id || it._id === tempId) ? saved : it);
+        // Supprimer tout doublon temporaire si c'était une création
+        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
+        setLSItem(resource, uniqueList);
+        return uniqueList;
+      });
+
+      // Mettre à jour 'selected' si c'est l'élément actuellement sélectionné
+      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
+
+      return saved;
+    } catch (err) {
+      console.error(`Erreur save ${resource}, annulation mise à jour optimiste`, err);
+      // Forcer un rechargement propre en cas d'erreur
+      const res = await fetch(url, { cache: 'no-store' });
+      const freshData = await res.json();
+      setList(freshData);
+      setLSItem(resource, freshData);
+      throw err;
+    }
+  }, [resource, url, setList, setSelected]);
+
+  const remove = useCallback(async (_id) => {
+    // Optimistic Update
+    setList(prev => {
+      const newList = prev.filter(it => it._id !== _id);
+      setLSItem(resource, newList);
+      return newList;
+    });
+
+    try {
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ _id }),
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
+      const updated = await fetch(url);
+      const newList = await updated.json();
+      setList(newList);
+      setLSItem(resource, newList);
+    } catch (err) {
+      console.error(`Optimistic UI revert for delete ${resource}`, err);
+      await fetchList();
+      throw err;
+    }
+  }, [resource, url, setList, fetchList]);
+
+  return { fetchList, save, remove };
+};
+
 export const AdminContextProvider = ({ children }) => {
   const { userId } = useAuth();
 
@@ -182,304 +306,13 @@ export const AdminContextProvider = ({ children }) => {
 
 
 
-  // --- ELEVE CRUD ---
-  const fetchEleves = useCallback(async (bypassCache = false) => {
-    try {
-      let data = !bypassCache ? getLSItem('eleves') : null;
-      if (data && Array.isArray(data) && data.length > 0) {
-        setEleves(data);
-      } else {
-        const res = await fetch('/api/school_ai/eleves');
-        if (!res.ok) throw new Error(`GET /api/school_ai/eleves -> ${res.status}`);
-        data = await res.json();
-        if (Array.isArray(data)) {
-          setEleves(data);
-          setLSItem('eleves', data);
-        } else {
-          console.error('Erreur lors du fetch des élèves:', data);
-          setEleves([]);
-        }
-      }
-    } catch (err) {
-      console.error('Erreur fetchEleves:', err);
-    } finally {
-      setElevesLoaded(true);
-    }
-  }, []);
-
-  const saveEleve = useCallback(async (data) => {
-    const method = data._id ? 'PUT' : 'POST';
-    const tempId = data._id ? null : nextTempId();
-
-    // Mise à jour optimiste
-    setEleves(prev => {
-      let newList;
-      if (data._id) {
-        newList = prev.map(e => e._id === data._id ? { ...e, ...data } : e);
-      } else {
-        newList = [...prev, { ...data, _id: tempId }];
-      }
-      setLSItem('eleves', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/eleves', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-      const saved = await res.json();
-
-      // Mise à jour finale avec les données du serveur (incluant les IDs réels, timestamps, etc.)
-      setEleves(prev => {
-        const newList = prev.map(e => (e._id === saved._id || e._id === tempId) ? saved : e);
-        // Supprimer tout doublon temporaire si c'était une création
-        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
-        setLSItem('eleves', uniqueList);
-        return uniqueList;
-      });
-
-      // Mettre à jour 'selected' si c'est l'élément actuellement sélectionné
-      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
-
-      return saved;
-    } catch (err) {
-      console.error("Erreur saveEleve, annulation mise à jour optimiste", err);
-      // Forcer un rechargement propre en cas d'erreur
-      const res = await fetch('/api/school_ai/eleves', { cache: 'no-store' });
-      const freshData = await res.json();
-      setEleves(freshData);
-      setLSItem('eleves', freshData);
-      throw err;
-    }
-  }, []);
-
-  const deleteEleve = useCallback(async (_id) => {
-    // Optimistic Update
-    setEleves(prev => {
-      const newList = prev.filter(e => e._id !== _id);
-      setLSItem('eleves', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/eleves', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id }),
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-
-      const updated = await fetch('/api/school_ai/eleves');
-      const newList = await updated.json();
-      setEleves(newList);
-      setLSItem('eleves', newList);
-    } catch (err) {
-      console.error("Optimistic UI revert for deleteEleve", err);
-      await fetchEleves();
-      throw err;
-    }
-  }, [fetchEleves]);
-
-  // --- ENSEIGNANT CRUD ---
-  const fetchEnseignants = useCallback(async (bypassCache = false) => {
-    try {
-      let data = !bypassCache ? getLSItem('enseignants') : null;
-      if (data && Array.isArray(data) && data.length > 0) {
-        setEnseignants(data);
-      } else {
-        const res = await fetch('/api/school_ai/enseignants');
-        if (!res.ok) throw new Error(`GET /api/school_ai/enseignants -> ${res.status}`);
-        data = await res.json();
-        if (Array.isArray(data)) {
-          setEnseignants(data);
-          setLSItem('enseignants', data);
-        } else {
-          console.error('Erreur lors du fetch des enseignants:', data);
-          setEnseignants([]);
-        }
-      }
-    } catch (err) {
-      console.error('Erreur fetchEnseignants:', err);
-    } finally {
-      setEnseignantsLoaded(true);
-    }
-  }, []);
-
-  const saveEnseignant = useCallback(async (data) => {
-    const method = data._id ? 'PUT' : 'POST';
-    const tempId = data._id ? null : nextTempId();
-
-    setEnseignants(prev => {
-      let newList;
-      if (data._id) {
-        newList = prev.map(e => e._id === data._id ? { ...e, ...data } : e);
-      } else {
-        newList = [...prev, { ...data, _id: tempId }];
-      }
-      setLSItem('enseignants', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/enseignants', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-      const saved = await res.json();
-
-      setEnseignants(prev => {
-        const newList = prev.map(e => (e._id === saved._id || e._id === tempId) ? saved : e);
-        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
-        setLSItem('enseignants', uniqueList);
-        return uniqueList;
-      });
-
-      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
-
-      return saved;
-    } catch (err) {
-      console.error("Erreur saveEnseignant, annulation mise à jour optimiste", err);
-      const res = await fetch('/api/school_ai/enseignants', { cache: 'no-store' });
-      const freshData = await res.json();
-      setEnseignants(freshData);
-      setLSItem('enseignants', freshData);
-      throw err;
-    }
-  }, []);
-
-  const deleteEnseignant = useCallback(async (_id) => {
-    // Optimistic Update
-    setEnseignants(prev => {
-      const newList = prev.filter(e => e._id !== _id);
-      setLSItem('enseignants', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/enseignants', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id }),
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-
-      const updated = await fetch('/api/school_ai/enseignants');
-      const newList = await updated.json();
-      setEnseignants(newList);
-      setLSItem('enseignants', newList);
-    } catch (err) {
-      console.error("Optimistic UI revert for deleteEnseignant", err);
-      await fetchEnseignants();
-      throw err;
-    }
-  }, [fetchEnseignants]);
-
-  // --- CLASSE CRUD ---
-  const fetchClasses = useCallback(async (bypassCache = false) => {
-    try {
-      let data = !bypassCache ? getLSItem('classes') : null;
-      if (data && Array.isArray(data) && data.length > 0) {
-        setClasses(data);
-      } else {
-        const res = await fetch('/api/school_ai/classes');
-        if (!res.ok) throw new Error(`GET /api/school_ai/classes -> ${res.status}`);
-        data = await res.json();
-        if (Array.isArray(data)) {
-          setClasses(data);
-          setLSItem('classes', data);
-        } else {
-          console.error('Erreur lors du fetch des classes:', data);
-          setClasses([]);
-        }
-      }
-    } catch (err) {
-      console.error('Erreur fetchClasses:', err);
-    } finally {
-      setClassesLoaded(true);
-    }
-  }, []);
-
-  const saveClasse = useCallback(async (data) => {
-    const method = data._id ? 'PUT' : 'POST';
-    const tempId = data._id ? null : nextTempId();
-
-    setClasses(prev => {
-      let newList;
-      if (data._id) {
-        newList = prev.map(c => c._id === data._id ? { ...c, ...data } : c);
-      } else {
-        newList = [...prev, { ...data, _id: tempId }];
-      }
-      setLSItem('classes', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/classes', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-      const saved = await res.json();
-
-      setClasses(prev => {
-        const newList = prev.map(c => (c._id === saved._id || c._id === tempId) ? saved : c);
-        const uniqueList = Array.from(new Map(newList.map(item => [item._id, item])).values());
-        setLSItem('classes', uniqueList);
-        return uniqueList;
-      });
-
-      setSelected(prev => (prev && prev._id === saved._id) ? saved : prev);
-
-      return saved;
-    } catch (err) {
-      console.error("Erreur saveClasse, annulation mise à jour optimiste", err);
-      const res = await fetch('/api/school_ai/classes', { cache: 'no-store' });
-      const freshData = await res.json();
-      setClasses(freshData);
-      setLSItem('classes', freshData);
-      throw err;
-    }
-  }, []);
-
-  const deleteClasse = useCallback(async (_id) => {
-    // Optimistic Update
-    setClasses(prev => {
-      const newList = prev.filter(c => c._id !== _id);
-      setLSItem('classes', newList);
-      return newList;
-    });
-
-    try {
-      const res = await fetch('/api/school_ai/classes', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id })
-      });
-
-      if (!res.ok) throw new Error('Request failed');
-
-      const updated = await fetch('/api/school_ai/classes');
-      const newList = await updated.json();
-      setClasses(newList);
-      setLSItem('classes', newList);
-    } catch (err) {
-      console.error("Optimistic UI revert for deleteClasse", err);
-      await fetchClasses();
-      throw err;
-    }
-  }, [fetchClasses]);
+  // --- CRUD élèves / enseignants / classes (logique partagée, cf. useResourceCrud) ---
+  const { fetchList: fetchEleves, save: saveEleve, remove: deleteEleve } =
+    useResourceCrud('eleves', setEleves, setElevesLoaded, setSelected);
+  const { fetchList: fetchEnseignants, save: saveEnseignant, remove: deleteEnseignant } =
+    useResourceCrud('enseignants', setEnseignants, setEnseignantsLoaded, setSelected);
+  const { fetchList: fetchClasses, save: saveClasse, remove: deleteClasse } =
+    useResourceCrud('classes', setClasses, setClassesLoaded, setSelected);
 
   // --- NOTES & ABSENCES (Story 1.4) ---
   // Mise à jour sécurisée des notes d'un élève (compositions)

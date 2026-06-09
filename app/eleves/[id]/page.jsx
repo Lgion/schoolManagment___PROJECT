@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
 import { generateSchoolYears } from '../../components/entityBlocks';
+import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
 import PermissionGate from "../../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
@@ -18,12 +19,6 @@ export default function ElevePage() {
   const ctx = useContext(AiAdminContext);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
-  const getDefaultSchoolYear = (compositions) => {
-    const keys = Object.keys(compositions || {});
-    if (keys.length > 0) return keys[0];
-    const now = new Date();
-    return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
-  };
 
   const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes, feeDefinitions, normalizeFeeItem } = ctx;
 

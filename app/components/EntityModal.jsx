@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { getLSItem, setLSItem } from '../../utils/localStorageManager';
+import { getDefaultSchoolYear } from '../../utils/schoolYear';
 import Gmap from '../_/Gmap_plus';
 import CameraCapture from './CameraCapture';
 import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, CoefficientsManager, CompositionsBlock, AbsencesBlock, BonusBlock, ManusBlock, AddNoteForm, TargetsProfilingBlock, DocumentsBlock, CompositionsManager, generateSchoolYears } from './entityBlocks';
@@ -110,12 +111,6 @@ function PhotoUploadField({ field, label, alt, defaultImg, inputId = 'input-phot
 
 export default function EntityModal({ type, entity, onClose, classes = [] }) {
   // --- Gestion de l'année scolaire sélectionnée pour les compositions ---
-  const getDefaultSchoolYear = (compositions) => {
-    const keys = Object.keys(compositions || {});
-    if (keys.length > 0) return keys[0];
-    const now = new Date();
-    return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
-  };
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(entity?.compositions || {}));
   const ctx = useContext(AiAdminContext);
   const { dynamicSubjects, subjectsLoaded } = ctx;

@@ -9,6 +9,7 @@ import './EleveCard.scss';
 import { getLSItem } from "../../utils/localStorageManager";
 import ImageScanner from '../components/ui/ImageScanner';
 import ReviewFeesModal from '../components/ui/ReviewFeesModal';
+import LoadingState from '../components/ui/LoadingState';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -482,10 +483,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                 ))}
             </ul>
             :
-            <div className="loading-state" role="status" aria-live="polite" aria-busy="true">
-                <span className="loading-state__spinner" aria-hidden="true" />
-                Chargement des élèves…
-            </div>
+            <LoadingState label="Chargement des élèves…" />
         }
 
         {children}
