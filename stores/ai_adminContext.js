@@ -315,20 +315,20 @@ export const AdminContextProvider = ({ children }) => {
     useResourceCrud('classes', setClasses, setClassesLoaded, setSelected);
 
   // --- NOTES & ABSENCES (Story 1.4) ---
-  // Mise à jour sécurisée des notes d'un élève (compositions)
-  const saveEleveNotes = useCallback(async (eleveId, compositions) => {
+  // PATCH partiel d'un élève (notes/absences) : on ne synchronise état + LS
+  // qu'après confirmation back-end (aucune écriture optimiste, rien à annuler).
+  const patchEleve = useCallback(async (eleveId, patch, errLabel) => {
     try {
       const res = await fetch(`/api/school_ai/eleves/${eleveId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ compositions }),
+        body: JSON.stringify(patch),
       });
       if (!res.ok) {
         const err = await res.json();
         throw new Error(err.error || 'Request failed');
       }
       const updated = await res.json();
-      // Synchroniser l'état et le LocalStorage SEULEMENT après validation (Confirmation back-end)
       setEleves(prev => {
         const newList = prev.map(e => e._id === eleveId ? updated : e);
         setLSItem('eleves', newList);
@@ -336,37 +336,19 @@ export const AdminContextProvider = ({ children }) => {
       });
       return updated;
     } catch (err) {
-      console.error('Erreur lors de la sauvegarde des notes:', err);
-      // Plus besoin de fetchEleves() en cas de revert car aucune donnée corrompue n'est injectée
+      console.error(errLabel, err);
       throw err;
     }
   }, []);
 
-  // Mise à jour sécurisée des absences d'un élève
-  const saveEleveAbsences = useCallback(async (eleveId, absences) => {
-    try {
-      const res = await fetch(`/api/school_ai/eleves/${eleveId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ absences }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Request failed');
-      }
-      const updated = await res.json();
-      // Synchroniser l'état et le LocalStorage SEULEMENT après validation
-      setEleves(prev => {
-        const newList = prev.map(e => e._id === eleveId ? updated : e);
-        setLSItem('eleves', newList);
-        return newList;
-      });
-      return updated;
-    } catch (err) {
-      console.error('Erreur lors de la sauvegarde des absences:', err);
-      throw err;
-    }
-  }, []);
+  const saveEleveNotes = useCallback(
+    (eleveId, compositions) => patchEleve(eleveId, { compositions }, 'Erreur lors de la sauvegarde des notes:'),
+    [patchEleve]
+  );
+  const saveEleveAbsences = useCallback(
+    (eleveId, absences) => patchEleve(eleveId, { absences }, 'Erreur lors de la sauvegarde des absences:'),
+    [patchEleve]
+  );
 
   // --- SUBJECTS ---
   const fetchSubjects = useCallback(async (bypassCache = false) => {

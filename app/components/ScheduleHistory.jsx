@@ -70,69 +70,40 @@ const ScheduleHistory = ({
     }
   }
 
-  const handleArchiveSchedule = async (scheduleId) => {
-    if (!confirm('Êtes-vous sûr de vouloir archiver cet emploi du temps ?')) {
-      return
-    }
-
+  // Archive / réactive un emploi du temps (PATCH) : même flux, seuls l'action,
+  // le libellé et le setter « occupé » changent.
+  const patchScheduleAction = async (scheduleId, action, { confirmMsg, setBusy, errVerb }) => {
+    if (!confirm(confirmMsg)) return
     try {
-      setArchiving(scheduleId)
-      
+      setBusy(scheduleId)
       const response = await fetch(`/api/schedules/${scheduleId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ action: 'archive' })
+        body: JSON.stringify({ action })
       })
-
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'archivage')
-      }
-
+      if (!response.ok) throw new Error(data.error || `Erreur lors de ${errVerb}`)
       await loadScheduleHistory() // Recharge la liste
     } catch (error) {
-      console.error('Erreur lors de l\'archivage:', error)
-      alert('Erreur lors de l\'archivage de l\'emploi du temps')
+      console.error(`Erreur lors de ${errVerb}:`, error)
+      alert(`Erreur lors de ${errVerb} de l'emploi du temps`)
     } finally {
-      setArchiving(null)
+      setBusy(null)
     }
   }
 
-  const handleReactivateSchedule = async (scheduleId) => {
-    if (!confirm('Êtes-vous sûr de vouloir réactiver cet emploi du temps ?')) {
-      return
-    }
+  const handleArchiveSchedule = (scheduleId) => patchScheduleAction(scheduleId, 'archive', {
+    confirmMsg: 'Êtes-vous sûr de vouloir archiver cet emploi du temps ?',
+    setBusy: setArchiving,
+    errVerb: "l'archivage",
+  })
 
-    try {
-      setReactivating(scheduleId)
-      
-      const response = await fetch(`/api/schedules/${scheduleId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'reactivate' })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la réactivation')
-      }
-
-      await loadScheduleHistory() // Recharge la liste
-    } catch (error) {
-      console.error('Erreur lors de la réactivation:', error)
-      alert('Erreur lors de la réactivation de l\'emploi du temps')
-    } finally {
-      setReactivating(null)
-    }
-  }
+  const handleReactivateSchedule = (scheduleId) => patchScheduleAction(scheduleId, 'reactivate', {
+    confirmMsg: 'Êtes-vous sûr de vouloir réactiver cet emploi du temps ?',
+    setBusy: setReactivating,
+    errVerb: 'la réactivation',
+  })
 
   const handleDuplicateSchedule = (schedule) => {
     // Crée une copie de l'emploi du temps pour édition

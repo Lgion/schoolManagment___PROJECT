@@ -109,6 +109,40 @@ function PhotoUploadField({ field, label, alt, defaultImg, inputId = 'input-phot
   );
 }
 
+// Champ texte standard de la modale (libellé + input piloté par handleChange).
+// placeholder omis si non fourni (ex. champs date) ; type 'text' par défaut.
+function TextField({ id, label, name, value, onChange, placeholder, type = 'text', required = true }) {
+  return (
+    <div className="modal__fieldGroup">
+      <label htmlFor={id} className="modal__label">{label}</label>
+      <input
+        id={id}
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="modal__input"
+        required={required}
+      />
+    </div>
+  );
+}
+
+// Sélecteur de sexe M/F, partagé par les formulaires élève et enseignant.
+function SexeSelect({ label, value, onChange }) {
+  return (
+    <div className="modal__fieldGroup">
+      <label htmlFor="input-sexe" className="modal__label">{label}</label>
+      <select id="input-sexe" name="sexe" value={value} onChange={onChange} className="modal__select" required>
+        <option value="">Sélectionnez le sexe</option>
+        <option value="M">Masculin</option>
+        <option value="F">Féminin</option>
+      </select>
+    </div>
+  );
+}
+
 export default function EntityModal({ type, entity, onClose, classes = [] }) {
   // --- Gestion de l'année scolaire sélectionnée pour les compositions ---
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(entity?.compositions || {}));
@@ -835,18 +869,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
             {type === 'eleve' && <>
               <div className="modal__fieldGroup modal__fieldGroup--grid">
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-nom" className="modal__label">Nom</label>
-                  <input
-                    id="input-nom"
-                    name="nom"
-                    value={form.nom || ''}
-                    onChange={handleChange}
-                    placeholder="Nom de famille"
-                    className="modal__input"
-                    required
-                  />
-                </div>
+                <TextField id="input-nom" label="Nom" name="nom" value={form.nom || ''} onChange={handleChange} placeholder="Nom de famille" />
 
                 <div className="modal__fieldGroup">
                   <label htmlFor="input-prenoms" className="modal__label">Prénoms</label>
@@ -863,27 +886,9 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
               </div>
 
               <div className="modal__fieldGroup modal__fieldGroup--grid">
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-sexe" className="modal__label">Sexe</label>
-                  <select id="input-sexe" name="sexe" value={form.sexe || ''} onChange={handleChange} className="modal__select" required>
-                    <option value="">Sélectionnez le sexe</option>
-                    <option value="M">Masculin</option>
-                    <option value="F">Féminin</option>
-                  </select>
-                </div>
+                <SexeSelect label="Sexe" value={form.sexe || ''} onChange={handleChange} />
 
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-naissance" className="modal__label">Date de naissance</label>
-                  <input
-                    id="input-naissance"
-                    type="date"
-                    name="naissance_$_date"
-                    value={form.naissance_$_date || ''}
-                    onChange={handleChange}
-                    className="modal__input"
-                    required
-                  />
-                </div>
+                <TextField id="input-naissance" label="Date de naissance" name="naissance_$_date" type="date" value={form.naissance_$_date || ''} onChange={handleChange} />
               </div>
 
               <AddressMapField form={form} handleChange={handleChange} showMap={showMap} setShowMap={setShowMap} handleMapClick={handleMapClick} />
@@ -1014,18 +1019,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
             {type === 'enseignant' && <>
               <div className="modal__fieldGroup modal__fieldGroup--grid">
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-nom" className="modal__label">Nom: </label>
-                  <input
-                    id="input-nom"
-                    name="nom"
-                    value={form.nom || ''}
-                    onChange={handleChange}
-                    placeholder="Nom"
-                    className="modal__input"
-                    required
-                  />
-                </div>
+                <TextField id="input-nom" label="Nom: " name="nom" value={form.nom || ''} onChange={handleChange} placeholder="Nom" />
 
                 <div className="modal__fieldGroup">
                   <label htmlFor="input-prenoms" className="modal__label">Prénoms: </label>
@@ -1041,21 +1035,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
               </div>
 
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-sexe" className="modal__label">Sexe: </label>
-                <select
-                  id="input-sexe"
-                  name="sexe"
-                  value={form.sexe || ''}
-                  onChange={handleChange}
-                  className="modal__select"
-                  required
-                >
-                  <option value="">Sélectionnez le sexe</option>
-                  <option value="M">Masculin</option>
-                  <option value="F">Féminin</option>
-                </select>
-              </div>
+              <SexeSelect label="Sexe: " value={form.sexe || ''} onChange={handleChange} />
               <div className="modal__fieldGroup">
                 <label htmlFor="input-classes" className="modal__label">Classes assignées: </label>
                 <select
@@ -1100,48 +1080,14 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </select>
               </div>
 
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-naissance" className="modal__label">Date de naissance: </label>
-                <input
-                  id="input-naissance"
-                  type="date"
-                  name="naissance_$_date"
-                  value={form.naissance_$_date || ''}
-                  onChange={handleChange}
-                  className="modal__input"
-                  required
-                />
-              </div>
+              <TextField id="input-naissance" label="Date de naissance: " name="naissance_$_date" type="date" value={form.naissance_$_date || ''} onChange={handleChange} />
 
               <AddressMapField form={form} handleChange={handleChange} showMap={showMap} setShowMap={setShowMap} handleMapClick={handleMapClick} label="Adresse (facultatif): " />
 
               <div className="modal__fieldGroup modal__fieldGroup--grid">
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-tel" className="modal__label">N° Téléphone: </label>
-                  <input
-                    id="input-tel"
-                    name="phone_$_tel"
-                    value={form.phone_$_tel || ''}
-                    onChange={handleChange}
-                    placeholder="Téléphone"
-                    className="modal__input"
-                    required
-                  />
-                </div>
+                <TextField id="input-tel" label="N° Téléphone: " name="phone_$_tel" value={form.phone_$_tel || ''} onChange={handleChange} placeholder="Téléphone" />
 
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-email" className="modal__label">Email: </label>
-                  <input
-                    id="input-email"
-                    name="email_$_email"
-                    value={form.email_$_email || ''}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    className="modal__input"
-                    type="email"
-                    required
-                  />
-                </div>
+                <TextField id="input-email" label="Email: " name="email_$_email" type="email" value={form.email_$_email || ''} onChange={handleChange} placeholder="Email" />
               </div>
               <PhotoUploadField field="photo_$_file" label="Photo de l'enseignant: " alt="Photo de l'enseignant" defaultImg="/school/prof.webp" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />
 
@@ -1202,18 +1148,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   </select>
                 </div>
 
-                <div className="modal__fieldGroup">
-                  <label htmlFor="input-alias" className="modal__label">Alias de la classe</label>
-                  <input
-                    id="input-alias"
-                    name="alias"
-                    value={form.alias || ''}
-                    onChange={handleChange}
-                    placeholder="Alias (ex: 4B, A, Rouge...)"
-                    className="modal__input"
-                    required
-                  />
-                </div>
+                <TextField id="input-alias" label="Alias de la classe" name="alias" value={form.alias || ''} onChange={handleChange} placeholder="Alias (ex: 4B, A, Rouge...)" />
               </div>
 
               <PhotoUploadField field="photo" label="Photo de la classe" alt="Photo de la classe" defaultImg="/school/classe.webp" inputId="input-photo-classe" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />

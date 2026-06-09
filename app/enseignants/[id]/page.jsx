@@ -8,6 +8,7 @@ import Gmap from '../../_/Gmap_plus';
 import PermissionGate from "../../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 import { getEnseignantImagePath } from '../../../utils/imageUtils';
+import { DetailEmpty } from '../../components/ui/detailCards';
 import DetailPortal from "../../components/DetailPortal";
 
 export default function EnseignantDetailPage() {
@@ -126,10 +127,7 @@ export default function EnseignantDetailPage() {
             Classes assignées
           </h2>
           {classesAssignees.length === 0 ? (
-            <div className="person-detail__empty">
-              <div className="person-detail__empty-icon">🏫</div>
-              <p className="person-detail__empty-text">Aucune classe assignée</p>
-            </div>
+            <DetailEmpty icon="🏫" text="Aucune classe assignée" />
           ) : (
             <div className="person-detail__grid">
               {classesAssignees.map(classe => (

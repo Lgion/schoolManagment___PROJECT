@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { useUserRole } from '../../../stores/useUserRole';
 import { getClasseImagePath, getEleveImagePath, getEnseignantImagePath } from '../../../utils/imageUtils';
+import { PersonDetailCard, DetailEmpty } from '../../components/ui/detailCards';
 import ScheduleViewer from '../../components/ScheduleViewer';
 import EntityModal from '../../components/EntityModal';
 import DetailPortal from "../../components/DetailPortal";
@@ -219,10 +220,7 @@ export default function ClasseDetailPage() {
             </PermissionGate>
           </h2>
           {eleves.length === 0 ? (
-            <div className="person-detail__empty">
-              <div className="person-detail__empty-icon">📚</div>
-              <p className="person-detail__empty-text">Aucun élève dans cette classe</p>
-            </div>
+            <DetailEmpty icon="📚" text="Aucun élève dans cette classe" />
           ) : (
             <div className="person-detail__grid">
               {eleves.map(eleve => {
@@ -234,22 +232,15 @@ export default function ClasseDetailPage() {
                 const imagePath = getEleveImagePath(student);
 
                 return (
-                  <Link key={"eleves_" + student._id} href={`/eleves/${student._id}`} className="person-detail__card">
-                    <div className="person-detail__card-avatar">
-                      <img
-                        src={imagePath}
-                        alt={`${student.nom} ${student.prenoms}`}
-                        data-ok={imagePath}
-                        onError={(e) => {
-                          e.target.src = '/school/student.webp';
-                        }}
-                      />
-                    </div>
-                    <div className="person-detail__card-content">
-                      <h3 className="person-detail__card-name">{student.nom} {student.prenoms}</h3>
-                      <p className="person-detail__card-role">Élève</p>
-                    </div>
-                  </Link>
+                  <PersonDetailCard
+                    key={"eleves_" + student._id}
+                    href={`/eleves/${student._id}`}
+                    imgSrc={imagePath}
+                    fallbackSrc="/school/student.webp"
+                    alt={`${student.nom} ${student.prenoms}`}
+                    name={`${student.nom} ${student.prenoms}`}
+                    role="Élève"
+                  />
                 )
               }).filter(Boolean)}
             </div>
@@ -263,10 +254,7 @@ export default function ClasseDetailPage() {
             Enseignants attitrés
           </h2>
           {enseignants.length === 0 ? (
-            <div className="person-detail__empty">
-              <div className="person-detail__empty-icon">👨‍🏫</div>
-              <p className="person-detail__empty-text">Aucun enseignant attitré</p>
-            </div>
+            <DetailEmpty icon="👨‍🏫" text="Aucun enseignant attitré" />
           ) : (
             <div className="person-detail__grid">
               {enseignants.map(enseignant => {
@@ -275,21 +263,15 @@ export default function ClasseDetailPage() {
                 if (!teacher) return null;
 
                 return (
-                  <Link key={teacher._id} href={`/enseignants/${teacher._id}`} className="person-detail__card">
-                    <div className="person-detail__card-avatar">
-                      <img
-                        src={getEnseignantImagePath(teacher)}
-                        alt={`${teacher.nom} ${teacher.prenoms}`}
-                        onError={(e) => {
-                          e.target.src = '/school/prof.webp';
-                        }}
-                      />
-                    </div>
-                    <div className="person-detail__card-content">
-                      <h3 className="person-detail__card-name">{teacher.nom} {teacher.prenoms}</h3>
-                      <p className="person-detail__card-role">Enseignant</p>
-                    </div>
-                  </Link>
+                  <PersonDetailCard
+                    key={teacher._id}
+                    href={`/enseignants/${teacher._id}`}
+                    imgSrc={getEnseignantImagePath(teacher)}
+                    fallbackSrc="/school/prof.webp"
+                    alt={`${teacher.nom} ${teacher.prenoms}`}
+                    name={`${teacher.nom} ${teacher.prenoms}`}
+                    role="Enseignant"
+                  />
                 )
               }).filter(Boolean)}
             </div>
