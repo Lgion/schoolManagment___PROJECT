@@ -195,15 +195,6 @@
       opacity: 0.8;
     }
 
-    // Couleurs dynamiques par matière
-    &--math { background: var(--color-danger); }
-    &--french { background: var(--color-primary); }
-    &--science { background: var(--color-success); }
-    &--history { background: var(--color-secondary); }
-    &--english { background: var(--color-primary-600); }
-    &--sport { background: var(--color-info); }
-    &--art { background: var(--color-secondary-dark); }
-    &--music { background: var(--color-text-muted); }
   }
 
   &__empty {

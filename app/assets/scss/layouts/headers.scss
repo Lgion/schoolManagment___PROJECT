@@ -350,7 +350,6 @@
       position: absolute;
       ;
 
-      @media (max-width: 768px) {}
     }
 
     // Section reset
@@ -417,103 +416,6 @@
     }
   }
 
-  // Navigation intégrée dans le header
-  &__header-nav {
-    position: sticky;
-    top: 80px; // Hauteur du header principal
-    z-index: 99;
-    background: rgba(map.get($themeColors, primary), 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 0 0 1rem 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    &-tabs {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0.75rem 1.5rem;
-      display: flex;
-      gap: 0.5rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-
-    &-tab {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      text-decoration: none;
-      font-family: $secondaryFont;
-      font-size: 0.85rem;
-      font-weight: 500;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-        border-color: rgba(255, 255, 255, 0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-
-      &-icon {
-        font-size: 1.1rem;
-        transition: transform 0.3s ease;
-      }
-
-      &-text {
-        @media (max-width: 576px) {
-          display: none;
-        }
-      }
-
-      &-badge {
-        background: rgba(255, 255, 255, 0.9);
-        color: map.get($themeColors, primary);
-        padding: 0.2rem 0.5rem;
-        border-radius: 12px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        min-width: 20px;
-        text-align: center;
-
-        @media (max-width: 768px) {
-          display: none;
-        }
-      }
-
-      &:hover &-icon {
-        transform: scale(1.1);
-      }
-    }
-
-    @media (max-width: 768px) {
-      top: 70px; // Hauteur réduite du header sur mobile
-
-      &-tabs {
-        padding: 0.5rem 1rem;
-        gap: 0.25rem;
-      }
-
-      &-tab {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
-      }
-    }
-  }
 
   // Animations keyframes
   @keyframes slideInFromLeft {

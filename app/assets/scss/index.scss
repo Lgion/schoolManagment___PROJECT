@@ -652,64 +652,8 @@ body>[data-floating-ui-portal] {
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
-
-    &-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: white;
-    }
-
-    &-info {
-      flex: 1;
-
-      h3 {
-        margin: 0 0 0.25rem 0;
-        font-family: $font-primary;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2d3748;
-      }
-
-      p {
-        margin: 0;
-        font-family: $font-secondary;
-        font-size: 0.9rem;
-        color: #718096;
-      }
-    }
   }
 
-  &__content {
-    font-family: $font-secondary;
-
-    &-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #e2e8f0;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      &-label {
-        font-weight: 500;
-        color: #4a5568;
-      }
-
-      &-value {
-        color: #2d3748;
-        font-weight: 600;
-      }
-    }
-  }
 
   &__map-container {
     border: solid;
@@ -739,19 +683,6 @@ body>[data-floating-ui-portal] {
     box-sizing: border-box;
     flex-shrink: 0;
     z-index: 10;
-
-    &--centered {
-      justify-content: center;
-    }
-
-    &--spaced {
-      justify-content: space-between;
-    }
-
-    &--stacked {
-      flex-direction: column;
-      align-items: stretch;
-    }
 
     // Boutons d'action avec nomenclature BEM
     &-btn {
@@ -829,18 +760,6 @@ body>[data-floating-ui-portal] {
         }
       }
 
-      &--success {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-
-        &:hover {
-          background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
-          box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
-          transform: translateY(-2px);
-        }
-      }
-
       &--danger {
         background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
         color: white;
@@ -852,84 +771,9 @@ body>[data-floating-ui-portal] {
           transform: translateY(-2px);
         }
       }
-
-      &--outline {
-        background: transparent;
-        border: 2px solid #e2e8f0;
-        color: #4a5568;
-
-        &:hover {
-          background: #f7fafc;
-          border-color: #cbd5e0;
-          transform: translateY(-1px);
-        }
-      }
-
-      &--ghost {
-        background: transparent;
-        color: #4a5568;
-
-        &:hover {
-          background: rgba(0, 0, 0, 0.05);
-          transform: translateY(-1px);
-        }
-      }
-
-      &--disabled {
-        background: #e2e8f0;
-        color: #a0aec0;
-        cursor: not-allowed;
-
-        &:hover {
-          transform: none;
-          box-shadow: none;
-        }
-
-        &::before {
-          display: none;
-        }
-      }
-
-      // Icônes dans les boutons
-      &-icon {
-        font-size: 1rem;
-
-        &--left {
-          margin-right: 0.5rem;
-          margin-left: -0.25rem;
-        }
-
-        &--right {
-          margin-left: 0.5rem;
-          margin-right: -0.25rem;
-        }
-      }
     }
   }
 
-  // Bouton de fermeture
-  &__close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.1);
-    }
-  }
 }
 
 section>div:has(.modal) {
@@ -1590,26 +1434,6 @@ section>div:has(.modal) {
     min-width: 120px;
   }
 
-  &__nav-btn {
-    @extend %entityModal__btn;
-    @extend %entityModal__btn--primary;
-    padding: 16px 24px;
-    font-size: 1.05em;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(73, 73, 73, 0.4);
-    }
-
-    span {
-      font-size: 1.4em;
-    }
-  }
 
   &__add-btn {
     margin-left: 8px;
@@ -1722,12 +1546,6 @@ section>div:has(.modal) {
 }
 
 // Spécialisation notes
-.add-note-form {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
 
 .add-note-date {
   min-width: 120px;
@@ -1903,16 +1721,6 @@ section>div:has(.modal) {
     margin-right: map.get($spacing, xs);
   }
 
-  &__name {
-    flex: 1;
-    font-family: $primaryFont;
-  }
-
-  &__input {
-    @extend %entityModal__input;
-    margin-left: map.get($spacing, sm);
-    flex: 1;
-  }
 }
 
 // Remplacement des anciens sélecteurs par BEM
@@ -1997,9 +1805,6 @@ section>div:has(.modal) {
     font-family: $font-secondary;
   }
 
-  &--granted {
-    // Pas de styles spécifiques, juste un wrapper
-  }
 }
 
 .roleIndicator {
@@ -2129,9 +1934,6 @@ section>div:has(.modal) {
     font-size: 0.9em;
   }
 
-  &__role {
-    // Styles hérités du roleIndicator
-  }
 
   &__permissions {
     padding: 1.5em;
@@ -2224,60 +2026,6 @@ section>div:has(.modal) {
 // Continuation des styles ecole-admin
 .ecole-admin {
 
-  // --- Styles pour les dashboards adaptatifs ---
-  &__publicDashboard {
-    padding: 2em;
-    text-align: center;
-  }
-
-  &__welcomeCard {
-    background: linear-gradient(135deg, $primary-color, color.adjust($primary-color, $lightness: 15%));
-    color: white;
-    padding: 3em 2em;
-    border-radius: 16px;
-    box-shadow: 0 8px 24px rgba($primary-color, 0.3);
-    margin-bottom: 2em;
-
-    &-title {
-      font-size: 2.2em;
-      font-weight: 700;
-      margin: 0 0 0.5em 0;
-      font-family: $font-primary;
-    }
-
-    &-subtitle {
-      font-size: 1.1em;
-      margin: 0 0 2em 0;
-      opacity: 0.9;
-      font-family: $font-secondary;
-    }
-
-    &-features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5em;
-      margin-top: 2em;
-    }
-  }
-
-  &__feature {
-    display: flex;
-    align-items: center;
-    gap: 0.75em;
-    padding: 1em;
-    background: rgba(white, 0.1);
-    border-radius: 12px;
-    border: 1px solid rgba(white, 0.2);
-
-    &-icon {
-      font-size: 1.5em;
-    }
-
-    &-text {
-      font-weight: 500;
-      font-family: $font-secondary;
-    }
-  }
 
   &__loading {
     padding: 4em 2em;
@@ -2346,44 +2094,6 @@ section>div:has(.modal) {
 
   // (bloc nav-btn obsolète supprimé — voir couche de cohérence en fin de fichier)
 
-  &__stats {
-    // margin-bottom: 2.2em;
-    background: var(--color-surface-muted);
-    padding: 1em;
-
-    &-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    &-col {
-      display: flex;
-      flex-flow: wrap;
-      // justify-content: space-between;
-      width: 100%;
-      column-gap: 3em;
-    }
-
-    &-title {
-      width: 100%;
-      text-align: center;
-      text-decoration: underline;
-    }
-
-    &-label {
-      font-size: 1.1em;
-      color: #444;
-      margin-bottom: 0.2em;
-      font-weight: 600;
-    }
-
-    &-value {
-      font-weight: bold;
-      font-size: 1.08em;
-      color: #222;
-    }
-  }
 
   // --- DYNAMIC FEES STYLES ---
   .scolarity-fees-block {
