@@ -31,10 +31,6 @@ export default function ClasseDetailPage() {
   const [highlightEdit, setHighlightEdit] = useState(false);
 
   useEffect(() => {
-    ctx.fetchClasses && ctx.fetchClasses();
-    ctx.fetchEleves && ctx.fetchEleves();
-    ctx.fetchEnseignants && ctx.fetchEnseignants();
-
     // Charger les matières pour l'affichage des noms dans les coefficients
     const loadSubjects = async () => {
       const { getLSItem, setLSItem } = await import('../../../utils/localStorageManager');
@@ -52,7 +48,7 @@ export default function ClasseDetailPage() {
       }
     };
     loadSubjects();
-  }, [ctx.fetchClasses, ctx.fetchEleves, ctx.fetchEnseignants]);
+  }, []);
 
   const { setSelected, showModal, setShowModal, setEditType } = ctx || {};
   const classe = useMemo(() => (ctx?.classes || []).find(c => String(c._id) === String(id)), [ctx?.classes, id]);

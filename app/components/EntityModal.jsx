@@ -7,6 +7,106 @@ import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, Coef
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
+// Champ adresse + carte Gmap, partagé par les formulaires élève et enseignant.
+function AddressMapField({ form, handleChange, showMap, setShowMap, handleMapClick, label = 'Adresse (facultatif)' }) {
+  return (
+    <>
+      <div className="modal__fieldGroup">
+        <label htmlFor="input-adresse" className="modal__label">{label}</label>
+        <div className="modal__fieldGroup modal__fieldGroup--row">
+          <input
+            id="input-adresse"
+            name="adresse_$_map"
+            value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
+              ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
+              : (form.adresse_$_map || '')}
+            onChange={handleChange}
+            placeholder="Adresse"
+            className="modal__input"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowMap(true)}
+            className="modal__btn modal__btn--secondary input-adresseBtn"
+            title="Ouvrir la carte"
+          >
+            📍
+          </button>
+        </div>
+      </div>
+      {showMap && (
+        <div className="modal__map-container">
+          <Gmap onCoordinatesClick={handleMapClick} />
+          <button
+            type="button"
+            onClick={() => setShowMap(false)}
+            className="modal__btn modal__btn--secondary"
+          >
+            Fermer la carte
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Champ photo (input fichier + bouton caméra + aperçu), partagé par élève/enseignant/classe.
+// `field` = clé du formulaire ('photo_$_file' ou 'photo').
+function PhotoUploadField({ field, label, alt, defaultImg, inputId = 'input-photo', form, fileInput, previewUrl, setPreviewUrl, setSelectedFile, handleFile, setShowCamera }) {
+  const current = form[field];
+  return (
+    <div className="modal__fieldGroup">
+      <label className="modal__label">{label}</label>
+
+      <div className="modal__photo-controls">
+        <input
+          id={inputId}
+          type="file"
+          ref={fileInput}
+          accept="image/*"
+          required={!current && !previewUrl}
+          onChange={handleFile}
+          className="modal__input modal__input--file"
+        />
+
+        <button
+          type="button"
+          onClick={() => setShowCamera(true)}
+          className="modal__camera-btn"
+          title="Prendre une photo avec la caméra"
+        >
+          <span className="modal__camera-btn-icon">📷</span>
+          <span className="modal__camera-btn-text">Caméra</span>
+        </button>
+      </div>
+
+      {(previewUrl || current) && (
+        <div className="modal__photo-preview">
+          <img
+            src={previewUrl || current || defaultImg}
+            alt={alt}
+            className="modal__preview-image"
+          />
+          {previewUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewUrl('');
+                setSelectedFile(null);
+                if (fileInput.current) fileInput.current.value = '';
+              }}
+              className="modal__remove-photo-btn"
+              title="Supprimer la photo"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function EntityModal({ type, entity, onClose, classes = [] }) {
   // --- Gestion de l'année scolaire sélectionnée pour les compositions ---
@@ -17,17 +117,6 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
     return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
   };
   const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(entity?.compositions || {}));
-  // Absences
-  const [showAbsencePicker, setShowAbsencePicker] = useState(false);
-  const [newAbsenceDate, setNewAbsenceDate] = useState('');
-  // Bonus
-  const [showBonusPicker, setShowBonusPicker] = useState(false);
-  const [newBonusDate, setNewBonusDate] = useState('');
-  const [newBonusReason, setNewBonusReason] = useState('');
-  // Manus
-  const [showManusPicker, setShowManusPicker] = useState(false);
-  const [newManusDate, setNewManusDate] = useState('');
-  const [newManusReason, setNewManusReason] = useState('');
   const ctx = useContext(AiAdminContext);
   const { dynamicSubjects, subjectsLoaded } = ctx;
   const fileInput = useRef();
@@ -802,46 +891,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
               </div>
 
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif)</label>
-                <div className="modal__fieldGroup modal__fieldGroup--row">
-                  <input
-                    id="input-adresse"
-                    name="adresse_$_map"
-                    value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
-                      ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
-                      : (form.adresse_$_map || '')}
-                    onChange={handleChange}
-                    placeholder="Adresse"
-                    className="modal__input"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowMap(true)}
-                    className="modal__btn modal__btn--secondary input-adresseBtn"
-                    title="Ouvrir la carte"
-                  >
-                    📍
-                  </button>
-                </div>
-              </div>
-              {showMap && (
-                <div className="modal__map-container">
-                  <Gmap
-                    // Pass initial center based on current state (which might be from datas)
-                    // initialCenter={{ lat: parseFloat(latitude) || 5.36, lng: parseFloat(longitude) || -4.00 }}
-                    onCoordinatesClick={handleMapClick} // Pass the callback function
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowMap(false)}
-                    className="modal__btn modal__btn--secondary"
-                  >
-                    Fermer la carte
-                  </button>
-                </div>
-              )}
+              <AddressMapField form={form} handleChange={handleChange} showMap={showMap} setShowMap={setShowMap} handleMapClick={handleMapClick} />
               <Parent form={form} setForm={setForm} />
               <div className="modal__fieldGroup">
                 <label htmlFor="input-classe" className="modal__label">Classe actuelle</label>
@@ -888,55 +938,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </select>
               </div>
 
-              <div className="modal__fieldGroup">
-                <label className="modal__label">Photo de l'élève</label>
-
-                <div className="modal__photo-controls">
-                  <input
-                    id="input-photo"
-                    type="file"
-                    ref={fileInput}
-                    accept="image/*"
-                    required={!form.photo_$_file && !previewUrl}
-                    onChange={handleFile}
-                    className="modal__input modal__input--file"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCamera(true)}
-                    className="modal__camera-btn"
-                    title="Prendre une photo avec la caméra"
-                  >
-                    <span className="modal__camera-btn-icon">📷</span>
-                    <span className="modal__camera-btn-text">Caméra</span>
-                  </button>
-                </div>
-
-                {(previewUrl || form.photo_$_file) && (
-                  <div className="modal__photo-preview">
-                    <img
-                      src={previewUrl || form.photo_$_file || "/school/classe.webp"}
-                      alt="Photo de l'élève"
-                      className="modal__preview-image"
-                    />
-                    {previewUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreviewUrl('');
-                          setSelectedFile(null);
-                          if (fileInput.current) fileInput.current.value = '';
-                        }}
-                        className="modal__remove-photo-btn"
-                        title="Supprimer la photo"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+              <PhotoUploadField field="photo_$_file" label="Photo de l'élève" alt="Photo de l'élève" defaultImg="/school/classe.webp" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />
 
               <TargetsProfilingBlock form={form} setForm={setForm} />
               <AbsencesBlock absences={form.absences} setForm={setForm} />
@@ -1116,44 +1118,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 />
               </div>
 
-              <div className="modal__fieldGroup">
-                <label htmlFor="input-adresse" className="modal__label">Adresse (facultatif): </label>
-                <div className="modal__fieldGroup modal__fieldGroup--row">
-                  <input
-                    id="input-adresse"
-                    name="adresse_$_map"
-                    value={typeof form.adresse_$_map === 'object' && form.adresse_$_map
-                      ? `${form.adresse_$_map.lat ?? ''},${form.adresse_$_map.lng ?? ''}`
-                      : (form.adresse_$_map || '')}
-                    onChange={handleChange}
-                    placeholder="Adresse"
-                    className="modal__input"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowMap(true)}
-                    className="modal__btn modal__btn--secondary input-adresseBtn"
-                    title="Ouvrir la carte"
-                  >
-                    📍
-                  </button>
-                </div>
-              </div>
-              {showMap && (
-                <div className="modal__map-container">
-                  <Gmap
-                    onCoordinatesClick={handleMapClick}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowMap(false)}
-                    className="modal__btn modal__btn--secondary"
-                  >
-                    Fermer la carte
-                  </button>
-                </div>
-              )}
+              <AddressMapField form={form} handleChange={handleChange} showMap={showMap} setShowMap={setShowMap} handleMapClick={handleMapClick} label="Adresse (facultatif): " />
 
               <div className="modal__fieldGroup modal__fieldGroup--grid">
                 <div className="modal__fieldGroup">
@@ -1183,55 +1148,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   />
                 </div>
               </div>
-              <div className="modal__fieldGroup">
-                <label className="modal__label">Photo de l'enseignant: </label>
-
-                <div className="modal__photo-controls">
-                  <input
-                    id="input-photo"
-                    type="file"
-                    ref={fileInput}
-                    accept="image/*"
-                    required={!form.photo_$_file && !previewUrl}
-                    onChange={handleFile}
-                    className="modal__input modal__input--file"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCamera(true)}
-                    className="modal__camera-btn"
-                    title="Prendre une photo avec la caméra"
-                  >
-                    <span className="modal__camera-btn-icon">📷</span>
-                    <span className="modal__camera-btn-text">Caméra</span>
-                  </button>
-                </div>
-
-                {(previewUrl || form.photo_$_file) && (
-                  <div className="modal__photo-preview">
-                    <img
-                      src={previewUrl || form.photo_$_file || "/school/prof.webp"}
-                      alt="Photo de l'enseignant"
-                      className="modal__preview-image"
-                    />
-                    {previewUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreviewUrl('');
-                          setSelectedFile(null);
-                          if (fileInput.current) fileInput.current.value = '';
-                        }}
-                        className="modal__remove-photo-btn"
-                        title="Supprimer la photo"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+              <PhotoUploadField field="photo_$_file" label="Photo de l'enseignant: " alt="Photo de l'enseignant" defaultImg="/school/prof.webp" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />
 
             </>}
 
@@ -1304,55 +1221,7 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
               </div>
 
-              <div className="modal__fieldGroup">
-                <label className="modal__label">Photo de la classe</label>
-
-                <div className="modal__photo-controls">
-                  <input
-                    id="input-photo-classe"
-                    type="file"
-                    ref={fileInput}
-                    accept="image/*"
-                    required={!form.photo && !previewUrl}
-                    onChange={handleFile}
-                    className="modal__input modal__input--file"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowCamera(true)}
-                    className="modal__camera-btn"
-                    title="Prendre une photo avec la caméra"
-                  >
-                    <span className="modal__camera-btn-icon">📷</span>
-                    <span className="modal__camera-btn-text">Caméra</span>
-                  </button>
-                </div>
-
-                {(previewUrl || form.photo) && (
-                  <div className="modal__photo-preview">
-                    <img
-                      src={previewUrl || form.photo || "/school/classe.webp"}
-                      alt="Photo de la classe"
-                      className="modal__preview-image"
-                    />
-                    {previewUrl && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreviewUrl('');
-                          setSelectedFile(null);
-                          if (fileInput.current) fileInput.current.value = '';
-                        }}
-                        className="modal__remove-photo-btn"
-                        title="Supprimer la photo"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+              <PhotoUploadField field="photo" label="Photo de la classe" alt="Photo de la classe" defaultImg="/school/classe.webp" inputId="input-photo-classe" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />
 
               {/* Section Coefficients des matières */}
               <div className="modal__fieldGroup modal__fieldGroup--coefficients">

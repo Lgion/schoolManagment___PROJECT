@@ -1,17 +1,10 @@
 // API Route pour récupérer les statistiques d'usage Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { authWithFallback } from '../../lib/authWithFallback';
+import { withAuth } from '../../lib/withAuth';
 
-export async function GET(request) {
+export const GET = withAuth(async (request, { userId }) => {
   try {
-    // Vérification de l'authentification (admin uniquement)
-    const authResult = await authWithFallback(request, 'GET /api/cloudinary/stats');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
     // TODO: Vérifier que l'utilisateur est admin
     // const user = await getUserRole(userId);
     // if (user.role !== 'admin') {
@@ -60,7 +53,7 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+}, { context: 'GET /api/cloudinary/stats', db: false });
 
 // Fonction helper pour formater les bytes
 function formatBytes(bytes, decimals = 2) {

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authWithFallback } from '../lib/authWithFallback';
-import dbConnect from '../lib/dbConnect';
+import { withAuth } from '../lib/withAuth';
 const Subject = require('../_/models/ai/Subject');
 
 /**
@@ -8,16 +7,8 @@ const Subject = require('../_/models/ai/Subject');
  * Crée les matières par défaut pour l'école française
  * Accessible uniquement aux administrateurs
  */
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'POST /api/subjectSamples');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
-    await dbConnect();
-
     // Vérifier si des matières existent déjà
     const existingSubjects = await Subject.countDocuments();
     if (existingSubjects > 0) {
@@ -154,22 +145,14 @@ export async function POST(request) {
       error: 'Erreur serveur lors de la création des matières'
     }, { status: 500 });
   }
-}
+}, { context: 'POST /api/subjectSamples' });
 
 /**
  * GET /api/subjectSamples
  * Retourne les informations sur les matières par défaut disponibles
  */
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'GET /api/subjectSamples');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
-    await dbConnect();
-
     const existingCount = await Subject.countDocuments();
     const totalSamples = 15; // Nombre de matières par défaut
 
@@ -194,22 +177,14 @@ export async function GET(request) {
       error: 'Erreur serveur'
     }, { status: 500 });
   }
-}
+}, { context: 'GET /api/subjectSamples' });
 
 /**
  * DELETE /api/subjectSamples
  * Supprime toutes les matières (pour réinitialiser)
  */
-export async function DELETE(request) {
+export const DELETE = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'DELETE /api/subjectSamples');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
-    await dbConnect();
-
     const result = await Subject.deleteMany({});
 
     return NextResponse.json({
@@ -225,4 +200,4 @@ export async function DELETE(request) {
       error: 'Erreur serveur lors de la suppression'
     }, { status: 500 });
   }
-}
+}, { context: 'DELETE /api/subjectSamples' });

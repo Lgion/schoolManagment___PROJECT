@@ -464,27 +464,6 @@
       border-radius: 12px;
       box-shadow: var(--shadow-small);
     }
-
-
-    &__options-label {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--color-primary);
-      margin: 1.5rem 0 0.5rem 0;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-
-      &::before {
-        content: "📝";
-      }
-    }
-
-    &-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
   }
 
   // ── Add new fee form ──────────────────────────────

@@ -1,17 +1,10 @@
 // API Route pour lister les fichiers dans Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { authWithFallback } from '../../lib/authWithFallback';
+import { withAuth } from '../../lib/withAuth';
 
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
-    // Vérification de l'authentification
-    const authResult = await authWithFallback(request, 'GET /api/cloudinary/list');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
     // Récupération des paramètres
     const { searchParams } = new URL(request.url);
     const folder = searchParams.get('folder');
@@ -82,4 +75,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+}, { context: 'GET /api/cloudinary/list', db: false });

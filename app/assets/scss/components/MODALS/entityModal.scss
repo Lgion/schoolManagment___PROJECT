@@ -176,19 +176,6 @@ $entityModal: (
     option {
       background: var(--color-heading);
       color: white;
-
-      &.option_green {
-        background: var(--color-success);
-        font-weight: 600;
-      }
-
-      &.option_red {
-        background: var(--color-danger);
-      }
-
-      &.option_blue {
-        background: var(--color-primary);
-      }
     }
 
     &:focus {
@@ -950,24 +937,6 @@ $entityModal: (
       align-items: center;
       flex-wrap: wrap;
       gap: 0.5rem;
-
-      &-title {
-        font-weight: 600;
-        color: var(--color-text-secondary);
-        font-size: 1.1rem;
-        font-family: map.get($entityModal, primaryFont);
-      }
-
-      &-score {
-        font-size: 0.9rem;
-        color: var(--color-success);
-        font-weight: 500;
-        background: var(--color-success-light);
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        border: 1px solid var(--color-success-light);
-        font-family: map.get($entityModal, secondaryFont);
-      }
     }
   }
 
@@ -1091,116 +1060,6 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(#6c757d, $lightness: -8%);
       }
-    }
-  }
-
-  // Contrôles de photo avec caméra
-  &__photo-controls {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  &__input--file {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  &__camera-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--gradient-brand);
-    color: white;
-    border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: map.get($entityModal, primaryFont);
-    box-shadow: var(--shadow-small);
-    white-space: nowrap;
-
-    &:hover {
-      background: var(--gradient-brand);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-medium);
-    }
-
-    &:active {
-      transform: translateY(0);
-      box-shadow: var(--shadow-small);
-    }
-
-    &-icon {
-      font-size: 1.1rem;
-    }
-
-    &-text {
-      @media (max-width: 480px) {
-        display: none;
-      }
-    }
-  }
-
-  // Prévisualisation photo
-  &__photo-preview {
-    position: relative;
-    display: inline-block;
-    margin-top: 0.75rem;
-
-    >img {
-      width: 100%;
-      padding: 1em;
-      box-sizing: border-box;
-      border: solid;
-    }
-  }
-
-  &__preview-image {
-    max-width: 200px;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid var(--color-border);
-    box-shadow: var(--shadow-small);
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: scale(1.02);
-      box-shadow: var(--shadow-medium);
-    }
-  }
-
-  &__remove-photo-btn {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: var(--color-danger);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-small);
-
-    &:hover {
-      background: var(--color-danger-dark);
-      transform: scale(1.1);
-      box-shadow: var(--shadow-medium);
-    }
-
-    &:active {
-      transform: scale(0.95);
     }
   }
 

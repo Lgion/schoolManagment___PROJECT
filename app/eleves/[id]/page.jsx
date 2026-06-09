@@ -24,11 +24,6 @@ export default function ElevePage() {
     const now = new Date();
     return (now.getMonth() + 1) < 7 ? (now.getFullYear() - 1) + "-" + now.getFullYear() : now.getFullYear() + "-" + (now.getFullYear() + 1);
   };
-  useEffect(() => {
-    ctx.fetchEleves && ctx.fetchEleves();
-    ctx.fetchClasses && ctx.fetchClasses();
-    ctx.fetchSubjects && ctx.fetchSubjects();
-  }, []);
 
   const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes, feeDefinitions, normalizeFeeItem } = ctx;
 

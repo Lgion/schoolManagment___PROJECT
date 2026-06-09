@@ -198,29 +198,6 @@
         line-height: 1.4;
     }
 
-    &__tr {
-        display: flex;
-        flex-flow: wrap;
-    }
-
-    &__panel-header {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid var(--color-border);
-        background: var(--color-surface-muted);
-
-        h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--color-heading);
-        }
-
-        p {
-            margin: 0.25rem 0 0 0;
-            font-size: 0.875rem;
-            color: var(--color-text-muted);
-        }
-    }
-
     &__data-list {
         flex: 1;
         overflow-y: auto;
@@ -380,83 +357,6 @@
 
             -moz-appearance: textfield;
             appearance: textfield;
-        }
-    }
-
-    &__cell-name {
-        font-weight: 500;
-        color: var(--color-text-secondary);
-    }
-
-    &__cell-score {
-        font-family: monospace;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--color-primary);
-        background: var(--color-primary-soft); // Keep the same colors if no tokens exist
-        padding: 0.25rem 0.75rem;
-        border-radius: 4px;
-        display: inline-block;
-    }
-
-    &__cell-score-input {
-        font-family: monospace;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--color-primary);
-        background: var(--color-primary-soft); // Keep the same colors
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        border: 2px solid transparent; // Added for focus state
-        width: 60px;
-        text-align: center;
-        transition: all 0.2s;
-
-        &:focus {
-            outline: none;
-            border-color: var(--color-secondary);
-            background: var(--color-surface);
-            box-shadow: var(--focus-ring);
-        }
-
-        &::-webkit-outer-spin-button,
-        &::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        -moz-appearance: textfield;
-        appearance: textfield;
-    }
-
-    &__cell-warning {
-        position: relative;
-        transition: all 0.3s;
-
-        &.--is-warning {
-            background: var(--color-warning-light); // yellow-100
-            border-color: var(--color-warning); // yellow-300
-
-            td {
-                background: var(--color-warning-light);
-            }
-
-            &:hover td {
-                background: var(--color-warning-light);
-            }
-
-            .review-modal__cell-score-input {
-                background: var(--color-warning-light); // Match the warning theme
-                color: var(--color-warning-dark); // Dark yellow/brown
-
-                &:focus {
-                    background: var(--color-surface); // Clear on focus
-                }
-            }
-        }
-
-        &.--is-focused {
-            border-color: var(--color-secondary);
         }
     }
 

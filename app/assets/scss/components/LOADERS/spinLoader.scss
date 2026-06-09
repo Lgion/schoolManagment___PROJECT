@@ -60,12 +60,6 @@
     margin: 0;
   }
 
-  // État caché
-  &--hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
   // Variantes de couleur
   &--primary {
     .spinLoader__icon {

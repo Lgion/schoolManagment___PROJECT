@@ -15,7 +15,6 @@
 @use "./components/FORMS/imageScanner.scss";
 @use "./components/FORMS/feeConfigManager.scss";
 @use "./components/DASHBOARDS/adminDashboard.scss";
-@use "./components/NAVIGATION/stickyNav.scss";
 @use "./components/CONTROLS/infosCardsControls.scss";
 @use "./components/CONTENT/homeContent.scss";
 @use "./components/CONTENT/teacherReport.scss";
@@ -570,32 +569,6 @@ body>[data-floating-ui-portal] {
     }
   }
 
-  &__error {
-    color: var(--color-error);
-    padding: var(--spacing-md);
-    background: var(--color-error-light);
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--color-error);
-    margin: var(--spacing-md) 0;
-  }
-
-  &__fees-year {
-    margin-bottom: 1.3em;
-  }
-
-  &__fees-year-label {
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: var(--color-text-primary);
-  }
-
-  &__fees-total {
-    margin-top: 1em;
-    font-size: 0.97em;
-    color: var(--color-text-secondary);
-    padding-top: var(--spacing-sm);
-    border-top: 1px solid var(--color-gray-200);
-  }
 }
 
 
@@ -672,29 +645,6 @@ body>[data-floating-ui-portal] {
     flex: 1;
     overflow-y: auto;
     padding-bottom: 100px; // Espace pour le footer
-
-    // Grille des cartes
-    .entities-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-
-    // Styles pour les cartes d'entités
-    .entity-card {
-      background: white;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      }
-    }
   }
 
   &__header {
@@ -1187,14 +1137,6 @@ section>div:has(.modal) {
   }
 }
 
-.isinterne-img {
-  width: 200px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 1.2em;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.10);
-}
-
 .isinterne-label {
   display: flex;
   align-items: center;
@@ -1259,14 +1201,6 @@ section>div:has(.modal) {
   margin-left: 0.2em;
   letter-spacing: 0.01em;
   user-select: none;
-}
-
-.previewImageAddForm {
-  max-width: 400px;
-  max-height: 300px;
-  margin: 0 auto;
-  // object-position: 0% 0%;
-  object-position: top;
 }
 
 .entry-block {
@@ -1578,16 +1512,6 @@ section>div:has(.modal) {
     margin-left: 4px;
   }
 
-  &__entry-argent {
-    color: #137c13;
-    font-weight: 600;
-  }
-
-  &__entry-riz {
-    color: #3466b8;
-    font-weight: 600;
-  }
-
   &__remove-btn {
     background: none;
     border: none;
@@ -1847,7 +1771,7 @@ section>div:has(.modal) {
   @extend .entry-list;
 }
 
-.absence-month {
+.absences-month {
   @extend .entry-month;
 }
 
@@ -1855,19 +1779,25 @@ section>div:has(.modal) {
   @extend .entry-title;
 }
 
-.month-dates {
+.month-absences {
   @extend .entry-dates;
 }
 
-.absence-date {
+.absences-entry {
   @extend .entry-entry;
 }
 
-.remove-absence-btn {
+.absences-date {
+  color: #666;
+  font-size: 0.9em;
+  margin-right: 8px;
+}
+
+.remove-absences-btn {
   @extend .remove-entry-btn;
 }
 
-.absence-picker-modal {
+.absences-picker-modal {
   @extend .entry-picker-modal;
 }
 
@@ -2389,10 +2319,7 @@ section>div:has(.modal) {
     text-align: center;
   }
 
-  &__adminDashboard,
-  &__profDashboard,
-  &__eleveDashboard,
-  &__publicUserDashboard {
+  &__adminDashboard {
     padding: 2em 0;
   }
 
@@ -2404,143 +2331,6 @@ section>div:has(.modal) {
     padding: 0;
     margin: 0;
     width: 100%;
-  }
-
-  &__publicMessage {
-    padding: 0 2em 2em;
-  }
-
-  &__messageCard {
-    display: flex;
-    align-items: flex-start;
-    gap: 1em;
-    padding: 1.5em;
-    background: rgba(#ffa726, 0.1);
-    border: 1px solid rgba(#ffa726, 0.3);
-    border-radius: 12px;
-    text-align: left;
-
-    &-icon {
-      font-size: 1.5em;
-      color: #ffa726;
-      flex-shrink: 0;
-    }
-
-    &-content {
-      flex: 1;
-    }
-
-    &-title {
-      margin: 0 0 0.5em 0;
-      font-size: 1.1em;
-      font-weight: 600;
-      color: #e65100;
-      font-family: $font-secondary;
-    }
-
-    &-text {
-      margin: 0;
-      color: #666;
-      line-height: 1.5;
-    }
-  }
-
-  &__quickActions {
-    padding: 0 2em;
-    margin-top: 2em;
-
-    &-title {
-      font-size: 1.2em;
-      font-weight: 600;
-      margin: 0 0 1em 0;
-      color: $primary-color;
-      font-family: $font-secondary;
-    }
-
-    &-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1em;
-    }
-  }
-
-  &__quickAction {
-    display: flex;
-    align-items: center;
-    gap: 0.75em;
-    padding: 1em 1.5em;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: $font-secondary;
-    font-weight: 500;
-
-    &:hover {
-      border-color: $primary-color;
-      background: rgba($primary-color, 0.05);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba($primary-color, 0.2);
-    }
-
-    &-icon {
-      font-size: 1.2em;
-    }
-
-    &-text {
-      color: #555;
-    }
-  }
-
-  &__studentInfo {
-    padding: 0 2em;
-    margin-top: 2em;
-
-    &-title {
-      font-size: 1.2em;
-      font-weight: 600;
-      margin: 0 0 1em 0;
-      color: $primary-color;
-      font-family: $font-secondary;
-    }
-
-    &-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1em;
-    }
-  }
-
-  &__infoCard {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5em;
-    padding: 1.5em;
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    text-align: center;
-
-    &-icon {
-      font-size: 2em;
-      margin-bottom: 0.5em;
-    }
-
-    &-label {
-      font-size: 0.9em;
-      color: #666;
-      font-weight: 500;
-      font-family: $font-secondary;
-    }
-
-    &-value {
-      font-size: 1.5em;
-      font-weight: 700;
-      color: $primary-color;
-      font-family: $font-primary;
-    }
   }
 
   &__nav {
@@ -3086,25 +2876,6 @@ button.btn--primary {
 .eleve-card__editbtn:hover,
 .person-card__editbtn:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
 
-/* --- person-detail : bouton close/reduce propre (fini le carré noir/rouge) --- */
-.person-detail__close,
-.person-detail__reduce {
-  background: var(--color-surface) !important;
-  color: var(--color-primary) !important;
-  border: 1px solid var(--color-border-strong) !important;
-  border-radius: 999px !important;
-  width: 2.2rem;
-  height: 2.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.05rem !important;
-  line-height: 1;
-  box-shadow: var(--shadow-small);
-}
-.person-detail__close:hover,
-.person-detail__reduce:hover { background: var(--color-danger-light) !important; color: var(--color-danger) !important; }
-
 /* --- Drop-caps de l'accueil → couleur de marque --- */
 .ecole-admin__content p:first-of-type::first-letter { color: var(--color-primary); }
 
@@ -3202,7 +2973,7 @@ button.btn--primary {
    ========================================================================== */
 
 /* --- Boutons « Ajouter » des sous-blocs alignés sur la base commune --- */
-.add-absence-btn,
+.add-absences-btn,
 .add-bonus-btn,
 .add-manus-btn {
   @extend .add-entry-btn;

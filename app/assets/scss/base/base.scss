@@ -1,7 +1,5 @@
-/**/
-@use '../themes/template' as *;
+@use '../variables' as *;
 
-:root{
-    font-family: $contenus;
+:root {
+    font-family: $primaryFont;
 }
-

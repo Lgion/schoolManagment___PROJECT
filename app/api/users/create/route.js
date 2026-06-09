@@ -1,4 +1,4 @@
-import { authWithFallback } from '../../lib/authWithFallback';
+import { withAuth } from '../../lib/withAuth';
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../_/models/ai/User';
@@ -43,15 +43,8 @@ async function determineUserRole(email) {
   }
 }
 
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'POST /api/users/create');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
-    await dbConnect();
     const body = await request.json();
     const { clerkId, email, firstName, lastName } = body;
 
@@ -102,4 +95,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+}, { context: 'POST /api/users/create' });

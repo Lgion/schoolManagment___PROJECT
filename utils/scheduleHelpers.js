@@ -257,17 +257,6 @@ const isTimeOverlap = (start1, end1, start2, end2) => {
   return start1Min < end2Min && start2Min < end1Min
 }
 
-/**
- * Génère un label par défaut pour un emploi du temps
- * @param {String} niveau - Niveau de la classe (ex: "CM1")
- * @param {Date} date - Date de création
- * @returns {String} - Label généré
- */
-const generateDefaultLabel = (niveau, date = new Date()) => {
-  const dateStr = date.toLocaleDateString('fr-FR')
-  return `Emploi du temps ${niveau} - ${dateStr}`
-}
-
 // Exports CommonJS
 module.exports = {
   convertDetailsToPlanning,
@@ -276,6 +265,5 @@ module.exports = {
   archiveSchedule,
   reactivateSchedule,
   getScheduleHistory,
-  validatePlanning,
-  generateDefaultLabel
+  validatePlanning
 }

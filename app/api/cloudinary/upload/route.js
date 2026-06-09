@@ -1,17 +1,10 @@
 // API Route pour upload de fichiers vers Cloudinary
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinaryService from '../../../../services/cloudinaryService';
-import { authWithFallback } from '../../lib/authWithFallback';
+import { withAuth } from '../../lib/withAuth';
 
-export async function POST(request) {
+export const POST = withAuth(async (request, { userId }) => {
   try {
-    // Vérification de l'authentification
-    const authResult = await authWithFallback(request, 'POST /api/cloudinary/upload');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
     // Récupération des données
     const formData = await request.formData();
     const files = formData.getAll('files');
@@ -123,16 +116,10 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+}, { context: 'POST /api/cloudinary/upload', db: false });
 
-export async function GET(request) {
+export const GET = withAuth(async (request, { userId }) => {
   try {
-    const authResult = await authWithFallback(request, 'GET /api/cloudinary/upload/signature');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-    const userId = authResult.userId;
-
     const { searchParams } = new URL(request.url);
     const folder = searchParams.get('folder');
     const tags = searchParams.get('tags')?.split(',') || [];
@@ -159,4 +146,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+}, { context: 'GET /api/cloudinary/upload/signature', db: false });

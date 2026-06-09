@@ -67,14 +67,6 @@
         font-weight: var(--font-weight-semibold);
         color: var(--color-text-secondary);
         min-width: 130px;
-
-        &--inline {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            font-weight: var(--font-weight-normal);
-            min-width: auto;
-        }
     }
 
     &__input {
@@ -108,12 +100,6 @@
         // Champ absence dans la DataTable
         &--absence {
             width: 60px;
-            text-align: center;
-        }
-
-        // Champ barème (/20)
-        &--sur {
-            width: 50px;
             text-align: center;
         }
     }

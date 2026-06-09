@@ -1,55 +1,19 @@
 "use client"
 
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
 import ClasseCard from './ClasseCard';
-import EntityModal from '../components/EntityModal';
 import { AiAdminContext } from '../../stores/ai_adminContext';
-import PermissionGate from '../components/PermissionGate';
 
 export default function ClassesPage({ children }) {
 
   const ctx = useContext(AiAdminContext);
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : AiAdminContext non trouvé. Vérifiez que l'application est bien entourée par le provider.</div>;
   const { classes = [], enseignants, eleves, setSelected, setShowModal, setEditType } = ctx;
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [detailModalType, setDetailModalType] = useState(null);
-  const [detailModalEntityId, setDetailModalEntityId] = useState(null);
   const [selectedYear, setSelectedYear] = useState(null); // null = toutes les années
-
-  {/*
-  // Fonction pour ouvrir la modale de détail
-  const handleOpenDetailModal = (type, entityId) => {
-    setDetailModalType(type);
-    setDetailModalEntityId(entityId);
-    setShowDetailModal(true);
-  };
-
-  // Fonction pour fermer la modale de détail
-  const handleCloseDetailModal = () => {
-    setShowDetailModal(false);
-    setDetailModalType(null);
-    setDetailModalEntityId(null);
-  };
-
-  // Fonction pour éditer depuis la modale de détail
-  const handleEditFromDetailModal = () => {
-    if (detailModalType === 'classe') {
-      const classe = classes.find(c => String(c._id) === String(detailModalEntityId));
-      if (classe) {
-        setSelected(classe);
-        setShowModal(true);
-        setShowDetailModal(false);
-      }
-    }
-  };
-  */}
 
   return (<>
     <h2 className="page-title">Liste des classes
-      {/* <PermissionGate role="admin">
-        <button onClick={() => { setSelected(null); setEditType("classe"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter une classe</button>
-      </PermissionGate> */}
     </h2>
 
     <div className="ecole-admin__nav-actions">
@@ -57,37 +21,6 @@ export default function ClassesPage({ children }) {
         <span className="icon">📅</span> Accéder au Planning (Schedules)
       </Link>
     </div>
-
-    {/* Badges de filtrage par année */}
-    {/* 
-    {Array.isArray(classes) && classes.length > 0 && (
-      <div className="year-filter">
-        {selectedYear && (
-          <button
-            className="year-filter__reset"
-            onClick={() => setSelectedYear(null)}
-            title="Afficher toutes les années"
-          >
-            ✕
-          </button>
-        )}
-        <div className="year-filter__badges">
-          {[...new Set(classes.map(c => c.annee).filter(Boolean))]
-            .sort((a, b) => b.localeCompare(a)) // Ordre décroissant
-            .map(year => (
-              <button
-                key={year}
-                className={`year-filter__badge ${selectedYear === year ? 'year-filter__badge--active' : ''}`}
-                onClick={() => setSelectedYear(selectedYear === year ? null : year)}
-              >
-                {year.replace('-', '/')}
-              </button>
-            ))
-          }
-        </div>
-      </div>
-    )}
-    */}
 
     {classes ?
       <div className="classes-list">
@@ -162,18 +95,6 @@ export default function ClassesPage({ children }) {
         Chargement des classes…
       </div>
     }
-
-    {/* Modale d'édition EntityModal */}
-
-    {/* Modale de détail DetailModal */}
-    {/* {showDetailModal && (
-        <DetailModal 
-          type={detailModalType}
-          entityId={detailModalEntityId}
-          onClose={handleCloseDetailModal}
-          onEdit={handleEditFromDetailModal}
-        />
-      )} */}
 
     {children}
   </>

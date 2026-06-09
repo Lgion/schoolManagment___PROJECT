@@ -16,11 +16,6 @@ export default function EnseignantDetailPage() {
   const ctx = useContext(AiAdminContext);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
-  useEffect(() => {
-    ctx.fetchEnseignants && ctx.fetchEnseignants();
-    ctx.fetchClasses && ctx.fetchClasses();
-    ctx.fetchEleves && ctx.fetchEleves();
-  }, []);
 
   const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const { entity: enseignant, classe } = useEntityDetail(id, ctx, 'enseignants');

@@ -110,19 +110,6 @@ class CloudinaryService {
     }
   }
 
-  // Upload multiple files
-  async uploadMultiple(files, options = {}) {
-    const uploadPromises = files.map(file => this.uploadFile(file, options));
-    const results = await Promise.allSettled(uploadPromises);
-    
-    return {
-      success: results.every(r => r.status === 'fulfilled' && r.value.success),
-      data: results.map(r => r.status === 'fulfilled' ? r.value.data : null).filter(Boolean),
-      errors: results.filter(r => r.status === 'rejected' || !r.value?.success)
-                     .map(r => r.reason || r.value?.error)
-    };
-  }
-
   // Supprimer un fichier de Cloudinary
   async deleteFile(publicId, resourceType = 'image') {
     this.init();
@@ -247,36 +234,6 @@ class CloudinaryService {
         error: error.message
       };
     }
-  }
-
-  // Créer un dossier
-  async createFolder(folderPath) {
-    this.init();
-    
-    try {
-      const result = await this.cloudinary.api.create_folder(folderPath);
-      return {
-        success: true,
-        data: result
-      };
-    } catch (error) {
-      console.error('❌ Erreur création dossier Cloudinary:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-
-  // Générer une URL de transformation
-  getTransformationUrl(publicId, transformations = {}) {
-    const defaultTransformations = {
-      quality: 'auto',
-      fetch_format: 'auto',
-      ...transformations
-    };
-    
-    return this.cloudinary.url(publicId, defaultTransformations);
   }
 
   // Générer une URL sécurisée pour upload direct depuis le client
