@@ -11,6 +11,8 @@
     "process-fallbacks:dry": "node scripts/process-cloudinary-fallbacks.js --dry-run",
     "process-fallbacks:limit": "node scripts/process-cloudinary-fallbacks.js --limit=10",
     "process-fallbacks:force": "node scripts/process-cloudinary-fallbacks.js --force",
+    "migrate-points": "node scripts/migrate-bonus-manus-to-points.js",
+    "migrate-points:dry": "node scripts/migrate-bonus-manus-to-points.js --dry-run",
     "test:e2e": "playwright test"
   },
   "dependencies": {

@@ -14,6 +14,7 @@ import PermissionGate from "../../components/PermissionGate";
 import NotesBlock from '../../components/NotesBlock';
 import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
+import ClassPointsPanel from '../../components/points/ClassPointsPanel';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
@@ -247,6 +248,18 @@ export default function ClasseDetailPage() {
           )}
 
         </div>
+        {/* Bons points — gestion par le prof (année courante uniquement) */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--points">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎖️</span>
+                Bons points
+              </h2>
+              <ClassPointsPanel eleves={eleves} />
+            </div>
+          )}
+        </PermissionGate>
         {/* Liste des enseignants */}
         <div className="person-detail__block person-detail__block--teachers">
           <h2 className="person-detail__subtitle">

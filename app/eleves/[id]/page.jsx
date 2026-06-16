@@ -2,7 +2,8 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
-import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock, BonusBlock, ManusBlock } from '../../components/EntityModal.jsx';
+import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock } from '../../components/EntityModal.jsx';
+import StudentPointsWidget from '../../components/points/StudentPointsWidget';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -11,12 +12,14 @@ import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 import ClasseEnseignantDisplay from '../../components/ClasseEnseignantDisplay';
 import { getEleveImagePath } from '../../../utils/imageUtils';
 import { useDetailPortal } from '../../../stores/useDetailPortal';
+import { useUserRole } from '../../../stores/useUserRole';
 import DetailPortal from "../../components/DetailPortal"
 
 export default function ElevePage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
+  const { userRole } = useUserRole();
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
 
@@ -108,9 +111,16 @@ export default function ElevePage() {
         <section>
           <AbsencesBlock absences={eleve.absences} />
 
-          <BonusBlock bonus={eleve.bonus} />
-
-          <ManusBlock manus={eleve.manus} />
+          <div className="person-detail__block person-detail__block--points">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">🎖️</span>
+              Bons points
+            </h2>
+            <StudentPointsWidget
+              studentId={eleve._id}
+              celebrateOnNew={['eleve', 'public'].includes(userRole)}
+            />
+          </div>
         </section>
 
         <CompositionsBlock
