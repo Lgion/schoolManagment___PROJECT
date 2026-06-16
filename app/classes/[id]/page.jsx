@@ -15,6 +15,7 @@ import NotesBlock from '../../components/NotesBlock';
 import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 import ClassPointsPanel from '../../components/points/ClassPointsPanel';
+import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
@@ -260,6 +261,17 @@ export default function ClasseDetailPage() {
             </div>
           )}
         </PermissionGate>
+        {/* Documents de cours — consultation pour tous, dépôt/suppression réservé prof/admin */}
+        <div className="person-detail__block person-detail__block--documents">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">📄</span>
+            Documents de cours
+          </h2>
+          <ClassDocuments
+            classId={classe._id}
+            canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
+          />
+        </div>
         {/* Liste des enseignants */}
         <div className="person-detail__block person-detail__block--teachers">
           <h2 className="person-detail__subtitle">
