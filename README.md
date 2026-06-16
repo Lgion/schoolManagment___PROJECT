@@ -1,6 +1,25 @@
 Idées évolution app école (conversation gemini)
 https://gemini.google.com/app/951a0c213d4a23a1?hl=fr
 
+ISSUES: 
+- DANS LES DONNÉES SAMPLES: 
+    - j'ai remarqué que dans les données sample de l'école, les classes ont bien un prof attribué, mais quand tu vas sur la page du prof, il est écrit qu'il ne lui ai attribué aucune class, il faut absolument régler ce probleme.
+    - L'affichage des cards des élèves montrent un probleme dans la génération des données samples, il faut des données réaliste, 
+    - c'est pareil pour les compositions (des différentes années meme), le 2nd trimestre ne contient généralement aucune note...
+    - dans les données des profs tous les champs ne sont pas rempli (notamment email)
+
+
+
+
+
+
+
+
+
+
+
+___________________________________________________________________________________________________________
+
 
 
 
