@@ -4,11 +4,13 @@ https://gemini.google.com/app/951a0c213d4a23a1?hl=fr
 
 
 
+ELEVES-CLASSES-PROFS
 - Permettre un système de bons points 
-
 - Rendre fonctionnel l'ajout de fichiers PDF par le prof à sa classe
 
-- La page affiche pour un parent ou un élève connecté toi aussi inclure les pages élèves prof classe mais avec beaucoup plus de restrictions dans les infos affichées ou avoir une section spéciale en en-tête pour regrouper les infos et actions importantes ou utiles pour le rôle parents élèves 
+
+VIEWS
+- La page qui s'affiche pour un parent ou un élève connecté doit aussi inclure les pages élèves prof classe mais avec beaucoup plus de restrictions dans les infos affichées ou avoir une section spéciale en en-tête pour regrouper les infos et actions importantes ou utiles pour le rôle parents élèves 
 
 
 - Il faut pouvoir créer des groupes d'élèves de parents, de profshe ou mixtes. 
