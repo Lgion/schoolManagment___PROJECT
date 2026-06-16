@@ -19,9 +19,11 @@ export default function Page() {
       <p key={i}>{text}</p>
     ))}
     
-    <picture>
-      <source type="image/jpeg" srcSet={homepage.photo} />
-      <img style={{ "width": "100%" }} src={homepage.photo} alt={`Photo de ${homepage.title}`} loading="lazy" />
-    </picture>
+    {homepage.photo && (
+      <picture>
+        <source type="image/jpeg" srcSet={homepage.photo} />
+        <img style={{ "width": "100%" }} src={homepage.photo} alt={`Photo de ${homepage.title}`} loading="lazy" />
+      </picture>
+    )}
   </>;
 }
