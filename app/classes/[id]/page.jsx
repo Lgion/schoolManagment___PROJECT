@@ -16,6 +16,7 @@ import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 import ClassPointsPanel from '../../components/points/ClassPointsPanel';
 import AttendancePanel from '../../components/attendance/AttendancePanel';
+import HomeworkPanel from '../../components/homework/HomeworkPanel';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
@@ -271,6 +272,18 @@ export default function ClasseDetailPage() {
                 Faire l'appel
               </h2>
               <AttendancePanel classId={classe._id} eleves={eleves} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Cahier de texte — saisie des devoirs réservée au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--homework">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📓</span>
+                Cahier de texte
+              </h2>
+              <HomeworkPanel classId={classe._id} />
             </div>
           )}
         </PermissionGate>

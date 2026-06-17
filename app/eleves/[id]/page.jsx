@@ -5,6 +5,7 @@ import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock } from '../../components/EntityModal.jsx';
 import StudentPointsWidget from '../../components/points/StudentPointsWidget';
 import StudentAttendanceWidget from '../../components/attendance/StudentAttendanceWidget';
+import HomeworkTodoList from '../../components/homework/HomeworkTodoList';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -129,6 +130,18 @@ export default function ElevePage() {
               Présences
             </h2>
             <StudentAttendanceWidget studentId={eleve._id} />
+          </div>
+
+          <div className="person-detail__block person-detail__block--homework">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">📓</span>
+              Devoirs à faire
+            </h2>
+            <HomeworkTodoList
+              studentId={eleve._id}
+              classId={eleve.current_classe}
+              interactive={['eleve', 'public'].includes(userRole)}
+            />
           </div>
         </section>
 
