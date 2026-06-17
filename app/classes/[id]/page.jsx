@@ -15,6 +15,7 @@ import NotesBlock from '../../components/NotesBlock';
 import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
 import ClassPointsPanel from '../../components/points/ClassPointsPanel';
+import AttendancePanel from '../../components/attendance/AttendancePanel';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
@@ -258,6 +259,18 @@ export default function ClasseDetailPage() {
                 Bons points
               </h2>
               <ClassPointsPanel eleves={eleves} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Appel / présences — réservé au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--attendance">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📋</span>
+                Faire l'appel
+              </h2>
+              <AttendancePanel classId={classe._id} eleves={eleves} />
             </div>
           )}
         </PermissionGate>

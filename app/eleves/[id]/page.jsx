@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock } from '../../components/EntityModal.jsx';
 import StudentPointsWidget from '../../components/points/StudentPointsWidget';
+import StudentAttendanceWidget from '../../components/attendance/StudentAttendanceWidget';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -120,6 +121,14 @@ export default function ElevePage() {
               studentId={eleve._id}
               celebrateOnNew={['eleve', 'public'].includes(userRole)}
             />
+          </div>
+
+          <div className="person-detail__block person-detail__block--attendance">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">📋</span>
+              Présences
+            </h2>
+            <StudentAttendanceWidget studentId={eleve._id} />
           </div>
         </section>
 
