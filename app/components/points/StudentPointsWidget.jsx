@@ -4,6 +4,7 @@ import { fetchBalance, fetchHistory, formatTeacherName } from './pointsApi';
 import { PALIERS, getPalierState } from './paliers';
 import { burstConfetti, playChime } from './celebrate';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
+import AwardPointsModal from './AwardPointsModal';
 
 // "12/06" — date courte FR
 function shortDate(d) {
@@ -19,13 +20,16 @@ function shortDate(d) {
  *
  * Props : studentId, refreshKey (optionnel), celebrateOnNew (défaut false)
  */
-export default function StudentPointsWidget({ studentId, refreshKey, celebrateOnNew = false }) {
+export default function StudentPointsWidget({ studentId, refreshKey, celebrateOnNew = false, canManage = false, studentName = '' }) {
   const [summary, setSummary] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [gained, setGained] = useState(0); // delta de points découverts → toast
   const celebratedFor = useRef(null);      // évite de re-célébrer le même solde
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localRefresh, setLocalRefresh] = useState(0);
 
   useEffect(() => {
     if (!studentId) return;
@@ -62,7 +66,7 @@ export default function StudentPointsWidget({ studentId, refreshKey, celebrateOn
       }
     })();
     return () => { cancelled = true; };
-  }, [studentId, refreshKey, celebrateOnNew]);
+  }, [studentId, refreshKey, localRefresh, celebrateOnNew]);
 
   const balance = summary?.balance ?? 0;
   const { current, next, progress } = getPalierState(balance);
@@ -88,6 +92,16 @@ export default function StudentPointsWidget({ studentId, refreshKey, celebrateOn
             <span className="studentPoints__breakdown-item --malus">⚠️ {summary.totalMalus} malus</span>
             <span className="studentPoints__breakdown-item --count">{summary.transactionCount} entrée{summary.transactionCount > 1 ? 's' : ''}</span>
           </div>
+        )}
+        {canManage && (
+          <button 
+            type="button" 
+            className="studentPoints__addBtn"
+            style={{ marginTop: '15px', padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'var(--color-primary, #3b82f6)', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            + Attribuer des points
+          </button>
         )}
       </div>
 
@@ -155,6 +169,14 @@ export default function StudentPointsWidget({ studentId, refreshKey, celebrateOn
           </ul>
         )}
       </div>
+      {canManage && (
+        <AwardPointsModal
+          isOpen={isModalOpen}
+          recipients={[{ _id: studentId, name: studentName || 'Cet élève' }]}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => setLocalRefresh(r => r + 1)}
+        />
+      )}
     </div>
   );
 }
