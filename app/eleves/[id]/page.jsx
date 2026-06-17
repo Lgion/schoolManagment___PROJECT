@@ -6,6 +6,7 @@ import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, Composition
 import StudentPointsWidget from '../../components/points/StudentPointsWidget';
 import StudentAttendanceWidget from '../../components/attendance/StudentAttendanceWidget';
 import HomeworkTodoList from '../../components/homework/HomeworkTodoList';
+import StudentReportCards from '../../components/bulletins/StudentReportCards';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -141,6 +142,18 @@ export default function ElevePage() {
               studentId={eleve._id}
               classId={eleve.current_classe}
               interactive={['eleve', 'public'].includes(userRole)}
+            />
+          </div>
+
+          <div className="person-detail__block person-detail__block--bulletins">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">🎓</span>
+              Bulletins
+            </h2>
+            <StudentReportCards
+              studentId={eleve._id}
+              studentName={`${eleve.nom || ''} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : (eleve.prenoms || '')}`.trim()}
+              className={classe ? `${classe.niveau || ''} ${classe.alias || ''}`.trim() : ''}
             />
           </div>
         </section>

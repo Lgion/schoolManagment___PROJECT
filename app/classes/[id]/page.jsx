@@ -17,6 +17,7 @@ import AddStudentsModal from '../../components/AddStudentsModal';
 import ClassPointsPanel from '../../components/points/ClassPointsPanel';
 import AttendancePanel from '../../components/attendance/AttendancePanel';
 import HomeworkPanel from '../../components/homework/HomeworkPanel';
+import ReportCardsPanel from '../../components/bulletins/ReportCardsPanel';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
@@ -284,6 +285,23 @@ export default function ClasseDetailPage() {
                 Cahier de texte
               </h2>
               <HomeworkPanel classId={classe._id} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Bulletins — génération réservée au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--bulletins">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎓</span>
+                Bulletins
+              </h2>
+              <ReportCardsPanel
+                classId={classe._id}
+                eleves={eleves}
+                defaultYear={classe.annee}
+                className={`${classe.niveau || ''} ${classe.alias || ''}`.trim()}
+              />
             </div>
           )}
         </PermissionGate>
