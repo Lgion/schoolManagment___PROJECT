@@ -8,11 +8,11 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [ ] Permettre de faire l'appel (façon Klassly).
 - [ ] Permettre au prof de remplir le cahier de texte des élèves (le cahier de texte aura les clés représentant le timestamp du jour).
 - [ ] Sur la page d'une classe, ajouter un bouton permettant de générer les bulletins scolaires de chaque élève, ainsi qu'un bouton pour le bilan annuel.
-- [ ] Dans les pages d'une classe, en plus de pouvoir scanner le bilan d'une composition, pouvoir générer la feuille de bilan en PDF.
+- [ ] Dans les pages d'une classe, en plus de pouvoir scanner le bilan d'une composition, pouvoir générer la feuille de bilan vierge en PDF.
+- [ ] Pouvoir créer des groupes d'élèves, de parents, de profs ou des groupes mixtes.
 - [ ] Fonctionnalités de "livre de classe" pour album photo de classe : ajouter une section dédiée dans la page d'une classe ou de son édition.
 - [ ] Les élèves auront une section "livre d'élèves" (livre de classe dédié à l'élève, spécifiquement d'année en année).
 - [ ] Ajouter un menu "Jeux pédagogiques" directement accessible dans le menu principal (pour les utilisateurs connectés en tant que parents/élèves). Pour tous les rôles, ils seront accessibles dans chaque section de classe.
-- [ ] Pouvoir créer des groupes d'élèves, de parents, de profs ou des groupes mixtes.
 
 ## 📅 Emploi du temps et Calendrier
 - [ ] Ajouter un calendrier pour l'école pour y planifier des événements.
