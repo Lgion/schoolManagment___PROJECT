@@ -1,273 +1,180 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { useUserRole } from '../../stores/useUserRole'
-import { validatePlanning } from '../../utils/scheduleHelpers'
+import {
+  validateEvents,
+  planningToEvents,
+  daysToDisplay,
+  dayOfWeekToJour,
+  timeToMinutes,
+} from '../../utils/scheduleEvents'
 import SubjectsPalette from './SubjectsPalette'
 
 /**
- * Composant ScheduleEditor
- * Éditeur d'emploi du temps avec interface drag & drop
+ * ScheduleEditor — édition d'un emploi du temps au format `events[]`.
+ *
+ * Refonte : abandon de la grille à heures figées. On édite une liste d'événements
+ * par jour (horaires libres), avec des cours et des pauses. La position visuelle
+ * proportionnelle est gérée par le Viewer ; ici on privilégie une saisie fiable.
  */
-const ScheduleEditor = ({
-  classeId,
-  schedule,
-  onSave,
-  onCancel
-}) => {
-  // Récupération du rôle utilisateur pour les permissions
-  const { isAdmin, isProf } = useUserRole()
+const subjectIdOf = (subjectId) =>
+  subjectId && typeof subjectId === 'object' ? (subjectId._id || subjectId.id || '') : (subjectId || '')
+
+const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
   const [subjects, setSubjects] = useState([])
-  const [breakTimes, setBreakTimes] = useState([])
-
-
-  const [currentSchedule, setCurrentSchedule] = useState(null)
+  const [label, setLabel] = useState('')
+  const [events, setEvents] = useState([])
+  const [validFrom, setValidFrom] = useState('')
+  const [validUntil, setValidUntil] = useState('')
   const [saving, setSaving] = useState(false)
   const [validationErrors, setValidationErrors] = useState([])
 
-  const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi']
-  const heures = [
-    { debut: '08:00', fin: '09:00' },
-    { debut: '09:00', fin: '10:00' },
-    { debut: '10:00', fin: '10:15' }, // Pause
-    { debut: '10:15', fin: '11:15' },
-    { debut: '11:15', fin: '12:15' },
-    { debut: '12:15', fin: '13:30' }, // Pause déjeuner
-    { debut: '13:30', fin: '14:30' },
-    { debut: '14:30', fin: '15:30' },
-    { debut: '15:30', fin: '15:45' }, // Pause
-    { debut: '15:45', fin: '16:45' }
-  ]
-
   useEffect(() => {
     loadSubjects()
-    loadBreakTimes()
-    initializeSchedule()
+  }, [])
+
+  useEffect(() => {
+    if (schedule) {
+      setLabel(schedule.label || '')
+      const initial = Array.isArray(schedule.events) && schedule.events.length
+        ? schedule.events
+        : planningToEvents(schedule.planning)
+      setEvents(initial.map((e) => ({ ...e, subjectId: subjectIdOf(e.subjectId) })))
+      setValidFrom(schedule.validFrom ? String(schedule.validFrom).slice(0, 10) : '')
+      setValidUntil(schedule.validUntil ? String(schedule.validUntil).slice(0, 10) : '')
+    } else {
+      setLabel('')
+      setEvents([])
+      setValidFrom('')
+      setValidUntil('')
+    }
   }, [schedule])
 
-  // Chargement des matières
   const loadSubjects = async () => {
     try {
-      console.log('🔄 Chargement des matières...')
-      const response = await fetch('/api/subjects', {
-        credentials: 'include' // Inclure les cookies d'authentification
-      })
-      console.log('📡 Réponse API subjects:', response.status)
-
+      const response = await fetch('/api/subjects', { credentials: 'include' })
       const data = await response.json()
-      console.log('📊 Données reçues:', data)
-
       if (data.success) {
-        console.log('✅ Matières chargées:', data.data.length)
         setSubjects(data.data)
       } else {
-        console.error('❌ Erreur API:', data.error)
-        // Fallback: essayer l'API publique
-        console.log('🔄 Tentative avec API publique...')
-        const publicResponse = await fetch('/api/public/subjects', {
-          credentials: 'include'
-        })
+        const publicResponse = await fetch('/api/public/subjects', { credentials: 'include' })
         const publicData = await publicResponse.json()
-        if (publicData.success && publicData.data) {
-          console.log('✅ Matières chargées via API publique:', publicData.data.length)
-          setSubjects(publicData.data)
-        }
+        if (publicData.success && publicData.data) setSubjects(publicData.data)
       }
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des matières:', error)
+      console.error('Erreur lors du chargement des matières:', error)
     }
   }
 
-  // Chargement des pauses
-  const loadBreakTimes = async () => {
-    try {
-      const response = await fetch('/api/breaktimes', {
-        credentials: 'include'
-      })
-      const data = await response.json()
-      if (data.success) {
-        setBreakTimes(data.data)
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des pauses:', error)
-    }
-  }
+  // Jours affichés : lun–ven + tout jour ayant déjà un événement.
+  const days = daysToDisplay(events)
 
-  const initializeSchedule = () => {
-    if (schedule) {
-      // Mode édition
-      setCurrentSchedule({
-        ...schedule,
-        planning: schedule.planning || createEmptyPlanning()
-      })
-    } else {
-      // Mode création
-      setCurrentSchedule({
-        classeId,
-        label: '',
-        planning: createEmptyPlanning(),
-      })
-    }
-  }
-
-  const createEmptyPlanning = () => {
-    const planning = {}
-    jours.forEach(jour => {
-      planning[jour] = []
-    })
-    return planning
-  }
-
-  const handleAddTimeSlot = (jour, heureIndex) => {
-    const heure = heures[heureIndex]
-    const newSlot = {
-      heureDebut: heure.debut,
-      heureFin: heure.fin,
-      subjectId: subjects[0]?._id || '',
-      notes: ''
-    }
-
-    setCurrentSchedule(prev => ({
+  const addEvent = (dayOfWeek, type) => {
+    // Place le nouvel événement après le dernier du jour, sinon à 08:00.
+    const dayEvents = events.filter((e) => e.dayOfWeek === dayOfWeek)
+    const last = dayEvents.sort((a, b) => timeToMinutes(b.endTime) - timeToMinutes(a.endTime))[0]
+    const startTime = last ? last.endTime : '08:00'
+    const startMin = timeToMinutes(startTime)
+    const endTime = `${String(Math.floor((startMin + 60) / 60)).padStart(2, '0')}:${String((startMin + 60) % 60).padStart(2, '0')}`
+    setEvents((prev) => [
       ...prev,
-      planning: {
-        ...prev.planning,
-        [jour]: [...(prev.planning[jour] || []), newSlot]
-      }
-    }))
+      {
+        dayOfWeek,
+        startTime,
+        endTime,
+        type,
+        subjectId: type === 'COURSE' ? (subjects[0]?._id || '') : null,
+        label: type === 'COURSE' ? '' : (type === 'BREAK' ? 'Pause' : 'Événement'),
+        notes: '',
+      },
+    ])
   }
 
-  const handleRemoveTimeSlot = (jour, slotIndex) => {
-    setCurrentSchedule(prev => ({
-      ...prev,
-      planning: {
-        ...prev.planning,
-        [jour]: prev.planning[jour].filter((_, index) => index !== slotIndex)
-      }
-    }))
-  }
+  const updateEvent = (target, field, value) =>
+    setEvents((prev) => prev.map((e) => (e === target ? { ...e, [field]: value } : e)))
 
-  const handleUpdateTimeSlot = (jour, slotIndex, field, value) => {
-    setCurrentSchedule(prev => ({
-      ...prev,
-      planning: {
-        ...prev.planning,
-        [jour]: prev.planning[jour].map((slot, index) =>
-          index === slotIndex ? { ...slot, [field]: value } : slot
-        )
-      }
-    }))
-  }
+  const removeEvent = (target) =>
+    setEvents((prev) => prev.filter((e) => e !== target))
 
   const handleSave = async () => {
     try {
       setSaving(true)
-
-      // Validation
-      const validation = validatePlanning(currentSchedule.planning)
+      const validation = validateEvents(events)
       if (!validation.isValid) {
         setValidationErrors(validation.errors)
         return
       }
-
       setValidationErrors([])
 
-      const url = schedule ? `/api/schedules/${schedule._id}` : '/api/schedules'
-      const method = schedule ? 'PUT' : 'POST'
+      // _id absent (création ou duplication) ⇒ POST ; sinon mise à jour.
+      const isEdit = Boolean(schedule && schedule._id)
+      const url = isEdit ? `/api/schedules/${schedule._id}` : '/api/schedules'
+      const method = isEdit ? 'PUT' : 'POST'
+      const payload = {
+        classeId,
+        label,
+        events,
+        validFrom: validFrom || undefined,
+        validUntil: validUntil || null,
+      }
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // IMPORTANT: Inclure les cookies d'authentification
-        body: JSON.stringify(currentSchedule)
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
       })
-
       const data = await response.json()
 
       if (data.success) {
-        alert(schedule ? 'Emploi du temps modifié avec succès !' : 'Emploi du temps créé avec succès !')
         onSave()
       } else {
+        if (Array.isArray(data.details)) setValidationErrors(data.details)
         throw new Error(data.error || 'Erreur lors de la sauvegarde')
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error)
-      alert('Erreur lors de la sauvegarde de l\'emploi du temps')
     } finally {
       setSaving(false)
     }
   }
 
-  const getSubjectInfo = (subjectId) => {
-    return subjects.find(s => s._id === subjectId) || { nom: 'Matière inconnue', couleur: '#95a5a6' }
-  }
-
-  // Vérifier si un créneau horaire est une pause (basé sur MongoDB)
-  // NB : les breakTimes viennent du JSON de l'API, donc la méthode Mongoose
-  // isInTimeRange() n'existe plus côté client -> on compare les bornes inline.
-  const isBreakTime = (heure) => {
-    if (!breakTimes || breakTimes.length === 0) return false
-
-    return breakTimes.some(breakTime =>
-      breakTime.isActive &&
-      heure.debut >= breakTime.heureDebut &&
-      heure.debut < breakTime.heureFin
-    )
-  }
-
-  // Obtenir les informations de la pause pour un créneau
-  const getBreakInfo = (heure) => {
-    if (!breakTimes || breakTimes.length === 0) return null
-
-    return breakTimes.find(breakTime => {
-      return breakTime.isActive &&
-        heure.debut >= breakTime.heureDebut &&
-        heure.debut < breakTime.heureFin
-    })
-  }
-
-  // Les fonctions de gestion des matières ont été extraites dans SubjectsPalette.jsx
-
-
-  if (!currentSchedule) {
-    return <div className="scheduleEditor__loading">Chargement...</div>
-  }
+  const subjectColor = (id) => subjects.find((s) => s._id === id)?.couleur || '#95a5a6'
 
   return (
     <div className="scheduleEditor">
       <header className="scheduleEditor__header">
         <div className="scheduleEditor__header-content">
           <h2 className="scheduleEditor__title">
-            {schedule ? 'Modifier l\'emploi du temps' : 'Créer un emploi du temps'}
+            {schedule?._id ? 'Modifier l\'emploi du temps' : 'Créer un emploi du temps'}
           </h2>
 
           <div className="scheduleEditor__form-group">
-            <label className="scheduleEditor__label">
-              Nom de l'emploi du temps
-            </label>
+            <label className="scheduleEditor__label">Nom de l'emploi du temps</label>
             <input
               type="text"
               className="scheduleEditor__input"
-              value={currentSchedule.label}
-              onChange={(e) => setCurrentSchedule(prev => ({ ...prev, label: e.target.value }))}
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
               placeholder="Ex: Emploi du temps CM1 - Semestre 1"
             />
+          </div>
+
+          <div className="scheduleEditor__validity">
+            <label className="scheduleEditor__form-group">
+              <span className="scheduleEditor__label">Valable à partir du</span>
+              <input type="date" className="scheduleEditor__input" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} />
+            </label>
+            <label className="scheduleEditor__form-group">
+              <span className="scheduleEditor__label">Jusqu'au (optionnel)</span>
+              <input type="date" className="scheduleEditor__input" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+            </label>
           </div>
         </div>
 
         <div className="scheduleEditor__actions">
-          <button
-            className="scheduleEditor__btn scheduleEditor__btn--cancel"
-            onClick={onCancel}
-          >
-            Annuler
-          </button>
-          <button
-            className="scheduleEditor__btn scheduleEditor__btn--save"
-            onClick={handleSave}
-            disabled={saving}
-          >
+          <button className="scheduleEditor__btn scheduleEditor__btn--cancel" onClick={onCancel}>Annuler</button>
+          <button className="scheduleEditor__btn scheduleEditor__btn--save" onClick={handleSave} disabled={saving}>
             {saving ? 'Sauvegarde...' : 'Sauvegarder'}
           </button>
         </div>
@@ -284,98 +191,84 @@ const ScheduleEditor = ({
         </div>
       )}
 
-      <div className="scheduleEditor__grid">
-        {/* En-tête des heures */}
-        <div className="scheduleEditor__time-header">Heures</div>
-        {jours.map(jour => (
-          <div key={jour} className="scheduleEditor__day-header">
-            {jour.charAt(0).toUpperCase() + jour.slice(1)}
-          </div>
-        ))}
-
-        {/* Grille des créneaux */}
-        {heures.map((heure, heureIndex) => {
-          const breakInfo = getBreakInfo(heure)
-          const isBreak = isBreakTime(heure)
-
+      <div className="scheduleEditor__days">
+        {days.map((dow) => {
+          const jour = dayOfWeekToJour(dow)
+          const dayEvents = events
+            .filter((e) => e.dayOfWeek === dow)
+            .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime))
           return (
-            <React.Fragment key={heureIndex}>
-              <div className={`scheduleEditor__time-slot ${isBreak ? 'scheduleEditor__time-slot--break' : ''}`}>
-                {heure.debut} - {heure.fin}
-                {isBreak && breakInfo && (
-                  <span className="scheduleEditor__break-label">{breakInfo.nom}</span>
+            <section key={dow} className="scheduleEditor__day">
+              <h3 className="scheduleEditor__day-title">{jour.charAt(0).toUpperCase() + jour.slice(1)}</h3>
+
+              <div className="scheduleEditor__day-events">
+                {dayEvents.length === 0 && (
+                  <p className="scheduleEditor__day-empty">Aucun créneau</p>
                 )}
+                {dayEvents.map((e, i) => (
+                  <div
+                    key={i}
+                    className={`scheduleEditor__row scheduleEditor__row--${e.type.toLowerCase()}`}
+                  >
+                    <input
+                      type="time"
+                      className="scheduleEditor__time"
+                      value={e.startTime}
+                      onChange={(ev) => updateEvent(e, 'startTime', ev.target.value)}
+                    />
+                    <span className="scheduleEditor__time-sep">→</span>
+                    <input
+                      type="time"
+                      className="scheduleEditor__time"
+                      value={e.endTime}
+                      onChange={(ev) => updateEvent(e, 'endTime', ev.target.value)}
+                    />
+
+                    {e.type === 'COURSE' ? (
+                      <select
+                        className="scheduleEditor__subject-select"
+                        value={e.subjectId || ''}
+                        onChange={(ev) => updateEvent(e, 'subjectId', ev.target.value)}
+                        style={{ backgroundColor: subjectColor(e.subjectId) }}
+                      >
+                        <option value="">— Matière —</option>
+                        {subjects.map((subject) => (
+                          <option key={subject._id} value={subject._id}>{subject.nom}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        className="scheduleEditor__label-input"
+                        placeholder={e.type === 'BREAK' ? 'Pause' : 'Événement'}
+                        value={e.label || ''}
+                        onChange={(ev) => updateEvent(e, 'label', ev.target.value)}
+                      />
+                    )}
+
+                    <input
+                      type="text"
+                      className="scheduleEditor__notes-input"
+                      placeholder="Notes..."
+                      value={e.notes || ''}
+                      onChange={(ev) => updateEvent(e, 'notes', ev.target.value)}
+                    />
+
+                    <button className="scheduleEditor__remove-btn" onClick={() => removeEvent(e)}>✕</button>
+                  </div>
+                ))}
               </div>
 
-              {jours.map(jour => {
-                const daySlots = currentSchedule.planning[jour] || []
-                const slot = daySlots.find(s => s.heureDebut === heure.debut)
-
-                return (
-                  <div
-                    key={`${jour}-${heureIndex}`}
-                    className={`scheduleEditor__cell ${isBreak ? 'scheduleEditor__cell--break' : ''}`}
-                  >
-                    {slot ? (
-                      <div className="scheduleEditor__slot">
-                        <select
-                          className="scheduleEditor__subject-select"
-                          value={slot.subjectId}
-                          onChange={(e) => handleUpdateTimeSlot(jour, daySlots.indexOf(slot), 'subjectId', e.target.value)}
-                          style={{ backgroundColor: getSubjectInfo(slot.subjectId).couleur }}
-                        >
-                          {subjects.map(subject => (
-                            <option key={subject._id} value={subject._id}>
-                              {subject.nom}
-                            </option>
-                          ))}
-                        </select>
-
-                        <input
-                          type="text"
-                          className="scheduleEditor__notes-input"
-                          placeholder="Notes..."
-                          value={slot.notes || ''}
-                          onChange={(e) => handleUpdateTimeSlot(jour, daySlots.indexOf(slot), 'notes', e.target.value)}
-                        />
-
-                        <button
-                          className="scheduleEditor__remove-btn"
-                          onClick={() => handleRemoveTimeSlot(jour, daySlots.indexOf(slot))}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : !isBreak ? (
-                      <button
-                        className="scheduleEditor__add-btn"
-                        onClick={() => handleAddTimeSlot(jour, heureIndex)}
-                      >
-                        + Ajouter
-                      </button>
-                    ) : (
-                      <div
-                        className="scheduleEditor__break"
-                        style={{ backgroundColor: breakInfo?.couleur || '#ffa726' }}
-                      >
-                        {breakInfo?.nom || 'Pause'}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </React.Fragment>
+              <div className="scheduleEditor__day-add">
+                <button className="scheduleEditor__add-btn" onClick={() => addEvent(dow, 'COURSE')}>+ Cours</button>
+                <button className="scheduleEditor__add-btn scheduleEditor__add-btn--break" onClick={() => addEvent(dow, 'BREAK')}>+ Pause</button>
+              </div>
+            </section>
           )
         })}
       </div>
 
-      {/* Palette des matières */}
-      <SubjectsPalette onSubjectsChange={(updatedSubjects) => {
-        // Optionnel : ne mettre à jour que si les matières changent pour éviter trop de re-renders
-        // ou pour permettre à l'éditeur de toujours avoir accès aux matières à jour
-        setSubjects(updatedSubjects);
-      }} />
-
+      <SubjectsPalette onSubjectsChange={(updatedSubjects) => setSubjects(updatedSubjects)} />
     </div>
   )
 }

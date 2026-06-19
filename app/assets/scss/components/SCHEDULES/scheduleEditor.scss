@@ -48,6 +48,158 @@
     flex-wrap: wrap;
   }
 
+  // --- Champs d'en-tête (nom + période de validité) ---
+  &__label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+  }
+
+  &__input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+    font-size: 0.95rem;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+  }
+
+  &__validity {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-sm);
+  }
+
+  // --- Boutons d'action principaux ---
+  &__btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    &--cancel {
+      background: var(--color-gray-200);
+      color: var(--color-text-secondary);
+      &:hover { background: var(--color-gray-300); }
+    }
+
+    &--save {
+      background: var(--color-primary);
+      color: var(--color-surface);
+      &:hover:not(:disabled) { background: var(--color-primary-dark); }
+      &:disabled { opacity: 0.6; cursor: not-allowed; }
+    }
+  }
+
+  // --- Bandeau d'erreurs de validation ---
+  &__errors {
+    background: var(--color-danger-light);
+    border: 1px solid var(--color-danger);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+
+    &-title { margin: 0 0 var(--spacing-sm) 0; font-size: 1rem; color: var(--color-danger-dark); }
+    &-list { margin: 0; padding-left: 1.2rem; }
+  }
+  &__error { color: var(--color-danger-dark); font-size: 0.85rem; }
+
+  // --- Édition par jour (format events) ---
+  &__days {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+  }
+
+  &__day {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__day-title {
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--color-primary-dark);
+  }
+
+  &__day-events {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__day-empty {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-style: italic;
+    margin: var(--spacing-xs) 0;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+
+    &--break { background: var(--color-warning-light); }
+  }
+
+  &__time {
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+  }
+  &__time-sep { color: var(--color-text-secondary); }
+
+  &__label-input {
+    flex: 1;
+    min-width: 90px;
+    padding: 0.3rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  &__day-add {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+
+    .scheduleEditor__add-btn {
+      width: auto;
+      height: auto;
+      padding: var(--spacing-xs) var(--spacing-md);
+
+      &--break {
+        &:hover {
+          border-color: var(--color-warning);
+          color: var(--color-warning);
+          background: var(--color-warning-light);
+        }
+      }
+    }
+  }
+
   // Liste des matières
   &__subjects {
     display: flex;

@@ -76,21 +76,30 @@ export async function POST(request) {
     await dbConnect()
 
     const body = await request.json()
-    const { classeId, label, planning, } = body
+    const { classeId, label, validFrom, validUntil } = body
 
-    // Validation des données requises
-    if (!classeId || !planning ) {
+    // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat
+    // (converti en events) tant que d'anciens clients existent.
+    const { planningToEvents, validateEvents } = require('../../../utils/scheduleEvents')
+    let events = Array.isArray(body.events) ? body.events : null
+    if (!events && body.planning) {
+      events = planningToEvents(body.planning)
+    }
+
+    if (!classeId || !events) {
       return NextResponse.json(
-        { error: '"classeId" et "planning" sont requis' },
+        { error: '"classeId" et "events" (ou "planning") sont requis' },
         { status: 400 }
       )
     }
 
-    
-    // return NextResponse.json(
-    //   { error: 'La date de fin doit être postérieure à la date de début' },
-    //   { status: 400 }
-    // )
+    const validation = validateEvents(events)
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { error: 'Emploi du temps invalide', details: validation.errors },
+        { status: 400 }
+      )
+    }
 
     // ÉTAPE 1: Archiver tous les emplois du temps actifs de cette classe
     console.log('📚 Archivage des emplois du temps précédents pour la classe:', classeId)
@@ -120,7 +129,9 @@ export async function POST(request) {
     const newSchedule = new Schedule({
       classeId,
       label: label || undefined, // Utilise le default du schéma si non fourni
-      planning,
+      events,
+      validFrom: validFrom || undefined,
+      validUntil: validUntil || null,
       createdBy: userId,
       isArchived: false, // Explicitement actif
       modifications: [{

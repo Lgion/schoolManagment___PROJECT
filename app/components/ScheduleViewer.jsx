@@ -1,92 +1,48 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { useUser } from '@clerk/nextjs'
 import PermissionGate from "./PermissionGate";
+import {
+  PIXELS_PER_MINUTE,
+  timeToMinutes,
+  minutesToTime,
+  computeGridBounds,
+  daysToDisplay,
+  eventsByDay,
+  dayOfWeekToJour,
+} from '../../utils/scheduleEvents'
 
 /**
- * Composant BEM ScheduleViewer
- * Affiche l'emploi du temps hebdomadaire d'une classe
+ * ScheduleViewer — rendu "calendrier absolu" de l'emploi du temps d'une classe.
+ *
+ * Refonte (cf. schedule_refactoring_spec) :
+ *  - plus d'heures/pauses codées en dur : la grille se calcule à partir des events
+ *  - blocs positionnés en absolu, hauteur proportionnelle à la durée (1 min = N px)
+ *  - plus d'appel /api/subjects : la matière est peuplée par le backend (events.subjectId)
  */
 const ScheduleViewer = ({
   classeId,
   isEditable = false,
   compact = false,
-  onEditSchedule = null
+  onEditSchedule = null,
 }) => {
-  const { user } = useUser()
   const [schedule, setSchedule] = useState(null)
-  const [subjects, setSubjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi']
-  const heures = [
-    '08:00-09:00', '09:00-10:00', '10:00-10:30', '10:30-12:00',
-    '12:00-14:00', '14:00-15:00', '15:00-16:00'
-  ]
-
-  // Récupération de l'emploi du temps actif
   useEffect(() => {
     const fetchSchedule = async () => {
       if (!classeId) {
         setLoading(false)
         return
       }
-
       try {
         setLoading(true)
-
-        // Récupération de l'emploi du temps actif
-        const scheduleResponse = await fetch(
-          `/api/schedules?classeId=${classeId}&activeOnly=true`
-        )
-        const scheduleData = await scheduleResponse.json()
-
-        if (scheduleData.success && scheduleData.data.length > 0) {
-          const activeSchedule = scheduleData.data[0]
-          console.log('📅 Active schedule loaded:', activeSchedule)
-          console.log('📋 Schedule planning structure:', activeSchedule.planning)
-
-          // Log des subjectIds trouvés dans le planning
-          const subjectIds = []
-          Object.keys(activeSchedule.planning || {}).forEach(jour => {
-            if (activeSchedule.planning[jour]) {
-              activeSchedule.planning[jour].forEach(slot => {
-                if (slot.subjectId) {
-                  subjectIds.push(slot.subjectId)
-                }
-              })
-            }
-          })
-          console.log('🔗 SubjectIds in schedule:', subjectIds)
-
-          setSchedule(activeSchedule)
-        } else {
-          console.log('❌ No active schedule found for classe:', classeId)
-          setSchedule(null)
-        }
-
-        // Récupération des matières
-        const subjectsResponse = await fetch('/api/subjects', {
-          credentials: 'include'
+        const res = await fetch(`/api/schedules?classeId=${classeId}&activeOnly=true`, {
+          credentials: 'include',
         })
-        const subjectsData = await subjectsResponse.json()
-
-        console.log('📚 Subjects API Response:', subjectsData)
-
-        if (subjectsData.success && subjectsData.data) {
-          setSubjects(subjectsData.data)
-          console.log('✅ Subjects loaded:', subjectsData.data.length, 'matières')
-        } else if (Array.isArray(subjectsData)) {
-          // Fallback si la réponse est directement un array
-          setSubjects(subjectsData)
-          console.log('✅ Subjects loaded (direct array):', subjectsData.length, 'matières')
-        } else {
-          console.error('❌ Failed to load subjects:', subjectsData)
-          setSubjects([])
-        }
-
+        const data = await res.json()
+        setSchedule(data.success && data.data.length > 0 ? data.data[0] : null)
       } catch (err) {
         console.error('Erreur lors du chargement de l\'emploi du temps:', err)
         setError('Erreur lors du chargement')
@@ -94,88 +50,40 @@ const ScheduleViewer = ({
         setLoading(false)
       }
     }
-
     fetchSchedule()
   }, [classeId])
 
-  // Créer une map des matières pour un accès optimisé O(1)
-  const subjectsMap = useMemo(() => {
-    if (!subjects || subjects.length === 0) {
-      return new Map()
-    }
-    return new Map(subjects.map(s => [s._id.toString(), s]))
-  }, [subjects])
+  const events = useMemo(() => schedule?.events || [], [schedule])
+  const { startMin, endMin } = useMemo(() => computeGridBounds(events), [events])
+  const days = useMemo(() => daysToDisplay(events), [events])
+  const byDay = useMemo(() => eventsByDay(events), [events])
 
-  // Fonction pour obtenir les informations d'une matière
-  const getSubjectInfo = (subjectId) => {
-    // Si subjectId est déjà un objet peuplé (populated), le retourner directement
-    if (typeof subjectId === 'object' && subjectId !== null && subjectId.nom) {
-      return {
-        nom: subjectId.nom,
-        couleur: subjectId.couleur || '#3498db',
-        code: subjectId.code || '',
-        ...subjectId
-      }
-    }
+  const totalHeight = Math.max(0, (endMin - startMin) * PIXELS_PER_MINUTE)
+  // Repères horaires (lignes pleines) de la borne basse à la borne haute.
+  const hourMarks = []
+  for (let m = startMin; m <= endMin; m += 60) hourMarks.push(m)
 
-    const subject = subjectsMap.get(subjectId?.toString())
-
-    if (!subject) {
-      console.warn('⚠️ Subject not found:', subjectId)
-      return {
-        nom: `Matière inconnue (${subjectId})`,
-        couleur: '#95a5a6'
-      }
+  const subjectInfo = (subjectId) => {
+    if (subjectId && typeof subjectId === 'object') {
+      return { nom: subjectId.nom || 'Matière', couleur: subjectId.couleur || '#3498db' }
     }
-    return subject
+    return { nom: 'Matière', couleur: '#95a5a6' }
   }
 
-  // Fonction pour obtenir les créneaux d'un jour et d'une heure
-  const getTimeSlot = (jour, heureIndex) => {
-    if (!schedule || !schedule.planning || !schedule.planning[jour]) {
-      return null
-    }
-
-    const [heureDebut] = heures[heureIndex].split('-')
-    return schedule.planning[jour].find(slot =>
-      slot.heureDebut === heureDebut
-    )
+  const eventStyle = (e) => {
+    const top = (timeToMinutes(e.startTime) - startMin) * PIXELS_PER_MINUTE
+    const height = (timeToMinutes(e.endTime) - timeToMinutes(e.startTime)) * PIXELS_PER_MINUTE
+    return { top: `${top}px`, height: `${Math.max(height, 18)}px` }
   }
 
-  // Gestion du clic sur un créneau (mode édition)
-  const handleSlotClick = (jour, heureIndex) => {
-    if (!isEditable || !onEditSchedule) return
-
-    const [heureDebut, heureFin] = heures[heureIndex].split('-')
-    onEditSchedule({
-      jour,
-      heureDebut,
-      heureFin,
-      slot: getTimeSlot(jour, heureIndex)
-    })
-  }
-
-  // Fonction pour déterminer si c'est une pause (seulement si le slot est vide)
-  const isBreakTime = (heureIndex, hasSlot) => {
-    // Ne marquer comme pause que si le créneau est vide ET correspond aux heures de pause
-    if (hasSlot) return false
-
-    return heures[heureIndex].includes('10:00-10:30') ||
-      heures[heureIndex].includes('12:00-14:00')
-  }
-
-  // Rendu du composant de chargement
   if (loading) {
     return (
       <div className="scheduleViewer__container">
-        <div className="scheduleViewer__loading">
-          <div className="scheduleViewer__loading-spinner"></div>
-        </div>
+        <div className="scheduleViewer__loading"><div className="scheduleViewer__loading-spinner"></div></div>
       </div>
     )
   }
 
-  // Rendu en cas d'erreur
   if (error) {
     return (
       <div className="scheduleViewer__container">
@@ -188,7 +96,6 @@ const ScheduleViewer = ({
     )
   }
 
-  // Rendu si aucun emploi du temps
   if (!schedule) {
     return (
       <div className="scheduleViewer__container">
@@ -223,7 +130,6 @@ const ScheduleViewer = ({
 
   return (
     <div className={`scheduleViewer__container ${compact ? 'scheduleViewer--compact' : ''} ${isEditable ? 'scheduleViewer--editable' : ''}`}>
-      {/* En-tête */}
       <div className="scheduleViewer__header">
         <div>
           <h3 className="scheduleViewer__header-title">{schedule.label}</h3>
@@ -248,63 +154,71 @@ const ScheduleViewer = ({
         </PermissionGate>
       </div>
 
-      {/* Grille de l'emploi du temps */}
-      <div className="scheduleViewer__grid">
-        {/* Colonne des heures */}
-        <div className="scheduleViewer__timeColumn">
-          <div className="scheduleViewer__timeColumn-header">Heures</div>
-          {heures.map((heure, index) => (
-            <div key={index} className="scheduleViewer__timeColumn-slot">
-              {heure}
-            </div>
-          ))}
+      {events.length === 0 ? (
+        <div className="scheduleViewer__empty">
+          <div className="scheduleViewer__empty-icon">🗓️</div>
+          <div className="scheduleViewer__empty-message">Emploi du temps vide</div>
         </div>
+      ) : (
+        <div className="scheduleViewer__calendar">
+          {/* Axe des heures */}
+          <div className="scheduleViewer__timeAxis" style={{ height: `${totalHeight}px` }}>
+            {hourMarks.map((m) => (
+              <div
+                key={m}
+                className="scheduleViewer__hourLabel"
+                style={{ top: `${(m - startMin) * PIXELS_PER_MINUTE}px` }}
+              >
+                {minutesToTime(m)}
+              </div>
+            ))}
+          </div>
 
-        {/* Colonnes des jours */}
-        {jours.map(jour => (
-          <div key={jour} className="scheduleViewer__dayColumn">
-            <div className="scheduleViewer__dayColumn-header">
-              {jour.charAt(0).toUpperCase() + jour.slice(1)}
-            </div>
-            {heures.map((heure, heureIndex) => {
-              const slot = getTimeSlot(jour, heureIndex)
-              const isBreak = isBreakTime(heureIndex, !!slot)
-
+          {/* Colonnes des jours */}
+          <div className="scheduleViewer__columns">
+            {days.map((dow) => {
+              const jour = dayOfWeekToJour(dow)
               return (
-                <div
-                  key={`${jour}-${heureIndex}`}
-                  className={`scheduleViewer__timeSlot ${!slot ? 'scheduleViewer__timeSlot--empty' : ''
-                    } ${isBreak ? 'scheduleViewer__timeSlot--break' : ''}`}
-                  onClick={() => handleSlotClick(jour, heureIndex)}
-                >
-                  {slot ? (
-                    <div
-                      className="scheduleViewer__subject"
-                      style={{ backgroundColor: getSubjectInfo(slot.subjectId).couleur }}
-                    >
-                      <span className="scheduleViewer__subject-name">
-                        {getSubjectInfo(slot.subjectId).nom}
-                      </span>
-                      <span className="scheduleViewer__subject-time">
-                        {slot.heureDebut} - {slot.heureFin}
-                      </span>
-                      {slot.notes && (
-                        <span className="scheduleViewer__subject-notes">
-                          {slot.notes}
-                        </span>
-                      )}
-                    </div>
-                  ) : isBreak ? (
-                    <div className="scheduleViewer__subject">
-                      <span className={`scheduleViewer__subject-name ${heure === '10:00-10:30' ? 'scheduleViewer__subject-name--break' : ''}`}>Pause {heure === '10:00-10:30' ? "goûté" : "midi"}</span>
-                    </div>
-                  ) : null}
+                <div key={dow} className="scheduleViewer__dayColumn">
+                  <div className="scheduleViewer__dayColumn-header">
+                    {jour.charAt(0).toUpperCase() + jour.slice(1)}
+                  </div>
+                  <div className="scheduleViewer__dayBody" style={{ height: `${totalHeight}px` }}>
+                    {/* Lignes d'heures de fond */}
+                    {hourMarks.map((m) => (
+                      <div
+                        key={m}
+                        className="scheduleViewer__hourLine"
+                        style={{ top: `${(m - startMin) * PIXELS_PER_MINUTE}px` }}
+                      />
+                    ))}
+                    {/* Événements */}
+                    {(byDay.get(dow) || []).map((e, i) => {
+                      const isBreak = e.type === 'BREAK'
+                      const isCustom = e.type === 'CUSTOM_EVENT'
+                      const info = subjectInfo(e.subjectId)
+                      const bg = isBreak ? undefined : (isCustom ? '#7e57c2' : info.couleur)
+                      return (
+                        <div
+                          key={i}
+                          className={`scheduleViewer__event ${isBreak ? 'scheduleViewer__event--break' : ''} ${isCustom ? 'scheduleViewer__event--custom' : ''}`}
+                          style={{ ...eventStyle(e), ...(bg ? { backgroundColor: bg } : {}) }}
+                        >
+                          <span className="scheduleViewer__event-name">
+                            {isBreak || isCustom ? (e.label || (isBreak ? 'Pause' : 'Événement')) : info.nom}
+                          </span>
+                          <span className="scheduleViewer__event-time">{e.startTime} – {e.endTime}</span>
+                          {e.notes && <span className="scheduleViewer__event-notes">{e.notes}</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )
             })}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
