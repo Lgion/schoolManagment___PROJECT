@@ -12,13 +12,14 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [ ] Pouvoir créer des groupes d'élèves, de parents, de profs ou des groupes mixtes.
 - [ ] Fonctionnalités de "livre de classe" pour album photo de classe : ajouter une section dédiée dans la page d'une classe ou de son édition.
 - [ ] Les élèves auront une section "livre d'élèves" (livre de classe dédié à l'élève, spécifiquement d'année en année).
-- [ ] Ajouter un menu "Jeux pédagogiques" directement accessible dans le menu principal (pour les utilisateurs connectés en tant que parents/élèves). Pour tous les rôles, ils seront accessibles dans chaque section de classe.
+- [x] Ajouter un accès aux "Jeux pédagogiques" via un bouton sur la page listant toutes les classes, ainsi qu'un bouton sur la page de chaque classe. L'accès sera public pour tous les utilisateurs sans filtrage par rôle. Depuis la page d'une classe, le contenu sera filtré selon le niveau de la classe (contenu statique pour CP1 au CE2, contenu généré par IA via PDF pour CM1 et CM2).
 
 ## 📅 Emploi du temps et Calendrier
-- [ ] Ajouter un calendrier pour l'école pour y planifier des événements.
-- [ ] En plus de pouvoir créer des événements pour l'école, chaque classe peut créer un événement qui sera dynamiquement rajouté à l'emploi du temps de la classe.
-- [ ] Pour l'emploi du temps, permettre de charger un PDF de l'emploi du temps d'une classe afin qu'il soit généré et modifié dans l'emploi du temps de la classe sur l'application.
-- [ ] Les profs doivent aussi avoir un emploi du temps personnel (afin d'optimiser la responsabilité et la vie scolaire).
+- [x] Analyser en profondeur le systeme de d'emploi du temps déjà en place, repérer les problèmes de logique ou d'UI/UX, et définir les améliorations à y apporter.
+- [x] Ajouter un calendrier pour l'école pour pouvoir y planifier des événements.
+- [x] En plus de pouvoir créer des événements pour l'école, chaque classe peut créer un événement qui sera dynamiquement rajouté à l'emploi du temps de la classe.
+- [x] Pour l'emploi du temps d'une classe, permettre de charger un PDF ou de prendre une photo (ne recrée pas de composant pour la photo s'il en existe déjà ailleurs) de l'emploi du temps d'une classe afin qu'il soit disponible dans le système de l'emploi du temps de la classe.
+- [x] Les profs doivent aussi avoir un emploi du temps personnel (afin d'optimiser la responsabilité et la vie scolaire).
 
 ## 🤝 Communication et Rendez-vous
 - [ ] Permettre de lancer une visio pour l'école (sur la page des classes) et pour une classe (sur la page d'une classe).
