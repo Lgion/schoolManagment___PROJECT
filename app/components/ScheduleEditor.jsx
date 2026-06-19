@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   validateEvents,
   planningToEvents,
@@ -29,6 +29,11 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
   const [saving, setSaving] = useState(false)
   const [validationErrors, setValidationErrors] = useState([])
 
+  // Identifiant client stable par événement : indispensable pour conserver le focus
+  // des inputs quand les créneaux se réordonnent (tri par heure) en cours de saisie.
+  const uidRef = useRef(0)
+  const nextUid = () => (uidRef.current += 1)
+
   useEffect(() => {
     loadSubjects()
   }, [])
@@ -39,7 +44,7 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
       const initial = Array.isArray(schedule.events) && schedule.events.length
         ? schedule.events
         : planningToEvents(schedule.planning)
-      setEvents(initial.map((e) => ({ ...e, subjectId: subjectIdOf(e.subjectId) })))
+      setEvents(initial.map((e) => ({ ...e, subjectId: subjectIdOf(e.subjectId), _uid: nextUid() })))
       setValidFrom(schedule.validFrom ? String(schedule.validFrom).slice(0, 10) : '')
       setValidUntil(schedule.validUntil ? String(schedule.validUntil).slice(0, 10) : '')
     } else {
@@ -79,6 +84,7 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
     setEvents((prev) => [
       ...prev,
       {
+        _uid: nextUid(),
         dayOfWeek,
         startTime,
         endTime,
@@ -113,7 +119,7 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
       const payload = {
         classeId,
         label,
-        events,
+        events: events.map(({ _uid, ...e }) => e), // retire l'id client
         validFrom: validFrom || undefined,
         validUntil: validUntil || null,
       }
@@ -205,9 +211,9 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
                 {dayEvents.length === 0 && (
                   <p className="scheduleEditor__day-empty">Aucun créneau</p>
                 )}
-                {dayEvents.map((e, i) => (
+                {dayEvents.map((e) => (
                   <div
-                    key={i}
+                    key={e._uid}
                     className={`scheduleEditor__row scheduleEditor__row--${e.type.toLowerCase()}`}
                   >
                     <input

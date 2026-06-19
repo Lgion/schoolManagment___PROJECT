@@ -67,6 +67,11 @@ const ScheduleViewer = ({
     if (subjectId && typeof subjectId === 'object') {
       return { nom: subjectId.nom || 'Matière', couleur: subjectId.couleur || '#3498db' }
     }
+    // subjectId resté en chaîne brute = référence non peuplée (ref cassée / doc orphelin).
+    // On garde l'id visible pour le diagnostic plutôt qu'un bloc gris muet.
+    if (typeof subjectId === 'string' && subjectId) {
+      return { nom: `Matière inconnue (${subjectId.slice(-6)})`, couleur: '#95a5a6' }
+    }
     return { nom: 'Matière', couleur: '#95a5a6' }
   }
 

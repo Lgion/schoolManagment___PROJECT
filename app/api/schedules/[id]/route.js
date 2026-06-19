@@ -3,7 +3,7 @@ import { requireAuth } from '../../lib/authWithFallback'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../../_/models/ai/Schedule')
-const { archiveSchedule, reactivateSchedule, convertPlanningToDetails } = require('../../../../utils/scheduleHelpers')
+const { archiveSchedule, reactivateSchedule } = require('../../../../utils/scheduleHelpers')
 const { normalizeSchedule, planningToEvents, validateEvents } = require('../../../../utils/scheduleEvents')
 
 // Populate couvrant nouveau format (events) et ancien (planning).
@@ -101,8 +101,9 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Sauvegarde l'état avant modification pour l'historique
-    const before = { events: schedule.events, planning: schedule.planning }
+    // Sauvegarde l'état avant modification pour l'historique (snapshot plat).
+    const snap = schedule.toObject()
+    const before = { events: snap.events, planning: snap.planning }
 
     // Met à jour les champs
     if (label) schedule.label = label

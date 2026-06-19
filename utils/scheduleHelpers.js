@@ -84,7 +84,9 @@ const getActiveSchedule = async (classeId) => {
     const now = Date.now()
     const inWindow = schedules.find((s) => {
       const from = s.validFrom ? new Date(s.validFrom).getTime() : -Infinity
-      const until = s.validUntil ? new Date(s.validUntil).getTime() : Infinity
+      // validUntil est saisi comme une date (minuit) : on couvre toute la journée
+      // pour qu'un EDT « valable jusqu'au 19 » reste actif tout le 19.
+      const until = s.validUntil ? new Date(s.validUntil).getTime() + 86399999 : Infinity
       return now >= from && now <= until
     })
 
