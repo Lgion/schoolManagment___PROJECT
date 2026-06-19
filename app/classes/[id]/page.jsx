@@ -18,6 +18,7 @@ import ClassPointsPanel from '../../components/points/ClassPointsPanel';
 import AttendancePanel from '../../components/attendance/AttendancePanel';
 import HomeworkPanel from '../../components/homework/HomeworkPanel';
 import ReportCardsPanel from '../../components/bulletins/ReportCardsPanel';
+import EventsPanel from '../../components/events/EventsPanel';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
@@ -305,6 +306,18 @@ export default function ClasseDetailPage() {
             </div>
           )}
         </PermissionGate>
+        {/* Événements — création/édition réservée prof/admin, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--events">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📅</span>
+                Événements
+              </h2>
+              <EventsPanel classId={classe._id} interactive canGlobal={userRole === 'admin'} />
+            </div>
+          )}
+        </PermissionGate>
         {/* Documents de cours — consultation pour tous, dépôt/suppression réservé prof/admin */}
         <div className="person-detail__block person-detail__block--documents">
           <h2 className="person-detail__subtitle">
@@ -447,6 +460,7 @@ export default function ClasseDetailPage() {
           <ScheduleViewer
             classeId={classe._id}
             isEditable={userRole === 'admin'}
+            mergeEvents
             onEditSchedule={(data) => {
               if (data.action === 'create' || data.action === 'edit') {
                 router.push(`/scheduling?classeId=${classe._id}`);

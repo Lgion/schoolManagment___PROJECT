@@ -7,6 +7,7 @@ import StudentPointsWidget from '../../components/points/StudentPointsWidget';
 import StudentAttendanceWidget from '../../components/attendance/StudentAttendanceWidget';
 import HomeworkTodoList from '../../components/homework/HomeworkTodoList';
 import StudentReportCards from '../../components/bulletins/StudentReportCards';
+import EventsPanel from '../../components/events/EventsPanel';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -143,6 +144,14 @@ export default function ElevePage() {
               classId={eleve.current_classe}
               interactive={['eleve', 'public'].includes(userRole)}
             />
+          </div>
+
+          <div className="person-detail__block person-detail__block--events">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">📅</span>
+              Événements à venir
+            </h2>
+            <EventsPanel classId={eleve.current_classe} />
           </div>
 
           <div className="person-detail__block person-detail__block--bulletins">

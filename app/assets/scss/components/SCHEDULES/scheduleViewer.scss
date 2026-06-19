@@ -166,6 +166,17 @@
     }
 
     &--custom { font-style: normal; }
+
+    // Événement de la semaine superposé : occupe la moitié droite de la colonne
+    // pour rester lisible par-dessus les cours, avec un liseré marqué.
+    &--overlay {
+      left: 50%;
+      right: 2px;
+      color: var(--color-white);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      opacity: 0.95;
+    }
   }
 
   /* ---------- États ---------- */

@@ -11,6 +11,22 @@ import {
   eventsByDay,
   dayOfWeekToJour,
 } from '../../utils/scheduleEvents'
+import { fetchEvents, typeMeta } from './events/eventsApi'
+
+// Bornes de la semaine courante (lundi 00:00 → dimanche 23:59:59, heure locale).
+function currentWeekRange() {
+  const now = new Date()
+  const offset = (now.getDay() + 6) % 7 // lundi = 0
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset)
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6, 23, 59, 59)
+  return { from: monday, to: sunday }
+}
+
+// "HH:mm" local d'une date.
+function localHHmm(d) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 /**
  * ScheduleViewer — rendu "calendrier absolu" de l'emploi du temps d'une classe.
@@ -25,8 +41,10 @@ const ScheduleViewer = ({
   isEditable = false,
   compact = false,
   onEditSchedule = null,
+  mergeEvents = false,
 }) => {
   const [schedule, setSchedule] = useState(null)
+  const [overlay, setOverlay] = useState([]) // événements de la semaine superposés
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -53,10 +71,44 @@ const ScheduleViewer = ({
     fetchSchedule()
   }, [classeId])
 
+  // Fusion dynamique : superpose les événements de la semaine sur la grille (spec).
+  // Seuls les événements d'un seul jour avec une plage horaire sont positionnables.
+  useEffect(() => {
+    if (!mergeEvents || !classeId) { setOverlay([]); return }
+    const loadWeekEvents = async () => {
+      try {
+        const { from, to } = currentWeekRange()
+        const list = await fetchEvents({ classId: classeId, from: from.toISOString(), to: to.toISOString() })
+        const mapped = []
+        for (const ev of list) {
+          const s = new Date(ev.startDate)
+          const e = new Date(ev.endDate)
+          if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) continue
+          if (s.toDateString() !== e.toDateString()) continue // multi-jours → vu seulement dans l'agenda
+          mapped.push({
+            dayOfWeek: s.getDay(),
+            startTime: localHHmm(s),
+            endTime: localHHmm(e),
+            title: ev.title,
+            color: typeMeta(ev.type).color,
+            isOverlay: true,
+          })
+        }
+        setOverlay(mapped)
+      } catch (_) {
+        setOverlay([])
+      }
+    }
+    loadWeekEvents()
+  }, [mergeEvents, classeId])
+
   const events = useMemo(() => schedule?.events || [], [schedule])
-  const { startMin, endMin } = useMemo(() => computeGridBounds(events), [events])
-  const days = useMemo(() => daysToDisplay(events), [events])
+  // Bornes/jours calculés en tenant compte des événements superposés.
+  const combined = useMemo(() => [...events, ...overlay], [events, overlay])
+  const { startMin, endMin } = useMemo(() => computeGridBounds(combined), [combined])
+  const days = useMemo(() => daysToDisplay(combined), [combined])
   const byDay = useMemo(() => eventsByDay(events), [events])
+  const overlayByDay = useMemo(() => eventsByDay(overlay), [overlay])
 
   const totalHeight = Math.max(0, (endMin - startMin) * PIXELS_PER_MINUTE)
   // Repères horaires (lignes pleines) de la borne basse à la borne haute.
@@ -76,7 +128,7 @@ const ScheduleViewer = ({
   }
 
   const eventStyle = (e) => {
-    const top = (timeToMinutes(e.startTime) - startMin) * PIXELS_PER_MINUTE
+    const top = Math.max(0, (timeToMinutes(e.startTime) - startMin) * PIXELS_PER_MINUTE)
     const height = (timeToMinutes(e.endTime) - timeToMinutes(e.startTime)) * PIXELS_PER_MINUTE
     return { top: `${top}px`, height: `${Math.max(height, 18)}px` }
   }
@@ -159,7 +211,7 @@ const ScheduleViewer = ({
         </PermissionGate>
       </div>
 
-      {events.length === 0 ? (
+      {combined.length === 0 ? (
         <div className="scheduleViewer__empty">
           <div className="scheduleViewer__empty-icon">🗓️</div>
           <div className="scheduleViewer__empty-message">Emploi du temps vide</div>
@@ -217,6 +269,18 @@ const ScheduleViewer = ({
                         </div>
                       )
                     })}
+                    {/* Événements de la semaine superposés (moitié droite) */}
+                    {(overlayByDay.get(dow) || []).map((ev, i) => (
+                      <div
+                        key={`ov-${i}`}
+                        className="scheduleViewer__event scheduleViewer__event--overlay"
+                        style={{ ...eventStyle(ev), backgroundColor: ev.color }}
+                        title={`${ev.title} (${ev.startTime}–${ev.endTime})`}
+                      >
+                        <span className="scheduleViewer__event-name">📅 {ev.title}</span>
+                        <span className="scheduleViewer__event-time">{ev.startTime} – {ev.endTime}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )
