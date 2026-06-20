@@ -167,6 +167,62 @@ const validateEvents = (events) => {
   return { isValid: errors.length === 0, errors }
 }
 
+/**
+ * Renvoie les dates du trimestre actuel (T1, T2, T3) pour l'année scolaire.
+ * T1: 1er sept - 15 déc
+ * T2: 16 déc - 31 mars
+ * T3: 1er avr - 10 juil
+ */
+const getCurrentTrimesterDates = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() // 0-11
+  const day = now.getDate()
+
+  let start, end
+
+  if (month >= 8 && (month < 11 || (month === 11 && day <= 15))) {
+    // T1: 1er sept - 15 déc
+    start = new Date(year, 8, 1)
+    end = new Date(year, 11, 15)
+  } else if ((month === 11 && day > 15) || month < 3) {
+    // T2: 16 déc - 31 mars
+    const startYear = month === 11 ? year : year - 1
+    const endYear = month === 11 ? year + 1 : year
+    start = new Date(startYear, 11, 16)
+    end = new Date(endYear, 2, 31)
+  } else {
+    // T3: 1er avr - 10 juil
+    start = new Date(year, 3, 1)
+    end = new Date(year, 6, 10)
+  }
+
+  // Ajuster pour le fuseau horaire local
+  const offset = start.getTimezoneOffset() * 60000;
+  return { 
+    validFrom: new Date(start.getTime() - offset).toISOString().split('T')[0], 
+    validUntil: new Date(end.getTime() - offset).toISOString().split('T')[0] 
+  }
+}
+
+/**
+ * Renvoie l'année scolaire d'une date donnée (ex: "2023-2024")
+ */
+const getSchoolYear = (dateInput) => {
+  if (!dateInput) return "Inconnue"
+  const date = new Date(dateInput)
+  if (isNaN(date.getTime())) return "Inconnue"
+  
+  const year = date.getFullYear()
+  const month = date.getMonth() // 0 = Janvier, 8 = Septembre
+
+  if (month >= 8) { // Septembre à Décembre
+    return `${year}-${year + 1}`
+  } else { // Janvier à Août
+    return `${year - 1}-${year}`
+  }
+}
+
 module.exports = {
   JOURS,
   DEFAULT_DAYS,
@@ -182,4 +238,6 @@ module.exports = {
   daysToDisplay,
   eventsByDay,
   validateEvents,
+  getCurrentTrimesterDates,
+  getSchoolYear,
 }

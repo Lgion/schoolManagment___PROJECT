@@ -24,13 +24,32 @@ export default function SchedulingContent() {
   useEffect(() => {
     const classeId = searchParams.get('classeId')
     const view = searchParams.get('view') || 'manager'
+    const scheduleId = searchParams.get('scheduleId')
 
     if (classeId) {
       setSelectedClasseId(classeId)
     }
 
+    if (view === 'editor' && scheduleId) {
+      fetchSchedule(scheduleId)
+    } else if (view !== 'editor') {
+      setSelectedSchedule(null)
+    }
+
     setCurrentView(view)
   }, [searchParams])
+
+  const fetchSchedule = async (scheduleId) => {
+    try {
+      const res = await fetch(`/api/schedules/${scheduleId}`, { credentials: 'include' })
+      const data = await res.json()
+      if (data.success) {
+        setSelectedSchedule(data.data)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'emploi du temps:', error)
+    }
+  }
 
   // Récupération des informations de la classe sélectionnée
   useEffect(() => {
@@ -82,6 +101,12 @@ export default function SchedulingContent() {
       params.set('view', view)
     } else {
       params.delete('view') // Nettoyer l'URL pour la vue par défaut
+    }
+    
+    if (options.schedule && options.schedule._id) {
+      params.set('scheduleId', options.schedule._id)
+    } else {
+      params.delete('scheduleId')
     }
 
     const newUrl = `/scheduling${params.toString() ? '?' + params.toString() : ''}`
@@ -161,6 +186,17 @@ export default function SchedulingContent() {
               <span className="scheduling__nav-btn-icon">🎨</span>
               Matières
             </button>
+            <a
+              href="/calendar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="scheduling__nav-btn"
+              style={{ textDecoration: 'none' }}
+              title="Ouvrir l'agenda de l'école dans un nouvel onglet"
+            >
+              <span className="scheduling__nav-btn-icon">📆</span>
+              Agenda école ↗
+            </a>
           </nav>
         </header>
 

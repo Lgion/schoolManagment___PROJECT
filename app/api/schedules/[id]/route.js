@@ -3,6 +3,7 @@ import { requireAuth } from '../../lib/authWithFallback'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../../_/models/ai/Schedule')
+const dbConnect = require('../../lib/dbConnect').default || require('../../lib/dbConnect')
 const { archiveSchedule, reactivateSchedule } = require('../../../../utils/scheduleHelpers')
 const { normalizeSchedule, planningToEvents, validateEvents } = require('../../../../utils/scheduleEvents')
 
@@ -25,6 +26,8 @@ export async function GET(request, { params }) {
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const { id } = await params
 
@@ -67,6 +70,8 @@ export async function PUT(request, { params }) {
       return userId
     }
 
+    await dbConnect()
+
     const { id } = await params
     const body = await request.json()
     const { label, validFrom, validUntil } = body
@@ -74,6 +79,14 @@ export async function PUT(request, { params }) {
     // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat.
     let events = Array.isArray(body.events) ? body.events : null
     if (!events && body.planning) events = planningToEvents(body.planning)
+
+    // Nettoyage : Mongoose n'accepte pas "" pour un ObjectId
+    if (events) {
+      events = events.map(e => ({
+        ...e,
+        subjectId: e.subjectId === "" ? null : e.subjectId
+      }))
+    }
 
     const schedule = await Schedule.findById(id)
 
@@ -151,6 +164,8 @@ export async function PATCH(request, { params }) {
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const { id } = await params
     body = await request.json()

@@ -86,6 +86,14 @@ export async function POST(request) {
       events = planningToEvents(body.planning)
     }
 
+    // Nettoyage : Mongoose n'accepte pas "" pour un ObjectId
+    if (events) {
+      events = events.map(e => ({
+        ...e,
+        subjectId: e.subjectId === "" ? null : e.subjectId
+      }))
+    }
+
     if (!classeId || !events) {
       return NextResponse.json(
         { error: '"classeId" et "events" (ou "planning") sont requis' },

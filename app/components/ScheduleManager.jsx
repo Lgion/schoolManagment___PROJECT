@@ -120,27 +120,62 @@ const ScheduleManager = ({
   return (
     <div className="scheduleManager">
       {/* Aperçu de l'emploi du temps sélectionné */}
-      {selectedClasseId && (
-        <div className="scheduleManager__preview">
-          <h2 className="scheduleManager__preview-title">
-            Emploi du temps ACTIF de la classe - {currentYearClasses?.find(c => c._id === selectedClasseId)?.niveau} {currentYearClasses?.find(c => c._id === selectedClasseId)?.alias}
-          </h2>
-          <ScheduleViewer 
-            classeId={selectedClasseId}
-            compact={true}
-            isEditable={true}
-            onEditSchedule={(data) => {
-              if (data.action === 'create' || data.action === 'edit') {
-                onViewChange('editor', { schedule: data.schedule })
-              } else if (data.action === 'history') {
-                onViewChange('history')
-              }
-            }}
-          />
+      {/* Modale fixe en bas pour la prévisualisation de l'emploi du temps sélectionné */}
+      {selectedClasseId && getClasseStats(selectedClasseId).active > 0 && (
+        <div className="scheduleManager__bottom-sheet" style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '50vh',
+          backgroundColor: 'var(--bg-card, #fff)',
+          boxShadow: '0 -4px 12px rgba(0,0,0,0.15)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          borderTopLeftRadius: '16px',
+          borderTopRightRadius: '16px',
+          padding: '16px'
+        }}>
+          <div className="scheduleManager__bottom-sheet-header" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px'
+          }}>
+            <h2 className="scheduleManager__bottom-sheet-title" style={{ margin: 0, fontSize: '1.25rem' }}>
+              Emploi du temps ACTIF - {currentYearClasses?.find(c => c._id === selectedClasseId)?.niveau} {currentYearClasses?.find(c => c._id === selectedClasseId)?.alias}
+            </h2>
+            <button 
+              className="scheduleManager__bottom-sheet-close"
+              onClick={() => onClasseSelect(null)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: 'var(--text-color, #333)'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div className="scheduleManager__bottom-sheet-content" style={{ overflowY: 'auto', flex: 1 }}>
+            <ScheduleViewer 
+              classeId={selectedClasseId}
+              compact={true}
+              isEditable={true}
+              onEditSchedule={(data) => {
+                if (data.action === 'create' || data.action === 'edit') {
+                  onViewChange('editor', { schedule: data.schedule })
+                } else if (data.action === 'history') {
+                  onViewChange('history')
+                }
+              }}
+            />
+          </div>
         </div>
       )}
-
-      <hr />
       <div className="scheduleManager__overview">
         <h2 className="scheduleManager__overview-title">Vue d'ensemble des classes de l'école et leur emplois du temps</h2>
         <div className="scheduleManager__overview-stats">
@@ -201,8 +236,10 @@ const ScheduleManager = ({
 
                 <div className="scheduleManager__class-card-actions">
                   <button 
-                    className="scheduleManager__class-btn scheduleManager__class-btn--view"
+                    className={`scheduleManager__class-btn scheduleManager__class-btn--view ${stats.active === 0 ? 'scheduleManager__class-btn--disabled' : ''}`}
                     onClick={() => onClasseSelect(classe._id)}
+                    disabled={stats.active === 0}
+                    title={stats.active === 0 ? "Aucun emploi du temps actif" : ""}
                   >
                     <span className="scheduleManager__class-btn-icon">👁️</span>
                     Voir

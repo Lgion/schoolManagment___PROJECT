@@ -24,7 +24,7 @@ function coversDay(ev, date) {
   return new Date(ev.startDate).getTime() <= dayEnd && new Date(ev.endDate).getTime() >= dayStart;
 }
 
-export default function CalendarContent() {
+export default function CalendarContent({ embedded = false }) {
   const { userRole } = useUserRole();
   const isAdmin = userRole === 'admin';
 
@@ -60,10 +60,10 @@ export default function CalendarContent() {
   const todayKey = dayKeyLocal(today);
 
   return (
-    <main className="calendar">
+    <div className="calendar">
       <header className="calendar__header">
         <div>
-          <Link href="/classes" className="calendar__back">⬅️ Retour aux classes</Link>
+          {!embedded && <Link href="/classes" className="calendar__back">⬅️ Retour aux classes</Link>}
           <h1 className="calendar__title">📅 Agenda de l'école</h1>
         </div>
         <div className="calendar__nav">
@@ -119,6 +119,6 @@ export default function CalendarContent() {
         onClose={() => setModalOpen(false)}
         onSaved={load}
       />
-    </main>
+    </div>
   );
 }

@@ -301,7 +301,6 @@ export default ({ children }) => {
 
         {children}
 
-
       </main>
     </>
     {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}

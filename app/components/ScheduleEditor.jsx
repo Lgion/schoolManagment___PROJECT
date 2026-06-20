@@ -7,6 +7,8 @@ import {
   daysToDisplay,
   dayOfWeekToJour,
   timeToMinutes,
+  minutesToTime,
+  getCurrentTrimesterDates,
 } from '../../utils/scheduleEvents'
 import SubjectsPalette from './SubjectsPalette'
 
@@ -50,8 +52,9 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
     } else {
       setLabel('')
       setEvents([])
-      setValidFrom('')
-      setValidUntil('')
+      const { validFrom: vf, validUntil: vu } = getCurrentTrimesterDates()
+      setValidFrom(vf)
+      setValidUntil(vu)
     }
   }, [schedule])
 
@@ -80,7 +83,9 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
     const last = dayEvents.sort((a, b) => timeToMinutes(b.endTime) - timeToMinutes(a.endTime))[0]
     const startTime = last ? last.endTime : '08:00'
     const startMin = timeToMinutes(startTime)
-    const endTime = `${String(Math.floor((startMin + 60) / 60)).padStart(2, '0')}:${String((startMin + 60) % 60).padStart(2, '0')}`
+    const duration = type === 'BREAK' ? 15 : 60
+    const endTime = minutesToTime(startMin + duration)
+    
     setEvents((prev) => [
       ...prev,
       {
@@ -95,6 +100,38 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
       },
     ])
   }
+
+  const adjustEventDuration = (target, deltaMinutes) => {
+    setEvents((prev) => prev.map((e) => {
+      if (e !== target) return e;
+      const startMin = timeToMinutes(e.startTime);
+      const endMin = timeToMinutes(e.endTime);
+      let newEndMin = endMin + deltaMinutes;
+      if (newEndMin <= startMin) newEndMin = startMin + 5; // minimum 5 mins
+      if (newEndMin > 24 * 60 - 1) newEndMin = 24 * 60 - 1;
+      return { ...e, endTime: minutesToTime(newEndMin) };
+    }));
+  };
+
+  const moveEvent = (dow, index, direction) => {
+    setEvents((prev) => {
+      const dayEvents = prev.filter(e => e.dayOfWeek === dow).sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+      if (index + direction < 0 || index + direction >= dayEvents.length) return prev;
+      
+      const target = dayEvents[index];
+      const swapWith = dayEvents[index + direction];
+      
+      return prev.map(e => {
+        if (e === target) {
+          return { ...e, startTime: swapWith.startTime, endTime: swapWith.endTime };
+        }
+        if (e === swapWith) {
+          return { ...e, startTime: target.startTime, endTime: target.endTime };
+        }
+        return e;
+      });
+    });
+  };
 
   const updateEvent = (target, field, value) =>
     setEvents((prev) => prev.map((e) => (e === target ? { ...e, [field]: value } : e)))
@@ -211,11 +248,15 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
                 {dayEvents.length === 0 && (
                   <p className="scheduleEditor__day-empty">Aucun créneau</p>
                 )}
-                {dayEvents.map((e) => (
+                {dayEvents.map((e, index) => (
                   <div
                     key={e._uid}
                     className={`scheduleEditor__row scheduleEditor__row--${e.type.toLowerCase()}`}
                   >
+                    <div className="scheduleEditor__controls">
+                      <button className="scheduleEditor__ctrl-btn" disabled={index === 0} onClick={() => moveEvent(dow, index, -1)}>↑</button>
+                      <button className="scheduleEditor__ctrl-btn" disabled={index === dayEvents.length - 1} onClick={() => moveEvent(dow, index, 1)}>↓</button>
+                    </div>
                     <input
                       type="time"
                       className="scheduleEditor__time"
@@ -229,19 +270,31 @@ const ScheduleEditor = ({ classeId, schedule, onSave, onCancel }) => {
                       value={e.endTime}
                       onChange={(ev) => updateEvent(e, 'endTime', ev.target.value)}
                     />
+                    {e.type === 'BREAK' && (
+                      <div className="scheduleEditor__break-controls">
+                        <button className="scheduleEditor__ctrl-btn" onClick={() => adjustEventDuration(e, -5)} title="-5 min">-</button>
+                        <button className="scheduleEditor__ctrl-btn" onClick={() => adjustEventDuration(e, 5)} title="+5 min">+</button>
+                      </div>
+                    )}
 
                     {e.type === 'COURSE' ? (
-                      <select
-                        className="scheduleEditor__subject-select"
-                        value={e.subjectId || ''}
-                        onChange={(ev) => updateEvent(e, 'subjectId', ev.target.value)}
-                        style={{ backgroundColor: subjectColor(e.subjectId) }}
-                      >
-                        <option value="">— Matière —</option>
-                        {subjects.map((subject) => (
-                          <option key={subject._id} value={subject._id}>{subject.nom}</option>
-                        ))}
-                      </select>
+                      <>
+                        <div className="scheduleEditor__course-controls" style={{ display: 'flex', gap: '4px', margin: '0 8px' }}>
+                          <button className="scheduleEditor__ctrl-btn" onClick={() => adjustEventDuration(e, -15)} title="-15 min">-</button>
+                          <button className="scheduleEditor__ctrl-btn" onClick={() => adjustEventDuration(e, 15)} title="+15 min">+</button>
+                        </div>
+                        <select
+                          className="scheduleEditor__subject-select"
+                          value={e.subjectId || ''}
+                          onChange={(ev) => updateEvent(e, 'subjectId', ev.target.value)}
+                          style={{ backgroundColor: subjectColor(e.subjectId) }}
+                        >
+                          <option value="">— Matière —</option>
+                          {subjects.map((subject) => (
+                            <option key={subject._id} value={subject._id}>{subject.nom}</option>
+                          ))}
+                        </select>
+                      </>
                     ) : (
                       <input
                         type="text"
