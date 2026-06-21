@@ -23,6 +23,7 @@ import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
+import UnifiedFeed from '../../components/feed/UnifiedFeed';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -206,6 +207,15 @@ export default function ClasseDetailPage() {
               <span className="person-detail__stat-label">Niveau</span>
             </div>
           </div>
+        </div>
+
+        {/* Fil d'actualité et Sondages de la classe */}
+        <div className="person-detail__block person-detail__block--feed">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">💬</span>
+            Fil d'actualité & Sondages
+          </h2>
+          <UnifiedFeed contextType="class" contextId={id} />
         </div>
 
         {/* Liste des élèves */}

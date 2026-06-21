@@ -253,6 +253,10 @@ export default ({ children }) => {
                   <span role="img" aria-label="École">🏫</span>
                   <strong>Gérer les classes</strong>
                 </Link>
+                <Link href="/groups" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mes Groupes">
+                  <span role="img" aria-label="Groupes">👥</span>
+                  <strong>Mes Groupes</strong>
+                </Link>
                 <PermissionGate role="admin">
                   <Link href="/administration" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Administration">
                     <span role="img" aria-label="Admin">⚙️</span>
