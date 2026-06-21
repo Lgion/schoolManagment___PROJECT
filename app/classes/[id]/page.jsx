@@ -24,6 +24,7 @@ import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
 import UnifiedFeed from '../../components/feed/UnifiedFeed';
+import ClassBookPanel from '../../components/classbook/ClassBookPanel';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -339,6 +340,22 @@ export default function ClasseDetailPage() {
             canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
           />
         </div>
+        {/* Livre de classe (Yearbook) — réservé profs/admins, année courante */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--classbook">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📖</span>
+                Livre de Classe (Yearbook)
+              </h2>
+              <ClassBookPanel
+                classId={classe._id}
+                classe={classe}
+                eleves={eleves.map(e => ctx.eleves.find(el => el._id === (e._id || e))).filter(Boolean)}
+              />
+            </div>
+          )}
+        </PermissionGate>
         {/* Liste des enseignants */}
         <div className="person-detail__block person-detail__block--teachers">
           <h2 className="person-detail__subtitle">

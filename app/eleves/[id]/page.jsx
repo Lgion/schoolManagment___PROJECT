@@ -8,6 +8,7 @@ import StudentAttendanceWidget from '../../components/attendance/StudentAttendan
 import HomeworkTodoList from '../../components/homework/HomeworkTodoList';
 import StudentReportCards from '../../components/bulletins/StudentReportCards';
 import EventsPanel from '../../components/events/EventsPanel';
+import StudentBookPanel from '../../components/classbook/StudentBookPanel';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -164,6 +165,14 @@ export default function ElevePage() {
               studentName={`${eleve.nom || ''} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : (eleve.prenoms || '')}`.trim()}
               className={classe ? `${classe.niveau || ''} ${classe.alias || ''}`.trim() : ''}
             />
+          </div>
+
+          <div className="person-detail__block person-detail__block--classbook">
+            <h2 className="person-detail__subtitle">
+              <span className="person-detail__subtitle-icon">📖</span>
+              Livre de Classe (Yearbook)
+            </h2>
+            <StudentBookPanel studentId={eleve._id} />
           </div>
         </section>
 
