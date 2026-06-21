@@ -76,7 +76,7 @@ export async function POST(request) {
     await dbConnect()
 
     const body = await request.json()
-    const { classeId, label, validFrom, validUntil } = body
+    const { classeId, label, validFrom, validUntil, mediaSourceUrls } = body
 
     // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat
     // (converti en events) tant que d'anciens clients existent.
@@ -140,6 +140,8 @@ export async function POST(request) {
       events,
       validFrom: validFrom || undefined,
       validUntil: validUntil || null,
+      mediaSourceUrls: mediaSourceUrls || [],
+      mediaUpdatedAt: mediaSourceUrls && mediaSourceUrls.length > 0 ? new Date() : null,
       createdBy: userId,
       isArchived: false, // Explicitement actif
       modifications: [{

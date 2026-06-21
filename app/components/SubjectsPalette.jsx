@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { useUserRole } from '../../stores/useUserRole'
 import { getLSItem } from '../../utils/localStorageManager'
 
@@ -8,7 +8,7 @@ import { getLSItem } from '../../utils/localStorageManager'
  * Composant SubjectsPalette
  * Gère l'affichage, la création, l'édition et la suppression des matières
  */
-export default function SubjectsPalette({ onSubjectsChange }) {
+const SubjectsPalette = forwardRef(({ onSubjectsChange, classeId }, ref) => {
     const { isAdmin, isProf } = useUserRole()
 
     const [subjects, setSubjects] = useState([])
@@ -25,30 +25,41 @@ export default function SubjectsPalette({ onSubjectsChange }) {
     })
     const [isGeneralSubject, setIsGeneralSubject] = useState(true)
 
+    // Nouveaux états pour filtres et coefficients
+    const [searchTerm, setSearchTerm] = useState('')
+    const [filterActive, setFilterActive] = useState('all')
+    const [sortBy, setSortBy] = useState('alpha')
+    const [coefficients, setCoefficients] = useState({})
+
+    useImperativeHandle(ref, () => ({
+        openSubjectModal: (subject, defaultName = '') => {
+            if (subject) {
+                openSubjectModal(subject)
+            } else {
+                openSubjectModal(null, defaultName)
+            }
+        }
+    }))
+
+    useEffect(() => {
+        if (classeId) {
+            fetch(`/api/classes/${classeId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.coefficients) {
+                        setCoefficients(data.data.coefficients)
+                    }
+                })
+                .catch(err => console.error("Erreur lors du chargement des coefficients", err))
+        }
+    }, [classeId])
+
     useEffect(() => {
         loadSubjects()
     }, [])
 
     const loadSubjects = async () => {
         try {
-            console.log('🔄 [SubjectsPalette] Vérification de la disponibilité des matières locales...');
-            const localStorageSubjects = getLSItem('app_subjects');
-            if (localStorageSubjects && Array.isArray(localStorageSubjects) && localStorageSubjects.length > 0) {
-                console.log('✅ [SubjectsPalette] Matières trouvées dans localStorage, arrêt du proxy API.');
-                // Note that in SubjectsPalette, the original implementation fetched the full subject objects, 
-                // but getLSItem('app_subjects') currently stores an array of strings (names) from EntityModal, 
-                // so we need to fetch the real objects here if the local storage only has names.
-                // For proper isolation, we will rely on fetching objects anyway if the exact full object array is not in cache,
-                // but in this project they seem to use /api/subjects purely without caching the objects here. 
-                // Let's implement the block:
-
-                if (typeof localStorageSubjects[0] === 'object') {
-                    setSubjects(localStorageSubjects);
-                    if (onSubjectsChange) onSubjectsChange(localStorageSubjects);
-                    return; // BLOCK FETCH
-                }
-            }
-
             console.log('🔄 [SubjectsPalette] Chargement des matières depuis API...')
             const response = await fetch('/api/subjects', { credentials: 'include' })
             const data = await response.json()
@@ -69,7 +80,7 @@ export default function SubjectsPalette({ onSubjectsChange }) {
         }
     }
 
-    const openSubjectModal = (subject = null) => {
+    const openSubjectModal = (subject = null, defaultName = '') => {
         if (subject) {
             setEditingSubject(subject)
             const isGeneral = subject.niveaux === false
@@ -85,7 +96,7 @@ export default function SubjectsPalette({ onSubjectsChange }) {
             setEditingSubject(null)
             setIsGeneralSubject(true)
             setSubjectForm({
-                nom: '',
+                nom: defaultName,
                 code: '',
                 couleur: '#3498db',
                 niveaux: false,
@@ -211,19 +222,54 @@ export default function SubjectsPalette({ onSubjectsChange }) {
         }
     }
 
+    const filteredSubjects = subjects.filter(sub => {
+        if (searchTerm && !sub.nom.toLowerCase().includes(searchTerm.toLowerCase()) && !(sub.code || '').toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        if (filterActive === 'active' && !sub.isActive) return false;
+        if (filterActive === 'inactive' && sub.isActive) return false;
+        return true;
+    }).sort((a, b) => {
+        if (sortBy === 'alpha') return a.nom.localeCompare(b.nom);
+        return 0;
+    });
+
     return (
         <>
-            <div className="scheduleEditor__subjects-palette">
+            <div className="scheduleEditor__subjects-palette" style={{ marginTop: '2rem' }}>
                 <div className="scheduleEditor__subjects-header">
                     <h3 className="scheduleEditor__subjects-title">Matières disponibles</h3>
-                    <div className="scheduleEditor__header-actions">
-                        {/* Bouton pour tout supprimer (admin uniquement) */}
+
+                    <div className="scheduleEditor__header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            placeholder="Rechercher..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.85rem' }}
+                        />
+                        <select
+                            value={filterActive}
+                            onChange={(e) => setFilterActive(e.target.value)}
+                            style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.85rem' }}
+                        >
+                            <option value="all">Toutes</option>
+                            <option value="active">Actives</option>
+                            <option value="inactive">Inactives</option>
+                        </select>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            style={{ padding: '6px 12px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '0.85rem' }}
+                        >
+                            <option value="alpha">Alphabétique (A-Z)</option>
+                            <option value="default">Ordre de création</option>
+                        </select>
+
                         {isAdmin() && subjects.length > 0 && (
                             <button
                                 className="scheduleEditor__delete-all-btn"
                                 onClick={deleteAllSubjects}
                                 title="Supprimer toutes les matières"
-                                style={{ backgroundColor: '#e74c3c', color: 'white' }}
+                                style={{ backgroundColor: '#e74c3c', color: 'white', padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                             >
                                 🗑️ Tout supprimer
                             </button>
@@ -235,8 +281,9 @@ export default function SubjectsPalette({ onSubjectsChange }) {
                                 onClick={initializeDefaultSubjects}
                                 disabled={isInitializingSubjects}
                                 title="Générer les matières par défaut"
+                                style={{ backgroundColor: '#27ae60', color: 'white', padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                             >
-                                {isInitializingSubjects ? '⏳ Génération...' : '🎨 Générer matières (16)'}
+                                {isInitializingSubjects ? '⏳ Génération...' : '🎨 Générer matières'}
                             </button>
                         )}
 
@@ -245,44 +292,62 @@ export default function SubjectsPalette({ onSubjectsChange }) {
                                 className="scheduleEditor__add-subject-btn"
                                 onClick={() => openSubjectModal()}
                                 title="Ajouter une matière manuellement"
+                                style={{ backgroundColor: '#3498db', color: 'white', padding: '6px 12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                             >
                                 + Nouvelle matière
                             </button>
                         )}
                     </div>
                 </div>
-                <div className="scheduleEditor__subjects-grid">
-                    {subjects.map(subject => (
-                        <div
+                <ul className="scheduleEditor__subjects-grid">
+                    {filteredSubjects.map(subject => (
+                        <li
                             key={subject._id}
                             className="scheduleEditor__subject-chip"
-                            style={{ backgroundColor: subject.couleur }}
+                            title={coefficients[subject._id] || coefficients[subject.code] ? `Coefficient en vigueur: ${coefficients[subject._id] || coefficients[subject.code]}` : 'Aucun coefficient assigné'}
+                            style={{ backgroundColor: subject.couleur || '#3498db' }}
                         >
-                            <div className="scheduleEditor__subject-info">
+                            <header className="scheduleEditor__subject-header">
                                 <span className="scheduleEditor__subject-name">{subject.nom}</span>
-                                <span className="scheduleEditor__subject-duration">{subject.dureeDefaut}min</span>
-                            </div>
-                            {(isAdmin() || isProf()) && (
-                                <div className="scheduleEditor__subject-actions">
-                                    <button
-                                        className="scheduleEditor__edit-subject-btn"
-                                        onClick={() => openSubjectModal(subject)}
-                                        title="Modifier"
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button
-                                        className="scheduleEditor__delete-subject-btn"
-                                        onClick={() => deleteSubject(subject._id)}
-                                        title="Supprimer"
-                                    >
-                                        🗑️
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                                {(coefficients[subject._id] || coefficients[subject.code]) && (
+                                    <span className="scheduleEditor__subject-coeff">
+                                        Coef: {coefficients[subject._id] || coefficients[subject.code]}
+                                    </span>
+                                )}
+                            </header>
+
+                            <main className="scheduleEditor__subjects-appliedTo">
+                                {subject.niveaux === false ? (
+                                    <span className="scheduleEditor__subject-level scheduleEditor__subject-level--general">Générale</span>
+                                ) : (
+                                    (subject.niveaux || []).map(n => <span key={n} className="scheduleEditor__subject-level scheduleEditor__subject-level--specific">{n}</span>)
+                                )}
+                            </main>
+
+                            <footer className="scheduleEditor__subject-footer">
+                                <span className="scheduleEditor__subject-duration">⏱ {subject.dureeDefaut}min</span>
+                                {(isAdmin() || isProf()) && (
+                                    <div className="scheduleEditor__subject-actions">
+                                        <button
+                                            className="scheduleEditor__edit-subject-btn"
+                                            onClick={() => openSubjectModal(subject)}
+                                            title="Modifier"
+                                        >
+                                            ✏️
+                                        </button>
+                                        <button
+                                            className="scheduleEditor__delete-subject-btn"
+                                            onClick={() => deleteSubject(subject._id)}
+                                            title="Supprimer"
+                                        >
+                                            🗑️
+                                        </button>
+                                    </div>
+                                )}
+                            </footer>
+                        </li>
                     ))}
-                </div>
+                </ul>
             </div>
 
             {showSubjectModal && (isAdmin() || isProf()) && (
@@ -383,4 +448,6 @@ export default function SubjectsPalette({ onSubjectsChange }) {
             )}
         </>
     )
-}
+})
+
+export default SubjectsPalette

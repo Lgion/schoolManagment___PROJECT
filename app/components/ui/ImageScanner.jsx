@@ -5,7 +5,7 @@ import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
 
-export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "", apiEndpoint = '/api/school_ai/extract-notes' }) {
+export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "", apiEndpoint = '/api/school_ai/extract-notes', onCapture = null, acceptTypes = "image/*" }) {
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
@@ -42,6 +42,26 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
     const handleFileChange = async (event) => {
         const file = event.target.files?.[0];
         if (!file) return;
+
+        if (onCapture) {
+            // Mode "Capture uniquement" (pas d'appel API automatique)
+            setIsScanning(true);
+            try {
+                let finalFile = file;
+                // Compression uniquement pour les images, ignorer pour les PDF
+                if (file.type.startsWith('image/') && file.size > 1024 * 1024) {
+                    const options = { maxSizeMB: 1, maxWidthOrHeight: 1920, useWebWorker: true };
+                    finalFile = await imageCompression(file, options);
+                }
+                await onCapture(finalFile);
+            } finally {
+                if (isMounted.current) {
+                    setIsScanning(false);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                }
+            }
+            return;
+        }
 
         if (isOffline) {
             // Local caching fallback without blocking the main thread (No alert())
@@ -130,7 +150,7 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
         <div className={`image-scanner ${className}`}>
             <input
                 type="file"
-                accept="image/*"
+                accept={acceptTypes}
                 capture="environment"
                 ref={fileInputRef}
                 onChange={handleFileChange}

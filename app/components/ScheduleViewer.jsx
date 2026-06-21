@@ -47,6 +47,10 @@ const ScheduleViewer = ({
   const [overlay, setOverlay] = useState([]) // événements de la semaine superposés
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showMediaModal, setShowMediaModal] = useState(false)
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
+  const [zoom, setZoom] = useState(1)
+  const [rotation, setRotation] = useState(0)
 
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -191,25 +195,102 @@ const ScheduleViewer = ({
         <div>
           <h3 className="scheduleViewer__header-title">{schedule.label}</h3>
         </div>
-        <PermissionGate roles={['admin', 'prof']}>
-          {isEditable && (
-            <div className="scheduleViewer__actions">
-              <button
-                className="scheduleViewer__actions-button"
-                onClick={() => onEditSchedule && onEditSchedule({ action: 'history', scheduleId: schedule._id })}
-              >
-                Historique
-              </button>
-              <button
-                className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
-                onClick={() => onEditSchedule && onEditSchedule({ action: 'edit', schedule })}
-              >
-                Modifier
-              </button>
-            </div>
+        <div className="scheduleViewer__actions">
+          {(schedule.mediaSourceUrls?.length > 0 || schedule.mediaSourceUrl) && (
+            <button
+              className="scheduleViewer__actions-button"
+              onClick={() => {
+                setShowMediaModal(true);
+                setCurrentMediaIndex(0);
+                setZoom(1);
+                setRotation(0);
+              }}
+            >
+              👁️ Document original
+            </button>
           )}
-        </PermissionGate>
+          <PermissionGate roles={['admin', 'prof']}>
+            {isEditable && (
+              <>
+                <button
+                  className="scheduleViewer__actions-button"
+                  onClick={() => onEditSchedule && onEditSchedule({ action: 'history', scheduleId: schedule._id })}
+                >
+                  Historique
+                </button>
+                <button
+                  className="scheduleViewer__actions-button scheduleViewer__actions-button--primary"
+                  onClick={() => onEditSchedule && onEditSchedule({ action: 'edit', schedule })}
+                >
+                  Modifier
+                </button>
+              </>
+            )}
+          </PermissionGate>
+        </div>
       </div>
+
+      {showMediaModal && (schedule.mediaSourceUrls?.length > 0 || schedule.mediaSourceUrl) && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 9999,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', padding: '20px'
+        }} onClick={() => setShowMediaModal(false)}>
+          <div style={{
+            background: 'var(--bg-card, #fff)', padding: '16px', borderRadius: '12px',
+            width: '100%', maxWidth: '900px', height: '90vh',
+            display: 'flex', flexDirection: 'column', boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+            overflow: 'hidden'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Document original</h3>
+                {schedule.mediaUpdatedAt && (
+                  <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#666' }}>
+                    Modifié le: {new Date(schedule.mediaUpdatedAt).toLocaleString('fr-FR')}
+                  </p>
+                )}
+              </div>
+              <button onClick={() => setShowMediaModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666' }}>✕</button>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => setZoom(z => Math.min(z + 0.5, 3))} style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' }}>🔍 Zoom +</button>
+              <button onClick={() => setZoom(z => Math.max(z - 0.5, 0.5))} style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' }}>🔍 Zoom -</button>
+              <button onClick={() => setRotation(r => r - 90)} style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' }}>↺ Pivoter</button>
+              <button onClick={() => setRotation(r => r + 90)} style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' }}>↻ Pivoter</button>
+              <button onClick={() => { setZoom(1); setRotation(0); }} style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ddd' }}>Réinitialiser</button>
+            </div>
+
+            {(() => {
+              const urls = schedule.mediaSourceUrls?.length > 0 ? schedule.mediaSourceUrls : [schedule.mediaSourceUrl];
+              const currentUrl = urls[currentMediaIndex];
+              return (
+                <>
+                  {urls.length > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '10px' }}>
+                      <button disabled={currentMediaIndex === 0} onClick={() => setCurrentMediaIndex(i => i - 1)} style={{ padding: '4px 8px', cursor: 'pointer' }}>Précédent</button>
+                      <span>Page {currentMediaIndex + 1} / {urls.length}</span>
+                      <button disabled={currentMediaIndex === urls.length - 1} onClick={() => setCurrentMediaIndex(i => i + 1)} style={{ padding: '4px 8px', cursor: 'pointer' }}>Suivant</button>
+                    </div>
+                  )}
+                  <div style={{ flex: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f5f5f5', borderRadius: '8px' }}>
+                    {currentUrl.toLowerCase().endsWith('.pdf') ? (
+                       <iframe src={currentUrl} width="100%" height="100%" style={{ border: 'none', flex: 1, borderRadius: '4px', transform: `scale(${zoom}) rotate(${rotation}deg)`, transformOrigin: 'center center', transition: 'transform 0.3s ease' }} title="Document original" />
+                    ) : (
+                       <img src={currentUrl} alt="Emploi du temps brut" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', transform: `scale(${zoom}) rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }} />
+                    )}
+                  </div>
+                  <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                     <a href={currentUrl} download target="_blank" rel="noreferrer" style={{ display: 'inline-block', background: '#3498db', color: '#fff', textDecoration: 'none', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold' }}>⬇️ Télécharger</a>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        </div>
+      )}
 
       {combined.length === 0 ? (
         <div className="scheduleViewer__empty">

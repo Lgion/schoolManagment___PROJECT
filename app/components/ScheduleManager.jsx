@@ -266,6 +266,16 @@ const ScheduleManager = ({
             )
           })}
         </div>
+
+        <div style={{ marginTop: '30px', background: '#e3f2fd', padding: '20px', borderRadius: '8px', border: '1px solid #bbdefb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 300px' }}>
+            <h4 style={{ margin: '0 0 5px 0', color: '#1565c0', fontSize: '1.1rem' }}>📄 Modèle d'emploi du temps officiel</h4>
+            <p style={{ margin: 0, color: '#1e88e5', fontSize: '0.9rem', lineHeight: '1.4' }}>Pour garantir un scan parfait par l'Intelligence Artificielle, nous vous recommandons d'utiliser ce modèle vierge. Vous pouvez le remplir numériquement ou l'imprimer pour le remplir à la main.</p>
+          </div>
+          <a href="/templates/modele-emploi-du-temps.pdf" target="_blank" rel="noopener noreferrer" style={{ background: '#1976d2', color: 'white', padding: '10px 20px', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.95rem', whiteSpace: 'nowrap', boxShadow: '0 2px 4px rgba(25,118,210,0.3)', transition: 'background 0.2s' }}>
+            ⬇️ Télécharger le modèle (PDF)
+          </a>
+        </div>
       </div>
     </div>
   )

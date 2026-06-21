@@ -74,7 +74,7 @@ export async function PUT(request, { params }) {
 
     const { id } = await params
     const body = await request.json()
-    const { label, validFrom, validUntil } = body
+    const { label, validFrom, validUntil, mediaSourceUrls } = body
 
     // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat.
     let events = Array.isArray(body.events) ? body.events : null
@@ -126,6 +126,12 @@ export async function PUT(request, { params }) {
     }
     if (validFrom !== undefined) schedule.validFrom = validFrom || undefined
     if (validUntil !== undefined) schedule.validUntil = validUntil || null
+    if (mediaSourceUrls !== undefined) {
+      if (JSON.stringify(schedule.mediaSourceUrls) !== JSON.stringify(mediaSourceUrls)) {
+        schedule.mediaUpdatedAt = new Date();
+      }
+      schedule.mediaSourceUrls = mediaSourceUrls || [];
+    }
 
     // Ajoute la modification à l'historique
     schedule.modifications.push({

@@ -462,8 +462,10 @@ export default function ClasseDetailPage() {
             isEditable={userRole === 'admin'}
             mergeEvents
             onEditSchedule={(data) => {
-              if (data.action === 'create' || data.action === 'edit') {
-                router.push(`/scheduling?classeId=${classe._id}`);
+              if (data.action === 'create') {
+                router.push(`/scheduling?classeId=${classe._id}&view=editor`);
+              } else if (data.action === 'edit') {
+                router.push(`/scheduling?classeId=${classe._id}&view=editor&scheduleId=${data.schedule._id}`);
               } else if (data.action === 'history') {
                 router.push(`/scheduling?classeId=${classe._id}&view=history`);
               }

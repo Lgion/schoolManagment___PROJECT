@@ -100,8 +100,7 @@ RÈGLES CRITIQUES :
             extractedData = JSON.parse(responseText);
         } catch (parseError) {
             console.error("Gemini a retourné un JSON invalide", parseError);
-            buffer.fill(0);
-            return NextResponse.json({ error: 'Le format de réponse de l\'IA est invalide' }, { status: 502 });
+            return NextResponse.json({ error: "Le format de réponse de l'IA est invalide" }, { status: 502 });
         }
 
         if (!Array.isArray(extractedData)) {

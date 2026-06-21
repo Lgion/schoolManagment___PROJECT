@@ -58,6 +58,10 @@ const scheduleSchema = mongoose.Schema({
   // Nouveau format canonique : liste plate d'événements.
   events: { type: [eventSchema], default: [] },
 
+  // Document original uploadé (photo, scan, pdf). Tableau pour supporter plusieurs pages.
+  mediaSourceUrls: { type: [String], default: [] },
+  mediaUpdatedAt: { type: Date, default: null },
+
   // Période de validité (programmation à l'avance d'un EDT).
   // validUntil null = EDT par défaut courant.
   validFrom: { type: Date, default: Date.now },
