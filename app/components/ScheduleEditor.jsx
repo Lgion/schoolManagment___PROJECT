@@ -24,6 +24,7 @@ const subjectIdOf = (subjectId) =>
 
 const ScheduleEditor = ({ classeId, classe, schedule, onSave, onCancel }) => {
   const [subjects, setSubjects] = useState([])
+  const [teachers, setTeachers] = useState([])
   const [label, setLabel] = useState('')
   const [events, setEvents] = useState([])
   const [validFrom, setValidFrom] = useState('')
@@ -45,6 +46,7 @@ const ScheduleEditor = ({ classeId, classe, schedule, onSave, onCancel }) => {
 
   useEffect(() => {
     loadSubjects()
+    loadTeachers()
   }, [])
 
   useEffect(() => {
@@ -82,6 +84,18 @@ const ScheduleEditor = ({ classeId, classe, schedule, onSave, onCancel }) => {
     }
   }
 
+  const loadTeachers = async () => {
+    try {
+      const response = await fetch('/api/school_ai/enseignants', { credentials: 'include' })
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setTeachers(data)
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des enseignants:', error)
+    }
+  }
+
   // Jours affichés : lun–ven + tout jour ayant déjà un événement.
   const days = daysToDisplay(events)
 
@@ -103,6 +117,7 @@ const ScheduleEditor = ({ classeId, classe, schedule, onSave, onCancel }) => {
         endTime,
         type,
         subjectId: type === 'COURSE' ? (subjects[0]?._id || '') : null,
+        teacherId: '',
         label: type === 'COURSE' ? '' : (type === 'BREAK' ? 'Pause' : 'Événement'),
         notes: '',
       },
@@ -523,6 +538,19 @@ const ScheduleEditor = ({ classeId, classe, schedule, onSave, onCancel }) => {
                           <option value="">— Matière —</option>
                           {subjects.map((subject) => (
                             <option key={subject._id} value={subject._id}>{subject.nom}</option>
+                          ))}
+                        </select>
+                        <select
+                          className="scheduleEditor__subject-select scheduleEditor__teacher-select"
+                          value={e.teacherId || ''}
+                          onChange={(ev) => updateEvent(e, 'teacherId', ev.target.value)}
+                          style={{ backgroundColor: e.teacherId ? '#e1f5fe' : '#f5f5f5', color: e.teacherId ? '#0277bd' : '#666' }}
+                        >
+                          <option value="">— Prof (Auto) —</option>
+                          {teachers.map((t) => (
+                            <option key={t._id} value={t._id}>
+                              {t.nom} {Array.isArray(t.prenoms) ? t.prenoms.join(' ') : t.prenoms}
+                            </option>
                           ))}
                         </select>
                       </>

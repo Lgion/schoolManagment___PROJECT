@@ -3,6 +3,7 @@
 import { useContext } from 'react';
 import { AiAdminContext } from '../stores/ai_adminContext';
 import TeacherReportModule from './components/TeacherReportModule';
+import TeacherDailyWidget from './components/TeacherDailyWidget';
 import CalendarContent from './calendar/CalendarContent';
 import UnifiedFeed from './components/feed/UnifiedFeed';
 
@@ -14,6 +15,7 @@ export default function Page() {
   }
 
   return <>
+    <TeacherDailyWidget />
     <TeacherReportModule />
     <h2>{homepage.title}</h2>
     

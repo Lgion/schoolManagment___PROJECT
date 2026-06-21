@@ -26,10 +26,19 @@ export async function GET(request) {
     const from = searchParams.get('from')
     const to = searchParams.get('to')
 
+    const teacherId = searchParams.get('teacherId')
+
     // Portée : toujours les événements globaux, + ceux de la classe demandée.
     const scope = [{ isGlobal: true }]
     if (classId && mongoose.Types.ObjectId.isValid(classId)) {
       scope.push({ classId })
+    } else if (teacherId && mongoose.Types.ObjectId.isValid(teacherId)) {
+      // Résoudre les classes du prof
+      const Teacher = require('../_/models/ai/Teacher')
+      const teacher = await Teacher.findById(teacherId)
+      if (teacher && Array.isArray(teacher.current_classes) && teacher.current_classes.length > 0) {
+        scope.push({ classId: { $in: teacher.current_classes } })
+      }
     }
 
     const filter = { $or: scope }

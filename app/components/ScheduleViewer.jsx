@@ -38,6 +38,7 @@ function localHHmm(d) {
  */
 const ScheduleViewer = ({
   classeId,
+  teacherId,
   isEditable = false,
   compact = false,
   onEditSchedule = null,
@@ -54,13 +55,16 @@ const ScheduleViewer = ({
 
   useEffect(() => {
     const fetchSchedule = async () => {
-      if (!classeId) {
+      if (!classeId && !teacherId) {
         setLoading(false)
         return
       }
       try {
         setLoading(true)
-        const res = await fetch(`/api/schedules?classeId=${classeId}&activeOnly=true`, {
+        const url = teacherId 
+          ? `/api/schedules/teacher/${teacherId}` 
+          : `/api/schedules?classeId=${classeId}&activeOnly=true`
+        const res = await fetch(url, {
           credentials: 'include',
         })
         const data = await res.json()
@@ -73,16 +77,22 @@ const ScheduleViewer = ({
       }
     }
     fetchSchedule()
-  }, [classeId])
+  }, [classeId, teacherId])
 
   // Fusion dynamique : superpose les événements de la semaine sur la grille (spec).
   // Seuls les événements d'un seul jour avec une plage horaire sont positionnables.
   useEffect(() => {
-    if (!mergeEvents || !classeId) { setOverlay([]); return }
+    if (!mergeEvents) { setOverlay([]); return }
+    if (!classeId && !teacherId) { setOverlay([]); return }
     const loadWeekEvents = async () => {
       try {
         const { from, to } = currentWeekRange()
-        const list = await fetchEvents({ classId: classeId, from: from.toISOString(), to: to.toISOString() })
+        const url = teacherId
+          ? `/api/events?teacherId=${teacherId}&from=${from.toISOString()}&to=${to.toISOString()}`
+          : `/api/events?classId=${classeId}&from=${from.toISOString()}&to=${to.toISOString()}`
+        const res = await fetch(url)
+        const data = await res.json()
+        const list = data.success ? data.data : []
         const mapped = []
         for (const ev of list) {
           const s = new Date(ev.startDate)
@@ -104,7 +114,7 @@ const ScheduleViewer = ({
       }
     }
     loadWeekEvents()
-  }, [mergeEvents, classeId])
+  }, [mergeEvents, classeId, teacherId])
 
   const events = useMemo(() => schedule?.events || [], [schedule])
   // Bornes/jours calculés en tenant compte des événements superposés.

@@ -263,6 +263,12 @@ export default ({ children }) => {
                     <strong>Administration</strong>
                   </Link>
                 </PermissionGate>
+                <PermissionGate roles={['prof', 'admin']}>
+                  <Link href="/enseignants/mon-planning" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mon Planning">
+                    <span role="img" aria-label="Calendrier">📅</span>
+                    <strong>Mon Planning</strong>
+                  </Link>
+                </PermissionGate>
               </nav>
 
             </section>
