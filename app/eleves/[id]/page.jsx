@@ -10,6 +10,7 @@ import StudentReportCards from '../../components/bulletins/StudentReportCards';
 import EventsPanel from '../../components/events/EventsPanel';
 import StudentBookPanel from '../../components/classbook/StudentBookPanel';
 import StudentMessaging from '../../components/messaging/StudentMessaging';
+import AppointmentsPanel from '../../components/appointments/AppointmentsPanel';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -186,6 +187,21 @@ export default function ElevePage() {
                 studentId={eleve._id}
                 teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
                 conversationType={userRole === 'parent' ? 'PARENT_TEACHER' : 'STUDENT_TEACHER'}
+              />
+            </div>
+          )}
+
+          {['parent', 'prof'].includes(userRole) && (
+            <div className="person-detail__block person-detail__block--appointments">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📆</span>
+                Rendez-vous
+              </h2>
+              <AppointmentsPanel
+                studentId={eleve._id}
+                initiatorRole={userRole === 'prof' ? 'prof' : 'parent'}
+                teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
+                canCreate={true}
               />
             </div>
           )}
