@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchEvents, deleteEvent, typeMeta, formatEventWhen } from './eventsApi';
 import EventModal from './EventModal';
+import VisioLauncher from '../visio/VisioLauncher';
 
 /**
  * Widget « Événements à venir » d'une classe : événements de la classe + événements
@@ -72,6 +73,16 @@ export default function EventsPanel({ classId, interactive = false, canGlobal = 
                   <span className="events__when">{formatEventWhen(ev.startDate, ev.endDate)}</span>
                   {ev.location && <span className="events__location">📍 {ev.location}</span>}
                   {ev.description && <span className="events__desc">{ev.description}</span>}
+                  {ev.hasVisio && ev.visioRoomName && (
+                    <VisioLauncher
+                      roomName={ev.visioRoomName}
+                      title={ev.title}
+                      variant="live"
+                      canCapture={interactive}
+                      albumTarget={interactive ? { eventId: ev._id } : null}
+                      className="events__visio"
+                    />
+                  )}
                 </div>
                 {interactive && (
                   <div className="events__actions">

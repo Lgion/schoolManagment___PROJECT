@@ -265,6 +265,10 @@ export default ({ children }) => {
                   <span role="img" aria-label="Blog">📰</span>
                   <strong>Blog de l'école</strong>
                 </Link>
+                <Link href="/gallery" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Galerie des souvenirs">
+                  <span role="img" aria-label="Galerie">📸</span>
+                  <strong>Galerie des souvenirs</strong>
+                </Link>
                 <PermissionGate role="admin">
                   <Link href="/administration" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Administration">
                     <span role="img" aria-label="Admin">⚙️</span>

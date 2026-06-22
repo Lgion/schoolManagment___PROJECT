@@ -19,6 +19,7 @@ import AttendancePanel from '../../components/attendance/AttendancePanel';
 import HomeworkPanel from '../../components/homework/HomeworkPanel';
 import ReportCardsPanel from '../../components/bulletins/ReportCardsPanel';
 import EventsPanel from '../../components/events/EventsPanel';
+import VisioLauncher from '../../components/visio/VisioLauncher';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
@@ -327,6 +328,27 @@ export default function ClasseDetailPage() {
                 Événements
               </h2>
               <EventsPanel classId={classe._id} interactive canGlobal={userRole === 'admin'} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Visio de classe — le staff lance/rejoint et peut capturer des souvenirs (album de classe) */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--visio">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎥</span>
+                Visioconférence de classe
+              </h2>
+              <p className="person-detail__hint">
+                Lancez un cours à distance. Le bouton 📸 enregistre des photos dans la galerie de la classe.
+              </p>
+              <VisioLauncher
+                roomName={`ecole-classe-${classe._id}`}
+                title={`Visio · ${classe.niveau || ''} ${classe.alias || ''}`.trim()}
+                variant="launch"
+                canCapture
+                albumTarget={{ classId: classe._id }}
+              />
             </div>
           )}
         </PermissionGate>

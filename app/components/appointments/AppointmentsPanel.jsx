@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import AppointmentModal from './AppointmentModal';
+import VisioLauncher from '../visio/VisioLauncher';
 import {
   fetchAppointments,
   updateAppointment,
@@ -107,8 +108,12 @@ export default function AppointmentsPanel({ studentId, initiatorRole, teachers =
                 {a.meetingStatus === 'ACCEPTED' && a.agreedDate ? (
                   <p className="appointments__item-agreed">
                     📅 {formatRange(a.agreedDate)} · {formatMeta(a.agreedFormat)?.icon} {formatMeta(a.agreedFormat)?.label}
-                    {a.agreedFormat === 'VISIO' && (
-                      <span className="appointments__visio" title="Module visio à venir"> · 🎥 Visio : {a.visioRoomName} (à venir)</span>
+                    {a.agreedFormat === 'VISIO' && a.visioRoomName && (
+                      <VisioLauncher
+                        roomName={a.visioRoomName}
+                        title={`Rendez-vous · ${a.statusLabel}`}
+                        className="appointments__visio"
+                      />
                     )}
                   </p>
                 ) : (
