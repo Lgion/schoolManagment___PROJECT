@@ -21,7 +21,8 @@ export async function GET(request, { params }) {
     // Récupération des données utilisateur avec références
     const user = await User.findOne({ clerkId })
       .populate('roleData.teacherRef')
-      .populate('roleData.eleveRef');
+      .populate('roleData.eleveRef')
+      .populate('roleData.childrenRefs');
 
     if (!user) {
       return NextResponse.json(
@@ -94,7 +95,7 @@ export async function PATCH(request, { params }) {
       { clerkId },
       updateData,
       { new: true }
-    ).populate('roleData.teacherRef').populate('roleData.eleveRef');
+    ).populate('roleData.teacherRef').populate('roleData.eleveRef').populate('roleData.childrenRefs');
 
     return NextResponse.json(updatedUser);
 

@@ -3,51 +3,7 @@ import { Webhook } from 'svix';
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../_/models/ai/User';
-import Teacher from '../../_/models/ai/Teacher';
-import Eleve from '../../_/models/ai/Eleve';
-
-// Fonction pour déterminer le rôle selon votre logique
-async function determineUserRole(email) {
-  try {
-    // Garde : sans email valide, ne pas lancer de requêtes (findOne({email: undefined})
-    // pourrait matcher des documents sans ce champ).
-    if (!email || typeof email !== 'string') {
-      return { role: 'public', ref: null };
-    }
-
-    // 1. Vérifier si c'est un admin via variable d'environnement
-    const adminEmails = process.env.NEXT_PUBLIC_EMAIL_ADMIN?.split(' ') || [];
-    if (adminEmails.includes(email)) {
-      return { role: 'admin', ref: null };
-    }
-
-    await dbConnect();
-
-    // 2. Vérifier si c'est un prof (email présent dans Teacher schema)
-    const teacher = await Teacher.findOne({ 'email_$_email': email });
-    if (teacher) {
-      return { role: 'prof', ref: teacher._id };
-    }
-
-    // 3. Vérifier si c'est un élève (email dans parents ou autre champ)
-    const eleve = await Eleve.findOne({
-      $or: [
-        { 'parents.email': email },
-        // Ajouter d'autres champs email si nécessaire selon votre structure
-      ]
-    });
-    if (eleve) {
-      return { role: 'eleve', ref: eleve._id };
-    }
-
-    // 4. Par défaut : rôle public
-    return { role: 'public', ref: null };
-
-  } catch (error) {
-    console.error('Error determining user role:', error);
-    return { role: 'public', ref: null };
-  }
-}
+import { determineUserRole, buildRoleData } from '../../lib/determineUserRole';
 
 export async function POST(req) {
   try {
@@ -149,18 +105,9 @@ async function handleUserCreated(userData) {
       return;
     }
 
-    // Déterminer le rôle selon votre logique
-    const { role, ref } = await determineUserRole(email);
-
-    // Préparer les données roleData selon le rôle
-    let roleData = {};
-    if (role === 'prof' && ref) {
-      roleData.teacherRef = ref;
-    } else if (role === 'eleve' && ref) {
-      roleData.eleveRef = ref;
-    } else if (role === 'admin') {
-      roleData.adminLevel = 'standard';
-    }
+    // Déterminer le rôle selon la logique partagée
+    const { role, ref, childrenRefs } = await determineUserRole(email);
+    const roleData = buildRoleData(role, ref, childrenRefs);
 
     // Créer le nouvel utilisateur
     const newUser = new User({
@@ -205,18 +152,10 @@ async function handleUserUpdated(userData) {
 
     // Si l'email a changé, recalculer le rôle
     if (existingUser.email !== email) {
-      const { role, ref } = await determineUserRole(email);
-      
+      const { role, ref, childrenRefs } = await determineUserRole(email);
+
       updateData.role = role;
-      updateData.roleData = {};
-      
-      if (role === 'prof' && ref) {
-        updateData.roleData.teacherRef = ref;
-      } else if (role === 'eleve' && ref) {
-        updateData.roleData.eleveRef = ref;
-      } else if (role === 'admin') {
-        updateData.roleData.adminLevel = 'standard';
-      }
+      updateData.roleData = buildRoleData(role, ref, childrenRefs);
     }
 
     await User.findOneAndUpdate({ clerkId }, updateData);
