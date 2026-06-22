@@ -1,0 +1,212 @@
+// === Messagerie directe (élève/prof & parent/prof) ===
+// Fenêtre de chat (.chatWindow), panneau élève (.messaging) et inbox prof (.inbox).
+// Couleurs issues des tokens du design system « École chaleureux ».
+
+/* ---------- Fenêtre de chat réutilisable ---------- */
+.chatWindow {
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  max-height: 60vh;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
+
+  &__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__hint {
+    margin: auto;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+
+  &__bubble {
+    max-width: 78%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    word-break: break-word;
+
+    &-text { font-size: var(--font-size-sm); white-space: pre-wrap; }
+    &-time { font-size: 0.7rem; opacity: 0.7; align-self: flex-end; }
+
+    &--mine {
+      align-self: flex-end;
+      background: var(--gradient-accent, var(--color-primary));
+      color: var(--color-white);
+    }
+
+    &--theirs {
+      align-self: flex-start;
+      background: var(--color-background, var(--color-gray-100));
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+    }
+  }
+
+  &__form {
+    display: flex;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  &__input {
+    flex: 1;
+    resize: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    &:focus { outline: none; border-color: var(--color-primary); }
+    &:disabled { background: var(--color-gray-100); cursor: not-allowed; }
+  }
+
+  &__send {
+    align-self: flex-end;
+    background: var(--gradient-accent, var(--color-primary));
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    transition: transform var(--transition-fast);
+    &:hover:not(:disabled) { transform: translateY(-1px); }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+/* ---------- Panneau élève / parent ---------- */
+.messaging {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__hint, &__error { font-size: var(--font-size-sm); }
+  &__hint { color: var(--color-text-muted); }
+  &__error { color: var(--color-danger-dark); background: var(--color-danger-light); border-radius: var(--radius-md); padding: var(--spacing-xs) var(--spacing-md); }
+
+  &__teacherTabs { display: flex; flex-wrap: wrap; gap: var(--spacing-xs); }
+
+  &__teacherTab {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs) var(--spacing-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    &.is-active { background: var(--gradient-accent, var(--color-primary)); color: var(--color-white); border-color: transparent; }
+  }
+}
+
+/* ---------- Inbox professeur (type WhatsApp Web) ---------- */
+.inbox {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: var(--spacing-md);
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+
+  &__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--spacing-sm);
+  }
+
+  &__tabs { display: flex; gap: var(--spacing-xs); }
+
+  &__tab {
+    flex: 1;
+    background: var(--color-background, var(--color-gray-100));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    &.is-active { background: var(--gradient-accent, var(--color-primary)); color: var(--color-white); border-color: transparent; }
+  }
+
+  &__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+  &__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--transition-fast);
+    &:hover { background: var(--color-background, var(--color-gray-100)); }
+    &.is-active { background: var(--color-primary-light, var(--color-gray-100)); }
+
+    &-icon { font-size: var(--font-size-lg); }
+    &-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    &-top { display: flex; align-items: center; gap: var(--spacing-xs); justify-content: space-between; }
+    &-name { font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    &-badge { font-size: 0.7rem; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0 var(--spacing-xs); white-space: nowrap; }
+    &-preview { font-size: var(--font-size-sm); color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    &-unread {
+      background: var(--color-danger, #e74c3c);
+      color: var(--color-white);
+      border-radius: var(--radius-pill);
+      min-width: 1.4em;
+      height: 1.4em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: var(--font-weight-bold);
+      padding: 0 0.3em;
+    }
+  }
+
+  &__main {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+    &-name { font-weight: var(--font-weight-semibold); }
+    &-badge { font-size: 0.75rem; color: var(--color-text-muted); border: 1px solid var(--color-border); border-radius: var(--radius-pill); padding: 0 var(--spacing-xs); }
+  }
+
+  &__placeholder { margin: auto; padding: var(--spacing-lg); }
+}
