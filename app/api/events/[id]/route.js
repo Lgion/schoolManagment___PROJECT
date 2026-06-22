@@ -41,6 +41,11 @@ export async function PUT(request, { params }) {
     if (body.location !== undefined) event.location = String(body.location || '').trim()
     if (body.description !== undefined) event.description = String(body.description || '').trim()
     if (body.notifyParents !== undefined) event.notifyParents = Boolean(body.notifyParents)
+    if (body.hasVisio !== undefined) {
+      event.hasVisio = Boolean(body.hasVisio)
+      // Activer la visio génère le salon s'il n'existe pas encore (on le conserve si désactivée).
+      if (event.hasVisio && !event.visioRoomName) event.visioRoomName = `ecole-event-${event._id}`
+    }
 
     if (body.startDate !== undefined) {
       const start = new Date(body.startDate)

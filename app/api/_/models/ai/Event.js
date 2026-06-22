@@ -24,6 +24,10 @@ const eventSchema = mongoose.Schema({
   },
   // Stocké pour mémoire ; l'envoi effectif dépendra de l'infra messagerie (à venir).
   notifyParents: { type: Boolean, default: false },
+  // Visioconférence : si activée, un salon Jitsi est rattaché à l'événement
+  // (« Rejoindre le Direct »). Le nom du salon est cryptique et stable (basé sur l'_id).
+  hasVisio: { type: Boolean, default: false },
+  visioRoomName: { type: String, default: '' },
   createdBy: { type: String, default: null }, // clerkId
   createdAt: { type: Date, default: Date.now },
 })
