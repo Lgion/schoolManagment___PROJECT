@@ -27,12 +27,12 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [ ] Prendre rendez-vous avec un prof sur son agenda.
 - [ ] Permettre à un prof de convoquer un parent.
 - [ ] Créer une page blog de l'école où les élèves, parents, profs et admins peuvent créer un article.
-- [ ] Messagerie / Communication : si l'élève et le parent ne partagent pas le même compte, l'élève peut directement voir ses communications avec son prof. Sinon, l'ajouter comme sous-section de la page d'accueil.
+- [ ] Messagerie / Communication : si l'élève et le parent ne partagent pas le même compte, l'élève peut directement voir ses communications avec son prof sur la page de son profil d'élève (le parent ne pourra pas voir ces communications). Sinon, les communications entre les parent et les prof seront ajoutées dans une sous-section de la page d'accueil.
 
 ## 👁️ Vues et Interfaces (UI/UX)
 - [ ] La page qui s'affiche pour un parent ou un élève connecté doit inclure les vues élèves/profs/classes mais avec beaucoup plus de restrictions dans les infos affichées (ou avoir une section spéciale en en-tête pour regrouper les actions utiles selon le rôle).
-- [ ] Concevoir une interface dédiée pour le parent d'élève et une version plus spécifique dédiée à l'élève.
 - [ ] Rajouter la fonction de création du compte de l'élève directement dans la page d'un élève.
+- [ ] Concevoir une interface dédiée pour le parent d'élève et une version plus spécifique dédiée à l'élève.
 
 ## ⚙️ Administration et Système
 - [ ] Créer la fonctionnalité de création d'école en bac à sable (vivant temporairement dans le local session).
