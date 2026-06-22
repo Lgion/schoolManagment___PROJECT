@@ -11,6 +11,7 @@ import EventsPanel from '../../components/events/EventsPanel';
 import StudentBookPanel from '../../components/classbook/StudentBookPanel';
 import StudentMessaging from '../../components/messaging/StudentMessaging';
 import AppointmentsPanel from '../../components/appointments/AppointmentsPanel';
+import StudentAccountConfig from '../../components/family/StudentAccountConfig';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -205,6 +206,24 @@ export default function ElevePage() {
               />
             </div>
           )}
+
+          {/* Accès & comptes — staff : configure les clés de connexion élève/parent */}
+          <PermissionGate roles={['admin', 'prof']}>
+            <div className="person-detail__block person-detail__block--account">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🔑</span>
+                Accès & comptes
+              </h2>
+              <StudentAccountConfig
+                studentId={eleve._id}
+                initial={{
+                  studentEmail: eleve.studentEmail || '',
+                  studentPhone: eleve.studentPhone || '',
+                  parentEmail: eleve.parents?.email || '',
+                }}
+              />
+            </div>
+          </PermissionGate>
         </section>
 
         <CompositionsBlock

@@ -1,0 +1,54 @@
+/* ============================================================
+   ESPACES FAMILLE — config d'accès (page élève), tableau de bord
+   parent & espace élève (page d'accueil). Tokens design system.
+   ============================================================ */
+
+/* --- Bloc « Accès & comptes » (page élève, staff) --- */
+.accountConfig {
+  &__hint {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--spacing-md);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    input {
+      font: inherit;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+    }
+    input:focus { outline: none; border-color: var(--color-primary); }
+  }
+
+  &__error { color: var(--color-danger-dark); margin: var(--spacing-sm) 0 0; }
+  &__success { color: var(--color-primary-700); margin: var(--spacing-sm) 0 0; }
+
+  &__actions { margin-top: var(--spacing-md); }
+  &__save {
+    font: inherit;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-white);
+    background: var(--gradient-accent);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs) var(--spacing-lg);
+    cursor: pointer;
+    box-shadow: var(--shadow-small);
+    &:hover { filter: brightness(0.97); }
+    &:disabled { opacity: 0.6; cursor: progress; }
+  }
+}
