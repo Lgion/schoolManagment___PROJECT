@@ -12,7 +12,7 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [V] Pouvoir créer des groupes d'élèves, de parents, de profs ou des groupes mixtes.
 - [V] Fonctionnalités de "livre de classe" pour album photo de classe : ajouter une section dédiée dans la page d'une classe ou de son édition.
 - [V] Les élèves auront une section "livre d'élèves" (livre de classe dédié à l'élève, spécifiquement d'année en année).
-- [X] Ajouter un accès aux "Jeux pédagogiques" via un bouton sur la page listant toutes les classes, ainsi qu'un bouton sur la page de chaque classe. L'accès sera public pour tous les utilisateurs sans filtrage par rôle. Depuis la page d'une classe, le contenu sera filtré selon le niveau de la classe (contenu statique pour CP1 au CE2, contenu généré par IA via PDF pour CM1 et CM2).
+- [V] Ajouter un accès aux "Jeux pédagogiques" via un bouton sur la page listant toutes les classes, ainsi qu'un bouton sur la page de chaque classe. L'accès sera public pour tous les utilisateurs sans filtrage par rôle. Depuis la page d'une classe, le contenu sera filtré selon le niveau de la classe (contenu statique pour CP1 au CE2, contenu généré par IA via PDF pour CM1 et CM2).
 
 ## 📅 Emploi du temps et Calendrier
 - [V] Analyser en profondeur le systeme de d'emploi du temps déjà en place, repérer les problèmes de logique ou d'UI/UX, et définir les améliorations à y apporter.
@@ -22,16 +22,16 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [V] Les profs doivent aussi avoir un emploi du temps personnel (afin d'optimiser la responsabilité et la vie scolaire).
 
 ## 🤝 Communication et Rendez-vous
-- [X] Permettre de lancer une visio pour l'école (sur la page des classes) et pour une classe (sur la page d'une classe).
+- [V] Permettre de lancer une visio pour l'école (sur la page des classes) et pour une classe (sur la page d'une classe).
 - [V] Lancer un sondage (avec possibilité d'envoyer un SMS pour s'assurer que tous soient notifiés).
-- [X] Prendre rendez-vous avec un prof sur son agenda.
-- [X] Permettre à un prof de convoquer un parent.
-- [X] Créer une page blog de l'école où les élèves, parents, profs et admins peuvent créer un article.
-- [X] Messagerie / Communication : si l'élève et le parent ne partagent pas le même compte, l'élève peut directement voir ses communications avec son prof sur la page de son profil d'élève (le parent ne pourra pas voir ces communications). Sinon, les communications entre les parent et les prof seront ajoutées dans une sous-section de la page d'accueil.
+- [V] Prendre rendez-vous avec un prof sur son agenda.
+- [V] Permettre à un prof de convoquer un parent.
+- [V] Créer une page blog de l'école où les élèves, parents, profs et admins peuvent créer un article.
+- [V] Messagerie / Communication : si l'élève et le parent ne partagent pas le même compte, l'élève peut directement voir ses communications avec son prof sur la page de son profil d'élève (le parent ne pourra pas voir ces communications). Sinon, les communications entre les parent et les prof seront ajoutées dans une sous-section de la page d'accueil.
 
 ## 👁️ Vues et Interfaces (UI/UX)
-- [X] Rajouter la fonction de création du compte de l'élève directement dans la page d'un élève.
-- [X] Concevoir une interface (Dashboard) dédiée pour le parent d'élève et une version plus spécifique (Espace de travail) dédiée à l'élève.
+- [V] Rajouter la fonction de création du compte de l'élève directement dans la page d'un élève.
+- [V] Concevoir une interface (Dashboard) dédiée pour le parent d'élève et une version plus spécifique (Espace de travail) dédiée à l'élève.
 - [X] (NEW TASK) Concevoir une Matrice des Permissions (Tableau des rôles RBAC) répertoriant les restrictions d'affichage sur toutes les vues globales avec documentation visuelle dynamique (À réaliser en fin de projet).
 (PREVIOUS TASK) La page qui s'affiche pour un parent ou un élève connecté doit inclure les vues élèves/profs/classes mais avec beaucoup plus de restrictions dans les infos affichées (ou avoir une section spéciale en en-tête pour regrouper les actions utiles selon le rôle).
 
