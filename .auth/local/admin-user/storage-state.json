@@ -1,1 +1,29 @@
-{"cookies":[],"origins":[]}
+{
+  "cookies": [
+    {
+      "name": "mock_role",
+      "value": "admin",
+      "domain": "localhost",
+      "path": "/",
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax",
+      "expires": 1782325722
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "auth_token",
+          "value": "mock-token-admin"
+        },
+        {
+          "name": "mock_role",
+          "value": "admin"
+        }
+      ]
+    }
+  ]
+}

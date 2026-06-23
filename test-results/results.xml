@@ -1,0 +1,12 @@
+<testsuites id="" name="" tests="4" failures="0" skipped="0" errors="0" time="24.753394">
+<testsuite name="e2e/family-dashboards.spec.ts" timestamp="2026-06-23T18:28:42.985Z" hostname="chromium" tests="4" failures="0" skipped="0" time="37.006" errors="0">
+<testcase name="Family Dashboards and Role Redirection (E2E) › Parent Account › is redirected to the Parent Dashboard on home page" classname="e2e/family-dashboards.spec.ts" time="8.216">
+</testcase>
+<testcase name="Family Dashboards and Role Redirection (E2E) › Parent Account › is prevented from accessing the admin page" classname="e2e/family-dashboards.spec.ts" time="6.481">
+</testcase>
+<testcase name="Family Dashboards and Role Redirection (E2E) › Student Account › is redirected to the Student Space on home page" classname="e2e/family-dashboards.spec.ts" time="10.029">
+</testcase>
+<testcase name="Family Dashboards and Role Redirection (E2E) › Student Account › is prevented from accessing the admin page" classname="e2e/family-dashboards.spec.ts" time="12.28">
+</testcase>
+</testsuite>
+</testsuites>

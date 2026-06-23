@@ -2,7 +2,7 @@
   "cookies": [
     {
       "name": "mock_role",
-      "value": "prof",
+      "value": "parent",
       "domain": "localhost",
       "path": "/",
       "httpOnly": false,
@@ -17,11 +17,11 @@
       "localStorage": [
         {
           "name": "auth_token",
-          "value": "mock-token-prof"
+          "value": "mock-token-parent"
         },
         {
           "name": "mock_role",
-          "value": "prof"
+          "value": "parent"
         }
       ]
     }

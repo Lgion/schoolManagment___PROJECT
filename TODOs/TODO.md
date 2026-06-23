@@ -40,4 +40,4 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [X] Créer la fonctionnalité de générer des données factices pour l'école via un formulaire.
 
 ## 🧪 Tests et Assurance Qualité (QA)
-- [X] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC).
+- [V] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC).

@@ -67,7 +67,7 @@ export function UserRoleProvider({ children }) {
     const loadUserData = async () => {
       // Test mode bypass
       if (process.env.NEXT_PUBLIC_MODE === 'test') {
-        const mockRole = getLSItem('mock_role') || 'admin';
+        const mockRole = (typeof window !== 'undefined' ? (localStorage.getItem('mock_role') || getLSItem('mock_role')) : null) || 'admin';
         setUserData({ id: 'test', firstName: 'Test', lastName: 'User', email: 'test@test.com', role: mockRole });
         setUserRole(mockRole);
         setPermissions(getPermissionsByRole(mockRole));

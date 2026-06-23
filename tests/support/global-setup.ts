@@ -12,7 +12,7 @@ async function globalSetup() {
     setAuthProvider(mockAuthProvider);
 
     await authGlobalInit({
-        userIdentifiers: ['default-user', 'admin-user', 'enseignant-user']
+        userIdentifiers: ['default-user', 'admin-user', 'enseignant-user', 'parent-user', 'eleve-user']
     });
 }
 

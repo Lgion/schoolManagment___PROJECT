@@ -132,7 +132,9 @@ export default ({ children }) => {
     setMounted(true);
   }, [isSignedIn]);
 
-  if (mounted && !isSignedIn && !isDemoMode) {
+  const isTestMode = process.env.NEXT_PUBLIC_MODE === 'test';
+
+  if (mounted && !isSignedIn && !isDemoMode && !isTestMode) {
     return <LandingPage />;
   }
 
