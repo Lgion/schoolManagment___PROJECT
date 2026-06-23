@@ -50,6 +50,10 @@ export function UserRoleProvider({ children }) {
         'view_my_profile', 'view_my_grades', 'view_my_schedule',
         'contact_teachers'
       ],
+      parent: [
+        'view_my_children', 'view_children_grades', 'view_children_schedule',
+        'contact_teachers', 'view_public_info'
+      ],
       public: [
         'view_public_info', 'contact_school'
       ]
@@ -225,6 +229,11 @@ export function UserRoleProvider({ children }) {
     return userRole === 'eleve';
   };
 
+  // Fonction pour vérifier si c'est un parent
+  const isParent = () => {
+    return userRole === 'parent';
+  };
+
   // Fonction pour vérifier si c'est un utilisateur public
   const isPublic = () => {
     return userRole === 'public';
@@ -292,6 +301,7 @@ export function UserRoleProvider({ children }) {
     isAdmin,
     isProf,
     isEleve,
+    isParent,
     isPublic,
     clerkUser,
     isAuthenticated: !!clerkUser && !!userData,

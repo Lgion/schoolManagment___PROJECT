@@ -9,6 +9,9 @@ import HomeworkTodoList from '../../components/homework/HomeworkTodoList';
 import StudentReportCards from '../../components/bulletins/StudentReportCards';
 import EventsPanel from '../../components/events/EventsPanel';
 import StudentBookPanel from '../../components/classbook/StudentBookPanel';
+import StudentMessaging from '../../components/messaging/StudentMessaging';
+import AppointmentsPanel from '../../components/appointments/AppointmentsPanel';
+import StudentAccountConfig from '../../components/family/StudentAccountConfig';
 import { generateSchoolYears } from '../../components/entityBlocks';
 import { getDefaultSchoolYear } from '../../../utils/schoolYear';
 import Gmap from '../../_/Gmap_plus';
@@ -174,6 +177,53 @@ export default function ElevePage() {
             </h2>
             <StudentBookPanel studentId={eleve._id} />
           </div>
+
+          {['eleve', 'parent'].includes(userRole) && (
+            <div className="person-detail__block person-detail__block--messaging">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">💬</span>
+                Messagerie {userRole === 'parent' ? '(avec l\'enseignant)' : '(avec mon enseignant)'}
+              </h2>
+              <StudentMessaging
+                studentId={eleve._id}
+                teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
+                conversationType={userRole === 'parent' ? 'PARENT_TEACHER' : 'STUDENT_TEACHER'}
+              />
+            </div>
+          )}
+
+          {['parent', 'prof'].includes(userRole) && (
+            <div className="person-detail__block person-detail__block--appointments">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📆</span>
+                Rendez-vous
+              </h2>
+              <AppointmentsPanel
+                studentId={eleve._id}
+                initiatorRole={userRole === 'prof' ? 'prof' : 'parent'}
+                teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
+                canCreate={true}
+              />
+            </div>
+          )}
+
+          {/* Accès & comptes — staff : configure les clés de connexion élève/parent */}
+          <PermissionGate roles={['admin', 'prof']}>
+            <div className="person-detail__block person-detail__block--account">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🔑</span>
+                Accès & comptes
+              </h2>
+              <StudentAccountConfig
+                studentId={eleve._id}
+                initial={{
+                  studentEmail: eleve.studentEmail || '',
+                  studentPhone: eleve.studentPhone || '',
+                  parentEmail: eleve.parents?.email || '',
+                }}
+              />
+            </div>
+          </PermissionGate>
         </section>
 
         <CompositionsBlock

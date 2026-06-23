@@ -68,6 +68,7 @@ export function RoleIndicator({ className = "" }) {
     admin: 'Administrateur',
     prof: 'Professeur',
     eleve: 'Élève',
+    parent: 'Parent',
     public: 'Visiteur'
   };
 
@@ -75,6 +76,7 @@ export function RoleIndicator({ className = "" }) {
     admin: 'roleIndicator--admin',
     prof: 'roleIndicator--prof',
     eleve: 'roleIndicator--eleve',
+    parent: 'roleIndicator--parent',
     public: 'roleIndicator--public'
   };
 
@@ -82,6 +84,7 @@ export function RoleIndicator({ className = "" }) {
     admin: '👑',
     prof: '👨‍🏫',
     eleve: '👨‍🎓',
+    parent: '👪',
     public: '👤'
   };
 
@@ -124,9 +127,10 @@ export function UserProfile({ className = "" }) {
       <header className="userProfile__header">
         <div className="userProfile__avatar">
           <span className="userProfile__avatar-icon">
-            {userRole === 'admin' ? '👑' : 
-             userRole === 'prof' ? '👨‍🏫' : 
-             userRole === 'eleve' ? '👨‍🎓' : '👤'}
+            {userRole === 'admin' ? '👑' :
+             userRole === 'prof' ? '👨‍🏫' :
+             userRole === 'eleve' ? '👨‍🎓' :
+             userRole === 'parent' ? '👪' : '👤'}
           </span>
         </div>
         <div className="userProfile__info">
@@ -175,6 +179,13 @@ export function UserProfile({ className = "" }) {
             <div className="userProfile__roleData-item">
               <span className="userProfile__roleData-label">Profil élève:</span>
               <span className="userProfile__roleData-value">Lié</span>
+            </div>
+          )}
+
+          {userRole === 'parent' && Array.isArray(userData.roleData.childrenRefs) && (
+            <div className="userProfile__roleData-item">
+              <span className="userProfile__roleData-label">Enfants rattachés:</span>
+              <span className="userProfile__roleData-value">{userData.roleData.childrenRefs.length}</span>
             </div>
           )}
         </section>

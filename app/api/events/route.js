@@ -75,7 +75,7 @@ export async function POST(request) {
     await dbConnect()
 
     const body = await request.json()
-    const { title, type, startDate, endDate, isGlobal, classId, location, description, notifyParents } = body || {}
+    const { title, type, startDate, endDate, isGlobal, classId, location, description, notifyParents, hasVisio } = body || {}
 
     if (!title || !String(title).trim()) {
       return NextResponse.json({ success: false, error: 'Le titre est requis' }, { status: 400 })
@@ -103,8 +103,15 @@ export async function POST(request) {
       location: typeof location === 'string' ? location.trim() : '',
       type: TYPES.includes(type) ? type : 'AUTRE',
       notifyParents: Boolean(notifyParents),
+      hasVisio: Boolean(hasVisio),
       createdBy: authResult.userId || null,
     })
+
+    // Salon Jitsi cryptique et stable, dérivé de l'_id (généré une fois la pièce créée).
+    if (event.hasVisio && !event.visioRoomName) {
+      event.visioRoomName = `ecole-event-${event._id}`
+      await event.save()
+    }
 
     return NextResponse.json({ success: true, data: event }, { status: 201 })
   } catch (error) {

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createEvent, updateEvent, isoToLocalInput, EVENT_TYPES, typeMeta } from './eventsApi';
+import VisioLauncher from '../visio/VisioLauncher';
 
 // datetime-local par défaut : prochaine heure pleine.
 function defaultStart() {
@@ -32,6 +33,7 @@ export default function EventModal({ isOpen, event, defaultClassId = null, canGl
   const [description, setDescription] = useState('');
   const [isGlobal, setIsGlobal] = useState(false);
   const [notifyParents, setNotifyParents] = useState(false);
+  const [hasVisio, setHasVisio] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -47,6 +49,7 @@ export default function EventModal({ isOpen, event, defaultClassId = null, canGl
       setDescription(event.description || '');
       setIsGlobal(Boolean(event.isGlobal));
       setNotifyParents(Boolean(event.notifyParents));
+      setHasVisio(Boolean(event.hasVisio));
     } else {
       const s = defaultStart();
       setTitle('');
@@ -57,6 +60,7 @@ export default function EventModal({ isOpen, event, defaultClassId = null, canGl
       setDescription('');
       setIsGlobal(canGlobal && !defaultClassId);
       setNotifyParents(false);
+      setHasVisio(false);
     }
   }, [isOpen, event, canGlobal, defaultClassId]);
 
@@ -82,6 +86,7 @@ export default function EventModal({ isOpen, event, defaultClassId = null, canGl
         location: location.trim(),
         description: description.trim(),
         notifyParents,
+        hasVisio,
       };
       const saved = event ? await updateEvent(event._id, payload) : await createEvent(payload);
       onSaved?.(saved);
@@ -157,6 +162,23 @@ export default function EventModal({ isOpen, event, defaultClassId = null, canGl
             <input type="checkbox" checked={notifyParents} onChange={(e) => setNotifyParents(e.target.checked)} />
             <span>Notifier les parents (à venir)</span>
           </label>
+
+          <label className="eventModal__check">
+            <input type="checkbox" checked={hasVisio} onChange={(e) => setHasVisio(e.target.checked)} />
+            <span>🔴 Diffuser en direct (visioconférence)</span>
+          </label>
+
+          {event && event.hasVisio && event.visioRoomName && (
+            <div className="eventModal__visio">
+              <VisioLauncher
+                roomName={event.visioRoomName}
+                title={event.title}
+                variant="live"
+                canCapture
+                albumTarget={{ eventId: event._id }}
+              />
+            </div>
+          )}
         </div>
 
         <footer className="eventModal__footer">

@@ -6,11 +6,11 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true },
     firstName: { type: String, default: "" },
     lastName: { type: String, default: "" },
-    role: { 
-        type: String, 
-        enum: ['admin', 'prof', 'eleve', 'public'], 
+    role: {
+        type: String,
+        enum: ['admin', 'prof', 'eleve', 'parent', 'public'],
         default: 'public',
-        required: true 
+        required: true
     },
     
     // Métadonnées de connexion
@@ -32,9 +32,12 @@ const userSchema = mongoose.Schema({
         // Pour les profs - référence vers Teacher
         teacherRef: { type: Schema.Types.ObjectId, ref: 'ai_Profs_Ecole_St_Martin' },
         
-        // Pour les élèves - référence vers Eleve  
+        // Pour les élèves - référence vers Eleve
         eleveRef: { type: Schema.Types.ObjectId, ref: 'ai_Eleves_Ecole_St_Martin' },
-        
+
+        // Pour les parents - enfants rattachés (correspondance par email, gère la fratrie)
+        childrenRefs: [{ type: Schema.Types.ObjectId, ref: 'ai_Eleves_Ecole_St_Martin' }],
+
         // Pour les publics - informations de contact
         contactInfo: {
             phone: { type: String, default: "" },
@@ -80,6 +83,10 @@ userSchema.methods.hasPermission = function(permission) {
         eleve: [
             'view_my_profile', 'view_my_grades', 'view_my_schedule',
             'contact_teachers'
+        ],
+        parent: [
+            'view_my_children', 'view_children_grades', 'view_children_schedule',
+            'contact_teachers', 'view_public_info'
         ],
         public: [
             'view_public_info', 'contact_school'

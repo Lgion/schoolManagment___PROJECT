@@ -19,12 +19,14 @@ import AttendancePanel from '../../components/attendance/AttendancePanel';
 import HomeworkPanel from '../../components/homework/HomeworkPanel';
 import ReportCardsPanel from '../../components/bulletins/ReportCardsPanel';
 import EventsPanel from '../../components/events/EventsPanel';
+import VisioLauncher from '../../components/visio/VisioLauncher';
 import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
 import UnifiedFeed from '../../components/feed/UnifiedFeed';
 import ClassBookPanel from '../../components/classbook/ClassBookPanel';
+import ClassGamesWidget from '../../components/games/ClassGamesWidget';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -329,6 +331,27 @@ export default function ClasseDetailPage() {
             </div>
           )}
         </PermissionGate>
+        {/* Visio de classe — le staff lance/rejoint et peut capturer des souvenirs (album de classe) */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--visio">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎥</span>
+                Visioconférence de classe
+              </h2>
+              <p className="person-detail__hint">
+                Lancez un cours à distance. Le bouton 📸 enregistre des photos dans la galerie de la classe.
+              </p>
+              <VisioLauncher
+                roomName={`ecole-classe-${classe._id}`}
+                title={`Visio · ${classe.niveau || ''} ${classe.alias || ''}`.trim()}
+                variant="launch"
+                canCapture
+                albumTarget={{ classId: classe._id }}
+              />
+            </div>
+          )}
+        </PermissionGate>
         {/* Documents de cours — consultation pour tous, dépôt/suppression réservé prof/admin */}
         <div className="person-detail__block person-detail__block--documents">
           <h2 className="person-detail__subtitle">
@@ -337,6 +360,17 @@ export default function ClasseDetailPage() {
           </h2>
           <ClassDocuments
             classId={classe._id}
+            canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
+          />
+        </div>
+        {/* Jeux pédagogiques — accès ouvert à tous, filtrés sur le niveau de la classe */}
+        <div className="person-detail__block person-detail__block--games">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">🎮</span>
+            Jeux pédagogiques
+          </h2>
+          <ClassGamesWidget
+            classe={classe}
             canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
           />
         </div>

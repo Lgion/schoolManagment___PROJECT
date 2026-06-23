@@ -257,6 +257,18 @@ export default ({ children }) => {
                   <span role="img" aria-label="Groupes">👥</span>
                   <strong>Mes Groupes</strong>
                 </Link>
+                <Link href="/games" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Jeux pédagogiques">
+                  <span role="img" aria-label="Jeux">🎮</span>
+                  <strong>Jeux pédagogiques</strong>
+                </Link>
+                <Link href="/blog" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Blog de l'école">
+                  <span role="img" aria-label="Blog">📰</span>
+                  <strong>Blog de l'école</strong>
+                </Link>
+                <Link href="/gallery" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Galerie des souvenirs">
+                  <span role="img" aria-label="Galerie">📸</span>
+                  <strong>Galerie des souvenirs</strong>
+                </Link>
                 <PermissionGate role="admin">
                   <Link href="/administration" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Administration">
                     <span role="img" aria-label="Admin">⚙️</span>

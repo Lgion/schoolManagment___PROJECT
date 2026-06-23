@@ -2,13 +2,21 @@
 
 import { useContext } from 'react';
 import { AiAdminContext } from '../stores/ai_adminContext';
+import { useUserRole } from '../stores/useUserRole';
 import TeacherReportModule from './components/TeacherReportModule';
 import TeacherDailyWidget from './components/TeacherDailyWidget';
 import CalendarContent from './calendar/CalendarContent';
 import UnifiedFeed from './components/feed/UnifiedFeed';
+import ParentDashboard from './components/family/ParentDashboard';
+import StudentSpace from './components/family/StudentSpace';
 
 export default function Page() {
   const { homepage, homepageLoaded } = useContext(AiAdminContext);
+  const { userRole } = useUserRole();
+
+  // Accueil dédié selon le rôle (spec roles_and_accounts §4).
+  if (userRole === 'parent') return <ParentDashboard />;
+  if (userRole === 'eleve') return <StudentSpace />;
 
   if (!homepageLoaded && (!homepage.title || homepage.title === '')) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Chargement...</div>;
