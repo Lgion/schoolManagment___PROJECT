@@ -127,6 +127,8 @@ export default function ElevePage() {
             <StudentPointsWidget
               studentId={eleve._id}
               celebrateOnNew={['eleve', 'public'].includes(userRole)}
+              canManage={userRole === 'admin' || userRole === 'prof'}
+              studentName={`${eleve.nom} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}`}
             />
           </div>
 
