@@ -38,3 +38,6 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 ## ⚙️ Administration et Système
 - [X] Créer la fonctionnalité de création d'école en bac à sable (vivant temporairement dans le local session).
 - [X] Créer la fonctionnalité de générer des données factices pour l'école via un formulaire.
+
+## 🧪 Tests et Assurance Qualité (QA)
+- [X] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC).
