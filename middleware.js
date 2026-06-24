@@ -28,9 +28,9 @@ export default clerkMiddleware(async (auth, request) => {
   } else if (schoolKey === 'ecole_st_martin') {
     tenantDb = 'prod';
   } else {
-    // Si pas de clé explicite, on vérifie l'auth Clerk ou mockRole
+    // Si pas de clé explicite, on vérifie l'auth Clerk
     const authObj = await auth();
-    if (!authObj.userId && !mockRole) {
+    if (!authObj.userId) { // On force la sandbox pour tout utilisateur non connecté (même s'il a un mockRole)
       tenantDb = 'sandbox';
     }
   }
