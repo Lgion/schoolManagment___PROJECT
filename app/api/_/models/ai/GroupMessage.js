@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const groupMessageSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   groupId: { type: ObjectId, ref: 'ai_Groups_Ecole_St_Martin', required: true },
   senderId: { type: String, required: true }, // Clerk ID
   senderName: { type: String, required: true },

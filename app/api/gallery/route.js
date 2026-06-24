@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../lib/authWithFallback'
 import dbConnect from '../lib/dbConnect'
 import { resolveGalleryAccess, canAccessAlbum, canModerateAlbum } from '../lib/galleryAccess'
@@ -37,7 +38,10 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const year = searchParams.get('year') || academicYearOf()
 
-    const albums = await MediaAlbum.find({ academicYear: year, 'images.0': { $exists: true } })
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
+    const albums = await MediaAlbum.find({ schoolKey, academicYear: year, 'images.0': { $exists: true } })
       .populate('classId', 'niveau alias annee')
       .sort({ date: -1 })
       .lean()

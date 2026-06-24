@@ -9,6 +9,8 @@ require('./Teacher')
 // avec une classe. Le fichier lui-même est hébergé sur un stockage cloud externe
 // (Cloudinary) ; la base ne conserve que les métadonnées et l'URL distante.
 const classDocumentSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Classe concernée par le document
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: true },
   // Professeur ayant déposé le fichier.

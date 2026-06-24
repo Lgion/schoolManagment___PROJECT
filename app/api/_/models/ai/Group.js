@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const groupSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   name: { type: String, required: true, trim: true, maxlength: 100 },
   description: { type: String, default: "", trim: true, maxlength: 500 },
   creatorId: { type: String, required: true }, // Clerk ID

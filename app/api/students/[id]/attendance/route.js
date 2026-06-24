@@ -15,6 +15,10 @@ export async function GET(request, { params }) {
     if (auth instanceof NextResponse) return auth
 
     await dbConnect()
+    
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
 
     const { id } = await params
     const mongoose = require('mongoose')
@@ -24,7 +28,7 @@ export async function GET(request, { params }) {
     const studentId = new mongoose.Types.ObjectId(id)
 
     const agg = await AttendanceEntry.aggregate([
-      { $match: { studentId } },
+      { $match: { schoolKey, studentId } },
       { $group: { _id: '$status', n: { $sum: 1 } } },
     ])
 
@@ -34,6 +38,7 @@ export async function GET(request, { params }) {
 
     // Derniers évènements notables (hors présences) pour affichage rapide
     const recent = await AttendanceEntry.find({
+      schoolKey,
       studentId,
       status: { $in: ['ABSENT', 'LATE', 'EXCUSED'] },
     })

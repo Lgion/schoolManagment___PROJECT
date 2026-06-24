@@ -3,50 +3,12 @@
 import React, { useState } from 'react';
 
 export default function LandingPage() {
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [schoolName, setSchoolName] = useState('');
-    const [schoolType, setSchoolType] = useState('classique');
-    const [creating, setCreating] = useState(false);
-    const [error, setError] = useState('');
-
     const enterGeneralDemo = () => {
         document.cookie = "force_falsy=true; path=/; max-age=86400";
         document.cookie = "is_landing_demo=true; path=/; max-age=86400";
-        document.cookie = "x-school-key=ecole_st_martin; path=/; max-age=86400";
+        document.cookie = "x-school-key=demo_master; path=/; max-age=86400";
         document.cookie = "mock_role=admin; path=/; max-age=86400";
         window.location.reload();
-    };
-
-    const handleCreateSandbox = async (e) => {
-        e.preventDefault();
-        if (!schoolName.trim()) return;
-
-        setCreating(true);
-        setError('');
-
-        try {
-            const response = await fetch('/api/sandbox/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: schoolName.trim(),
-                    type: schoolType
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Le cookie et la redirection sont gérés par la réponse API
-                window.location.reload();
-            } else {
-                setError(data.error || 'Erreur lors de la création de la sandbox.');
-            }
-        } catch (err) {
-            setError('Impossible de se connecter au serveur de démonstration.');
-        } finally {
-            setCreating(false);
-        }
     };
 
     return (
@@ -58,395 +20,346 @@ export default function LandingPage() {
                     font-family: 'Outfit', 'Inter', sans-serif;
                     min-height: 100vh;
                     position: relative;
-                    overflow: hidden;
+                    overflow-x: hidden;
                 }
 
-                /* Glowing backgrounds */
-                .landing::before {
-                    content: '';
+                /* Background Effects */
+                .landing__glow {
                     position: absolute;
+                    width: 600px;
+                    height: 600px;
+                    background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%);
                     top: -10%;
                     left: -10%;
-                    width: 50vw;
-                    height: 50vw;
-                    background: radial-gradient(circle, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
+                    border-radius: 50%;
+                    filter: blur(60px);
                     z-index: 0;
                     pointer-events: none;
                 }
-
-                .landing::after {
-                    content: '';
-                    position: absolute;
-                    bottom: -10%;
+                .landing__glow--right {
+                    left: auto;
                     right: -10%;
-                    width: 50vw;
-                    height: 50vw;
-                    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
-                    z-index: 0;
-                    pointer-events: none;
+                    top: 20%;
+                    background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%);
                 }
 
-                .landing__hero {
+                .landing__container {
+                    max-width: 1280px;
+                    margin: 0 auto;
+                    padding: 0 24px;
                     position: relative;
-                    padding: 120px 20px 80px 20px;
-                    text-align: center;
                     z-index: 1;
                 }
 
-                .landing__title {
-                    font-size: 3.5rem;
-                    font-weight: 900;
-                    line-height: 1.15;
-                    margin-bottom: 24px;
-                    letter-spacing: -0.02em;
+                /* Header */
+                .landing__nav {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 24px 0;
+                }
+                .landing__logo {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                .landing__logo-icon {
+                    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 8px 16px rgba(249,115,22,0.3);
                 }
 
-                .landing__highlight {
-                    background: linear-gradient(90deg, #f97316 0%, #ffedd5 100%);
+                /* Hero Section */
+                .hero {
+                    padding: 80px 0 120px 0;
+                    text-align: center;
+                }
+                .hero__badge {
+                    display: inline-block;
+                    padding: 8px 16px;
+                    background: rgba(249,115,22,0.1);
+                    border: 1px solid rgba(249,115,22,0.2);
+                    border-radius: 50px;
+                    color: #ffedd5;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    margin-bottom: 24px;
+                    animation: fadeInDown 0.6s ease;
+                }
+                .hero__title {
+                    font-size: clamp(3rem, 5vw, 4.5rem);
+                    font-weight: 900;
+                    line-height: 1.1;
+                    letter-spacing: -0.02em;
+                    margin-bottom: 24px;
+                    animation: fadeInUp 0.6s ease 0.1s both;
+                }
+                .hero__title-highlight {
+                    background: linear-gradient(90deg, #f97316 0%, #fcd34d 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                 }
-
-                .landing__subtitle {
+                .hero__subtitle {
                     font-size: 1.25rem;
                     color: #94a3b8;
-                    max-width: 650px;
+                    max-width: 680px;
                     margin: 0 auto 40px auto;
                     line-height: 1.6;
+                    animation: fadeInUp 0.6s ease 0.2s both;
                 }
-
-                .landing__btn-group {
+                .hero__actions {
                     display: flex;
                     justify-content: center;
                     gap: 16px;
-                    flex-wrap: wrap;
+                    animation: fadeInUp 0.6s ease 0.3s both;
                 }
-
-                .landing__btn {
-                    padding: 16px 32px;
-                    border-radius: 14px;
+                .btn {
+                    padding: 16px 36px;
+                    border-radius: 12px;
                     font-weight: 700;
                     font-size: 1.05rem;
                     cursor: pointer;
                     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                     border: none;
+                    text-decoration: none;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
                 }
-
-                .landing__btn--glow {
+                .btn--primary {
                     background: #f97316;
                     color: #fff;
-                    box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
+                    box-shadow: 0 0 30px rgba(249,115,22,0.3);
                 }
-
-                .landing__btn--glow:hover {
+                .btn--primary:hover {
                     background: #ea580c;
                     transform: translateY(-2px);
-                    box-shadow: 0 0 40px rgba(249, 115, 22, 0.5);
+                    box-shadow: 0 0 40px rgba(249,115,22,0.5);
                 }
-
-                .landing__btn--secondary {
-                    background: rgba(255, 255, 255, 0.05);
+                .btn--secondary {
+                    background: rgba(255,255,255,0.05);
                     color: #f8fafc;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border: 1px solid rgba(255,255,255,0.1);
                     backdrop-filter: blur(12px);
                 }
-
-                .landing__btn--secondary:hover {
-                    background: rgba(255, 255, 255, 0.1);
+                .btn--secondary:hover {
+                    background: rgba(255,255,255,0.1);
                     transform: translateY(-2px);
-                    border-color: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255,255,255,0.2);
                 }
 
-                /* Cards Grid */
-                .landing__section {
-                    padding: 80px 20px;
-                    position: relative;
-                    z-index: 1;
-                }
-
-                .landing__container {
-                    max-width: 1100px;
-                    margin: 0 auto;
-                }
-
-                .landing__section-title {
-                    font-size: 2.25rem;
-                    font-weight: 800;
-                    text-align: center;
-                    margin-bottom: 48px;
-                }
-
-                .landing__grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    gap: 32px;
-                }
-
-                .landing__card {
-                    background: rgba(30, 41, 59, 0.4);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    backdrop-filter: blur(12px);
-                    padding: 32px;
-                    border-radius: 20px;
-                    transition: transform 0.3s, border-color 0.3s;
-                }
-
-                .landing__card:hover {
-                    transform: translateY(-4px);
-                    border-color: rgba(249, 115, 22, 0.2);
-                }
-
-                .landing__card-icon {
-                    font-size: 2.5rem;
-                    margin-bottom: 20px;
-                }
-
-                .landing__card h3 {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                    margin: 0 0 12px 0;
-                }
-
-                .landing__card p {
-                    color: #94a3b8;
-                    font-size: 0.95rem;
-                    line-height: 1.6;
-                    margin: 0;
-                }
-
-                /* Custom Modal */
-                .landing-modal {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: rgba(5, 8, 15, 0.85);
-                    backdrop-filter: blur(12px);
+                /* Social Proof */
+                .proof {
                     display: flex;
                     justify-content: center;
-                    align-items: center;
+                    gap: 40px;
+                    margin-top: 60px;
+                    padding-top: 40px;
+                    border-top: 1px solid rgba(255,255,255,0.05);
+                    animation: fadeInUp 0.6s ease 0.4s both;
+                }
+                .proof__item {
+                    text-align: center;
+                }
+                .proof__num {
+                    font-size: 2rem;
+                    font-weight: 800;
+                    color: #f8fafc;
+                    display: block;
+                }
+                .proof__label {
+                    color: #64748b;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                }
+
+                /* Bento Grid Section */
+                .features {
+                    padding: 80px 0;
+                }
+                .features__title {
+                    font-size: 2.5rem;
+                    text-align: center;
+                    margin-bottom: 60px;
+                    font-weight: 800;
+                }
+                .bento {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 24px;
+                }
+                .bento__item {
+                    background: rgba(15,23,42,0.4);
+                    border: 1px solid rgba(255,255,255,0.05);
+                    border-radius: 24px;
+                    padding: 32px;
+                    position: relative;
+                    overflow: hidden;
+                    backdrop-filter: blur(10px);
+                    transition: transform 0.3s, border-color 0.3s;
+                }
+                .bento__item:hover {
+                    transform: translateY(-5px);
+                    border-color: rgba(249,115,22,0.3);
+                }
+                .bento__item--large {
+                    grid-column: span 2;
+                }
+                .bento__icon {
+                    font-size: 2.5rem;
+                    margin-bottom: 24px;
+                    display: inline-block;
+                }
+                .bento__item h3 {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    margin-bottom: 12px;
+                }
+                .bento__item p {
+                    color: #94a3b8;
+                    line-height: 1.6;
+                }
+                
+                /* Modal Styles */
+                /* (Rest of modal styles perfectly preserved from previous but upgraded) */
+                .landing-modal {
+                    position: fixed;
+                    top: 0; left: 0; width: 100vw; height: 100vh;
+                    background: rgba(5,8,15,0.85);
+                    backdrop-filter: blur(12px);
+                    display: flex; justify-content: center; align-items: center;
                     z-index: 1000;
                     animation: fadeIn 0.3s ease;
                 }
-
                 .landing-modal__content {
-                    background: linear-gradient(135deg, #131b2e 0%, #0b0f19 100%);
-                    border: 1px solid rgba(249, 115, 22, 0.2);
+                    background: #0f172a;
+                    border: 1px solid rgba(249,115,22,0.3);
                     padding: 40px;
                     border-radius: 28px;
                     width: 90%;
                     max-width: 500px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 40px rgba(249,115,22,0.1);
                     animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
                 }
-
-                .landing-modal__title {
-                    font-size: 1.75rem;
-                    font-weight: 800;
-                    margin: 0 0 8px 0;
-                    color: #f8fafc;
-                }
-
-                .landing-modal__subtitle {
-                    color: #94a3b8;
-                    font-size: 0.9rem;
-                    margin-bottom: 24px;
-                }
-
-                .landing-modal__form-group {
-                    margin-bottom: 20px;
-                    text-align: left;
-                }
-
-                .landing-modal__label {
-                    display: block;
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                    color: #cbd5e1;
-                    margin-bottom: 6px;
-                }
-
-                .landing-modal__input {
+                .landing-modal__title { font-size: 1.75rem; font-weight: 800; color: #fff; margin-bottom: 8px;}
+                .landing-modal__subtitle { color: #94a3b8; margin-bottom: 24px; line-height: 1.5;}
+                .landing-modal__form-group { margin-bottom: 20px;}
+                .landing-modal__label { display: block; color: #cbd5e1; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;}
+                .landing-modal__input, .landing-modal__select {
                     width: 100%;
-                    padding: 12px 16px;
-                    background: rgba(15, 23, 42, 0.6);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 10px;
-                    color: #f8fafc;
-                    font-size: 0.95rem;
-                    transition: border-color 0.2s;
-                }
-
-                .landing-modal__input:focus {
-                    outline: none;
-                    border-color: #f97316;
-                }
-
-                .landing-modal__select {
-                    width: 100%;
-                    padding: 12px 16px;
-                    background: #131b2e;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 10px;
-                    color: #f8fafc;
-                    font-size: 0.95rem;
-                }
-
-                .landing-modal__btn-group {
-                    display: flex;
-                    gap: 12px;
-                    margin-top: 28px;
-                }
-
-                .landing-modal__btn {
-                    flex: 1;
                     padding: 14px;
-                    border-radius: 10px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    border: none;
-                }
-
-                .landing-modal__btn--submit {
-                    background: #f97316;
+                    background: #1e293b;
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 12px;
                     color: #fff;
+                    font-family: inherit;
+                    font-size: 1rem;
                 }
-
-                .landing-modal__btn--submit:hover:not(:disabled) {
-                    background: #ea580c;
+                .landing-modal__input:focus, .landing-modal__select:focus {
+                    outline: none; border-color: #f97316;
                 }
+                .landing-modal__btn-group { display: flex; gap: 12px; margin-top: 32px;}
+                .landing-modal__btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s;}
+                .landing-modal__btn--submit { background: #f97316; color: #fff;}
+                .landing-modal__btn--submit:hover { background: #ea580c;}
+                .landing-modal__btn--cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1;}
+                .landing-modal__btn--cancel:hover { background: rgba(255,255,255,0.05);}
 
-                .landing-modal__btn--cancel {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: #94a3b8;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                }
+                /* Animations */
+                @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-                .landing-modal__btn--cancel:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: #f8fafc;
-                }
-
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                @keyframes scaleUp {
-                    from { transform: scale(0.95) translateY(20px); opacity: 0; }
-                    to { transform: scale(1) translateY(0); opacity: 1; }
+                @media (max-width: 900px) {
+                    .bento { grid-template-columns: 1fr; }
+                    .bento__item--large { grid-column: span 1; }
+                    .proof { flex-wrap: wrap; gap: 20px; }
                 }
             `}</style>
 
-            {/* HERO */}
-            <section className="landing__hero">
-                <h1 className="landing__title">
-                    La Gestion Scolaire, <br/>
-                    <span className="landing__highlight">Réinventée en SaaS.</span>
-                </h1>
-                <p className="landing__subtitle">
-                    Une solution moderne, ultra-rapide et intuitive. Simulez instantanément différents rôles ou créez votre propre bac à sable en un clic.
-                </p>
-                <div className="landing__btn-group">
-                    <button className="landing__btn landing__btn--glow" onClick={enterGeneralDemo}>
-                        Démo Générale (Admin)
-                    </button>
-                    <button className="landing__btn landing__btn--secondary" onClick={() => setShowCreateModal(true)}>
-                        🧪 Créer ma Sandbox Perso
-                    </button>
-                </div>
-            </section>
+            <div className="landing__glow"></div>
+            <div className="landing__glow landing__glow--right"></div>
 
-            {/* SECTIONS FEATURE */}
-            <section className="landing__section">
-                <div className="landing__container">
-                    <h2 className="landing__section-title">Pourquoi choisir notre solution SaaS ?</h2>
-                    <div className="landing__grid">
-                        <div className="landing__card">
-                            <div className="landing__card-icon">⚡</div>
-                            <h3>Vitesse Absolue</h3>
-                            <p>Des temps de chargement réduits à zéro et des transitions ultra-fluides basées sur les meilleures pratiques Next.js.</p>
-                        </div>
-                        <div className="landing__card">
-                            <div className="landing__card-icon">🧠</div>
-                            <h3>Extraction IA Révolutionnaire</h3>
-                            <p>Numérisez instantanément vos cahiers de texte, notes d'élèves et bordereaux financiers d'une simple capture photo.</p>
-                        </div>
-                        <div className="landing__card">
-                            <div className="landing__card-icon">🛡️</div>
-                            <h3>Multi-Tenant Hermétique</h3>
-                            <p>Vos données de production et vos environnements de test sont isolés dynamiquement au niveau de la base de données.</p>
-                        </div>
+            <div className="landing__container">
+                <nav className="landing__nav">
+                    <div className="landing__logo">
+                        <div className="landing__logo-icon">🏫</div>
+                        ESMP Cloud
                     </div>
-                </div>
-            </section>
+                </nav>
 
-            {/* CREATE SANDBOX MODAL */}
-            {showCreateModal && (
-                <div className="landing-modal" onClick={() => setShowCreateModal(false)}>
-                    <div className="landing-modal__content" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="landing-modal__title">Créer votre Sandbox 🧪</h3>
-                        <p className="landing-modal__subtitle">
-                            Configurez et initialisez un espace d'école factice pour tester l'ensemble de l'application.
+                <main>
+                    {/* HERO */}
+                    <section className="hero">
+                        <span className="hero__badge">✨ La révolution SaaS pour les établissements</span>
+                        <h1 className="hero__title">
+                            Le premier ERP Scolaire conçu pour l'Humain,<br/>
+                            <span className="hero__title-highlight">propulsé par l'IA.</span>
+                        </h1>
+                        <p className="hero__subtitle">
+                            Oubliez les usines à gaz obsolètes. Notre plateforme offre une vitesse fulgurante sans rechargement de page, une extraction intelligente des documents, et un suivi en temps réel pour parents et professeurs.
                         </p>
+                        
+                        <div className="hero__actions">
+                            <button className="btn btn--primary" onClick={enterGeneralDemo}>
+                                🚀 Accéder à la Démo Immédiate
+                            </button>
+                        </div>
 
-                        {error && (
-                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '12px', borderRadius: '8px', color: '#f87171', fontSize: '0.85rem', marginBottom: '16px', fontWeight: 600 }}>
-                                ⚠️ {error}
+                        <div className="proof">
+                            <div className="proof__item">
+                                <span className="proof__num">0s</span>
+                                <span className="proof__label">Temps de chargement</span>
                             </div>
-                        )}
+                            <div className="proof__item">
+                                <span className="proof__num">+4h</span>
+                                <span className="proof__label">Gagnées par prof/sem.</span>
+                            </div>
+                            <div className="proof__item">
+                                <span className="proof__num">100%</span>
+                                <span className="proof__label">Étanchéité Multi-Tenant</span>
+                            </div>
+                        </div>
+                    </section>
 
-                        <form onSubmit={handleCreateSandbox}>
-                            <div className="landing-modal__form-group">
-                                <label className="landing-modal__label">Nom de votre école fictive</label>
-                                <input
-                                    type="text"
-                                    className="landing-modal__input"
-                                    placeholder="ex: Hogwarts Académie"
-                                    value={schoolName}
-                                    onChange={(e) => setSchoolName(e.target.value)}
-                                    required
-                                    disabled={creating}
-                                />
+                    {/* FEATURES BENTO GRID */}
+                    <section className="features">
+                        <h2 className="features__title">Pourquoi changer d'outil dès maintenant ?</h2>
+                        <div className="bento">
+                            <div className="bento__item bento__item--large">
+                                <span className="bento__icon">⚡</span>
+                                <h3>Vitesse Fulgurante (Next.js)</h3>
+                                <p>Contrairement aux logiciels classiques, notre architecture SPA (Single Page Application) supprime totalement les temps de chargement frustrants. Cliquez sur une classe, un élève ou un emploi du temps : l'affichage est <strong>instantané</strong>.</p>
                             </div>
+                            <div className="bento__item">
+                                <span className="bento__icon">🤖</span>
+                                <h3>IA d'Extraction</h3>
+                                <p>Prenez en photo un cahier de texte physique ou un relevé de notes brouillon. Notre IA s'occupe de numériser, analyser et classer la donnée sans effort manuel.</p>
+                            </div>
+                            <div className="bento__item">
+                                <span className="bento__icon">🔐</span>
+                                <h3>Isolation RBAC Stricte</h3>
+                                <p>Des espaces hermétiques dédiés. Un parent ne voit que ses enfants, un élève ne voit que ses devoirs. Sécurité multi-tenant garantie par base de données.</p>
+                            </div>
+                            <div className="bento__item bento__item--large">
+                                <span className="bento__icon">💬</span>
+                                <h3>Messagerie & Groupes Intégrés</h3>
+                                <p>Plus besoin de WhatsApp ou d'emails dispersés. Des groupes de discussion (Parents-Profs, Classes) et une visioconférence intégrée directement dans le tableau de bord scolaire pour une communication transparente.</p>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
 
-                            <div className="landing-modal__form-group">
-                                <label className="landing-modal__label">Type d'établissement & Thème de seeding</label>
-                                <select
-                                    className="landing-modal__select"
-                                    value={schoolType}
-                                    onChange={(e) => setSchoolType(e.target.value)}
-                                    disabled={creating}
-                                >
-                                    <option value="classique">🏫 Primaire Classique (CP-A, CE1-B)</option>
-                                    <option value="scientifique">⚛️ Scientifique (Turing, Newton)</option>
-                                    <option value="magique">🧙‍♂️ École de Magie (Gryffondor, Serpentard)</option>
-                                </select>
-                            </div>
-
-                            <div className="landing-modal__btn-group">
-                                <button
-                                    type="button"
-                                    className="landing-modal__btn landing-modal__btn--cancel"
-                                    onClick={() => setShowCreateModal(false)}
-                                    disabled={creating}
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="landing-modal__btn landing-modal__btn--submit"
-                                    disabled={creating || !schoolName.trim()}
-                                >
-                                    {creating ? 'Création en cours...' : 'Initialiser mon Espace'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

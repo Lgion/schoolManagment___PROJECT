@@ -6,6 +6,8 @@ require('./Eleve')
 require('./ClassBook')
 
 const studentBookSchema = new Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   studentId: { type: ObjectId, ref: 'ai_Eleves_Ecole_St_Martin', required: true },
   classBookId: { type: ObjectId, ref: 'ai_ClassBook_Ecole_St_Martin', required: true },
   personalizedPdfUrl: { type: String, default: '' }

@@ -19,7 +19,12 @@ export async function GET(request) {
     }
 
     await dbConnect();
-    const settings = await SchoolSettings.findOne({ schoolKey: 'default' });
+    
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
+    const settings = await SchoolSettings.findOne({ schoolKey });
 
     return NextResponse.json({
       feeDefinitions: settings?.feeDefinitions ?? [],

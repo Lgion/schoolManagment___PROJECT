@@ -3,6 +3,8 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const pollOptionSchema = new Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   id: { type: String, required: true },
   text: { type: String, required: true },
   voters: { type: [String], default: [] } // Clerk IDs

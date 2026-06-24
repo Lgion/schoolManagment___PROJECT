@@ -3,6 +3,8 @@ const mongoose = require('mongoose')
 // Collection `PointLabel` : catégories pré-définies de bonus/malus
 // attribuables aux élèves via le système de bons points.
 const pointLabelSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Nom de la catégorie (ex: "Participation", "Entraide", "Bavardages")
   name: { type: String, required: true, trim: true },
   // Type de la catégorie : bonus (points positifs) ou malus (points négatifs)

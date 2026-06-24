@@ -9,6 +9,8 @@ require('./PointLabel')
 // On conserve une transaction par opération plutôt qu'un simple compteur,
 // afin de garantir la traçabilité (qui, quoi, quand, pourquoi).
 const pointTransactionSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Élève concerné par la transaction
   studentId: { type: ObjectId, ref: 'ai_Eleves_Ecole_St_Martin', required: true },
   // Professeur ayant attribué/retiré les points.

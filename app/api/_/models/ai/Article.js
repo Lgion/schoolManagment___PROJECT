@@ -5,6 +5,8 @@ const mongoose = require('mongoose')
 // rendeur sûr côté client, sans dépendance lourde). Workflow de modération :
 // élèves/parents → PENDING_REVIEW ; profs/admins → PUBLISHED direct.
 const articleSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   title: { type: String, required: true, trim: true, maxlength: 200 },
   content: { type: String, default: '' }, // Markdown
   coverImage: { type: String, default: '' }, // URL Cloudinary

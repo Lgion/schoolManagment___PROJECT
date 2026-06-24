@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -37,13 +38,16 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: 'Accès refusé' }, { status: 403 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
     // Marquer comme lus les messages reçus non encore lus.
     await Message.updateMany(
-      { conversationId: id, senderId: { $ne: me }, readBy: { $ne: me } },
+      { schoolKey, conversationId: id, senderId: { $ne: me }, readBy: { $ne: me } },
       { $addToSet: { readBy: me } }
     )
 
-    const raw = await Message.find({ conversationId: id }).sort({ createdAt: 1 }).lean()
+    const raw = await Message.find({ schoolKey, conversationId: id }).sort({ createdAt: 1 }).lean()
     const messages = raw.map((m) => ({ ...m, mine: m.senderId === me }))
 
     return NextResponse.json({ success: true, data: { conversation, messages } })
@@ -88,7 +92,14 @@ export async function POST(request, { params }) {
       return NextResponse.json({ success: false, error: 'Message trop long (4000 max)' }, { status: 400 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const message = await Message.create({
+      schoolKey,
       conversationId: id,
       senderId: me,
       content,

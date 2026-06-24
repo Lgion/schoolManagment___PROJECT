@@ -5,6 +5,8 @@ const ObjectId = Schema.Types.ObjectId
 // Collection `Message` : un message dans une Conversation (cf. spec direct_messaging.md).
 // `senderId`/`readBy` sont des clerkIds. `readBy` sert d'accusé de lecture.
 const messageSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   conversationId: { type: ObjectId, ref: 'ai_Conversations_Ecole_St_Martin', required: true },
   senderId: { type: String, required: true }, // clerkId de l'expéditeur
   content: { type: String, required: true, trim: true, maxlength: 4000 },

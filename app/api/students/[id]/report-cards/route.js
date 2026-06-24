@@ -16,12 +16,16 @@ export async function GET(request, { params }) {
 
     await dbConnect()
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     const { id } = await params
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, error: 'id invalide' }, { status: 400 })
     }
 
-    const cards = await ReportCard.find({ studentId: id })
+    const cards = await ReportCard.find({ schoolKey, studentId: id })
       .sort({ schoolYear: -1, period: 1 })
       .lean()
     return NextResponse.json({ success: true, data: cards })

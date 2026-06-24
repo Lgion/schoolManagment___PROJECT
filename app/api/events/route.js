@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../lib/authWithFallback'
 import dbConnect from '../lib/dbConnect'
 
@@ -41,7 +42,10 @@ export async function GET(request) {
       }
     }
 
-    const filter = { $or: scope }
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
+    const filter = { schoolKey, $or: scope }
 
     if (from || to) {
       // Chevauchement avec [from, to] : endDate >= from ET startDate <= to.
@@ -77,6 +81,12 @@ export async function POST(request) {
     const body = await request.json()
     const { title, type, startDate, endDate, isGlobal, classId, location, description, notifyParents, hasVisio } = body || {}
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     if (!title || !String(title).trim()) {
       return NextResponse.json({ success: false, error: 'Le titre est requis' }, { status: 400 })
     }
@@ -94,6 +104,7 @@ export async function POST(request) {
     }
 
     const event = await EventModel.create({
+      schoolKey,
       title: String(title).trim(),
       description: typeof description === 'string' ? description.trim() : '',
       startDate: start,

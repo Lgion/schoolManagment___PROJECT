@@ -37,9 +37,13 @@ export async function GET(request, { params }) {
 
     await dbConnect()
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     const { id } = await params
 
-    const documents = await ClassDocument.find({ classId: id })
+    const documents = await ClassDocument.find({ schoolKey, classId: id })
       .populate('teacherId', 'nom prenoms')
       .sort({ createdAt: -1 })
       .lean()

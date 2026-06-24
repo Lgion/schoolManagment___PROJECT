@@ -6,6 +6,8 @@ const ObjectId = Schema.Types.ObjectId
 // On ne stocke une ligne que pour les devoirs effectivement faits ; l'absence
 // de ligne vaut « à faire ».
 const homeworkCompletionSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   studentId: { type: ObjectId, ref: 'ai_Eleves_Ecole_St_Martin', required: true },
   homeworkId: { type: ObjectId, ref: 'ai_HomeworkEntries_Ecole_St_Martin', required: true },
   status: { type: String, enum: ['DONE', 'TODO'], default: 'DONE', required: true },

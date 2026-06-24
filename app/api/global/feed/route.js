@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { requireAuth } from '../../lib/authWithFallback'
 import dbConnect from '../../lib/dbConnect'
 
@@ -16,7 +17,10 @@ export async function GET(request) {
 
     await dbConnect()
 
-    const posts = await Post.find({ isGlobal: true }).sort({ createdAt: -1 })
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
+    const posts = await Post.find({ schoolKey, isGlobal: true }).sort({ createdAt: -1 })
 
     // Recueillir tous les Clerk IDs des votants de tous les posts de type POLL de cette page
     const voterClerkIds = new Set()
@@ -92,7 +96,14 @@ export async function POST(request) {
     // Récupérer le nom de l'auteur
     const authorName = currentUserDoc ? `${currentUserDoc.firstName} ${currentUserDoc.lastName}`.trim() || currentUserDoc.email : 'Enseignant'
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const newPost = new Post({
+      schoolKey,
       isGlobal: true,
       authorId: userId,
       authorName,

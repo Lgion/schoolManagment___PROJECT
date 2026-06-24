@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { requireAuth } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -30,8 +31,12 @@ export async function GET(request, { params }) {
 
     // S'il n'existe pas, l'initialiser
     if (!classBook) {
+      const cookieStore = await cookies()
+      const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
       const title = `Livre de Classe - ${classe.niveau} ${classe.alias} (${schoolYear})`
       classBook = new ClassBook({
+        schoolKey,
         classId: id,
         schoolYear,
         title,
@@ -89,7 +94,11 @@ export async function PUT(request, { params }) {
     // Chercher et mettre à jour le livre
     let classBook = await ClassBook.findOne({ classId: id, schoolYear })
     if (!classBook) {
+      const cookieStore = await cookies()
+      const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
       classBook = new ClassBook({
+        schoolKey,
         classId: id,
         schoolYear,
         title: title || `Livre de Classe - ${classe.niveau} ${classe.alias} (${schoolYear})`,

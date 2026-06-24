@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../lib/authWithFallback'
 import dbConnect from '../lib/dbConnect'
 
@@ -37,7 +38,10 @@ export async function GET(request) {
     const role = searchParams.get('role')
     const q = searchParams.get('q')
 
-    const filter = {}
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
+    const filter = { schoolKey }
     let sort = { publishedAt: -1 }
 
     if (view === 'mine') {
@@ -101,7 +105,14 @@ export async function POST(request) {
       status = 'PENDING_REVIEW'
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const article = await Article.create({
+      schoolKey,
       title: String(title).trim(),
       content: typeof content === 'string' ? content : '',
       coverImage: typeof coverImage === 'string' ? coverImage : '',

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { requireAuth } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -33,8 +34,11 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Non autorisé à accéder à ce groupe' }, { status: 403 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
     // Récupérer les 100 derniers messages de chat triés chronologiquement
-    const messages = await GroupMessage.find({ groupId: id })
+    const messages = await GroupMessage.find({ schoolKey, groupId: id })
       .sort({ createdAt: -1 })
       .limit(100)
 
@@ -91,7 +95,14 @@ export async function POST(request, { params }) {
     const senderUser = await User.findOne({ clerkId: userId })
     const senderName = senderUser ? `${senderUser.firstName} ${senderUser.lastName}`.trim() || senderUser.email : 'Utilisateur'
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const newMessage = new GroupMessage({
+      schoolKey,
       groupId: id,
       senderId: userId,
       senderName,

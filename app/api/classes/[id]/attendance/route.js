@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -48,6 +49,12 @@ export async function POST(request, { params }) {
     if (!mongoose.Types.ObjectId.isValid(classId)) {
       return NextResponse.json({ success: false, error: 'classId invalide' }, { status: 400 })
     }
+
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
     const body = await request.json()
     const { date, period, entries } = body || {}
 
@@ -84,7 +91,7 @@ export async function POST(request, { params }) {
     try {
       record = await AttendanceRecord.findOneAndUpdate(
         { classId, date: day, period: finalPeriod },
-        { $set: { teacherId } },
+        { $set: { schoolKey, teacherId } },
         { new: true, upsert: true, setDefaultsOnInsert: true }
       )
     } catch (err) {
@@ -102,6 +109,7 @@ export async function POST(request, { params }) {
         filter: { recordId: record._id, studentId: e.studentId },
         update: {
           $set: {
+            schoolKey,
             status: STATUSES.includes(e.status) ? e.status : 'PRESENT',
             comment: typeof e.comment === 'string' ? e.comment.trim() : '',
             classId,
@@ -158,6 +166,10 @@ export async function GET(request, { params }) {
 
     await dbConnect()
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     const { id: classId } = await params
     if (!mongoose.Types.ObjectId.isValid(classId)) {
       return NextResponse.json({ success: false, error: 'classId invalide' }, { status: 400 })
@@ -172,7 +184,7 @@ export async function GET(request, { params }) {
         return NextResponse.json({ success: false, error: 'date invalide' }, { status: 400 })
       }
       const period = PERIODS.includes(searchParams.get('period')) ? searchParams.get('period') : 'MATIN'
-      const record = await AttendanceRecord.findOne({ classId, date: day, period }).lean()
+      const record = await AttendanceRecord.findOne({ schoolKey, classId, date: day, period }).lean()
       if (!record) {
         return NextResponse.json({ success: true, data: { record: null, entries: [] } })
       }
@@ -184,7 +196,7 @@ export async function GET(request, { params }) {
 
     // --- Cas 2 : historique (récapitulatif par session) ---
     const limit = Math.min(parseInt(searchParams.get('limit'), 10) || 60, 200)
-    const records = await AttendanceRecord.find({ classId })
+    const records = await AttendanceRecord.find({ schoolKey, classId })
       .sort({ date: -1 })
       .limit(limit)
       .lean()

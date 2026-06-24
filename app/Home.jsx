@@ -246,49 +246,87 @@ export default ({ children }) => {
           <>
             {/* Dashboard ADMIN */}
             <section className="mainMenu ecole-admin__adminDashboard">
-              <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale administrateur">
-                <Link href="/eleves" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
-                  <span role="img" aria-label="Élève">👨‍🎓</span>
-                  <strong>Gérer les élèves</strong>
-                </Link>
-                <Link href="/enseignants" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
-                  <span role="img" aria-label="Enseignant">👨‍🏫</span>
-                  <strong>Gérer les enseignants</strong>
-                </Link>
-                <Link href="/classes" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
-                  <span role="img" aria-label="École">🏫</span>
-                  <strong>Gérer les classes</strong>
-                </Link>
-                <Link href="/groups" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mes Groupes">
-                  <span role="img" aria-label="Groupes">👥</span>
-                  <strong>Mes Groupes</strong>
-                </Link>
-                <Link href="/games" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Jeux pédagogiques">
-                  <span role="img" aria-label="Jeux">🎮</span>
-                  <strong>Jeux pédagogiques</strong>
-                </Link>
-                <Link href="/blog" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Blog de l'école">
-                  <span role="img" aria-label="Blog">📰</span>
-                  <strong>Blog de l'école</strong>
-                </Link>
-                <Link href="/gallery" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Galerie des souvenirs">
-                  <span role="img" aria-label="Galerie">📸</span>
-                  <strong>Galerie des souvenirs</strong>
-                </Link>
+              <nav className="ecole-admin__nav" role="navigation" aria-label="Navigation principale">
+                
+                {/* --- MENUS ADMIN & PROF --- */}
+                <PermissionGate roles={['admin', 'prof']}>
+                  <Link href="/eleves" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les élèves">
+                    <span role="img" aria-label="Élève">👨‍🎓</span>
+                    <strong>Gérer les élèves</strong>
+                  </Link>
+                  <Link href="/classes" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les classes">
+                    <span role="img" aria-label="École">🏫</span>
+                    <strong>Gérer les classes</strong>
+                  </Link>
+                  <Link href="/enseignants" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Gérer les enseignants">
+                    <span role="img" aria-label="Enseignant">👨‍🏫</span>
+                    <strong>Gérer les enseignants</strong>
+                  </Link>
+                  <Link href="/enseignants/mon-planning" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mon Planning">
+                    <span role="img" aria-label="Calendrier">📅</span>
+                    <strong>Mon Planning</strong>
+                  </Link>
+                </PermissionGate>
+
+                {/* --- MENUS SPECIFIQUES ELEVE --- */}
+                <PermissionGate role="eleve">
+                  <Link href="#" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--student" aria-label="Mon Profil" onClick={() => alert('En mode Sandbox, accédez à votre profil via les notifications.')}>
+                    <span role="img" aria-label="Profil">🎓</span>
+                    <strong>Mon Dossier Scolaire</strong>
+                  </Link>
+                  <Link href="#" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--student" aria-label="Mes Devoirs">
+                    <span role="img" aria-label="Livre">📚</span>
+                    <strong>Mon Cahier de Texte</strong>
+                  </Link>
+                </PermissionGate>
+
+                {/* --- MENUS SPECIFIQUES PARENT --- */}
+                <PermissionGate role="parent">
+                  <Link href="#" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--parent" aria-label="Mes Enfants" onClick={() => alert('En mode Sandbox, le dashboard parent est simulé.')}>
+                    <span role="img" aria-label="Famille">👪</span>
+                    <strong>Suivi de mes Enfants</strong>
+                  </Link>
+                  <Link href="#" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--parent" aria-label="Paiements">
+                    <span role="img" aria-label="Paiement">💳</span>
+                    <strong>Paiements & Frais</strong>
+                  </Link>
+                </PermissionGate>
+
+                {/* --- MENUS COMMUNS (Selon règles strictes) --- */}
+                <PermissionGate roles={['admin', 'prof', 'parent', 'eleve']}>
+                  <Link href="/groups" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mes Groupes">
+                    <span role="img" aria-label="Groupes">💬</span>
+                    <strong>Messagerie & Groupes</strong>
+                  </Link>
+                  <Link href="/blog" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Blog de l'école">
+                    <span role="img" aria-label="Blog">📰</span>
+                    <strong>Blog de l'école</strong>
+                  </Link>
+                </PermissionGate>
+
+                <PermissionGate roles={['admin', 'prof', 'eleve']}>
+                  <Link href="/games" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Jeux pédagogiques">
+                    <span role="img" aria-label="Jeux">🎮</span>
+                    <strong>Jeux pédagogiques</strong>
+                  </Link>
+                </PermissionGate>
+
+                <PermissionGate roles={['admin', 'prof', 'parent']}>
+                  <Link href="/gallery" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Galerie des souvenirs">
+                    <span role="img" aria-label="Galerie">📸</span>
+                    <strong>Galerie de l'école</strong>
+                  </Link>
+                </PermissionGate>
+
+                {/* --- ADMIN ONLY --- */}
                 <PermissionGate role="admin">
                   <Link href="/administration" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Administration">
                     <span role="img" aria-label="Admin">⚙️</span>
                     <strong>Administration</strong>
                   </Link>
                 </PermissionGate>
-                <PermissionGate roles={['prof', 'admin']}>
-                  <Link href="/enseignants/mon-planning" className="mainMenu__item ecole-admin__nav-btn ecole-admin__nav-btn--admin" aria-label="Mon Planning">
-                    <span role="img" aria-label="Calendrier">📅</span>
-                    <strong>Mon Planning</strong>
-                  </Link>
-                </PermissionGate>
-              </nav>
 
+              </nav>
             </section>
           </>
         )}

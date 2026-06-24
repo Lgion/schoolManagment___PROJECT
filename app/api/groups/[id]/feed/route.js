@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { requireAuth } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -33,8 +34,11 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Non autorisé à accéder à ce groupe' }, { status: 403 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
     // Récupérer les posts triés par date décroissante
-    const posts = await Post.find({ groupId: id }).sort({ createdAt: -1 })
+    const posts = await Post.find({ schoolKey, groupId: id }).sort({ createdAt: -1 })
 
     // Recueillir tous les Clerk IDs des votants de tous les posts de type POLL de cette page
     const voterClerkIds = new Set()
@@ -118,7 +122,14 @@ export async function POST(request, { params }) {
     const authorUser = await User.findOne({ clerkId: userId })
     const authorName = authorUser ? `${authorUser.firstName} ${authorUser.lastName}`.trim() || authorUser.email : 'Utilisateur'
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const newPost = new Post({
+      schoolKey,
       groupId: id,
       authorId: userId,
       authorName,

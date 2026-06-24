@@ -74,6 +74,28 @@ export default function AdministrationPage() {
         }
     };
 
+    const handleResetDemo = async () => {
+        if (!confirm(`⚠️ ATTENTION : Êtes-vous sûr de vouloir réinitialiser la démo ?\n\nCette action va écraser les données actuelles de l'école démo pour regénérer les 6 années d'historique.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/admin/reset-demo', { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Erreur lors de la réinitialisation');
+            }
+            const data = await res.json();
+            alert(`✅ Succès : ${data.message}`);
+            fetchEleves();
+            fetchEnseignants();
+            fetchClasses();
+        } catch (error) {
+            console.error('Erreur reset demo:', error);
+            alert(`❌ Erreur : ${error.message}`);
+        }
+    };
+
     const handleEdit = (item, type) => {
         setSelected(item);
         setEditType(type);
@@ -161,6 +183,13 @@ export default function AdministrationPage() {
                                 onClick={handleMigrateYear}
                             >
                                 🚀 Migrer l'Année Scolaire
+                            </button>
+                            <button
+                                className="admin-page__config-btn --migrate"
+                                style={{ backgroundColor: '#e74c3c', marginLeft: '10px' }}
+                                onClick={handleResetDemo}
+                            >
+                                🔄 Réinitialiser la Démo
                             </button>
                             <div className="admin-page__search-wrapper">
                                 <input

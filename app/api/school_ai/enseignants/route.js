@@ -12,7 +12,11 @@ export async function GET(request) {
       return authResult.response;
     }
     await dbConnect();
-    const enseignants = await Teacher.find();
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
+    const enseignants = await Teacher.find({ schoolKey });
     return NextResponse.json(enseignants);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des enseignants' }, { status: 500 });

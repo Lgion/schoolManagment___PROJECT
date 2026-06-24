@@ -17,6 +17,8 @@ const dateRangeSchema = new Schema(
 )
 
 const appointmentSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   initiatorId: { type: String, required: true }, // clerkId
   initiatorRole: { type: String, enum: ['parent', 'prof'], required: true },
   recipientId: { type: String, required: true }, // clerkId

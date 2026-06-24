@@ -41,6 +41,7 @@ const eventSchema = mongoose.Schema({
 
 // Schéma principal pour l'emploi du temps
 const scheduleSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   classeId: {
     type: ObjectId,
     ref: 'ai_Ecole_St_Martin',

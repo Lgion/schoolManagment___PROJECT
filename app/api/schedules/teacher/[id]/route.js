@@ -18,6 +18,10 @@ export async function GET(request, { params }) {
     }
 
     await dbConnect()
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     const { id } = await params
 
     // 1. Resolve Teacher
@@ -48,7 +52,7 @@ export async function GET(request, { params }) {
     }
 
     // 2. Fetch all active schedules across the school
-    const activeSchedules = await Schedule.find({ isArchived: false })
+    const activeSchedules = await Schedule.find({ schoolKey, isArchived: false })
       .populate('classeId')
       .populate('events.subjectId')
       .lean()

@@ -13,6 +13,12 @@ export async function POST(request) {
             return authResult.response;
         }
 
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        if (cookieStore.get('x-school-key')?.value === 'demo_master') {
+            return NextResponse.json({ error: 'Fonctionnalité IA désactivée en mode démo pour éviter les surcoûts.' }, { status: 403 });
+        }
+
         // 1. Role-Based Access Control (RBAC) - Restrict to Admin/Teacher
         const isAdmin = await checkRole(Roles.ADMIN, request);
         const isTeacher = await checkRole(Roles.TEACHER, request);

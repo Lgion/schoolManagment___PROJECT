@@ -5,6 +5,8 @@ const ObjectId = Schema.Types.ObjectId
 require('./Classe')
 
 const classBookSchema = new Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: true },
   schoolYear: { type: String, required: true },
   title: { type: String, required: true, trim: true },

@@ -13,6 +13,8 @@ const ObjectId = Schema.Types.ObjectId
 // `teacherRef`/`studentRef` sont dénormalisés pour libeller l'inbox sans
 // avoir à résoudre les entités via la collection User à chaque affichage.
 const conversationSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   participants: { type: [String], required: true }, // clerkIds (2)
   conversationType: {
     type: String,

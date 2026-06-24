@@ -11,6 +11,8 @@ const ObjectId = Schema.Types.ObjectId
 //   { questions: [{ question, options:[String], answerIndex:Number }] }
 // → un seul lecteur (QuizPlayer) joue statiques et IA indifféremment.
 const educationalGameSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   title: { type: String, required: true, trim: true, maxlength: 200 },
   level: { type: String, required: true }, // CM1, CM2, …
   type: { type: String, enum: ['STATIC', 'AI_GENERATED'], default: 'AI_GENERATED' },

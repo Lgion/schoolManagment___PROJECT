@@ -9,6 +9,8 @@ require('./AttendanceRecord')
 // On conserve `classId`/`date` dénormalisés depuis la session afin de calculer
 // rapidement les statistiques d'un élève sans jointure.
 const attendanceEntrySchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Session d'appel parente
   recordId: { type: ObjectId, ref: 'ai_AttendanceRecords_Ecole_St_Martin', required: true },
   // Élève concerné

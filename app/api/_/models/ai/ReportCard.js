@@ -4,6 +4,8 @@ const ObjectId = Schema.Types.ObjectId
 
 // Sous-document : une ligne matière du bulletin (figée au moment de la génération).
 const subjectLineSchema = new mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   key: { type: String, required: true },        // ObjectId matière ou nom (selon format source)
   name: { type: String, default: '' },          // nom résolu pour l'affichage/PDF
   average: { type: Number, default: null },      // moyenne élève /20

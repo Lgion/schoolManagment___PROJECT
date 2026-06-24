@@ -8,6 +8,8 @@ require('./Eleve')
 require('./Post')
 
 const classMediaSchema = new Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: true },
   postId: { type: ObjectId, ref: 'ai_Posts_Ecole_St_Martin', required: false, default: null },
   url: { type: String, required: true },

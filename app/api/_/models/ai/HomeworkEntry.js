@@ -6,6 +6,8 @@ const ObjectId = Schema.Types.ObjectId
 // La clé d'accès principale est `dateDue` (minuit UTC du jour concerné), conformément
 // à la logique « clés = timestamp du jour ».
 const homeworkEntrySchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Classe concernée
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: true },
   // Professeur ayant donné le devoir (optionnel : admin, mode sample)

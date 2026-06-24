@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
  * Permet de définir les créneaux de pause configurables par établissement
  */
 const breakTimeSchema = new mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Nom de la pause
   nom: {
     type: String,

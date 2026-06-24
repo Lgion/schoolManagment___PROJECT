@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useUserRole } from '../stores/useUserRole';
+import { useUserRole } from '../../stores/useUserRole';
 
 export default function MyAccountPage() {
   const { userData, clerkUser, loading: authLoading, syncUser } = useUserRole();

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../lib/authWithFallback'
 import dbConnect from '../lib/dbConnect'
 
@@ -42,10 +43,13 @@ export async function GET(request) {
     const status = searchParams.get('status')
     const direction = searchParams.get('direction')
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin'
+
     let filter
-    if (direction === 'sent') filter = { initiatorId: me }
-    else if (direction === 'received') filter = { recipientId: me }
-    else filter = { $or: [{ initiatorId: me }, { recipientId: me }] }
+    if (direction === 'sent') filter = { schoolKey, initiatorId: me }
+    else if (direction === 'received') filter = { schoolKey, recipientId: me }
+    else filter = { schoolKey, $or: [{ initiatorId: me }, { recipientId: me }] }
 
     if (studentId && mongoose.Types.ObjectId.isValid(studentId)) filter.studentId = studentId
     if (status) filter.meetingStatus = status
@@ -138,7 +142,14 @@ export async function POST(request) {
       return NextResponse.json({ success: false, error: 'Initiateur et destinataire identiques' }, { status: 400 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const appointment = await Appointment.create({
+      schoolKey,
       initiatorId: me,
       initiatorRole,
       recipientId,

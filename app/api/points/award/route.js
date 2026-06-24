@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../../lib/authWithFallback'
 import dbConnect from '../../lib/dbConnect'
 
@@ -37,6 +38,12 @@ export async function POST(request) {
 
     const body = await request.json()
     const { studentIds, labelId, amount, comment } = body || {}
+
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
 
     // --- Validation ---
     if (!Array.isArray(studentIds) || studentIds.length === 0) {
@@ -80,6 +87,7 @@ export async function POST(request) {
     const cleanComment = typeof comment === 'string' ? comment.trim() : ''
 
     const docs = students.map((s) => ({
+      schoolKey,
       studentId: s._id,
       teacherId,
       classId: s.current_classe || null,

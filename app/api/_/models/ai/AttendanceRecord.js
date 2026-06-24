@@ -7,6 +7,8 @@ const ObjectId = Schema.Types.ObjectId
 // On sépare la session des statuts (comme PointTransaction/PointLabel) afin de
 // pouvoir générer des registres ou des statistiques par la suite.
 const attendanceRecordSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   // Classe concernée par l'appel
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: true },
   // Professeur ayant fait l'appel. Optionnel : admin sans fiche prof, mode sample, etc.

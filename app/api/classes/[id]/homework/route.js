@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../../../lib/authWithFallback'
 import dbConnect from '../../../lib/dbConnect'
 
@@ -41,6 +42,12 @@ export async function POST(request, { params }) {
       return NextResponse.json({ success: false, error: 'classId invalide' }, { status: 400 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { subject, dateDue, content, attachments, estimatedTime } = body || {}
 
@@ -61,6 +68,7 @@ export async function POST(request, { params }) {
       : null
 
     const created = await HomeworkEntry.create({
+      schoolKey,
       classId,
       teacherId,
       subject: String(subject).trim(),

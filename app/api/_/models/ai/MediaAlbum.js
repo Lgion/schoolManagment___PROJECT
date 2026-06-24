@@ -22,6 +22,8 @@ const imageSchema = new mongoose.Schema(
 //  - isGlobal = false → album de classe, accès restreint (élèves/parents de la classe + corps prof).
 // Un album est rattaché soit à un `Event` (eventId), soit directement à une classe (classId).
 const mediaAlbumSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   title: { type: String, required: true, trim: true, maxlength: 200 },
   date: { type: Date, default: Date.now }, // date de la session (tri chronologique)
   academicYear: { type: String, required: true }, // ex: "2025-2026" — filtrage galerie

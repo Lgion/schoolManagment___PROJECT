@@ -18,7 +18,11 @@ export async function GET(request, { params }) {
 
     await dbConnect()
 
-    const studentBooks = await StudentBook.find({ studentId: id })
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
+    const studentBooks = await StudentBook.find({ schoolKey, studentId: id })
       .populate({
         path: 'classBookId',
         populate: {

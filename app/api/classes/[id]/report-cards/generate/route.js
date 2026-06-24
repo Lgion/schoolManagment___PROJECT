@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { authWithFallback } from '../../../../lib/authWithFallback'
 import dbConnect from '../../../../lib/dbConnect'
 import { computeClassReport, mention } from '../../../../../../utils/bulletins'
@@ -40,6 +41,12 @@ export async function POST(request, { params }) {
       return NextResponse.json({ success: false, error: 'classId invalide' }, { status: 400 })
     }
 
+    const cookieStore = await cookies()
+    const schoolKey = cookieStore.get('x-school-key')?.value
+    if (!schoolKey) {
+      return NextResponse.json({ success: false, error: 'Accès refusé : schoolKey manquant' }, { status: 403 })
+    }
+
     const body = await request.json()
     const { schoolYear, period, appreciations } = body || {}
     if (!schoolYear || typeof schoolYear !== 'string') {
@@ -50,7 +57,7 @@ export async function POST(request, { params }) {
     }
     const apprec = appreciations && typeof appreciations === 'object' ? appreciations : {}
 
-    const eleves = await Eleve.find({ current_classe: classId }).lean()
+    const eleves = await Eleve.find({ schoolKey, current_classe: classId }).lean()
     if (eleves.length === 0) {
       return NextResponse.json({ success: false, error: 'Aucun élève dans cette classe' }, { status: 404 })
     }
@@ -59,7 +66,7 @@ export async function POST(request, { params }) {
     const report = computeClassReport(eleves, schoolYear, period)
 
     // Résolution des noms de matières (les clés peuvent être des ObjectId)
-    const subjects = await Subject.find({}).select('nom').lean()
+    const subjects = await Subject.find({ schoolKey }).select('nom').lean()
     const subjMap = new Map(subjects.map((s) => [String(s._id), s.nom]))
     const nameOf = (key, fallbackName) =>
       fallbackName || subjMap.get(String(key)) || String(key)
@@ -89,6 +96,7 @@ export async function POST(request, { params }) {
           filter: { studentId: ps.studentId, schoolYear, period },
           update: {
             $set: {
+              schoolKey,
               classId,
               globalAverage: general,
               classGeneralAverage: round2(report.classGeneral),
@@ -110,7 +118,7 @@ export async function POST(request, { params }) {
 
     await ReportCard.bulkWrite(ops, { ordered: false })
 
-    const cards = await ReportCard.find({ classId, schoolYear, period }).lean()
+    const cards = await ReportCard.find({ schoolKey, classId, schoolYear, period }).lean()
     return NextResponse.json({ success: true, data: { count: cards.length, cards } }, { status: 201 })
   } catch (error) {
     console.error('❌ [API] POST /api/classes/[id]/report-cards/generate:', error)

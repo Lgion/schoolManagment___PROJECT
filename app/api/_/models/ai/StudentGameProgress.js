@@ -7,6 +7,8 @@ const ObjectId = Schema.Types.ObjectId
 // statique (ex: 'static-cp1-calcul'), soit l'_id (string) d'un EducationalGame
 // IA — un identifiant unifié côté lecteur.
 const studentGameProgressSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   studentId: { type: ObjectId, ref: 'ai_Eleves_Ecole_St_Martin', required: true },
   gameKey: { type: String, required: true },
   gameTitle: { type: String, default: '' },
