@@ -20,6 +20,8 @@ export default function AdministrationPage() {
     } = useContext(AiAdminContext);
 
     const { isAdmin, loading: authLoading } = useUserRole();
+    const [isMigrating, setIsMigrating] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees'
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -79,6 +81,7 @@ export default function AdministrationPage() {
             return;
         }
 
+        setIsResetting(true);
         try {
             const res = await fetch('/api/admin/reset-demo', { method: 'POST' });
             if (!res.ok) {
@@ -93,6 +96,8 @@ export default function AdministrationPage() {
         } catch (error) {
             console.error('Erreur reset demo:', error);
             alert(`❌ Erreur : ${error.message}`);
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -185,12 +190,21 @@ export default function AdministrationPage() {
                                 🚀 Migrer l'Année Scolaire
                             </button>
                             <button
-                                className="admin-page__config-btn --migrate"
-                                style={{ backgroundColor: '#e74c3c', marginLeft: '10px' }}
+                                className={`admin-page__config-btn --migrate ${isResetting ? '--loading' : ''}`}
+                                style={{ backgroundColor: isResetting ? '#c0392b' : '#e74c3c', marginLeft: '10px', opacity: isResetting ? 0.7 : 1, cursor: isResetting ? 'not-allowed' : 'pointer' }}
                                 onClick={handleResetDemo}
+                                disabled={isResetting}
                             >
-                                🔄 Réinitialiser la Démo
+                                {isResetting ? (
+                                    <>
+                                        <span className="spinner" style={{ marginRight: '8px', display: 'inline-block', width: '1em', height: '1em', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                                        Génération en cours (~30s)...
+                                    </>
+                                ) : (
+                                    '🔄 Réinitialiser la Démo'
+                                )}
                             </button>
+                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div className="admin-page__search-wrapper">
                                 <input
                                     type="text"

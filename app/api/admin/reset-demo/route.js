@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
 import { requireAuth } from '../../lib/authWithFallback';
+
 import Institution from '../../_/models/ai/Institution';
 import SchoolSettings from '../../_/models/ai/SchoolSettings';
 import Classe from '../../_/models/ai/Classe';
@@ -15,20 +16,20 @@ import ReportCard from '../../_/models/ai/ReportCard';
 import AttendanceRecord from '../../_/models/ai/AttendanceRecord';
 import AttendanceEntry from '../../_/models/ai/AttendanceEntry';
 import PointTransaction from '../../_/models/ai/PointTransaction';
+import PointLabel from '../../_/models/ai/PointLabel';
+import Subject from '../../_/models/ai/Subject';
+import Event from '../../_/models/ai/Event';
+import Article from '../../_/models/ai/Article';
 
-const generateRealisticNotes = () => {
-  const trimesters = ['Trimestre 1', 'Trimestre 2', 'Trimestre 3'];
-  const notes = {};
-  trimesters.forEach(trim => {
-    notes[trim] = [
-      { matiere: "Mathématiques", coef: "2", devoir: "Évaluation", note: (Math.random() * 8 + 12).toFixed(1) },
-      { matiere: "Mathématiques", coef: "1", devoir: "DM", note: (Math.random() * 10 + 10).toFixed(1) },
-      { matiere: "Français", coef: "2", devoir: "Dictée", note: (Math.random() * 9 + 11).toFixed(1) },
-      { matiere: "Histoire/Géo", coef: "1", devoir: "Exposé", note: (Math.random() * 6 + 14).toFixed(1) }
-    ];
-  });
-  return notes;
-};
+import { seedSubjects, generateStudentNotes, generateReportCardsForYear, getCoefficientsForNiveau, convertNotesToCompositions } from './lib/academicSeeder';
+import { generateAttendanceForClassYear } from './lib/attendanceSeeder';
+import { seedPointLabels, generateBehaviorAndAdminForClassYear } from './lib/behaviorSeeder';
+import { generateScheduleForClass } from './lib/scheduleSeeder';
+import { generateSocialForClassYear, generateGlobalSocialData } from './lib/socialSeeder';
+import { generateFinancialsForClassYear } from './lib/financialSeeder';
+import { generateEvents } from './lib/eventSeeder';
+import { generateBlogAndPosts } from './lib/blogSeeder';
+import { generateGroupsAndMessages } from './lib/groupSeeder';
 
 const getRandomDateInYear = (yearStr) => {
   const startYear = parseInt(yearStr.split('-')[0]);
@@ -44,16 +45,10 @@ export async function POST(request) {
 
     await dbConnect();
 
-    // TEMPORARY BYPASS
-    // const currentUser = await User.findOne({ clerkId: userId });
-    // if (currentUser?.role !== 'admin') {
-    //   return NextResponse.json({ error: 'Action réservée au Super Admin' }, { status: 403 });
-    // }
-
     const schoolKey = 'demo_master';
 
-    // 1. PURGE de l'environnement de démo
-    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction];
+    // 1. PURGE
+    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction, PointLabel, Subject, Event, Article];
     for (const model of models) {
       if (model) await model.deleteMany({ schoolKey });
     }
@@ -64,13 +59,31 @@ export async function POST(request) {
 
     const settings = new SchoolSettings({
       schoolKey,
-      feeDefinitions: [{ id: 'scol', label: 'Scolarité', unit: '€', targets: [{ key: 'all', label: 'Base', amount: 350 }] }],
-      targets: [{ key: 'all', options: ['Base'] }],
-      homepage: { title: `🏫 Démo Complète - ESMP`, texts: ["Explorez cette démo avec 6 ans d'historique."], photo: '/school/classe.webp' }
+      feeDefinitions: [
+        { id: 'scol', label: 'Scolarité', unit: '€', targets: [{ key: 'all', label: 'Base', amount: 350 }] },
+        { id: 'cantine', label: 'Cantine', unit: '€', targets: [
+          { key: 'doRegime', label: 'Demi-pensionnaire', amount: 120 },
+          { key: 'doRegime', label: 'Externe', amount: 0 }
+        ]},
+        { id: 'transport', label: 'Transport', unit: '€', targets: [
+          { key: 'doTransport', label: 'Zone A', amount: 80 },
+          { key: 'doTransport', label: 'Zone B', amount: 120 },
+          { key: 'doTransport', label: 'Pas de transport', amount: 0 }
+        ]}
+      ],
+      targets: [
+        { key: 'all', options: ['Base'] },
+        { key: 'doRegime', options: ['Demi-pensionnaire', 'Externe'] },
+        { key: 'doTransport', options: ['Zone A', 'Zone B', 'Pas de transport'] }
+      ],
+      homepage: { title: `🏫 Démo Complète - ESMP`, texts: ["Explorez cette démo avec 6 ans d'historique (Notes, Appels, Paiements...)."], photo: '/school/classe.webp' }
     });
     await settings.save();
 
-    // 3. GENERATION TEMPORELLE (Cohorte CP1 -> CM2)
+    // 3. INITIALISATION DE LA DONNÉE GLOBALE
+    const subjects = await seedSubjects(schoolKey);
+    const pointLabels = await seedPointLabels(schoolKey);
+
     const timeline = [
       { year: '2020-2021', niveau: 'CP1', alias: 'A' },
       { year: '2021-2022', niveau: 'CP2', alias: 'A' },
@@ -80,7 +93,6 @@ export async function POST(request) {
       { year: '2025-2026', niveau: 'CM2', alias: 'A' },
     ];
 
-    // Création des profs
     const teacher1 = new Teacher({
       schoolKey, nom: 'Martin', prenoms: ['Jean'], sexe: 'M', naissance_$_date: new Date('1980-01-01').getTime(),
       adresse_$_map: 'Paris', phone_$_tel: '+33600000001', email_$_email: 'jean.martin@ecole.fr', photo_$_file: '/school/prof.webp',
@@ -98,7 +110,6 @@ export async function POST(request) {
     const prenomsGars = ['Lucas', 'Hugo', 'Arthur', 'Louis', 'Raphaël', 'Jules', 'Maël'];
     const prenomsFilles = ['Emma', 'Jade', 'Louise', 'Alice', 'Chloé', 'Lina', 'Léa'];
 
-    // Initialisation des données des 14 élèves
     let studentsData = [];
     for (let i = 0; i < 14; i++) {
       const isBoy = i % 2 === 0;
@@ -109,11 +120,11 @@ export async function POST(request) {
         sexe: isBoy ? 'M' : 'F',
         naissance_$_date: `12/04/2014`,
         joinYearIndex: i < 11 ? 0 : (i === 11 ? 2 : (i === 12 ? 3 : 4)),
+        profileType: i % 3 === 0 ? 'EXCELLENT' : (i % 3 === 1 ? 'MOYEN' : 'DIFFICULTES'),
         eleveDoc: null,
       });
     }
 
-    // Création des 6 classes permanentes
     const classesDocs = [];
     for (let c = 0; c < timeline.length; c++) {
       const { niveau, alias } = timeline[c];
@@ -121,25 +132,37 @@ export async function POST(request) {
       const activeTeacherId = isTeacher1 ? teacher1._id : teacher2._id;
       const currentClasse = new Classe({
         schoolKey, annee: timeline[0].year, niveau, alias, photo: '/school/classe.webp', moyenne_trimetriel: ["", "", ""],
-        professeur: [activeTeacherId],
-        eleves: [],
-        history: [],
-        createdAt: (+new Date()).toString()
+        professeur: [activeTeacherId], eleves: [], history: [], createdAt: (+new Date()).toString(),
+        coefficients: getCoefficientsForNiveau(niveau, subjects)
       });
       await currentClasse.save();
       classesDocs.push(currentClasse);
     }
 
-    // Boucle sur les 6 années simulées
+    // 4. BOUCLE TEMPORELLE (Génération de la profondeur)
     for (let y = 0; y < timeline.length; y++) {
       const { year } = timeline[y];
       const activeClassIndex = y;
 
-      // Mise à jour de l'année pour les 6 classes
       for (let c = 0; c < classesDocs.length; c++) {
         const classe = classesDocs[c];
+        
+        // Enregistrer l'historique de l'année précédente avant de réinitialiser la classe pour la nouvelle année
+        if (classe.annee && classe.annee !== year) {
+          const snapshot = {
+            annee: classe.annee,
+            professeur: [...classe.professeur],
+            eleves: [...classe.eleves],
+            coefficients: { ...classe.coefficients }
+          };
+          if (!classe.history) classe.history = [];
+          if (!classe.history.some(h => h.annee === snapshot.annee)) {
+            classe.history.push(snapshot);
+          }
+        }
+
         classe.annee = year;
-        classe.eleves = []; // On vide les élèves pour l'année
+        classe.eleves = [];
         const isT1 = c < 4;
         classe.professeur = [isT1 ? teacher1._id : teacher2._id];
       }
@@ -152,75 +175,72 @@ export async function POST(request) {
       if (isTeacher1 && !teacher1.current_classes.includes(currentClasse._id)) teacher1.current_classes.push(currentClasse._id);
       if (!isTeacher1 && !teacher2.current_classes.includes(currentClasse._id)) teacher2.current_classes.push(currentClasse._id);
 
-      // Traitement des élèves pour l'année en cours
+      // Traitement des élèves
+      const activeStudentsDocs = [];
       for (const sData of studentsData) {
         if (y >= sData.joinYearIndex) {
           if (!sData.eleveDoc) {
-            const eleve = new Eleve({
-              schoolKey,
-              nom: sData.nom, prenoms: sData.prenoms, sexe: sData.sexe,
-              naissance_$_date: sData.naissance_$_date,
-              adresse_$_map: '123 Rue de la République',
+            sData.eleveDoc = new Eleve({
+              schoolKey, nom: sData.nom, prenoms: sData.prenoms, sexe: sData.sexe,
+              naissance_$_date: sData.naissance_$_date, adresse_$_map: '123 Rue de la République',
               parents: { mere: `Mme ${sData.nom}`, pere: `M. ${sData.nom}`, phone: '+33612345678', email: 'parent@mail.com' },
               scolarity_fees_$_checkbox: {}, school_history: {}, bolobi_class_history_$_ref_µ_classes: {},
-              notes: {}, absences: [], bonus: [], compositions: {}
+              notes: {}, compositions: {}, absences: [], bonus: [], manus: [], commentaires: [], targetsList: {
+                all: ['Base'],
+                doRegime: Math.random() > 0.5 ? 'Demi-pensionnaire' : 'Externe',
+                doTransport: Math.random() > 0.6 ? 'Zone A' : (Math.random() > 0.5 ? 'Zone B' : 'Pas de transport')
+              }
             });
-            sData.eleveDoc = eleve;
           }
 
           const eleve = sData.eleveDoc;
           eleve.current_classe = currentClasse._id;
-          eleve.scolarity_fees_$_checkbox[year] = true;
           eleve.school_history[year] = inst.name;
           eleve.bolobi_class_history_$_ref_µ_classes[year] = currentClasse._id.toString();
-          eleve.notes[year] = generateRealisticNotes();
-          eleve.compositions[year] = true;
-
-          if (Math.random() > 0.5) {
-            eleve.absences.push({ date: getRandomDateInYear(year).getTime(), motif: 'Maladie', isJustified: true });
-          }
+          
+          // Générer les notes au format brut (nécessaires pour le calcul des bulletins ReportCards)
+          const rawNotes = generateStudentNotes(currentClasse.niveau, subjects, sData.profileType);
+          if (!eleve.notes) eleve.notes = {};
+          eleve.notes[year] = rawNotes;
+          
+          // Convertir et renseigner les compositions au format moderne pour l'affichage
+          eleve.compositions[year] = convertNotesToCompositions(rawNotes, year);
 
           currentClasse.eleves.push(eleve._id);
+          activeStudentsDocs.push(eleve);
         }
       }
 
-      for (const classe of classesDocs) {
-        await classe.save();
-      }
+      for (const classe of classesDocs) await classe.save();
 
-      // Schedule pour la classe active
-      const schedule = new Schedule({
-        schoolKey, classeId: currentClasse._id, createdBy: userId,
-        events: [
-          { dayOfWeek: 1, startTime: "08:30", endTime: "10:30", type: "CUSTOM_EVENT", label: "Mathématiques", teacherId: activeTeacherId.toString() },
-          { dayOfWeek: 2, startTime: "10:30", endTime: "12:00", type: "CUSTOM_EVENT", label: "Français", teacherId: activeTeacherId.toString() },
-          { dayOfWeek: 4, startTime: "14:00", endTime: "16:00", type: "CUSTOM_EVENT", label: "Histoire/Géo", teacherId: activeTeacherId.toString() }
-        ]
+      // --- DÉLÉGATION DE LA GÉNÉRATION PROFONDE ---
+      await generateScheduleForClass(currentClasse, subjects, schoolKey, activeTeacherId, userId, year);
+      await generateAttendanceForClassYear(currentClasse, activeStudentsDocs, year, schoolKey, activeTeacherId);
+      await generateBehaviorAndAdminForClassYear(currentClasse, activeStudentsDocs, year, schoolKey, activeTeacherId, pointLabels, getRandomDateInYear);
+      await generateSocialForClassYear(currentClasse, year, schoolKey, activeTeacherId, teacherName, getRandomDateInYear);
+      await generateReportCardsForYear(currentClasse, activeStudentsDocs, year, schoolKey);
+
+      // Bilan Trimestriel du professeur pour la classe
+      if (!currentClasse.reports) currentClasse.reports = [];
+      const reportDate = getRandomDateInYear(year);
+      currentClasse.reports.push({
+          period: "Trimestre 1",
+          content: `Un premier trimestre encourageant pour cette classe de ${currentClasse.niveau}.`,
+          date: reportDate,
+          createdAt: reportDate
       });
-      await schedule.save();
+      await currentClasse.save();
 
-      // Mur de la classe active
-      const { niveau } = timeline[activeClassIndex];
-      await Post.create([
-        { schoolKey, classId: currentClasse._id, isGlobal: false, authorId: activeTeacherId.toString(), authorName: teacherName, content: `Bienvenue à tous dans cette nouvelle année de ${niveau} !`, createdAt: getRandomDateInYear(year) },
-        { schoolKey, classId: currentClasse._id, isGlobal: false, authorId: activeTeacherId.toString(), authorName: teacherName, content: `N'oubliez pas l'évaluation de fin de trimestre la semaine prochaine. Pensez à réviser.`, createdAt: getRandomDateInYear(year) }
-      ]);
+      // --- NOUVEAUX SEEDERS (Finances, Evènements, Blog, Groupes) ---
+      await generateFinancialsForClassYear(currentClasse, activeStudentsDocs, year, getRandomDateInYear);
+      for (const eleve of activeStudentsDocs) await eleve.save();
 
-      // Groupe de discussion
-      const group = new Group({
-        schoolKey, creatorId: activeTeacherId.toString(), name: `Parents & Profs - ${niveau} A (${year})`,
-        members: [{ userId: activeTeacherId.toString(), role: 'ADMIN', userType: 'TEACHER' }, { userId: 'parent_demo_id', role: 'MEMBER', userType: 'PARENT' }],
-        invitationCode: Math.random().toString(36).substring(2, 8).toUpperCase()
-      });
-      await group.save();
+      const adminId = userId;
+      await generateEvents(Event, schoolKey, [teacher1, teacher2], [currentClasse], getRandomDateInYear, year);
+      await generateBlogAndPosts(Article, Post, schoolKey, adminId, getRandomDateInYear, year);
+      await generateGroupsAndMessages(Group, GroupMessage, schoolKey, adminId, [teacher1, teacher2], activeStudentsDocs, getRandomDateInYear, year);
 
-      await GroupMessage.create([
-        { schoolKey, groupId: group._id, senderId: activeTeacherId.toString(), senderName: teacherName, content: 'Bonjour à tous, voici le groupe de la classe pour cette année.', createdAt: getRandomDateInYear(year) },
-        { schoolKey, groupId: group._id, senderId: 'parent_demo_id', senderName: 'Parent Délégué', content: 'Merci ! Hâte de commencer cette nouvelle année.', createdAt: getRandomDateInYear(year) },
-        { schoolKey, groupId: group._id, senderId: activeTeacherId.toString(), senderName: teacherName, content: 'La liste des fournitures a été mise à jour.', createdAt: getRandomDateInYear(year) }
-      ]);
-
-      // Archivage de l'historique pour toutes les classes (sauf la dernière année)
+      // --- ARCHIVAGE ---
       if (y < timeline.length - 1) {
         for (const classe of classesDocs) {
           const snapshot = {
@@ -246,21 +266,16 @@ export async function POST(request) {
       }
     }
 
-    // Sauvegarde finale des élèves et profs
+    // Sauvegarde finale des élèves
     for (const sData of studentsData) {
       if (sData.eleveDoc) await sData.eleveDoc.save();
     }
     await teacher1.save();
     await teacher2.save();
 
-    // 4. ANIMATION SOCIALE GLOBALE (Posts)
-    await Post.create([
-      { schoolKey, isGlobal: true, authorId: userId, authorName: 'La Direction', content: `🎉 **Fête de fin d'année !**\nVenez nombreux célébrer avec nous les réussites de nos élèves. La kermesse aura lieu dans la cour principale.`, createdAt: new Date(Date.now() - 86400000 * 2) },
-      { schoolKey, isGlobal: true, authorId: userId, authorName: 'La Direction', content: `📸 **Photos de classe**\nLes photos seront prises la semaine prochaine. Pensez à ramener les autorisations signées.`, createdAt: new Date(Date.now() - 86400000 * 10) },
-      { schoolKey, isGlobal: true, authorId: teacher2._id.toString(), authorName: 'Mme Dubois', content: `🚀 **Bienvenue sur la plateforme !**\nNaviguez librement pour découvrir les fonctionnalités.`, mediaUrls: ['/school/classe.webp'], createdAt: new Date() }
-    ]);
+    await generateGlobalSocialData(schoolKey, userId, getRandomDateInYear);
 
-    return NextResponse.json({ success: true, message: 'Démo réinitialisée avec succès (6 années générées et données sociales enrichies).' });
+    return NextResponse.json({ success: true, message: 'Démo réinitialisée avec succès (Données profondes générées avec succès).' });
 
   } catch (err) {
     console.error('❌ Reset Demo Error:', err);

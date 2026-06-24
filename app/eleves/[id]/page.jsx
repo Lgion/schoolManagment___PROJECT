@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock } from '../../components/EntityModal.jsx';
@@ -35,7 +35,24 @@ export default function ElevePage() {
 
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
-  const [schoolYear, setSchoolYear] = useState(getDefaultSchoolYear(eleve?.compositions || {}));
+  const [schoolYear, setSchoolYear] = useState('2025-2026');
+
+  useEffect(() => {
+    if (eleve?.compositions) {
+      setSchoolYear(getDefaultSchoolYear(eleve.compositions));
+    }
+  }, [eleve]);
+
+  const activeClass = useMemo(() => {
+    if (!eleve) return null;
+    const currentYear = getDefaultSchoolYear(eleve.compositions || {});
+    if (schoolYear === currentYear) return classe;
+    
+    const histClassId = eleve.bolobi_class_history_$_ref_µ_classes?.[schoolYear];
+    if (!histClassId) return null;
+    return (ctx.classes || []).find(c => String(c._id) === String(histClassId)) || null;
+  }, [eleve, schoolYear, classe, ctx.classes]);
+
   if (!eleve) return <div style={{ color: 'red' }}>Élève introuvable</div>;
 
   const onEdit = e => { setSelected(e); setEditType("eleve"); setShowModal(true); }
@@ -93,8 +110,8 @@ export default function ElevePage() {
           alt={`${eleve.nom} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}`}
         />
         <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
-        <ClasseDisplay classe={classe} label="En classe de:" />
-        <ClasseEnseignantDisplay classe={classe} label="Enseignant de la classe:" />
+        <ClasseDisplay classe={activeClass} label="En classe de:" />
+        <ClasseEnseignantDisplay classe={activeClass} label="Enseignant de la classe:" />
 
         <div className="person-detail__gmap">
           <u>Domicilié (coordonées gmap): </u>
@@ -147,7 +164,7 @@ export default function ElevePage() {
             </h2>
             <HomeworkTodoList
               studentId={eleve._id}
-              classId={eleve.current_classe}
+              classId={activeClass?._id || eleve.current_classe}
               interactive={['eleve', 'public'].includes(userRole)}
             />
           </div>
@@ -157,7 +174,7 @@ export default function ElevePage() {
               <span className="person-detail__subtitle-icon">📅</span>
               Événements à venir
             </h2>
-            <EventsPanel classId={eleve.current_classe} />
+            <EventsPanel classId={activeClass?._id || eleve.current_classe} />
           </div>
 
           <div className="person-detail__block person-detail__block--bulletins">
@@ -168,10 +185,10 @@ export default function ElevePage() {
             <StudentReportCards
               studentId={eleve._id}
               studentName={`${eleve.nom || ''} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : (eleve.prenoms || '')}`.trim()}
-              className={classe ? `${classe.niveau || ''} ${classe.alias || ''}`.trim() : ''}
+              className={activeClass ? `${activeClass.niveau || ''} ${activeClass.alias || ''}`.trim() : ''}
             />
           </div>
-
+ 
           <div className="person-detail__block person-detail__block--classbook">
             <h2 className="person-detail__subtitle">
               <span className="person-detail__subtitle-icon">📖</span>
@@ -188,7 +205,7 @@ export default function ElevePage() {
               </h2>
               <StudentMessaging
                 studentId={eleve._id}
-                teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
+                teachers={Array.isArray(activeClass?.professeur) ? activeClass.professeur : []}
                 conversationType={userRole === 'parent' ? 'PARENT_TEACHER' : 'STUDENT_TEACHER'}
               />
             </div>
@@ -197,13 +214,13 @@ export default function ElevePage() {
           {['parent', 'prof'].includes(userRole) && (
             <div className="person-detail__block person-detail__block--appointments">
               <h2 className="person-detail__subtitle">
-                <span className="person-detail__subtitle-icon">📆</span>
+                <span className="person-detail__subtitle-icon">📅</span>
                 Rendez-vous
               </h2>
               <AppointmentsPanel
                 studentId={eleve._id}
                 initiatorRole={userRole === 'prof' ? 'prof' : 'parent'}
-                teachers={Array.isArray(classe?.professeur) ? classe.professeur : []}
+                teachers={Array.isArray(activeClass?.professeur) ? activeClass.professeur : []}
                 canCreate={true}
               />
             </div>

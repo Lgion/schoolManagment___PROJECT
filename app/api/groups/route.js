@@ -26,13 +26,31 @@ export async function GET(request) {
 
     await dbConnect()
 
-    // Trouver tous les groupes où l'utilisateur est créateur ou membre
-    const groups = await Group.find({
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const mockRole = cookieStore.get('mock_role')?.value
+
+    let query = {
       $or: [
         { creatorId: userId },
         { 'members.userId': userId }
       ]
-    }).sort({ createdAt: -1 })
+    }
+
+    // Application du filtre visuel pour le mode Bac à Sable (simulation de rôle)
+    if (userId === 'user_fake_admin_123' && mockRole) {
+      if (mockRole === 'eleve') {
+        query = { 'members.userType': 'STUDENT' };
+      } else if (mockRole === 'prof') {
+        query = { 'members.userType': 'TEACHER' };
+      } else if (mockRole === 'parent') {
+        query = { 'members.userType': 'PARENT' };
+      } else {
+        query = {}; // admin voit tout
+      }
+    }
+
+    const groups = await Group.find(query).sort({ createdAt: -1 })
 
     return NextResponse.json({
       success: true,

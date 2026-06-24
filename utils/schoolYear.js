@@ -11,7 +11,7 @@
  * courante calculée à la bascule de juillet, au format "YYYY-YYYY".
  */
 export function getDefaultSchoolYear(compositions) {
-  const keys = Object.keys(compositions || {});
+  const keys = Object.keys(compositions || {}).sort((a, b) => b.localeCompare(a));
   if (keys.length > 0) return keys[0];
   const now = new Date();
   return (now.getMonth() + 1) < 7

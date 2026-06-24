@@ -11,6 +11,7 @@ const pollOptionSchema = new Schema({
 })
 
 const postSchema = new Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   groupId: { type: ObjectId, ref: 'ai_Groups_Ecole_St_Martin', required: false },
   classId: { type: ObjectId, ref: 'ai_Ecole_St_Martin', required: false },
   isGlobal: { type: Boolean, default: false },
