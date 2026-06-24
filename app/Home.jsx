@@ -14,6 +14,7 @@ import {
 } from '@clerk/nextjs';
 import EntityModal from './components/EntityModal';
 import LandingPage from './components/LandingPage';
+import SandboxRoleSelector from './components/SandboxRoleSelector';
 import { clearLS, initStorage } from '../utils/localStorageManager';
 import { useAuth } from '@clerk/nextjs';
 import LogSignIn from './_/LogSignIn';
@@ -210,6 +211,9 @@ export default ({ children }) => {
 
               <SignedIn>
                 <div className="ecole-admin__headerActions-iconGroup">
+                  <Link href="/myaccount" className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--myaccount" data-tooltip="Mon Compte & École" aria-label="Gérer mon école" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className="fas fa-school" aria-hidden="true"></i>
+                  </Link>
                   <div className="ecole-admin__headerActions-icon ecole-admin__headerActions-icon--account" data-tooltip="Mon compte">
                     <UserButton
                       appearance={{
@@ -328,5 +332,6 @@ export default ({ children }) => {
       </main>
     </>
     {showModal && <EntityModal type={editType} entity={selected} onClose={() => setShowModal(false)} classes={classes || []} />}
+    {mounted && (isDemoMode || (userData?.schoolKey && userData.schoolKey.startsWith('sandbox_'))) && <SandboxRoleSelector />}
   </>
 }

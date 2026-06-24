@@ -412,7 +412,7 @@ export default function ClassBookPanel({ classId, classe, eleves = [] }) {
             <p className="cb-meta-year">Année scolaire : {classBook?.schoolYear}</p>
           </div>
           <div className="cb-meta-actions">
-            <span className={`cb-status-badge cb-status-${classBook?.status.toLowerCase()}`}>
+            <span className={`cb-status-badge cb-status-${classBook?.status?.toLowerCase() || 'draft'}`}>
               {classBook?.status === 'PUBLISHED' ? '📢 Publié (Parents)' : '✏️ Brouillon'}
             </span>
             <button 

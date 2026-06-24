@@ -35,9 +35,18 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [X] (NEW TASK) Concevoir une Matrice des Permissions (Tableau des rôles RBAC) répertoriant les restrictions d'affichage sur toutes les vues globales avec documentation visuelle dynamique (À réaliser en fin de projet).
 (PREVIOUS TASK) La page qui s'affiche pour un parent ou un élève connecté doit inclure les vues élèves/profs/classes mais avec beaucoup plus de restrictions dans les infos affichées (ou avoir une section spéciale en en-tête pour regrouper les actions utiles selon le rôle).
 
-## ⚙️ Administration et Système
-- [X] Créer la fonctionnalité de création d'école en bac à sable (vivant temporairement dans le local session).
-- [X] Créer la fonctionnalité de générer des données factices pour l'école via un formulaire.
+## ⚙️ Administration et Système (Multi-Tenant & Sandbox)
+- [V] Configurer le resolver de base de données dynamique pour isoler `school_erp` (Production) et `school_erp_sandboxes` (Sandbox).
+- [V] Ajouter le champ `schoolKey` indexé sur l'ensemble des schémas Mongoose.
+- [V] Créer le modèle `Institution` (ou `School`) pour stocker la propriété et la configuration des écoles en base de données.
+- [V] Concevoir la nouvelle Landing Page compétitive présentant les fonctionnalités avancées de l'ERP.
+- [V] Implémenter le Mode Bac à Sable avec le Sélecteur de Rôles flottant (Élève, Parent, Prof, Admin).
+- [V] Créer le générateur d'école factice personnalisée pour le mode Sandbox (seeding dans `school_erp_sandboxes`).
+- [V] Développer le système de conversion fluide (rattachement du bac à sable au compte Clerk lors de l'inscription).
+- [V] Implémenter le formulaire de demande d'école réelle sur `/myaccount` avec envoi d'e-mail d'approbation au Super-Admin.
+- [V] Développer l'API d'approbation pour le Super-Admin (liens Accepter/Refuser) et le bouton fixed d'Onboarding pour l'utilisateur approuvé.
+- [V] Mettre en place les fenêtres d'upsell (modals d'information Premium) sur les boutons d'IA et de Scanner en mode Sandbox.
+- [V] Configurer la tâche de nettoyage automatique (Cron Job) pour purger les sandboxes anonymes de plus de 48 heures.
 
 ## 🧪 Tests et Assurance Qualité (QA)
 - [V] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC).

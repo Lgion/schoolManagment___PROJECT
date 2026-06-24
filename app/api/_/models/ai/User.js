@@ -2,6 +2,12 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
 
 const userSchema = mongoose.Schema({
+    schoolKey: { type: String, default: 'ecole_st_martin', index: true },
+    realSchoolStatus: { 
+        type: String, 
+        enum: ['none', 'pending', 'approved', 'declined'], 
+        default: 'none' 
+    },
     clerkId: { type: String, required: true, unique: true }, // ID Clerk pour liaison
     email: { type: String, required: true, unique: true },
     firstName: { type: String, default: "" },

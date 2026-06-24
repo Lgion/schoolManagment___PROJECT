@@ -3,12 +3,33 @@ import { test, expect } from '../support/merged-fixtures';
 test.describe('Story 2.4 - Gestion des Incertitudes (Soft Warnings)', () => {
 
     test('UI shows warning for low confidence and removes it on edit', async ({ page }) => {
+        // Listen to console and page errors
+        page.on('console', msg => console.log(`[BROWSER] ${msg.type().toUpperCase()}: ${msg.text()}`));
+        page.on('pageerror', err => console.error(`[BROWSER ERROR] ${err.stack || err.message}`));
+
+        // Set mock_role in localStorage before the page scripts execute
+        await page.addInitScript(() => {
+            window.localStorage.setItem('mock_role', 'admin');
+        });
+
+        // Wildcard fallback mock for all other API requests to prevent server database timeouts
+        await page.route('**/api/**', async (route) => {
+            const url = route.request().url();
+            // Permettre aux requêtes spécifiques d'être traitées par les mocks suivants si nécessaire,
+            // ou y répondre immédiatement ici si aucun autre mock ne correspond.
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ success: true, data: [] })
+            });
+        });
+
         // Mock classes data
         await page.route('**/api/school_ai/classes', async (route) => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
-                body: JSON.stringify([{ _id: 'class123', niveau: 'Terminale', alias: 'S1', annee: '2023-2024' }])
+                body: JSON.stringify([{ _id: 'class123', niveau: 'Terminale', alias: 'S1', annee: '2023-2024', coefficients: { math: 2 } }])
             });
         });
 
@@ -47,13 +68,31 @@ test.describe('Story 2.4 - Gestion des Incertitudes (Soft Warnings)', () => {
             });
         });
 
+        // Mock subjects data
+        await page.route('**/api/subjects', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({ success: true, data: [{ _id: 'sub1', nom: 'Mathématiques' }] })
+            });
+        });
+
+        // Mock schedules data
+        await page.route('**/api/schedules**', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify([])
+            });
+        });
+
         // Bypass Clerk auth by setting the mock_role cookie
         await page.context().addCookies([
             { name: 'mock_role', value: 'admin', url: 'http://localhost:3000' }
         ]);
 
-        // Navigate to the class detail page
-        await page.goto('http://localhost:3000/classes/class123');
+        // Navigate to the class detail page with increased timeout for cold compilation
+        await page.goto('http://localhost:3000/classes/class123', { timeout: 60000 });
 
         // Look for the scanner button
         const fileChooserPromise = page.waitForEvent('filechooser');

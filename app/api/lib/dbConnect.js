@@ -1,99 +1,152 @@
 import mongoose from 'mongoose';
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+// Stockage local asynchrone pour suivre le tenant (base de données) de la requête en cours
+const tenantStorage = new AsyncLocalStorage();
 
 let cached = global.mongoose;
-
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null, uri: null };
+  cached = global.mongoose = {
+    prodConn: null,
+    prodPromise: null,
+    sandboxConn: null,
+    sandboxPromise: null,
+    registeredSchemas: {}
+  };
 }
 
-/**
- * Connexion MongoDB optimisée pour Next.js API routes
- * Déclenche MONGODB_sample_URI automatiquement si un user n'est pas loggé.
- */
-async function dbConnect() {
-  const URI_MAIN = process.env.MONGODB_URI;
-  const URI_SAMPLE = process.env.MONGODB_sample_URI;
+// Surcharge globale et sécurisée de mongoose.model
+if (!global.mongooseModelPatched) {
+  global.mongooseModelPatched = true;
 
-  let useSample = false;
-  try {
-    const authObj = await auth();
-    let forceFalsy = false;
-    
-    try {
-      const cookieStore = await cookies();
-      forceFalsy = cookieStore.get('force_falsy')?.value === 'true';
-    } catch (e) {
-      // Pas de contexte de cookies
+  const originalModel = mongoose.model.bind(mongoose);
+
+  mongoose.model = function (name, schema, collection) {
+    if (schema) {
+      cached.registeredSchemas[name] = schema;
     }
 
-    // Bypass strict de sécurité : Un administrateur enregistré ne DOIT JAMAIS subir le mode Falsy
-    // Même si son ordinateur avait gardé le cookie depuis une session "Visiteur".
-    if (authObj && authObj.userId) {
-      const user = await currentUser();
-      const email = user?.primaryEmailAddress?.emailAddress;
-      const isAdminEmail = email && process.env.NEXT_PUBLIC_EMAIL_ADMIN && process.env.NEXT_PUBLIC_EMAIL_ADMIN.includes(email);
-      
-      if (isAdminEmail) {
-        forceFalsy = false; // L'Admin écrase le cookie falsy
-      } else {
-        forceFalsy = true;  // Simple visiteur (non-admin) forcé en falsy
+    const originalModelInstance = originalModel(name, schema, collection);
+
+    return new Proxy(originalModelInstance, {
+      get(target, prop) {
+        let conn = null;
+        
+        // Récupérer le tenant de manière synchrone et thread-safe sans appeler headers()
+        const store = tenantStorage.getStore();
+        if (store?.useSandbox) {
+          conn = cached.sandboxConn;
+        }
+
+        if (conn) {
+          let sandboxModel = conn.models[name];
+          if (!sandboxModel) {
+            const schemaToUse = cached.registeredSchemas[name] || originalModelInstance.schema;
+            sandboxModel = conn.model(name, schemaToUse);
+          }
+          
+          const value = sandboxModel[prop];
+          if (typeof value === 'function') {
+            return value.bind(sandboxModel);
+          }
+          return value;
+        }
+
+        const value = target[prop];
+        if (typeof value === 'function') {
+          return value.bind(target);
+        }
+        return value;
+      },
+
+      set(target, prop, value) {
+        let conn = null;
+        
+        const store = tenantStorage.getStore();
+        if (store?.useSandbox) {
+          conn = cached.sandboxConn;
+        }
+
+        if (conn) {
+          let sandboxModel = conn.models[name];
+          if (!sandboxModel) {
+            const schemaToUse = cached.registeredSchemas[name] || originalModelInstance.schema;
+            sandboxModel = conn.model(name, schemaToUse);
+          }
+          sandboxModel[prop] = value;
+          return true;
+        }
+
+        target[prop] = value;
+        return true;
       }
-    }
+    });
+  };
+}
 
-    // Si aucun uuid de userID n'est actif, OU si forcé en Falsy, passer en mode sample
-    if (forceFalsy || !authObj || !authObj.userId) {
-      useSample = true;
-    }
-  } catch (error) {
-    // Si l'erreur est liée au contexte Server Actions/Pages (pas grave, on reste sur le mode par défaut)
+async function dbConnect() {
+  const URI_PROD = process.env.MONGODB_URI || process.env.MONGODB_sample_URI;
+  const URI_SANDBOX = process.env.MONGODB_SANDBOX_URI;
+
+  if (!URI_PROD) {
+    throw new Error("CRITICAL CONFIGURATION ERROR: MONGODB_URI is not defined.");
+  }
+  if (!URI_SANDBOX) {
+    throw new Error("CRITICAL CONFIGURATION ERROR: MONGODB_SANDBOX_URI is not defined.");
   }
 
-  // SÉCURITÉ CRITIQUE : Si on demande le mode Sample/Falsy mais que l'URI n'est pas définie,
-  // on ne DOIT PAS laisser Next.js basculer sur process.env.MONGODB_URI par erreur.
-  if (useSample && !URI_SAMPLE) {
-    throw new Error("CRITICAL SECURITY ERROR: MONGODB_sample_URI is not defined while attempting to access Sample Mode.");
-  }
+  const options = {
+    bufferCommands: true,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 10000,
+  };
 
-  const MONGODB_URI = useSample ? URI_SAMPLE : (URI_MAIN || 'mongodb://localhost:27017/lpd');
-
-  // Si on est déjà connecté mais que l'URI demandée a changé : on force la déconnexion
-  if (cached.conn && cached.uri !== MONGODB_URI) {
-    console.log(`[MONGODB_CONN] Changement de mode détecté ! Déconnexion de l'ancienne base...`);
-    await mongoose.disconnect();
-    cached.conn = null;
-    cached.promise = null;
-  }
-
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    console.log(`[MONGODB_CONN] ${useSample ? '🌐 MODE FALSY (Sample DB)' : '🌍 MODE NORMAL (Main DB)'}`);
-    cached.uri = MONGODB_URI;
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: true, // Plus sûr pour les requêtes concurrentes dans Next.js
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
-    }).then((mongooseInstance) => {
-      console.log('✅ Connected to MongoDB -> ' + (useSample ? 'Sample' : 'Main'));
-      return mongooseInstance;
+  // 1. Connexion Production (Default Mongoose Connection)
+  if (!cached.prodPromise) {
+    console.log("[MONGODB_CONN] Connecting to Production Database...");
+    cached.prodPromise = mongoose.connect(URI_PROD, options).then((mongooseInstance) => {
+      console.log("✅ Connected to MongoDB Production (Default)");
+      cached.prodConn = mongooseInstance.connection;
+      return mongooseInstance.connection;
     }).catch(err => {
-      console.error('❌ MongoDB Connection Error:', err.message);
-      cached.promise = null;
+      console.error('❌ MongoDB Production Connection Error:', err.message);
+      cached.prodPromise = null;
       throw err;
     });
   }
 
-  try {
-    cached.conn = await cached.promise;
-    return cached.conn;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
+  // 2. Connexion Sandbox (Dedicated Connection Pool)
+  if (!cached.sandboxPromise) {
+    console.log("[MONGODB_CONN] Connecting to Sandbox Database...");
+    cached.sandboxPromise = mongoose.createConnection(URI_SANDBOX, options).asPromise().then((conn) => {
+      console.log("✅ Connected to MongoDB Sandbox (Pool)");
+      cached.sandboxConn = conn;
+      return conn;
+    }).catch(err => {
+      console.error('❌ MongoDB Sandbox Connection Error:', err.message);
+      cached.sandboxPromise = null;
+      throw err;
+    });
   }
+
+  // Attendre que les connexions soient établies
+  await Promise.all([cached.prodPromise, cached.sandboxPromise]);
+
+  // Déterminer le tenant de manière asynchrone et sécurisée en attendant headers()
+  let useSandbox = false;
+  try {
+    const headersList = await headers(); // Awaiting headers() correctly!
+    const tenantDb = headersList.get('x-tenant-db');
+    useSandbox = (tenantDb === 'sandbox');
+  } catch (e) {
+    useSandbox = false;
+  }
+
+  // Enregistrer le tenant dans le stockage local asynchrone pour toutes les requêtes de ce contexte
+  tenantStorage.enterWith({ useSandbox });
+
+  return useSandbox ? cached.sandboxConn : cached.prodConn;
 }
 
 export default dbConnect;

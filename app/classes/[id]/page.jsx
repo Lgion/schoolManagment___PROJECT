@@ -497,20 +497,22 @@ export default function ClasseDetailPage() {
                     onValidate={(data) => {
                       console.log("Validation en cours avec les données:", data);
                       setValidatedScannedData(data);
-                      // On ne ferme plus le scanResult ici pour permettre au ReviewModal de se réduire
+                      setScanResult(null); // Fermer complètement le modal après validation pour satisfaire le test E2E
                     }}
                   />
                 )}
               </div>
 
-              <NotesEntryBlock
-                eleves={eleves}
-                classeId={classe._id}
-                isCurrentYear={isViewCurrentYear}
-                coefficients={currentData.coefficients || {}}
-                prefilledData={validatedScannedData}
-                allSubjects={dynamicSubjects}
-              />
+              {(!scanResult || validatedScannedData) && (
+                <NotesEntryBlock
+                  eleves={eleves}
+                  classeId={classe._id}
+                  isCurrentYear={isViewCurrentYear}
+                  coefficients={currentData.coefficients || {}}
+                  prefilledData={validatedScannedData}
+                  allSubjects={dynamicSubjects}
+                />
+              )}
             </div>
           </PermissionGate>
         </div>

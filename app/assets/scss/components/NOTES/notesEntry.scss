@@ -295,6 +295,13 @@
         &--error {
             background: var(--color-danger-light) !important;
         }
+
+        // État de warning (faible confiance de l'IA)
+        &--is-warning {
+            background: var(--color-warning-light) !important;
+            border-left: 4px solid var(--color-warning);
+            transition: background-color 0.4s ease;
+        }
     }
 
     &__td {

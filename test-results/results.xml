@@ -1,12 +1,29 @@
-<testsuites id="" name="" tests="4" failures="0" skipped="0" errors="0" time="24.753394">
-<testsuite name="e2e/family-dashboards.spec.ts" timestamp="2026-06-23T18:28:42.985Z" hostname="chromium" tests="4" failures="0" skipped="0" time="37.006" errors="0">
-<testcase name="Family Dashboards and Role Redirection (E2E) › Parent Account › is redirected to the Parent Dashboard on home page" classname="e2e/family-dashboards.spec.ts" time="8.216">
+<testsuites id="" name="" tests="4" failures="0" skipped="0" errors="0" time="129.54833499999998">
+<testsuite name="e2e/rbac-middleware.spec.ts" timestamp="2026-06-23T23:12:34.477Z" hostname="chromium" tests="3" failures="0" skipped="0" time="35.449" errors="0">
+<testcase name="RBAC Middleware Protection (E2E) › Unauthorized user › is redirected to sign-in when accessing admin dashboard" classname="e2e/rbac-middleware.spec.ts" time="25.052">
 </testcase>
-<testcase name="Family Dashboards and Role Redirection (E2E) › Parent Account › is prevented from accessing the admin page" classname="e2e/family-dashboards.spec.ts" time="6.481">
+<testcase name="RBAC Middleware Protection (E2E) › Teacher (Enseignant) › is prevented from accessing admin dashboard" classname="e2e/rbac-middleware.spec.ts" time="5.454">
 </testcase>
-<testcase name="Family Dashboards and Role Redirection (E2E) › Student Account › is redirected to the Student Space on home page" classname="e2e/family-dashboards.spec.ts" time="10.029">
+<testcase name="RBAC Middleware Protection (E2E) › Admin › can access the administration dashboard" classname="e2e/rbac-middleware.spec.ts" time="4.943">
 </testcase>
-<testcase name="Family Dashboards and Role Redirection (E2E) › Student Account › is prevented from accessing the admin page" classname="e2e/family-dashboards.spec.ts" time="12.28">
+</testsuite>
+<testsuite name="e2e/story-2-4-review-cell.spec.ts" timestamp="2026-06-23T23:12:34.477Z" hostname="chromium" tests="1" failures="0" skipped="0" time="33.607" errors="0">
+<testcase name="Story 2.4 - Gestion des Incertitudes (Soft Warnings) › UI shows warning for low confidence and removes it on edit" classname="e2e/story-2-4-review-cell.spec.ts" time="33.607">
+<system-out>
+<![CDATA[[BROWSER] INFO: %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[BROWSER] LOG: undefined
+[BROWSER] LOG: TRY TO USE CLERK NPM PACKAGE SOLUTION FOR LOGIN SERVICES
+[BROWSER] LOG: 🔄 LoadingProvider initialisé - gestion manuelle du loading
+[BROWSER] LOG: [useUserRole] 🚀 Test mode bypass active. mockRole = admin
+[BROWSER] WARNING: Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview
+[BROWSER] WARNING: Clerk: The prop "afterSignInUrl" is deprecated and should be replaced with the new "fallbackRedirectUrl" or "forceRedirectUrl" props instead. Learn more: https://clerk.com/docs/guides/custom-redirects#redirect-url-props
+[BROWSER] LOG: undefined
+[BROWSER] LOG: 🗑️ [LocalStorageManager] Cache de l'application vidé.
+[BROWSER] LOG: [useUserRole] 🚀 Test mode bypass active. mockRole = admin
+[BROWSER] LOG: Scan completed {success: true, data: Array(2), file: File, message: Analyse IA terminée avec succès}
+[BROWSER] LOG: Validation en cours avec les données: [Object, Object]
+]]>
+</system-out>
 </testcase>
 </testsuite>
 </testsuites>

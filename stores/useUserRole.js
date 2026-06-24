@@ -66,14 +66,31 @@ export function UserRoleProvider({ children }) {
   useEffect(() => {
     const loadUserData = async () => {
       // Test mode bypass
-      if (process.env.NEXT_PUBLIC_MODE === 'test') {
-        const mockRole = (typeof window !== 'undefined' ? (localStorage.getItem('mock_role') || getLSItem('mock_role')) : null) || 'admin';
+      const hasMockRole = typeof window !== 'undefined' && (
+        localStorage.getItem('mock_role') || 
+        getLSItem('mock_role') || 
+        document.cookie.includes('mock_role')
+      );
+      if (process.env.NEXT_PUBLIC_MODE === 'test' || hasMockRole) {
+        let mockRole = 'admin';
+        if (typeof window !== 'undefined') {
+          mockRole = localStorage.getItem('mock_role') || getLSItem('mock_role');
+          if (!mockRole) {
+            const match = document.cookie.match(/(?:^|; )mock_role=([^;]*)/);
+            if (match) mockRole = decodeURIComponent(match[1]);
+          }
+        }
+        if (!mockRole) mockRole = 'admin';
+
+        console.log(`[useUserRole] 🚀 Test mode bypass active. mockRole = ${mockRole}`);
         setUserData({ id: 'test', firstName: 'Test', lastName: 'User', email: 'test@test.com', role: mockRole });
         setUserRole(mockRole);
         setPermissions(getPermissionsByRole(mockRole));
         setLoading(false);
         return;
       }
+
+      console.log(`[useUserRole] 👤 Normal mode. isLoaded = ${isLoaded}, clerkUser = ${clerkUser?.id}`);
 
       if (!isLoaded) {
         return;

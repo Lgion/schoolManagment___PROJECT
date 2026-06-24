@@ -73,7 +73,32 @@ export async function POST(request) {
 
     // Créer un nouvel utilisateur
     console.log('Creating new user...');
-    const { role, ref, childrenRefs } = await determineUserRole(email);
+    
+    // Détection et liaison du bac à sable anonyme depuis les cookies
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const sandboxSchoolKey = cookieStore.get('x-school-key')?.value;
+    
+    let userSchoolKey = 'ecole_st_martin';
+    let { role, ref, childrenRefs } = await determineUserRole(email);
+
+    if (sandboxSchoolKey && sandboxSchoolKey.startsWith('sandbox_')) {
+      userSchoolKey = sandboxSchoolKey;
+      role = 'admin'; // Le créateur du bac à sable est toujours admin de son école
+      
+      try {
+        const Institution = (await import('../_/models/ai/Institution')).default;
+        const inst = await Institution.findOne({ schoolKey: sandboxSchoolKey });
+        if (inst) {
+          inst.ownerClerkId = clerkId;
+          await inst.save();
+          console.log(`🔑 Linked sandbox ${sandboxSchoolKey} to owner ${clerkId}`);
+        }
+      } catch (err) {
+        console.error('⚠️ Failed to link sandbox to user:', err.message);
+      }
+    }
+
     const roleData = buildRoleData(role, ref, childrenRefs);
 
     const newUser = new User({
@@ -81,6 +106,7 @@ export async function POST(request) {
       email,
       firstName: firstName || '',
       lastName: lastName || '',
+      schoolKey: userSchoolKey,
       role,
       roleData,
       lastLogin: new Date(),
@@ -112,7 +138,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       user: newUser,
-      message: 'Utilisateur créé avec succès'
+      message: 'Utilisateur créé avec succès et bac à sable lié.'
     });
 
   } catch (error) {

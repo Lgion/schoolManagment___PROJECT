@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const classeSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   // Listes synchronisées automatiquement via les middlewares des modèles Eleve et Teacher
   professeur: { default: [], type: [ObjectId], ref: 'ai_Profs_Ecole_St_Martin', required: false },
   eleves: { default: [], type: [ObjectId], ref: 'ai_Eleves_Ecole_St_Martin', required: false },

@@ -9,6 +9,7 @@ currentSchoolYear = (currentSchoolYear.getMonth() + 1) < 7 ? (currentSchoolYear.
 let currentSchoolYearField = { [currentSchoolYear]: false }
 
 const studentSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   // current_classe_$_ref_µ_classes: { default: "", type: Object, required: true },
   current_classe: { type: ObjectId, ref: Object.keys(schemaClasseForEleve.obj)[0], required: true },
   nom: { default: "", type: String, required: true },

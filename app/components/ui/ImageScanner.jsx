@@ -4,11 +4,15 @@ import React, { useRef, useState, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 import ProcessLoader from './ProcessLoader';
 import { getLSItem, setLSItem } from '../../../utils/localStorageManager';
+import { useUserRole } from '../../../stores/useUserRole';
+import Link from 'next/link';
 
 export default function ImageScanner({ classeId, subjects = [], onScanComplete, label = "Scanner une classe", className = "", disabled = false, title = "", apiEndpoint = '/api/school_ai/extract-notes', onCapture = null, acceptTypes = "image/*" }) {
+    const { userData } = useUserRole();
     const [isScanning, setIsScanning] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [showToast, setShowToast] = useState(false);
+    const [showUpsell, setShowUpsell] = useState(false);
     const fileInputRef = useRef(null);
     const isMounted = useRef(true);
 
@@ -36,6 +40,16 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
 
     const handleButtonClick = () => {
         if (disabled) return;
+        
+        // Intercepter l'action en mode Sandbox pour afficher l'upsell
+        const isSandbox = userData?.schoolKey && userData.schoolKey.startsWith('sandbox_');
+        const isFalsy = typeof document !== 'undefined' && document.cookie.includes('force_falsy=true');
+        
+        if (isSandbox || isFalsy) {
+            setShowUpsell(true);
+            return;
+        }
+
         fileInputRef.current?.click();
     };
 
@@ -170,6 +184,135 @@ export default function ImageScanner({ classeId, subjects = [], onScanComplete, 
             {showToast && (
                 <div className="image-scanner__toast">
                     Hors-ligne : Copie sauvegardée localement. Synchronisation en attente.
+                </div>
+            )}
+
+            {showUpsell && (
+                <div className="upsell-modal-overlay" onClick={() => setShowUpsell(false)}>
+                    <div className="upsell-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="upsell-modal__header">
+                            <span className="upsell-modal__icon">⭐</span>
+                            <h3 className="upsell-modal__title">Fonctionnalité Premium</h3>
+                        </div>
+                        <div className="upsell-modal__body">
+                            <p>L'analyse et la numérisation intelligente de documents par l'IA (Cahier de texte, Bulletins de notes, Absences & Scolarité) sont des fonctionnalités exclusives de la version de production.</p>
+                            <p className="upsell-modal__highlight">Passez en production pour débloquer la puissance totale de l'IA pour votre établissement !</p>
+                        </div>
+                        <div className="upsell-modal__footer">
+                            <Link href="/myaccount" className="upsell-modal__btn --primary" onClick={() => setShowUpsell(false)}>
+                                🚀 Activer mon école réelle
+                            </Link>
+                            <button className="upsell-modal__btn --secondary" onClick={() => setShowUpsell(false)}>
+                                Plus tard
+                            </button>
+                        </div>
+                    </div>
+                    <style jsx>{`
+                        .upsell-modal-overlay {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100vw;
+                            height: 100vh;
+                            background: rgba(15, 23, 42, 0.75);
+                            backdrop-filter: blur(8px);
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            z-index: 100000;
+                            animation: fadeIn 0.3s ease;
+                        }
+                        .upsell-modal {
+                            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+                            border: 1px solid rgba(249, 115, 22, 0.3);
+                            border-radius: 24px;
+                            padding: 32px;
+                            width: 90%;
+                            max-width: 480px;
+                            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                                        0 0 40px rgba(249, 115, 22, 0.15);
+                            text-align: center;
+                            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                        }
+                        .upsell-modal__header {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 12px;
+                            margin-bottom: 20px;
+                        }
+                        .upsell-modal__icon {
+                            font-size: 3rem;
+                            animation: float 3s ease-in-out infinite;
+                            display: inline-block;
+                        }
+                        .upsell-modal__title {
+                            font-size: 1.5rem;
+                            font-weight: 800;
+                            color: #f8fafc;
+                            margin: 0;
+                        }
+                        .upsell-modal__body {
+                            color: #94a3b8;
+                            font-size: 0.95rem;
+                            line-height: 1.6;
+                            margin-bottom: 28px;
+                        }
+                        .upsell-modal__highlight {
+                            color: #f97316;
+                            font-weight: 600;
+                            margin-top: 12px;
+                        }
+                        .upsell-modal__footer {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 12px;
+                        }
+                        .upsell-modal__btn {
+                            width: 100%;
+                            padding: 14px;
+                            border-radius: 12px;
+                            font-weight: 700;
+                            font-size: 0.95rem;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            text-decoration: none;
+                            display: block;
+                            box-sizing: border-box;
+                        }
+                        .upsell-modal__btn.--primary {
+                            background: #f97316;
+                            color: #fff;
+                            border: none;
+                            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+                        }
+                        .upsell-modal__btn.--primary:hover {
+                            background: #ea580c;
+                            transform: translateY(-2px);
+                            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+                        }
+                        .upsell-modal__btn.--secondary {
+                            background: transparent;
+                            color: #94a3b8;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                        }
+                        .upsell-modal__btn.--secondary:hover {
+                            background: rgba(255, 255, 255, 0.05);
+                            color: #fff;
+                        }
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        @keyframes slideUp {
+                            from { transform: translateY(40px) scale(0.95); opacity: 0; }
+                            to { transform: translateY(0) scale(1); opacity: 1; }
+                        }
+                        @keyframes float {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-10px); }
+                        }
+                    `}</style>
                 </div>
             )}
         </div>
