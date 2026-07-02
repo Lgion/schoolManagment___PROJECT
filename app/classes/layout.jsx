@@ -21,6 +21,9 @@ export default function ClassesPage({ children }) {
       <Link href="/scheduling" className="ecole-admin__nav-link-item">
         <span className="icon">📅</span> Accéder au Planning (Schedules)
       </Link>
+      <Link href="/calendar" className="ecole-admin__nav-link-item" style={{ marginLeft: '1rem' }}>
+        <span className="icon">📆</span> Agenda de l'école
+      </Link>
     </div>
 
     {classes ?

@@ -9,6 +9,7 @@ currentSchoolYear = (currentSchoolYear.getMonth() + 1) < 7 ? (currentSchoolYear.
 let currentSchoolYearField = { [currentSchoolYear]: false }
 
 const studentSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   // current_classe_$_ref_µ_classes: { default: "", type: Object, required: true },
   current_classe: { type: ObjectId, ref: Object.keys(schemaClasseForEleve.obj)[0], required: true },
   nom: { default: "", type: String, required: true },
@@ -16,7 +17,10 @@ const studentSchema = mongoose.Schema({
   sexe: { default: "", type: String, required: true },
   naissance_$_date: { default: "", type: String, required: true },
   adresse_$_map: { default: "", type: String, required: true },
-  parents: { default: { mere: "", pere: "", phone: "" }, type: Object, required: true },
+  parents: { default: { mere: "", pere: "", phone: "", email: "" }, type: Object, required: true },
+  // Contact propre de l'élève (compte autonome) — cf. spec roles_and_accounts
+  studentEmail: { type: String, default: "" },
+  studentPhone: { type: String, default: "" },
   photo_$_file: { default: "/school/student.webp", type: String, required: false },
   // photo: {
   //   data: Buffer,

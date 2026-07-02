@@ -131,6 +131,7 @@ const getTargetDir = (type, payload) => {
   let safeName = ""
   if (type === 'student') return path.join(BASE_PATH, 'students', safeName);
   if (type === 'teacher') return path.join(BASE_PATH, 'teachers', safeName);
+  if (type === 'schedule' || type === 'scheduleScan') return path.join(BASE_PATH, 'schedules');
   // default: school root
   return BASE_PATH;
 };
@@ -191,6 +192,10 @@ export async function POST(request) {
           const classeFolder = `${payload.niveau?.toLowerCase()}-${payload.alias}/${payload.annee}`;
           folder = `school/classes/${classeFolder}`;
           tags.push('class', payload.niveau, payload.annee);
+        } else if (entityType === 'schedule' || type === 'scheduleScan') {
+          folder = 'school/schedules';
+          if (payload.classeId) folder = `school/schedules/${payload.classeId}`;
+          tags.push('schedule');
         }
 
         // Upload vers Cloudinary (initialiser d'abord le service)

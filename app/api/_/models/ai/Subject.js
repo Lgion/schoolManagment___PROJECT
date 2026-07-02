@@ -10,6 +10,8 @@ if (mongoose.models.Subject) {
 }
 
 const subjectSchema = new mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
+
   nom: { 
     type: String, 
     required: true, 

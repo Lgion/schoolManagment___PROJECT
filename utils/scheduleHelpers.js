@@ -54,24 +54,43 @@ const convertPlanningToDetails = (planning) => {
   return details
 }
 
+// Chaîne de populate couvrant le nouveau format (events) ET l'ancien (planning),
+// pour que `subjectId` soit toujours peuplé quel que soit le format du document.
+const POPULATE_PATHS =
+  'events.subjectId ' +
+  'planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId ' +
+  'planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId'
+
 /**
- * Récupère l'emploi du temps actif pour une classe
- * Le plus récent non archivé est considéré comme actif
+ * Récupère l'emploi du temps actif pour une classe.
+ * Parmi les emplois du temps non archivés, on privilégie celui dont la fenêtre
+ * de validité [validFrom, validUntil] contient la date du jour ; à défaut, le plus
+ * récent. Le document est normalisé (migration `planning` → `events` à la volée).
  * @param {String} classeId - ID de la classe
- * @returns {Object|null} - Emploi du temps actif ou null
+ * @returns {Object|null} - Emploi du temps actif (objet simple) ou null
  */
 const getActiveSchedule = async (classeId) => {
   try {
     const Schedule = require('../app/api/_/models/ai/Schedule')
-    const schedules = await Schedule.find({
-      classeId,
-      isArchived: false
+    const { normalizeSchedule } = require('./scheduleEvents')
+
+    const schedules = await Schedule.find({ classeId, isArchived: false })
+      .populate(POPULATE_PATHS)
+      .sort({ createdAt: -1 })
+      .lean()
+
+    if (schedules.length === 0) return null
+
+    const now = Date.now()
+    const inWindow = schedules.find((s) => {
+      const from = s.validFrom ? new Date(s.validFrom).getTime() : -Infinity
+      // validUntil est saisi comme une date (minuit) : on couvre toute la journée
+      // pour qu'un EDT « valable jusqu'au 19 » reste actif tout le 19.
+      const until = s.validUntil ? new Date(s.validUntil).getTime() + 86399999 : Infinity
+      return now >= from && now <= until
     })
-    .populate('planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId')
-    .sort({ createdAt: -1 })
-    .limit(1)
-    
-    return schedules[0] || null
+
+    return normalizeSchedule(inWindow || schedules[0])
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'emploi du temps actif:', error)
     return null
@@ -191,11 +210,13 @@ const getScheduleHistory = async (classeId, includeArchived = true) => {
     }
     
     const Schedule = require('../app/api/_/models/ai/Schedule')
+    const { normalizeSchedule } = require('./scheduleEvents')
     const schedules = await Schedule.find(filter)
       .sort({ createdAt: -1 })
-      .populate('planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId')
-    
-    return schedules
+      .populate(POPULATE_PATHS)
+      .lean()
+
+    return schedules.map(normalizeSchedule)
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'historique:', error)
     return []

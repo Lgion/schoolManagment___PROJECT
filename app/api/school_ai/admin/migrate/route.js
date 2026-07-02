@@ -17,7 +17,11 @@ export async function POST(request) {
 
     await dbConnect();
 
-    const classes = await Classe.find({});
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
+    const classes = await Classe.find({ schoolKey });
     const results = [];
 
     for (const classe of classes) {

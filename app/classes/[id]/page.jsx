@@ -14,9 +14,19 @@ import PermissionGate from "../../components/PermissionGate";
 import NotesBlock from '../../components/NotesBlock';
 import NotesEntryBlock from '../../components/NotesEntryBlock';
 import AddStudentsModal from '../../components/AddStudentsModal';
+import ClassPointsPanel from '../../components/points/ClassPointsPanel';
+import AttendancePanel from '../../components/attendance/AttendancePanel';
+import HomeworkPanel from '../../components/homework/HomeworkPanel';
+import ReportCardsPanel from '../../components/bulletins/ReportCardsPanel';
+import EventsPanel from '../../components/events/EventsPanel';
+import VisioLauncher from '../../components/visio/VisioLauncher';
+import ClassDocuments from '../../components/documents/ClassDocuments';
 import TeacherReportModule from '../../components/TeacherReportModule';
 import ImageScanner from '../../components/ui/ImageScanner';
 import ReviewModal from '../../components/ui/ReviewModal';
+import UnifiedFeed from '../../components/feed/UnifiedFeed';
+import ClassBookPanel from '../../components/classbook/ClassBookPanel';
+import ClassGamesWidget from '../../components/games/ClassGamesWidget';
 
 export default function ClasseDetailPage() {
   const { id } = useParams();
@@ -202,6 +212,15 @@ export default function ClasseDetailPage() {
           </div>
         </div>
 
+        {/* Fil d'actualité et Sondages de la classe */}
+        <div className="person-detail__block person-detail__block--feed">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">💬</span>
+            Fil d'actualité & Sondages
+          </h2>
+          <UnifiedFeed contextType="class" contextId={id} />
+        </div>
+
         {/* Liste des élèves */}
         <div className="person-detail__block person-detail__block--students">
           <h2 className="person-detail__subtitle">
@@ -247,6 +266,130 @@ export default function ClasseDetailPage() {
           )}
 
         </div>
+        {/* Bons points — gestion par le prof (année courante uniquement) */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--points">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎖️</span>
+                Bons points
+              </h2>
+              <ClassPointsPanel eleves={eleves} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Appel / présences — réservé au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--attendance">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📋</span>
+                Faire l'appel
+              </h2>
+              <AttendancePanel classId={classe._id} eleves={eleves} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Cahier de texte — saisie des devoirs réservée au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--homework">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📓</span>
+                Cahier de texte
+              </h2>
+              <HomeworkPanel classId={classe._id} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Bulletins — génération réservée au prof, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--bulletins">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎓</span>
+                Bulletins
+              </h2>
+              <ReportCardsPanel
+                classId={classe._id}
+                eleves={eleves}
+                defaultYear={classe.annee}
+                className={`${classe.niveau || ''} ${classe.alias || ''}`.trim()}
+              />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Événements — création/édition réservée prof/admin, année courante uniquement */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--events">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📅</span>
+                Événements
+              </h2>
+              <EventsPanel classId={classe._id} interactive canGlobal={userRole === 'admin'} />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Visio de classe — le staff lance/rejoint et peut capturer des souvenirs (album de classe) */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--visio">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">🎥</span>
+                Visioconférence de classe
+              </h2>
+              <p className="person-detail__hint">
+                Lancez un cours à distance. Le bouton 📸 enregistre des photos dans la galerie de la classe.
+              </p>
+              <VisioLauncher
+                roomName={`ecole-classe-${classe._id}`}
+                title={`Visio · ${classe.niveau || ''} ${classe.alias || ''}`.trim()}
+                variant="launch"
+                canCapture
+                albumTarget={{ classId: classe._id }}
+              />
+            </div>
+          )}
+        </PermissionGate>
+        {/* Documents de cours — consultation pour tous, dépôt/suppression réservé prof/admin */}
+        <div className="person-detail__block person-detail__block--documents">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">📄</span>
+            Documents de cours
+          </h2>
+          <ClassDocuments
+            classId={classe._id}
+            canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
+          />
+        </div>
+        {/* Jeux pédagogiques — accès ouvert à tous, filtrés sur le niveau de la classe */}
+        <div className="person-detail__block person-detail__block--games">
+          <h2 className="person-detail__subtitle">
+            <span className="person-detail__subtitle-icon">🎮</span>
+            Jeux pédagogiques
+          </h2>
+          <ClassGamesWidget
+            classe={classe}
+            canManage={(userRole === 'admin' || isProf) && isViewCurrentYear}
+          />
+        </div>
+        {/* Livre de classe (Yearbook) — réservé profs/admins, année courante */}
+        <PermissionGate roles={['admin', 'prof']}>
+          {isViewCurrentYear && (
+            <div className="person-detail__block person-detail__block--classbook">
+              <h2 className="person-detail__subtitle">
+                <span className="person-detail__subtitle-icon">📖</span>
+                Livre de Classe (Yearbook)
+              </h2>
+              <ClassBookPanel
+                classId={classe._id}
+                classe={classe}
+                eleves={eleves.map(e => ctx.eleves.find(el => el._id === (e._id || e))).filter(Boolean)}
+              />
+            </div>
+          )}
+        </PermissionGate>
         {/* Liste des enseignants */}
         <div className="person-detail__block person-detail__block--teachers">
           <h2 className="person-detail__subtitle">
@@ -354,20 +497,22 @@ export default function ClasseDetailPage() {
                     onValidate={(data) => {
                       console.log("Validation en cours avec les données:", data);
                       setValidatedScannedData(data);
-                      // On ne ferme plus le scanResult ici pour permettre au ReviewModal de se réduire
+                      setScanResult(null); // Fermer complètement le modal après validation pour satisfaire le test E2E
                     }}
                   />
                 )}
               </div>
 
-              <NotesEntryBlock
-                eleves={eleves}
-                classeId={classe._id}
-                isCurrentYear={isViewCurrentYear}
-                coefficients={currentData.coefficients || {}}
-                prefilledData={validatedScannedData}
-                allSubjects={dynamicSubjects}
-              />
+              {(!scanResult || validatedScannedData) && (
+                <NotesEntryBlock
+                  eleves={eleves}
+                  classeId={classe._id}
+                  isCurrentYear={isViewCurrentYear}
+                  coefficients={currentData.coefficients || {}}
+                  prefilledData={validatedScannedData}
+                  allSubjects={dynamicSubjects}
+                />
+              )}
             </div>
           </PermissionGate>
         </div>
@@ -378,9 +523,12 @@ export default function ClasseDetailPage() {
           <ScheduleViewer
             classeId={classe._id}
             isEditable={userRole === 'admin'}
+            mergeEvents
             onEditSchedule={(data) => {
-              if (data.action === 'create' || data.action === 'edit') {
-                router.push(`/scheduling?classeId=${classe._id}`);
+              if (data.action === 'create') {
+                router.push(`/scheduling?classeId=${classe._id}&view=editor`);
+              } else if (data.action === 'edit') {
+                router.push(`/scheduling?classeId=${classe._id}&view=editor&scheduleId=${data.schedule._id}`);
               } else if (data.action === 'history') {
                 router.push(`/scheduling?classeId=${classe._id}&view=history`);
               }

@@ -3,37 +3,7 @@ import { authWithFallback, getUserId } from '../lib/authWithFallback';
 import { currentUser, clerkClient } from '@clerk/nextjs/server';
 import dbConnect from '../lib/dbConnect';
 import User from '../_/models/ai/User';
-import Teacher from '../_/models/ai/Teacher';
-import Eleve from '../_/models/ai/Eleve';
-
-// Fonction pour déterminer le rôle utilisateur
-async function determineUserRole(email) {
-  try {
-    // 1. Vérifier si c'est un admin (depuis les variables d'environnement)
-    const adminEmails = process.env.NEXT_PUBLIC_EMAIL_ADMIN?.split(' ') || [];
-    if (adminEmails.includes(email)) {
-      return { role: 'admin', ref: null };
-    }
-
-    // 2. Vérifier si c'est un enseignant
-    const teacher = await Teacher.findOne({ 'email_$_email': email });
-    if (teacher) {
-      return { role: 'prof', ref: teacher._id };
-    }
-
-    // 3. Vérifier si c'est un élève
-    const eleve = await Eleve.findOne({ 'email_$_email': email });
-    if (eleve) {
-      return { role: 'eleve', ref: eleve._id };
-    }
-
-    // 4. Par défaut : public
-    return { role: 'public', ref: null };
-  } catch (error) {
-    console.error('Error determining user role:', error);
-    return { role: 'public', ref: null };
-  }
-}
+import { determineUserRole, buildRoleData } from '../lib/determineUserRole';
 
 export async function POST(request) {
   console.log('🔄 Starting user sync...');
@@ -61,36 +31,26 @@ export async function POST(request) {
     if (existingUser) {
       console.log('User already exists, updating...');
       // Mettre à jour les infos si nécessaire
-      const { role, ref } = await determineUserRole(email);
+      const { role, ref, childrenRefs } = await determineUserRole(email);
 
       existingUser.email = email;
       existingUser.role = role;
       existingUser.firstName = firstName;
       existingUser.lastName = lastName;
 
-      // Mettre à jour les références selon le rôle (schéma actuel)
-      // Assainir les anciens documents où roleData pourrait être un ObjectId ou autre type
-      if (!existingUser.roleData || typeof existingUser.roleData !== 'object' || Array.isArray(existingUser.roleData)) {
-        existingUser.roleData = {};
-      }
-      if (role === 'prof' && ref) {
-        existingUser.roleData.teacherRef = ref;
-        if (existingUser.roleData.eleveRef) delete existingUser.roleData.eleveRef;
-      } else if (role === 'eleve' && ref) {
-        existingUser.roleData.eleveRef = ref;
-        if (existingUser.roleData.teacherRef) delete existingUser.roleData.teacherRef;
-      } else {
-        // Rôles admin/public: nettoyer les refs spécifiques
-        if (existingUser.roleData.teacherRef) delete existingUser.roleData.teacherRef;
-        if (existingUser.roleData.eleveRef) delete existingUser.roleData.eleveRef;
-      }
+      // Recomposer roleData proprement : nettoie automatiquement les refs
+      // périmées quand le rôle change, et assainit les anciens documents
+      // dont roleData aurait été mal typé (ObjectId, tableau, etc.).
+      existingUser.roleData = buildRoleData(role, ref, childrenRefs);
+      existingUser.markModified('roleData');
 
       await existingUser.save();
 
       // Peupler les références
       await existingUser.populate([
         { path: 'roleData.teacherRef' },
-        { path: 'roleData.eleveRef' }
+        { path: 'roleData.eleveRef' },
+        { path: 'roleData.childrenRefs' }
       ]);
 
       // Update Clerk publicMetadata so middleware and sessionClaims have the correct role
@@ -113,23 +73,40 @@ export async function POST(request) {
 
     // Créer un nouvel utilisateur
     console.log('Creating new user...');
-    const { role, ref } = await determineUserRole(email);
+    
+    // Détection et liaison du bac à sable anonyme depuis les cookies
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const sandboxSchoolKey = cookieStore.get('x-school-key')?.value;
+    
+    let userSchoolKey = 'ecole_st_martin';
+    let { role, ref, childrenRefs } = await determineUserRole(email);
 
-    // Préparer les données roleData selon le rôle (schéma actuel)
-    let roleData = {};
-    if (role === 'prof' && ref) {
-      roleData.teacherRef = ref;
-    } else if (role === 'eleve' && ref) {
-      roleData.eleveRef = ref;
-    } else if (role === 'admin') {
-      roleData.adminLevel = 'standard';
+    if (sandboxSchoolKey && sandboxSchoolKey.startsWith('sandbox_')) {
+      userSchoolKey = sandboxSchoolKey;
+      role = 'admin'; // Le créateur du bac à sable est toujours admin de son école
+      
+      try {
+        const Institution = (await import('../_/models/ai/Institution')).default;
+        const inst = await Institution.findOne({ schoolKey: sandboxSchoolKey });
+        if (inst) {
+          inst.ownerClerkId = clerkId;
+          await inst.save();
+          console.log(`🔑 Linked sandbox ${sandboxSchoolKey} to owner ${clerkId}`);
+        }
+      } catch (err) {
+        console.error('⚠️ Failed to link sandbox to user:', err.message);
+      }
     }
+
+    const roleData = buildRoleData(role, ref, childrenRefs);
 
     const newUser = new User({
       clerkId,
       email,
       firstName: firstName || '',
       lastName: lastName || '',
+      schoolKey: userSchoolKey,
       role,
       roleData,
       lastLogin: new Date(),
@@ -141,7 +118,8 @@ export async function POST(request) {
     // Populer les références pour la réponse
     await newUser.populate([
       { path: 'roleData.teacherRef' },
-      { path: 'roleData.eleveRef' }
+      { path: 'roleData.eleveRef' },
+      { path: 'roleData.childrenRefs' }
     ]);
 
     // Update Clerk publicMetadata
@@ -160,7 +138,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       user: newUser,
-      message: 'Utilisateur créé avec succès'
+      message: 'Utilisateur créé avec succès et bac à sable lié.'
     });
 
   } catch (error) {

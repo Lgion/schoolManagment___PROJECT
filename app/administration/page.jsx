@@ -19,7 +19,9 @@ export default function AdministrationPage() {
         setSelected, setShowModal, setEditType
     } = useContext(AiAdminContext);
 
-    const { isAdmin, loading: authLoading } = useUserRole();
+    const { isAdmin, loading: authLoading, clerkUser } = useUserRole();
+    const [isMigrating, setIsMigrating] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
     const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees'
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -71,6 +73,31 @@ export default function AdministrationPage() {
         } catch (error) {
             console.error('Erreur migration:', error);
             alert(`❌ Erreur : ${error.message}`);
+        }
+    };
+
+    const handleResetDemo = async () => {
+        if (!confirm(`⚠️ ATTENTION : Êtes-vous sûr de vouloir réinitialiser la démo ?\n\nCette action va écraser les données actuelles de l'école démo pour regénérer les 6 années d'historique.`)) {
+            return;
+        }
+
+        setIsResetting(true);
+        try {
+            const res = await fetch('/api/admin/reset-demo', { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Erreur lors de la réinitialisation');
+            }
+            const data = await res.json();
+            alert(`✅ Succès : ${data.message}`);
+            fetchEleves();
+            fetchEnseignants();
+            fetchClasses();
+        } catch (error) {
+            console.error('Erreur reset demo:', error);
+            alert(`❌ Erreur : ${error.message}`);
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -156,12 +183,32 @@ export default function AdministrationPage() {
                     {activeTab !== 'fees' && (
                         <div className="admin-page__controls">
 
-                            <button
-                                className="admin-page__config-btn --migrate"
-                                onClick={handleMigrateYear}
-                            >
-                                🚀 Migrer l'Année Scolaire
-                            </button>
+                            {clerkUser && (
+                                <>
+                                    <button
+                                        className="admin-page__config-btn --migrate"
+                                        onClick={handleMigrateYear}
+                                    >
+                                        🚀 Migrer l'Année Scolaire
+                                    </button>
+                                    <button
+                                        className={`admin-page__config-btn --migrate ${isResetting ? '--loading' : ''}`}
+                                        style={{ backgroundColor: isResetting ? '#c0392b' : '#e74c3c', marginLeft: '10px', opacity: isResetting ? 0.7 : 1, cursor: isResetting ? 'not-allowed' : 'pointer' }}
+                                        onClick={handleResetDemo}
+                                        disabled={isResetting}
+                                    >
+                                        {isResetting ? (
+                                            <>
+                                                <span className="spinner" style={{ marginRight: '8px', display: 'inline-block', width: '1em', height: '1em', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
+                                                Génération en cours (~30s)...
+                                            </>
+                                        ) : (
+                                            '🔄 Réinitialiser la Démo'
+                                        )}
+                                    </button>
+                                </>
+                            )}
+                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div className="admin-page__search-wrapper">
                                 <input
                                     type="text"

@@ -1,0 +1,269 @@
+// === Faire l'appel (présences) ===
+// Trombinoscope cliquable (prof) + widget récapitulatif (élève/parent).
+// Couleurs issues exclusivement des tokens du design system « École chaleureux ».
+
+/* ---------- Panneau d'appel (côté prof) ---------- */
+.attendance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  &__empty,
+  &__loading {
+    color: var(--color-text-muted);
+    padding: var(--spacing-md);
+  }
+
+  &__error {
+    color: var(--color-danger-dark);
+    background: var(--color-danger-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  /* --- Sélecteurs jour / période --- */
+  &__controls {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-lg);
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+
+    input {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-family: inherit;
+      color: var(--color-text-primary);
+    }
+  }
+
+  &__periods {
+    display: inline-flex;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+
+  &__period {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: none;
+    padding: var(--spacing-xs) var(--spacing-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    transition: background var(--transition-fast), color var(--transition-fast);
+
+    &.--active {
+      background: var(--color-primary);
+      color: var(--color-white);
+    }
+  }
+
+  /* --- Trombinoscope --- */
+  &__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  &__card {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md) var(--spacing-sm);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:hover { transform: translateY(-2px); box-shadow: var(--shadow-small); }
+
+    &--present { border-color: var(--color-success); }
+    &--absent { border-color: var(--color-danger); }
+    &--late { border-color: var(--color-warning); }
+    &--excused { border-color: var(--color-primary); }
+  }
+
+  &__badge {
+    position: absolute;
+    top: -10px;
+    right: -6px;
+    font-size: 1.1rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-pill);
+    line-height: 1;
+    padding: 2px;
+  }
+
+  &__avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-pill);
+    object-fit: cover;
+    background: var(--color-surface-muted);
+  }
+
+  &__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  &__status {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  /* --- Bandeau récapitulatif collant --- */
+  &__summary {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-medium);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  &__totals {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  &__total {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+
+    &--present { color: var(--color-success-dark); }
+    &--absent { color: var(--color-danger-dark); }
+    &--late { color: var(--color-warning-dark); }
+  }
+
+  &__saved {
+    color: var(--color-success-dark);
+    font-size: var(--font-size-sm);
+  }
+
+  &__validate {
+    margin-left: auto;
+    background: var(--gradient-accent);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-small);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-medium); }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+  }
+}
+
+/* ---------- Widget élève / parent ---------- */
+.attendanceWidget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  &__loading,
+  &__empty {
+    color: var(--color-text-muted);
+  }
+
+  &__error { color: var(--color-danger-dark); }
+
+  &__counters {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  &__counter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 90px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
+
+    &--absent { border-color: var(--color-danger); }
+    &--late { border-color: var(--color-warning); }
+    &--excused { border-color: var(--color-primary); }
+  }
+
+  &__icon { font-size: 1.25rem; }
+
+  &__num {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+  }
+
+  &__label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    padding: var(--spacing-xs) 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: var(--font-size-sm);
+  }
+
+  &__tag {
+    font-weight: var(--font-weight-medium);
+
+    &--absent { color: var(--color-danger-dark); }
+    &--late { color: var(--color-warning-dark); }
+    &--excused { color: var(--color-primary); }
+  }
+
+  &__date { color: var(--color-text-secondary); }
+
+  &__comment {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+}

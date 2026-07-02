@@ -30,10 +30,19 @@ function CommentairesBlock({ commentaires, setForm }) {
   // Format attendu : [{timestamp: commentaire}, ...]
   // Tri du plus récent au plus ancien
   const items = Array.isArray(commentaires) ? commentaires : [];
-  const sorted = items.slice().sort((a, b) => {
+  const cleanItems = items.map(obj => {
+    if (!obj || typeof obj !== 'object') return {};
+    const clean = {};
+    Object.keys(obj).forEach(k => {
+      if (k !== '_id') clean[k] = obj[k];
+    });
+    return clean;
+  }).filter(obj => Object.keys(obj).length > 0);
+
+  const sorted = cleanItems.sort((a, b) => {
     const ka = Object.keys(a)[0];
     const kb = Object.keys(b)[0];
-    return kb - ka;
+    return Number(kb) - Number(ka);
   });
 
   // Fonction pour ajouter un commentaire
@@ -1402,11 +1411,23 @@ function TimedEntriesBlock({ field, label, singular, entries, setForm, valueless
 
   // Normalisation en paires [ts, txt] pour un rendu commun.
   const items = valueless
-    ? (Array.isArray(entries) ? entries.map(ts => [ts, '']) : [])
+    ? (Array.isArray(entries)
+      ? entries.map(entry => {
+          if (entry && typeof entry === 'object') {
+            return [entry.date || entry.timestamp || '', ''];
+          }
+          return [entry || '', ''];
+        }).filter(([ts]) => ts !== '')
+      : [])
     : (entries && typeof entries === 'object'
       ? (Array.isArray(entries)
-        ? entries.flatMap(obj => Object.entries(obj))
-        : Object.entries(entries))
+        ? entries.flatMap(obj => {
+            if (obj && typeof obj === 'object') {
+              return Object.entries(obj).filter(([k]) => k !== '_id');
+            }
+            return [];
+          })
+        : Object.entries(entries).filter(([k]) => k !== '_id'))
       : []);
 
   // Valeur de l'input caché : CSV de timestamps (valueless) ou JSON des raisons.
@@ -1609,8 +1630,20 @@ function AddNoteForm({ notes = {}, onAdd, onRemove }) {
 }
 
 function TargetsProfilingBlock({ form, setForm }) {
-  const { targetDefinitions, targetDefinitionsLoaded, resolveTargetAmount } = useContext(AiAdminContext);
+  const { targetDefinitions, targetDefinitionsLoaded, feeDefinitions } = useContext(AiAdminContext);
   const targetsList = form.targetsList || {};
+
+  const getOptionPriceLabel = (opt, tdKey) => {
+    if (!feeDefinitions) return '';
+    const matches = [];
+    feeDefinitions.forEach(fd => {
+      const t = (fd.targets || []).find(tar => tar.label === opt && (tar.key === tdKey || fd.id === 'scol'));
+      if (t && t.amount > 0) {
+        matches.push(`${fd.label}: +${t.amount} ${fd.unit}`);
+      }
+    });
+    return matches.length > 0 ? ` (${matches.join(', ')})` : '';
+  };
 
   const updateTarget = (key, value) => {
     if (!setForm) return;
@@ -1649,7 +1682,7 @@ function TargetsProfilingBlock({ form, setForm }) {
                   onChange={e => e.target.checked ? updateTarget(td.key, firstOpt) : removeTarget(td.key)}
                   disabled={!setForm}
                 />
-                <span>{firstOpt}</span>
+                <span>{firstOpt}{getOptionPriceLabel(firstOpt, td.key)}</span>
               </label>
             </div>
           );
@@ -1677,7 +1710,7 @@ function TargetsProfilingBlock({ form, setForm }) {
                       checked={currentValue === opt}
                       onChange={() => updateTarget(td.key, opt)}
                       disabled={!setForm}
-                    /> {opt}
+                    /> {opt}{getOptionPriceLabel(opt, td.key)}
                   </label>
                 ))}
               </div>
@@ -1704,7 +1737,7 @@ function TargetsProfilingBlock({ form, setForm }) {
                         updateTarget(td.key, next);
                       }}
                       disabled={!setForm}
-                    /> {opt}
+                    /> {opt}{getOptionPriceLabel(opt, td.key)}
                   </label>
                 );
               })}

@@ -1,10 +1,29 @@
 {
-  "cookies": [],
-  "origins": [],
-  "_authConfig": {
-    "storageDir": "/home/yanis/schoolManagment___PROJECT/.auth/local/default",
-    "debug": true,
-    "configId": "37717f26-bc36-43b0-8a6c-fe64a47ef40d",
-    "timestamp": "2026-06-08T21:19:58.171Z"
-  }
+  "cookies": [
+    {
+      "name": "mock_role",
+      "value": "user",
+      "domain": "localhost",
+      "path": "/",
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax",
+      "expires": 1782342754
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "auth_token",
+          "value": "mock-token-user"
+        },
+        {
+          "name": "mock_role",
+          "value": "user"
+        }
+      ]
+    }
+  ]
 }

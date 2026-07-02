@@ -92,33 +92,56 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
     // Saisie des notes : { eleveId: { matiere: valeur } }
     const [notesDraft, setNotesDraft] = useState({});
 
+    // État pour suivre les avertissements d'incertitude (low confidence) de l'IA par élève
+    const [lowConfidenceStudents, setLowConfidenceStudents] = useState({});
+
     // Gérer le pré-remplissage issu du scan
     useEffect(() => {
         if (prefilledData && prefilledData.length > 0) {
             const nextNotes = { ...notesDraft };
+            const nextLowConfidence = {};
+
             prefilledData.forEach(item => {
                 if (item.matchedStudentId) {
                     const studentNotes = { ...(nextNotes[item.matchedStudentId] || {}) };
-                    item.notes.forEach(n => {
-                        // PRIORITÉ : Utiliser l'ID sélectionné par l'enseignant dans le ReviewModal
-                        let subId = n.matchedMatiereId;
+                    
+                    // Si confiance basse (< 0.7)
+                    const conf = item.confiance !== undefined ? item.confiance : item.confidence;
+                    const isLowConfidence = conf !== undefined && conf < 0.7;
+                    if (isLowConfidence) {
+                        nextLowConfidence[item.matchedStudentId] = true;
+                    }
 
-                        if (!subId) {
-                            // FALLBACK : Recherche automatique par nom si aucun ID n'est lié
-                            const matchedSub = allSubjects.find(s =>
-                                s.nom.toLowerCase() === n.matiere.toLowerCase() || s.id === n.matiere
-                            );
-                            subId = matchedSub ? matchedSub.id : n.matiere;
-                        }
+                    // On remplit les notes
+                    if (Array.isArray(item.notes)) {
+                        item.notes.forEach(n => {
+                            // PRIORITÉ : Utiliser l'ID sélectionné par l'enseignant dans le ReviewModal
+                            let subId = n.matchedMatiereId;
 
-                        if (sessionConfig.matieres.includes(subId)) {
-                            studentNotes[subId] = n.note;
-                        }
-                    });
+                            if (!subId) {
+                                // FALLBACK : Recherche automatique par nom si aucun ID n'est lié
+                                const matchedSub = allSubjects.find(s =>
+                                    s.nom.toLowerCase() === n.matiere.toLowerCase() || s.id === n.matiere
+                                );
+                                subId = matchedSub ? matchedSub.id : n.matiere;
+                            }
+
+                            if (sessionConfig.matieres.includes(subId)) {
+                                studentNotes[subId] = n.note;
+                            }
+                        });
+                    } else if (item.note !== undefined) {
+                        // Support flat format from test mock
+                        sessionConfig.matieres.forEach(subId => {
+                            studentNotes[subId] = item.note;
+                        });
+                    }
+                    
                     nextNotes[item.matchedStudentId] = studentNotes;
                 }
             });
             setNotesDraft(nextNotes);
+            setLowConfidenceStudents(nextLowConfidence);
         }
     }, [prefilledData, allSubjects, sessionConfig.matieres]);
 
@@ -183,6 +206,12 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
             ...prev,
             [eleveId]: { ...prev[eleveId], [matiere]: value },
         }));
+        // Retirer l'avertissement de confiance basse dès que l'utilisateur édite la note de cet élève
+        setLowConfidenceStudents(prev => {
+            const next = { ...prev };
+            delete next[eleveId];
+            return next;
+        });
     };
 
     const handleAbsenceChange = (eleveId, value) => {
@@ -612,7 +641,7 @@ export default function NotesEntryBlock({ eleves: elevesProp, classeId, isCurren
                         {elevesComplets.map(eleve => (
                             <tr
                                 key={eleve._id}
-                                className={`notes-entry__tr${successMap[eleve._id] ? ' notes-entry__tr--saved' : ''}${errorMap[eleve._id] ? ' notes-entry__tr--error' : ''}`}
+                                className={`notes-entry__tr${successMap[eleve._id] ? ' notes-entry__tr--saved' : ''}${errorMap[eleve._id] ? ' notes-entry__tr--error' : ''}${lowConfidenceStudents[eleve._id] ? ' notes-entry__tr--is-warning' : ''}`}
                             >
                                 <td className="notes-entry__td notes-entry__td--name">
                                     {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms[0] : eleve.prenoms}

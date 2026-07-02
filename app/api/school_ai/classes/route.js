@@ -23,8 +23,12 @@ export async function GET(request) {
 
     await dbConnect();
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     if (isAdmin) {
-      const classes = await Classe.find();
+      const classes = await Classe.find({ schoolKey });
       return NextResponse.json(classes);
     }
 
@@ -37,7 +41,7 @@ export async function GET(request) {
     const teacherId = user.roleData.teacherRef._id;
 
     // Filter classes assigned to the teacher and omit financial/administrative data
-    const classes = await Classe.find({ professeur: teacherId })
+    const classes = await Classe.find({ schoolKey, professeur: teacherId })
       .select('-compositions -moyenne_trimetriel -coefficients');
 
     return NextResponse.json(classes);

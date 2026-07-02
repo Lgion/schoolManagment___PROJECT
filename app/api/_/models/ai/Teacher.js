@@ -5,6 +5,7 @@ const ObjectId = Schema.Types.ObjectId;
 const { schema: schemaClasseForTeacher } = require("./Classe")
 
 const teacherSchema = mongoose.Schema({
+  schoolKey: { type: String, required: true, default: 'ecole_st_martin', index: true },
   // current_classes: { default: "", type: Object, required:true },
   // current_classes_$_ref_µ_classes: { default: "", type: ObjectId, ref: Object.keys(schema.obj)[0], required:true },
   current_classes: { default: [], type: [ObjectId], ref: Object.keys(schemaClasseForTeacher.obj)[0], required: true },
