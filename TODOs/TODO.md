@@ -49,4 +49,4 @@ Cette liste regroupe et catégorise les tâches définies dans le projet.
 - [V] Configurer la tâche de nettoyage automatique (Cron Job) pour purger les sandboxes anonymes de plus de 48 heures.
 
 ## 🧪 Tests et Assurance Qualité (QA)
-- [V] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC).
+- [V] Initialiser le framework de test Playwright et automatiser les scénarios critiques multi-rôles (Messagerie, Rendez-vous, RBAC). 
