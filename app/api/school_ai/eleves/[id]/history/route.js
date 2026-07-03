@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
 
         await dbConnect();
 
-        const { id } = params;
+        const { id } = await params;
         const eleve = await Eleve.findById(id).lean();
 
         if (!eleve) {

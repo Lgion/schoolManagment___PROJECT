@@ -84,7 +84,8 @@ const saveFileLocally = async (file, type, payload, entityType) => {
   } else {
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = path.extname(file.name || '');
-    const destPath = path.join(targetDir, 'photo' + ext);
+    const baseName = (file.name || 'photo').replace(ext, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const destPath = path.join(targetDir, baseName + ext);
     await fs.promises.writeFile(destPath, buffer);
     let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
     console.log(`✅ Fichier générique sauvé localement: ${publicPath}`);
@@ -408,7 +409,8 @@ async function handleLocalUpload(type, payload, entityType, files) {
       const file = files[0];
       const buffer = Buffer.from(await file.arrayBuffer());
       const ext = path.extname(file.name || '');
-      const destPath = path.join(targetDir, 'photo' + ext);
+      const baseName = (file.name || 'photo').replace(ext, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const destPath = path.join(targetDir, baseName + ext);
       await fs.promises.writeFile(destPath, buffer);
       let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
       return NextResponse.json({ paths: [publicPath] });

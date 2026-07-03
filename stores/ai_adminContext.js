@@ -284,6 +284,26 @@ export const AdminContextProvider = ({ children }) => {
     }
   }, []);
 
+  // Save homepage configuration to BD and LS
+  const saveHomepage = useCallback(async (hp) => {
+    try {
+      const res = await fetch('/api/school_ai/ecole', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ homepage: hp }),
+      });
+      if (!res.ok) throw new Error('PUT /api/school_ai/ecole (homepage) failed');
+      const data = await res.json();
+      const saved = data.homepage ?? hp;
+      setHomepage(saved);
+      setLSItem(HOMEPAGE_LS_KEY, saved);
+      return saved;
+    } catch (err) {
+      console.error('Erreur saveHomepage:', err);
+      throw err;
+    }
+  }, []);
+
   /**
    * Resolve target amount for a specific fee definition based on student profile.
    * Implements universal fallback for 'is*' (boolean) profiles.
@@ -464,7 +484,7 @@ export const AdminContextProvider = ({ children }) => {
     dynamicSubjects, fetchSubjects, subjectsLoaded,
     feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
     targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
-    homepage, homepageLoaded,
+    homepage, homepageLoaded, saveHomepage,
     resolveTargetAmount,
     uploadFile,
     selected, setSelected, showModal, setShowModal, editType, setEditType
@@ -476,7 +496,7 @@ export const AdminContextProvider = ({ children }) => {
     dynamicSubjects, fetchSubjects, subjectsLoaded,
     feeDefinitions, feeDefinitionsLoaded, saveFeeDefinitions, normalizeFeeItem,
     targetDefinitions, targetDefinitionsLoaded, saveTargetDefinitions,
-    homepage, homepageLoaded,
+    homepage, homepageLoaded, saveHomepage,
     resolveTargetAmount,
     uploadFile,
     selected, showModal, editType

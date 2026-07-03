@@ -16,6 +16,14 @@ export default function LogSignIn() {
         , { signOut } = useClerk();
 
     useEffect(() => {
+        const hasMockRole = typeof window !== 'undefined' && (
+            localStorage.getItem('mock_role') || 
+            document.cookie.includes('mock_role')
+        );
+        if (process.env.NEXT_PUBLIC_MODE === 'test' || hasMockRole) {
+            return;
+        }
+
         // --- DETECTION LOGOUT ---
         // Si on était connecté et qu'on ne l'est plus, on force un nettoyage total pour retomber sur la Landing Page
         if (wasSignedIn.current === true && !isSignedIn) {

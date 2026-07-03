@@ -4,6 +4,17 @@
 .image-scanner {
     margin: 1rem 0;
 
+    // ── Mode inline (dans une toolbar infos_cards) ──
+    // Le wrapper se comporte comme un bouton flex natif
+    &.infos_cards__btn--ai,
+    &.infos_cards__btn {
+        margin: 0;
+        display: inline-flex;
+        align-items: stretch;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
     &.--compact {
         margin: 0;
     }
@@ -23,6 +34,26 @@
         gap: 0.5rem;
         box-shadow: var(--shadow-brand);
         transition: all 0.2s ease;
+
+        // ── Quand le wrapper est dans la toolbar, reset total ──
+        .infos_cards__btn--ai &,
+        .infos_cards__btn & {
+            all: unset;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            height: 100%;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: inherit;
+
+            .icon { font-size: 1rem; }
+        }
 
         .--compact & {
             padding: 0.4rem 1rem;

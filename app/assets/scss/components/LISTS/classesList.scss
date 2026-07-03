@@ -137,3 +137,146 @@
     transform: translateY(0);
   }
 }
+
+/* Stats Dashboard for Classes page */
+.classes-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.classes-stats-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-small);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  &__icon {
+    font-size: 2.25rem;
+    line-height: 1;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    line-height: 1.1;
+
+    &.--small {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+  }
+
+  &__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &.--featured {
+    background: linear-gradient(135deg, rgba(253, 186, 116, 0.25) 0%, rgba(249, 115, 22, 0.1) 100%);
+    border: 2px solid rgba(249, 115, 22, 0.5);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(249, 115, 22, 0.15);
+    transform-style: preserve-3d;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      pointer-events: none;
+    }
+    
+    &:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(249, 115, 22, 0.25);
+      border-color: rgba(249, 115, 22, 0.8);
+      
+      &::before {
+        transform: translateX(100%);
+      }
+    }
+
+    .classes-stats-card__value {
+      color: var(--color-accent);
+      text-shadow: 0 2px 10px rgba(249, 115, 22, 0.3);
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+    transform: rotate(5deg);
+    border: 2px solid white;
+  }
+}
+
+/* Premium Tabs Switcher for Class Detail page */
+.ecole-detail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 0.75rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.ecole-detail-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: var(--color-surface-muted, #f8fafc);
+    color: var(--color-primary);
+  }
+
+  &.--active {
+    background: var(--color-primary-soft, #eef2ff);
+    color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary-soft);
+  }
+}
