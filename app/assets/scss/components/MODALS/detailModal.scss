@@ -71,6 +71,17 @@
 
   &__yearSelect {
     @extend %entityModal__yearSelect;
+
+    .option_green {
+      color: #10b981;
+      font-weight: bold;
+    }
+    .option_red {
+      color: #ef4444;
+    }
+    .option_blue {
+      color: #3b82f6;
+    }
   }
 
   &__title {

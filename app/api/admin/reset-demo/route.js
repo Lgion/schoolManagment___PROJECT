@@ -233,7 +233,14 @@ export async function POST(request) {
 
       // --- NOUVEAUX SEEDERS (Finances, Evènements, Blog, Groupes) ---
       await generateFinancialsForClassYear(currentClasse, activeStudentsDocs, year, getRandomDateInYear);
-      for (const eleve of activeStudentsDocs) await eleve.save();
+      for (const eleve of activeStudentsDocs) {
+        eleve.markModified('school_history');
+        eleve.markModified('bolobi_class_history_$_ref_µ_classes');
+        eleve.markModified('notes');
+        eleve.markModified('compositions');
+        eleve.markModified('scolarity_fees_$_checkbox');
+        await eleve.save();
+      }
 
       const adminId = userId;
       await generateEvents(Event, schoolKey, [teacher1, teacher2], [currentClasse], getRandomDateInYear, year);
@@ -268,7 +275,14 @@ export async function POST(request) {
 
     // Sauvegarde finale des élèves
     for (const sData of studentsData) {
-      if (sData.eleveDoc) await sData.eleveDoc.save();
+      if (sData.eleveDoc) {
+        sData.eleveDoc.markModified('school_history');
+        sData.eleveDoc.markModified('bolobi_class_history_$_ref_µ_classes');
+        sData.eleveDoc.markModified('notes');
+        sData.eleveDoc.markModified('compositions');
+        sData.eleveDoc.markModified('scolarity_fees_$_checkbox');
+        await sData.eleveDoc.save();
+      }
     }
     await teacher1.save();
     await teacher2.save();

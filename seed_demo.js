@@ -180,7 +180,14 @@ async function run() {
     }
 
     for (const sData of studentsData) {
-      if (sData.eleveDoc) await sData.eleveDoc.save();
+      if (sData.eleveDoc) {
+        sData.eleveDoc.markModified('school_history');
+        sData.eleveDoc.markModified('bolobi_class_history_$_ref_µ_classes');
+        sData.eleveDoc.markModified('notes');
+        sData.eleveDoc.markModified('compositions');
+        sData.eleveDoc.markModified('scolarity_fees_$_checkbox');
+        await sData.eleveDoc.save();
+      }
     }
 
     await teacher1.save();

@@ -1,6 +1,6 @@
 "use client";
 import { useContext, useEffect, useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { Parent, DocumentsBlock, TargetsProfilingBlock, AddNoteForm, CompositionsBlock, SchoolHistoryBlock, ScolarityFeesBlock, CommentairesBlock, AbsencesBlock } from '../../components/EntityModal.jsx';
 import StudentPointsWidget from '../../components/points/StudentPointsWidget';
@@ -33,21 +33,27 @@ export default function ElevePage() {
 
   const { setSelected, showModal, setShowModal, setEditType, dynamicSubjects, subjectsLoaded, classes, feeDefinitions, normalizeFeeItem } = ctx;
 
+  const searchParams = useSearchParams();
+  const urlYear = searchParams.get('year');
+
   const { entity: eleve, classe } = useEntityDetail(id, ctx, 'eleves');
   const [gmapOpen, setGmapOpen] = useState(false)
-  const [schoolYear, setSchoolYear] = useState('2025-2026');
+  const [schoolYear, setSchoolYear] = useState(urlYear || '2025-2026');
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    if (eleve?.compositions) {
+    if (urlYear) {
+      setSchoolYear(urlYear);
+    } else if (classe?.annee) {
+      setSchoolYear(classe.annee);
+    } else if (eleve?.compositions && Object.keys(eleve.compositions).length > 0) {
       setSchoolYear(getDefaultSchoolYear(eleve.compositions));
     }
-  }, [eleve]);
+  }, [classe, eleve, urlYear]);
 
   const activeClass = useMemo(() => {
     if (!eleve) return null;
-    const currentYear = getDefaultSchoolYear(eleve.compositions || {});
-    if (schoolYear === currentYear) return classe;
+    if (classe && classe.annee === schoolYear) return classe;
     
     const histClassId = eleve.bolobi_class_history_$_ref_µ_classes?.[schoolYear];
     if (!histClassId) return null;
@@ -66,8 +72,24 @@ export default function ElevePage() {
       onChange={e => setSchoolYear(e.target.value)}
     >
       {(() => {
-        // generateSchoolYears est désormais partagé depuis entityBlocks (même logique que CompositionsBlock)
-        const { years, currentYearStart } = generateSchoolYears(eleve?.compositions);
+        const { currentYearStart } = generateSchoolYears({});
+        
+        // Collect all years where the student has some data
+        const relevantYears = new Set([
+          ...(classe?.annee ? [classe.annee] : []),
+          ...Object.keys(eleve?.compositions || {}),
+          ...Object.keys(eleve?.bolobi_class_history_$_ref_µ_classes || {}),
+          ...Object.keys(eleve?.school_history || {}),
+          ...Object.keys(eleve?.scolarity_fees_$_checkbox || {})
+        ]);
+        
+        // Ensure at least the current year is in the list
+        const currentYearStr = `${currentYearStart}-${currentYearStart + 1}`;
+        relevantYears.add(currentYearStr);
+
+        const years = Array.from(relevantYears)
+          .filter(y => y && y.includes('-'))
+          .sort((a, b) => b.localeCompare(a));
 
         return years.map(y => {
           const start = parseInt(y.split('-')[0], 10);
@@ -111,7 +133,7 @@ export default function ElevePage() {
           alt={`${eleve.nom} ${Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}`}
         />
         <h1 className="person-detail__title"><u>Élève:</u> {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms} ({eleve.sexe}) (<time dateTime={eleve.naissance_$_date}>{new Date(eleve.naissance_$_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</time>)</h1>
-        <ClasseDisplay classe={activeClass} label="En classe de:" />
+        <ClasseDisplay classe={activeClass} label="En classe de:" year={schoolYear} />
         <ClasseEnseignantDisplay classe={activeClass} label="Enseignant de la classe:" />
 
         {/* --- NAVIGATION PAR ONGLETS --- */}

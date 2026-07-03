@@ -1,7 +1,7 @@
 "use client"
 
 import { useContext, useEffect, useMemo, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from 'next/link';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
 import { useUserRole } from '../../../stores/useUserRole';
@@ -71,14 +71,24 @@ export default function ClasseDetailPage() {
   const { setSelected, showModal, setShowModal, setEditType } = ctx || {};
   const classe = useMemo(() => (ctx?.classes || []).find(c => String(c._id) === String(id)), [ctx?.classes, id]);
 
-  const [selectedYear, setSelectedYear] = useState("");
+  const searchParams = useSearchParams();
+  const urlYear = searchParams.get('year');
+
+  const [selectedYear, setSelectedYear] = useState(urlYear || "");
+
+  // Update selected year if URL changes
+  useEffect(() => {
+    if (urlYear && urlYear !== selectedYear) {
+      setSelectedYear(urlYear);
+    }
+  }, [urlYear]);
 
   // Initialisation de l'année sélectionnée
   useEffect(() => {
-    if (classe && !selectedYear) {
+    if (classe && !selectedYear && !urlYear) {
       setSelectedYear(classe.annee);
     }
-  }, [classe]);
+  }, [classe, urlYear]);
 
   const historyOptions = useMemo(() => {
     if (!classe) return [];
@@ -322,7 +332,7 @@ export default function ClasseDetailPage() {
                     return (
                       <PersonDetailCard
                         key={"eleves_" + student._id}
-                        href={`/eleves/${student._id}`}
+                        href={`/eleves/${student._id}?year=${selectedYear}`}
                         imgSrc={imagePath}
                         fallbackSrc="/school/student.webp"
                         alt={`${student.nom} ${student.prenoms}`}
