@@ -6,6 +6,7 @@ import { useUserRole } from '../../stores/useUserRole';
 import PermissionGate from '../components/PermissionGate';
 import Link from 'next/link';
 import FeeConfigManager from '../components/FeeConfigManager';
+import DesignSettingsManager from '../components/DesignSettingsManager';
 
 /**
  * Page d'Administration
@@ -22,7 +23,7 @@ export default function AdministrationPage() {
     const { isAdmin, loading: authLoading, clerkUser } = useUserRole();
     const [isMigrating, setIsMigrating] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
-    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees'
+    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees', 'design'
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -156,6 +157,13 @@ export default function AdministrationPage() {
                             >
                                 ⚙️ Paramètres des Frais
                             </button>
+                            <button
+                                className={`admin-page__config-btn ${activeTab === 'design' ? '--active' : ''}`}
+                                onClick={() => setActiveTab('design')}
+                                style={{ marginLeft: '10px' }}
+                            >
+                                🎨 Paramètres de Design
+                            </button>
                         </div>
                     </div>
 
@@ -180,35 +188,8 @@ export default function AdministrationPage() {
                         </button>
                     </nav>
 
-                    {activeTab !== 'fees' && (
+                    {activeTab !== 'fees' && activeTab !== 'design' && (
                         <div className="admin-page__controls">
-
-                            {clerkUser && (
-                                <>
-                                    <button
-                                        className="admin-page__config-btn --migrate"
-                                        onClick={handleMigrateYear}
-                                    >
-                                        🚀 Migrer l'Année Scolaire
-                                    </button>
-                                    <button
-                                        className={`admin-page__config-btn --migrate ${isResetting ? '--loading' : ''}`}
-                                        style={{ backgroundColor: isResetting ? '#c0392b' : '#e74c3c', marginLeft: '10px', opacity: isResetting ? 0.7 : 1, cursor: isResetting ? 'not-allowed' : 'pointer' }}
-                                        onClick={handleResetDemo}
-                                        disabled={isResetting}
-                                    >
-                                        {isResetting ? (
-                                            <>
-                                                <span className="spinner" style={{ marginRight: '8px', display: 'inline-block', width: '1em', height: '1em', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
-                                                Génération en cours (~30s)...
-                                            </>
-                                        ) : (
-                                            '🔄 Réinitialiser la Démo'
-                                        )}
-                                    </button>
-                                </>
-                            )}
-                            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
                             <div className="admin-page__search-wrapper">
                                 <input
                                     type="text"
@@ -229,6 +210,15 @@ export default function AdministrationPage() {
                     {activeTab === 'fees' ? (
                         <div className="admin-page__dynamic-content">
                             <FeeConfigManager />
+                        </div>
+                    ) : activeTab === 'design' ? (
+                        <div className="admin-page__dynamic-content">
+                            <DesignSettingsManager
+                                handleMigrateYear={handleMigrateYear}
+                                handleResetDemo={handleResetDemo}
+                                isResetting={isResetting}
+                                clerkUser={clerkUser}
+                            />
                         </div>
                     ) : (
                         <div className="admin-page__table-container">

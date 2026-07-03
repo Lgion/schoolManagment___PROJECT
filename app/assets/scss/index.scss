@@ -3,6 +3,7 @@
 @use 'sass:color';
 @use 'variables' as *;
 @use 'layouts/headers' as *;
+@use 'layouts/footer' as *;
 @use 'components/DISPLAYS/classeEnseignantDisplay.scss';
 @use 'components/MODALS/compositionsManager.scss';
 @use 'components/MODALS/addStudentsModal.scss';
@@ -14,6 +15,7 @@
 @use "./components/LOADERS/processLoader.scss";
 @use "./components/FORMS/imageScanner.scss";
 @use "./components/FORMS/feeConfigManager.scss";
+@use "./components/FORMS/designSettingsManager.scss";
 @use "./components/DASHBOARDS/adminDashboard.scss";
 @use "./components/CONTROLS/infosCardsControls.scss";
 @use "./components/CONTENT/homeContent.scss";

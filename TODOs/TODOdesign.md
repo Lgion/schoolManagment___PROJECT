@@ -7,6 +7,8 @@
 - sur la page des élèves, il y a 2 problemes: le contenu affiché de .infos_cards manque de finition (les boutons ne sont pas de la meme taille, ni de la meme couleurs, ni meme dans le meme style). Et #camembert prend bcp de place sur toute sa ligne (row), et ce seul camembert de genre en guise d'information générale concernant tous les élèves ..je trouve ça faible. Un ou des élèves pourraient etre mis en valeur dans cette zone.
 - concernant la page des classes, il faudrait aussi pouvoir avoir une zone de statistiques et performances (là aussi, une ou des classes pourai(en)t etre mis en valeur dans cette zone).
 - sur la page d'une classe, c'est actuellement un peu comme sur la homepagen, un scroll qui n'en fini pas et qui devrait etre mieux géré en scss (je pense à l'utilisation d'accordéon pour afficher toutes les sections de la page d'une classe)
+- il faut permettre aux futurs clients de pouvoir administrer plusieurs écoles, je n'ai aucune idée sur comment implémenter une telle infrastructure alors propose m'en au moins 3 des plus adaptés pour implémenter cela
+- quand on navigue sur la page d'un élève ou d'une classe, et qu'on change l'année via respectivement les select .detailModal__yearSelect et .detailModal__titleScolarityYear, on devrait respectivement voir les informations de l'élève pour l'année concernée (donc MÀJ la classe les notes etc), et les informations de la classe pour l'année correspondante (donc MÀJ la liste des élèves etc)
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
