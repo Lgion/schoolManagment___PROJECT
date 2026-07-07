@@ -565,8 +565,11 @@
       transition: transform 0.3s;
     }
 
+    // Liseré teinté selon le rôle connecté (--role-accent, cf. _variables.scss)
+    border-bottom: 2px solid rgba(var(--role-accent-rgb), 0.55);
+
     &:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(var(--role-accent-rgb), 0.22);
       transform: translateY(-2px);
     }
 
@@ -635,14 +638,14 @@
     transition: all 0.2s;
 
     i {
-      color: var(--color-primary);
+      color: var(--role-accent);
       width: 20px;
       text-align: center;
     }
 
     &:hover {
-      background: var(--color-primary-soft);
-      color: var(--color-primary-dark);
+      background: var(--role-accent-soft);
+      color: var(--role-accent-dark);
       transform: translateX(4px);
     }
   }
@@ -691,13 +694,13 @@
 
     &:hover,
     &--active {
-      color: var(--color-primary);
+      color: var(--role-accent);
     }
 
     &--main {
       flex: 1.2;
       transform: translateY(-20px);
-      color: var(--color-primary) !important;
+      color: var(--role-accent) !important;
     }
   }
 
@@ -705,12 +708,12 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--gradient-brand);
+    background: var(--gradient-role);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 20px var(--color-primary-soft);
+    box-shadow: 0 8px 20px var(--role-accent-soft);
     border: 4px solid white;
     transition: all 0.3s;
 

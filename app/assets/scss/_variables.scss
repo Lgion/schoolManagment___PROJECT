@@ -137,6 +137,51 @@ $secondaryFont: 'Poppins', 'Arial', sans-serif;
   // Transitions
   --transition-fast: 0.15s ease;
   --transition-medium: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // === Accent par rôle (TODOdesign §5.3) ===
+  // Défaut (public / non connecté) : bleu de marque. Surchargé via [data-user-role]
+  // posé sur <html> par Home.jsx — évite les confusions de rôle en Sandbox.
+  --role-accent: var(--color-primary);
+  --role-accent-dark: var(--color-primary-dark);
+  --role-accent-rgb: 30, 58, 138;
+  --role-accent-soft: var(--color-primary-soft);
+  --gradient-role: var(--gradient-brand);
+}
+
+// Administrateur : or/orange (reprend l'accent de marque)
+:root[data-user-role='admin'] {
+  --role-accent: #F97316;
+  --role-accent-dark: #EA580C;
+  --role-accent-rgb: 249, 115, 22;
+  --role-accent-soft: #FFEDD5;
+  --gradient-role: linear-gradient(135deg, #F59E0B 0%, #EA580C 100%);
+}
+
+// Enseignant : bleu de marque
+:root[data-user-role='prof'] {
+  --role-accent: #1E3A8A;
+  --role-accent-dark: #172554;
+  --role-accent-rgb: 30, 58, 138;
+  --role-accent-soft: #E0E7FF;
+  --gradient-role: var(--gradient-brand);
+}
+
+// Élève : violet / indigo moderne
+:root[data-user-role='eleve'] {
+  --role-accent: #7C3AED;
+  --role-accent-dark: #5B21B6;
+  --role-accent-rgb: 124, 58, 237;
+  --role-accent-soft: #EDE9FE;
+  --gradient-role: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+}
+
+// Parent : émeraude rassurante
+:root[data-user-role='parent'] {
+  --role-accent: #059669;
+  --role-accent-dark: #065F46;
+  --role-accent-rgb: 5, 150, 105;
+  --role-accent-soft: #D1FAE5;
+  --gradient-role: linear-gradient(135deg, #10B981 0%, #059669 100%);
 }
 
 $themeColors: (

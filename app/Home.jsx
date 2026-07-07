@@ -40,6 +40,17 @@ export default ({ children }) => {
   const [mounted, setMounted] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  // --- ACCENT PAR RÔLE (TODOdesign §5.3) ---
+  // Pose data-user-role sur <html> : _variables.scss surcharge --role-accent
+  // (admin=orange, prof=bleu, eleve=violet, parent=émeraude) pour tout le site.
+  useEffect(() => {
+    if (userRole) {
+      document.documentElement.dataset.userRole = userRole;
+    } else {
+      delete document.documentElement.dataset.userRole;
+    }
+  }, [userRole]);
+
   // --- DYNAMIC DESIGN SYSTEM INJECTION ---
   useEffect(() => {
     if (!homepage) return;
