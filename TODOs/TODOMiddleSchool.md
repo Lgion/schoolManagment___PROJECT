@@ -20,24 +20,6 @@ Ce document formalise les spécifications techniques et fonctionnelles pour fair
 
 ---
 
-## 2. Stratégie de Migration & Feature Flags
-
-> **Principe fondateur :** Le code reste unique. Un `feature flag` par tenant conditionne les modules affichés.
-
-### A. Flag de Type d'Établissement
-```javascript
-// Dans Institution.js ou SchoolSettings.js
-type: { type: String, enum: ['PRIMAIRE', 'COLLEGE', 'LYCEE', 'MIXTE'], default: 'PRIMAIRE' }
-```
-
-Ce flag conditionne :
-* Les niveaux proposés (`CP1-CM2` vs `6ème-3ème`).
-* Les modules visibles (Vie Scolaire, Socle Commun, DNB…).
-* Les rôles disponibles (CPE, Surveillant…).
-* Le format des bulletins.
-
-### B. Compatibilité Ascendante
-* Les schémas existants (`Classe`, `Eleve`, `Teacher`) restent compatibles — les nouveaux champs ont des valeurs par défaut.
 * Les composants React existants continuent de fonctionner pour les tenants `PRIMAIRE`.
 * Les nouveaux modules ne s'affichent que si `type !== 'PRIMAIRE'`.
 

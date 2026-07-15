@@ -4,7 +4,7 @@ import { getLSItem, setLSItem } from '../../utils/localStorageManager';
 import { getDefaultSchoolYear } from '../../utils/schoolYear';
 import Gmap from '../_/Gmap_plus';
 import CameraCapture from './CameraCapture';
-import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, CoefficientsManager, CompositionsBlock, AbsencesBlock, BonusBlock, ManusBlock, AddNoteForm, TargetsProfilingBlock, DocumentsBlock, CompositionsManager, generateSchoolYears } from './entityBlocks';
+import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, CoefficientsManager, CompositionsBlock, AbsencesBlock, BonusBlock, ManusBlock, AddNoteForm, TargetsProfilingBlock, DocumentsBlock, CompositionsManager, CorpsEnseignantManager, DeleguesManager, GroupesManager, generateSchoolYears } from './entityBlocks';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -1149,6 +1149,66 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                 </div>
 
                 <TextField id="input-alias" label="Alias de la classe" name="alias" value={form.alias || ''} onChange={handleChange} placeholder="Alias (ex: 4B, A, Rouge...)" />
+              </div>
+
+              {/* Champ Collège : Professeur Principal */}
+              <div className="modal__fieldGroup">
+                <label htmlFor="input-profPrincipal" className="modal__label">Professeur Principal (Collège/Lycée)</label>
+                <select
+                  id="input-profPrincipal"
+                  name="profPrincipalId"
+                  value={form.profPrincipalId || ''}
+                  onChange={handleChange}
+                  className="modal__select"
+                >
+                  <option value="">-- Aucun / Non assigné --</option>
+                  {ctx.enseignants && ctx.enseignants.map(prof => (
+                    <option key={prof._id} value={prof._id}>
+                      {prof.nom} {prof.prenoms ? (Array.isArray(prof.prenoms) ? prof.prenoms.join(' ') : prof.prenoms) : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Corps Enseignant */}
+              <div className="modal__fieldGroup modal__fieldGroup--coefficients">
+                <h3 className="modal__sectionTitle">Corps Enseignant</h3>
+                <p className="modal__sectionDescription">
+                  Assignez les professeurs et salles pour chaque matière.
+                </p>
+                <CorpsEnseignantManager
+                  corpsEnseignant={form.corpsEnseignant || []}
+                  onChange={(newCorps) => setForm(f => ({ ...f, corpsEnseignant: newCorps }))}
+                  enseignants={ctx.enseignants || []}
+                  dynamicSubjects={dynamicSubjects}
+                  subjectsLoaded={subjectsLoaded}
+                />
+              </div>
+
+              {/* Délégués */}
+              <div className="modal__fieldGroup modal__fieldGroup--coefficients">
+                <h3 className="modal__sectionTitle">Délégués de Classe</h3>
+                <p className="modal__sectionDescription">
+                  Élisez jusqu'à 2 titulaires et 2 suppléants parmi les élèves de la classe.
+                </p>
+                <DeleguesManager
+                  delegues={form.delegues || []}
+                  onChange={(newDelegues) => setForm(f => ({ ...f, delegues: newDelegues }))}
+                  elevesClasse={ctx.eleves ? ctx.eleves.filter(e => e.current_classe === entity?._id) : []}
+                />
+              </div>
+
+              {/* Groupes */}
+              <div className="modal__fieldGroup modal__fieldGroup--coefficients">
+                <h3 className="modal__sectionTitle">Demi-Groupes / Options</h3>
+                <p className="modal__sectionDescription">
+                  Créez des groupes spécifiques (ex: LV2, TP) et assignez-y des élèves.
+                </p>
+                <GroupesManager
+                  groupes={form.groupes || []}
+                  onChange={(newGroupes) => setForm(f => ({ ...f, groupes: newGroupes }))}
+                  elevesClasse={ctx.eleves ? ctx.eleves.filter(e => e.current_classe === entity?._id) : []}
+                />
               </div>
 
               <PhotoUploadField field="photo" label="Photo de la classe" alt="Photo de la classe" defaultImg="/school/classe.webp" inputId="input-photo-classe" form={form} fileInput={fileInput} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} setSelectedFile={setSelectedFile} handleFile={handleFile} setShowCamera={setShowCamera} />
