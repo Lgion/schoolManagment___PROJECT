@@ -1943,11 +1943,12 @@ function CompositionsManager({ compositions = [], onChange }) {
   );
 }
 
-// --- Bloc de gestion du Corps Enseignant (Collège/Lycée) ---
-function CorpsEnseignantManager({ corpsEnseignant = [], onChange, enseignants = [], dynamicSubjects = [], subjectsLoaded }) {
+// --- Bloc de gestion du Corps Enseignant et Coefficients (Collège/Lycée) ---
+function CorpsEnseignantManager({ corpsEnseignant = [], coefficients = {}, onChange, enseignants = [], dynamicSubjects = [], subjectsLoaded }) {
   const [selectedMatiere, setSelectedMatiere] = useState('');
   const [selectedProf, setSelectedProf] = useState('');
   const [salle, setSalle] = useState('');
+  const [coeffDenominateur, setCoeffDenominateur] = useState('20');
 
   // Initialisation par défaut
   useEffect(() => {
@@ -1962,32 +1963,38 @@ function CorpsEnseignantManager({ corpsEnseignant = [], onChange, enseignants = 
   const handleAdd = () => {
     if (!selectedMatiere || !selectedProf) return;
     
-    // Éviter les doublons pour la même matière
     const newCorps = corpsEnseignant.filter(c => c.matiereId !== selectedMatiere);
-    
     newCorps.push({
       matiereId: selectedMatiere,
       enseignantId: selectedProf,
       sallePrincipale: salle
     });
-    
-    onChange(newCorps);
+
+    const newCoefficients = { ...coefficients };
+    const coeffVal = Math.max(1, Math.floor(parseInt(coeffDenominateur) / 10));
+    newCoefficients[selectedMatiere] = coeffVal;
+
+    onChange({ corpsEnseignant: newCorps, coefficients: newCoefficients });
     setSalle('');
   };
 
   const handleRemove = (matiereId) => {
-    onChange(corpsEnseignant.filter(c => c.matiereId !== matiereId));
+    const newCorps = corpsEnseignant.filter(c => c.matiereId !== matiereId);
+    const newCoefficients = { ...coefficients };
+    delete newCoefficients[matiereId];
+    onChange({ corpsEnseignant: newCorps, coefficients: newCoefficients });
   };
 
   if (!subjectsLoaded) return <div className="coefficients-manager__loading">Chargement des matières...</div>;
 
   return (
-    <div className="corps-enseignant-manager coefficients-manager">
-      <div className="compositions-block__add-form coefficients-manager__add-form" style={{ flexWrap: 'wrap', gap: '10px' }}>
+    <div className="corps-enseignant-manager">
+      {/* Formulaire d'ajout en 1 ligne fluide */}
+      <div className="corps-enseignant-manager__form">
         <select 
           value={selectedMatiere} 
           onChange={e => setSelectedMatiere(e.target.value)}
-          className="compositions-block__matiere-select"
+          className="corps-enseignant-manager__select"
         >
           <option value="" disabled>-- Matière --</option>
           {dynamicSubjects.map(m => (
@@ -1998,9 +2005,9 @@ function CorpsEnseignantManager({ corpsEnseignant = [], onChange, enseignants = 
         <select 
           value={selectedProf} 
           onChange={e => setSelectedProf(e.target.value)}
-          className="compositions-block__matiere-select"
+          className="corps-enseignant-manager__select"
         >
-          <option value="" disabled>-- Professeur --</option>
+          <option value="" disabled>-- Enseignant --</option>
           {enseignants.map(p => (
             <option key={p._id} value={p._id}>
               {p.nom} {Array.isArray(p.prenoms) ? p.prenoms.join(' ') : p.prenoms}
@@ -2012,111 +2019,145 @@ function CorpsEnseignantManager({ corpsEnseignant = [], onChange, enseignants = 
           type="text" 
           value={salle} 
           onChange={e => setSalle(e.target.value)}
-          placeholder="Salle (ex: Labo 1)"
-          className="modal__input"
-          style={{ width: '120px', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+          placeholder="Salle (ex: 102)"
+          className="corps-enseignant-manager__input"
         />
 
-        <button type="button" onClick={handleAdd} className="compositions-block__add-btn">
-          Assigner
+        <select
+          value={coeffDenominateur}
+          onChange={e => setCoeffDenominateur(e.target.value)}
+          className="corps-enseignant-manager__select"
+        >
+          <option value="10">Coeff 1 (/10)</option>
+          <option value="20">Coeff 2 (/20)</option>
+          <option value="30">Coeff 3 (/30)</option>
+          <option value="40">Coeff 4 (/40)</option>
+          <option value="50">Coeff 5 (/50)</option>
+        </select>
+
+        <button 
+          type="button" 
+          onClick={handleAdd} 
+          className="corps-enseignant-manager__add-btn"
+        >
+          + Assigner
         </button>
       </div>
 
-      <div className="coefficients-manager__configured" style={{ marginTop: '1rem' }}>
+      {/* Tableau des matières configurées */}
+      <div className="corps-enseignant-manager__table-wrapper">
         {corpsEnseignant.length > 0 ? (
-          <div className="coefficients-manager__list">
-            {corpsEnseignant.map((assignment, idx) => {
-              const matiere = dynamicSubjects.find(m => m.id === assignment.matiereId);
-              const prof = enseignants.find(p => p._id === assignment.enseignantId);
-              if (!matiere || !prof) return null;
+          <table className="corps-enseignant-manager__table">
+            <thead>
+              <tr>
+                <th>Matière</th>
+                <th>Enseignant & Salle</th>
+                <th>Coefficient</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {corpsEnseignant.map((assignment, idx) => {
+                const matiere = dynamicSubjects.find(m => m.id === assignment.matiereId);
+                const prof = enseignants.find(p => p._id === assignment.enseignantId);
+                if (!matiere || !prof) return null;
+                const coeff = coefficients[assignment.matiereId] || 2;
 
-              return (
-                <div key={idx} className="coefficients-manager__configured-item">
-                  <span className="coefficients-manager__subject-name">{matiere.nom}</span>
-                  <span className="coefficients-manager__coefficient">
-                    {prof.nom} {Array.isArray(prof.prenoms) ? prof.prenoms.join(' ') : prof.prenoms}
-                    {assignment.sallePrincipale ? ` (Salle: ${assignment.sallePrincipale})` : ''}
-                  </span>
-                  <button type="button" onClick={() => handleRemove(assignment.matiereId)} className="coefficients-manager__remove-btn" title="Retirer">×</button>
-                </div>
-              );
-            })}
-          </div>
+                return (
+                  <tr key={idx}>
+                    <td className="corps-enseignant-manager__subject-name">
+                      {matiere.nom}
+                    </td>
+                    <td>
+                      <span className="corps-enseignant-manager__prof-badge">
+                        👨‍🏫 {prof.nom} {Array.isArray(prof.prenoms) ? prof.prenoms.join(' ') : prof.prenoms}
+                        {assignment.sallePrincipale && <span className="corps-enseignant-manager__salle-badge">📍 {assignment.sallePrincipale}</span>}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="corps-enseignant-manager__coeff-badge">
+                        📊 Coeff {coeff} <span>(sur {coeff * 10})</span>
+                      </span>
+                    </td>
+                    <td>
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemove(assignment.matiereId)} 
+                        className="corps-enseignant-manager__remove-btn"
+                        title="Supprimer cette matière"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         ) : (
-          <p className="coefficients-manager__empty">Aucun professeur assigné aux matières pour le moment.</p>
+          <p className="corps-enseignant-manager__empty">
+            Aucun professeur ni coefficient attribué pour le moment.
+          </p>
         )}
+      </div>
+
+      <div className="corps-enseignant-manager__info">
+        <p><strong>💡 Note :</strong> L'enseignant assigné et le coefficient de la matière sont enregistrés simultanément. Le coefficient (1 à 5) définit l'impact de la matière sur le calcul des moyennes trimestrielles du collège.</p>
       </div>
     </div>
   );
 }
 
-// --- Bloc de gestion des Délégués ---
+// --- Bloc de gestion du Délégué Unique ---
 function DeleguesManager({ delegues = [], onChange, elevesClasse = [] }) {
-  const [selectedEleve, setSelectedEleve] = useState('');
+  const currentDelegueId = Array.isArray(delegues) ? delegues[0] || '' : (delegues || '');
 
-  const handleAdd = () => {
-    if (!selectedEleve || delegues.includes(selectedEleve)) return;
-    if (delegues.length >= 4) {
-      alert('Une classe ne peut avoir que 4 délégués (2 titulaires, 2 suppléants) maximum.');
-      return;
-    }
-    onChange([...delegues, selectedEleve]);
-    setSelectedEleve('');
-  };
-
-  const handleRemove = (eleveId) => {
-    onChange(delegues.filter(id => id !== eleveId));
+  const handleChange = (e) => {
+    const val = e.target.value;
+    onChange(val ? [val] : []);
   };
 
   if (!elevesClasse || elevesClasse.length === 0) {
-    return <p className="coefficients-manager__empty">Veuillez d'abord assigner des élèves à cette classe via leur fiche élève.</p>;
+    return <p className="corps-enseignant-manager__empty">Veuillez d'abord assigner des élèves à cette classe via leur fiche élève.</p>;
   }
 
+  const selectedEleve = elevesClasse.find(e => e._id === currentDelegueId);
+
   return (
-    <div className="coefficients-manager">
-      <div className="compositions-block__add-form coefficients-manager__add-form" style={{ flexWrap: 'wrap', gap: '10px' }}>
+    <div className="delegues-manager">
+      <div className="delegues-manager__form">
+        <label className="delegues-manager__label">
+          Délégué de classe :
+        </label>
         <select 
-          value={selectedEleve} 
-          onChange={e => setSelectedEleve(e.target.value)}
-          className="compositions-block__matiere-select"
-          style={{ flexGrow: 1 }}
+          value={currentDelegueId} 
+          onChange={handleChange}
+          className="delegues-manager__select"
         >
-          <option value="" disabled>-- Sélectionner un élève --</option>
+          <option value="">-- Aucun délégué désigné --</option>
           {elevesClasse.map(e => (
             <option key={e._id} value={e._id}>
               {e.nom} {Array.isArray(e.prenoms) ? e.prenoms.join(' ') : e.prenoms}
             </option>
           ))}
         </select>
-        
-        <button type="button" onClick={handleAdd} className="compositions-block__add-btn" disabled={delegues.length >= 4}>
-          Ajouter comme délégué
-        </button>
       </div>
 
-      <div className="coefficients-manager__configured" style={{ marginTop: '1rem' }}>
-        {delegues.length > 0 ? (
-          <div className="coefficients-manager__list">
-            {delegues.map((id, idx) => {
-              const eleve = elevesClasse.find(e => e._id === id);
-              if (!eleve) return null;
-              const role = idx < 2 ? "Titulaire" : "Suppléant";
-
-              return (
-                <div key={id} className="coefficients-manager__configured-item">
-                  <span className="coefficients-manager__subject-name">{role}</span>
-                  <span className="coefficients-manager__coefficient">
-                    {eleve.nom} {Array.isArray(eleve.prenoms) ? eleve.prenoms.join(' ') : eleve.prenoms}
-                  </span>
-                  <button type="button" onClick={() => handleRemove(id)} className="coefficients-manager__remove-btn" title="Retirer">×</button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="coefficients-manager__empty">Aucun délégué élu pour le moment.</p>
-        )}
-      </div>
+      {selectedEleve && (
+        <div className="delegues-manager__badge">
+          <span>
+            🎓 Délégué élu : {selectedEleve.nom} {Array.isArray(selectedEleve.prenoms) ? selectedEleve.prenoms.join(' ') : selectedEleve.prenoms}
+          </span>
+          <button 
+            type="button" 
+            onClick={() => onChange([])} 
+            className="delegues-manager__remove-btn" 
+            title="Retirer ce délégué"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

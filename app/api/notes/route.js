@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import dbConnect from '../../../lib/dbConnect'
-import { authWithFallback } from '../../../lib/authWithFallback'
+import dbConnect from '../lib/dbConnect'
+import { authWithFallback } from '../lib/authWithFallback'
 
 const Note = require('../_/models/ai/Note')
 

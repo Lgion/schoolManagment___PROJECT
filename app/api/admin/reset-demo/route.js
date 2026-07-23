@@ -21,6 +21,8 @@ import Subject from '../../_/models/ai/Subject';
 import Event from '../../_/models/ai/Event';
 import Article from '../../_/models/ai/Article';
 import Note from '../../_/models/ai/Note';
+import Incident from '../../_/models/ai/Incident';
+import CarnetEntry from '../../_/models/ai/CarnetEntry';
 
 import { seedSubjects, generateStudentNotes, generateReportCardsForYear, getCoefficientsForNiveau, convertNotesToCompositions } from './lib/academicSeeder';
 import { generateAttendanceForClassYear } from './lib/attendanceSeeder';
@@ -56,7 +58,7 @@ export async function POST(request) {
       // Ignorer si les index n'existaient pas
     }
 
-    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction, PointLabel, Subject, Event, Article, Note];
+    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction, PointLabel, Subject, Event, Article, Note, Incident, CarnetEntry];
     for (const model of models) {
       if (model) await model.deleteMany({ schoolKey: { $in: schoolKeys } });
     }
