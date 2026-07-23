@@ -2,20 +2,16 @@
 import dbConnect from '../../lib/dbConnect';
 import Eleve from '../../_/models/ai/Eleve';
 import { NextResponse } from 'next/server';
-import { checkRole, Roles } from '../../../../utils/roles';
+import { checkRole, getAuthAndRole, Roles } from '../../../../utils/roles';
 import { authWithFallback } from '../../lib/authWithFallback';
 import User from '../../_/models/ai/User';
 
 export async function GET(request) {
   try {
-    const authResult = await authWithFallback(request, 'GET /api/school_ai/eleves');
-    if (!authResult.success) {
-      return authResult.response;
+    const { success, userId, isAdmin, isTeacher } = await getAuthAndRole(request);
+    if (!success) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 401 });
     }
-    const userId = authResult.userId;
-
-    const isAdmin = await checkRole(Roles.ADMIN, request);
-    const isTeacher = await checkRole(Roles.TEACHER, request);
 
     if (!isAdmin && !isTeacher) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
@@ -25,10 +21,13 @@ export async function GET(request) {
 
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
-    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'demo_master';
+
+    console.log(`[BACKEND ELEVES] MONGODB_URI: ${process.env.MONGODB_URI?.split('@')[1] || 'N/A'}, schoolKey: ${schoolKey}`);
 
     if (isAdmin) {
       const eleves = await Eleve.find({ schoolKey });
+      console.log(`[BACKEND ELEVES] 📊 Élèves trouvés pour Admin (schoolKey: ${schoolKey}): ${eleves.length}`);
       return NextResponse.json(eleves);
     }
 

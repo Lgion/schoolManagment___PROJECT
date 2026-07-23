@@ -2,33 +2,34 @@
 import dbConnect from '../../lib/dbConnect';
 import Classe from '../../_/models/ai/Classe';
 import { NextResponse } from 'next/server';
-import { checkRole, Roles } from '../../../../utils/roles';
+import { checkRole, getAuthAndRole, Roles } from '../../../../utils/roles';
 import { authWithFallback } from '../../lib/authWithFallback';
 import User from '../../_/models/ai/User';
 
 export async function GET(request) {
   try {
-    const authResult = await authWithFallback(request, 'GET /api/school_ai/classes');
-    if (!authResult.success) {
-      return authResult.response;
+    const { success, userId, isAdmin, isTeacher } = await getAuthAndRole(request);
+    if (!success) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 401 });
     }
-    const userId = authResult.userId;
 
-    const isAdmin = await checkRole(Roles.ADMIN, request);
-    const isTeacher = await checkRole(Roles.TEACHER, request);
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'demo_master';
+
+    console.log(`[DEBUG CLASSES] Requête reçue. UserID: ${userId}, isAdmin: ${isAdmin}, isTeacher: ${isTeacher}`);
+    console.log(`[DEBUG CLASSES] schoolKey: ${schoolKey}`);
 
     if (!isAdmin && !isTeacher) {
+      console.log(`[DEBUG CLASSES] ❌ REJETÉ: Ni Admin ni Teacher.`);
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
     await dbConnect();
 
-    const { cookies } = await import('next/headers');
-    const cookieStore = await cookies();
-    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
-
     if (isAdmin) {
       const classes = await Classe.find({ schoolKey });
+      console.log(`[DEBUG CLASSES] Classes trouvées pour Admin: ${classes.length}`);
       return NextResponse.json(classes);
     }
 
@@ -44,6 +45,7 @@ export async function GET(request) {
     const classes = await Classe.find({ schoolKey, professeur: teacherId })
       .select('-compositions -moyenne_trimetriel -coefficients');
 
+    console.log(`[DEBUG CLASSES] Classes trouvées pour Enseignant: ${classes.length}`);
     return NextResponse.json(classes);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des classes', details: error.message }, { status: 500 });

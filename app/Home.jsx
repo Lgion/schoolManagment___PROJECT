@@ -512,6 +512,12 @@ export default ({ children }) => {
                             Enseignants
                           </Link>
                           <Link
+                            href="/saisie-notes"
+                            className="ecole-dropdown__item"
+                          >
+                            <i className="fas fa-edit"></i> Saisie des Notes
+                          </Link>
+                          <Link
                             href="/enseignants/mon-planning"
                             className="ecole-dropdown__item"
                           >
