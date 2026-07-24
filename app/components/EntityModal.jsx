@@ -6,6 +6,9 @@ import Gmap from '../_/Gmap_plus';
 import CameraCapture from './CameraCapture';
 import { Parent, CommentairesBlock, SchoolHistoryBlock, ScolarityFeesBlock, CoefficientsManager, CompositionsBlock, AbsencesBlock, BonusBlock, ManusBlock, AddNoteForm, TargetsProfilingBlock, DocumentsBlock, CompositionsManager, CorpsEnseignantManager, DeleguesManager, GroupesManager, generateSchoolYears } from './entityBlocks';
 import ConseilClasseManager from './pedagogie/ConseilClasseManager';
+import SocleCommunManager from './pedagogie/SocleCommunManager';
+import DnbSimulator from './pedagogie/DnbSimulator';
+import OrientationManager from './pedagogie/OrientationManager';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -1252,6 +1255,40 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
 
                 <ConseilClasseManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
               </div>
+
+              {/* 6. SOCLE COMMUN DE COMPÉTENCES (COLLEGE) */}
+              <div className="modal__fieldGroup modal__fieldGroup--socle">
+                <h3 className="modal__sectionTitle">🎯 Évaluation du Socle Commun de Compétences (Cycle 4)</h3>
+                <p className="modal__sectionDescription">
+                  Évaluez la maîtrise des 8 domaines de compétences du socle officiel pour les élèves de la classe.
+                </p>
+
+                <SocleCommunManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
+              </div>
+
+              {/* 7. SIMULATEUR BREVET DNB (3ème) */}
+              {form.niveau === '3ème' && (
+                <div className="modal__fieldGroup modal__fieldGroup--dnb">
+                  <h3 className="modal__sectionTitle">🎓 Simulateur & Prédictions Brevet (DNB — 800 pts)</h3>
+                  <p className="modal__sectionDescription">
+                    Estimez la réussite au brevet et prédisez les mentions (socle + épreuves finales).
+                  </p>
+
+                  <DnbSimulator classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
+                </div>
+              )}
+
+              {/* 8. ORIENTATION POST-3ÈME */}
+              {form.niveau === '3ème' && (
+                <div className="modal__fieldGroup modal__fieldGroup--orientation">
+                  <h3 className="modal__sectionTitle">🧭 Suivi des Vœux & Parcours d'Orientation Post-3ème</h3>
+                  <p className="modal__sectionDescription">
+                    Saisissez les vœux des familles (2nde GT, 2nde Pro, CAP, CFA), les avis du conseil et les décisions du Principal.
+                  </p>
+
+                  <OrientationManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
+                </div>
+              )}
 
               <div className="form-info-note">
                 <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>
