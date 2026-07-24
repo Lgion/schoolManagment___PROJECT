@@ -104,6 +104,9 @@ export default function ClassesPage({ children }) {
       <Link href="/stages-3eme" className="ecole-admin__nav-link-item">
         <span className="icon">💼</span> Stages 3ème
       </Link>
+      <Link href="/dispositifs-inclusifs" className="ecole-admin__nav-link-item">
+        <span className="icon">🤝</span> Dispositifs Inclusifs
+      </Link>
     </div>
 
     {classes ?

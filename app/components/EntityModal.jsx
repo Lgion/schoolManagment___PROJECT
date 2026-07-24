@@ -10,6 +10,7 @@ import SocleCommunManager from './pedagogie/SocleCommunManager';
 import DnbSimulator from './pedagogie/DnbSimulator';
 import OrientationManager from './pedagogie/OrientationManager';
 import Stage3emeManager from './pedagogie/Stage3emeManager';
+import InclusiveDeviceManager from './pedagogie/InclusiveDeviceManager';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -1302,6 +1303,16 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   <Stage3emeManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
                 </div>
               )}
+
+              {/* 10. DISPOSITIFS INCLUSIFS (PAP, PPRE, PAI, PPS) */}
+              <div className="modal__fieldGroup modal__fieldGroup--inclusive">
+                <h3 className="modal__sectionTitle">🎯 Dispositifs Inclusifs & Accompagnement (PAP, PPRE, PAI, PPS)</h3>
+                <p className="modal__sectionDescription">
+                  Déclarez et gérez les aménagements scolaires pour les élèves à besoins éducatifs particuliers (troubles DYS, PAI santé, remédiation PPRE, accompagnement AESH/MDPH).
+                </p>
+
+                <InclusiveDeviceManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
+              </div>
 
               <div className="form-info-note">
                 <p><strong>ℹ️ Information :</strong> Les professeurs et élèves seront assignés à cette classe lors de leur création/modification individuelle.</p>

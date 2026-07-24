@@ -24,6 +24,7 @@ import { useUserRole } from '../../../stores/useUserRole';
 import DetailPortal from "../../components/DetailPortal";
 import StudentCarnetPanel from '../../components/viescolaire/StudentCarnetPanel';
 import StudentIncidentsPanel from '../../components/viescolaire/StudentIncidentsPanel';
+import StudentInclusiveWidget from '../../components/pedagogie/StudentInclusiveWidget';
 
 export default function ElevePage() {
   const { id } = useParams();
@@ -171,6 +172,8 @@ export default function ElevePage() {
         <div className="ecole-admin__tab-content">
           {activeTab === 'overview' && (
             <div className="ecole-admin__tab-pane active fade-in">
+              <StudentInclusiveWidget studentId={eleve._id} schoolYear={schoolYear} />
+
               <div className="person-detail__gmap">
                 <u>Domicilié (coordonées gmap): </u>
                 <button className="person-detail__gmap-btn" onClick={() => setGmapOpen(o => !o)}>
