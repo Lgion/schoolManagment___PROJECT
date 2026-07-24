@@ -101,6 +101,9 @@ export default function ClassesPage({ children }) {
       <Link href="/orientation" className="ecole-admin__nav-link-item">
         <span className="icon">🧭</span> Orientation 3ème
       </Link>
+      <Link href="/stages-3eme" className="ecole-admin__nav-link-item">
+        <span className="icon">💼</span> Stages 3ème
+      </Link>
     </div>
 
     {classes ?

@@ -23,6 +23,7 @@ import Article from '../../_/models/ai/Article';
 import Note from '../../_/models/ai/Note';
 import Incident from '../../_/models/ai/Incident';
 import CarnetEntry from '../../_/models/ai/CarnetEntry';
+import Stage3eme from '../../_/models/ai/Stage3eme';
 
 import { seedSubjects, generateStudentNotes, generateReportCardsForYear, getCoefficientsForNiveau, convertNotesToCompositions } from './lib/academicSeeder';
 import { generateAttendanceForClassYear } from './lib/attendanceSeeder';
@@ -33,6 +34,7 @@ import { generateFinancialsForClassYear } from './lib/financialSeeder';
 import { generateEvents } from './lib/eventSeeder';
 import { generateBlogAndPosts } from './lib/blogSeeder';
 import { generateGroupsAndMessages } from './lib/groupSeeder';
+import { generateStagesForClassYear } from './lib/stageSeeder';
 
 const getRandomDateInYear = (yearStr) => {
   const startYear = parseInt(yearStr.split('-')[0]);
@@ -58,7 +60,7 @@ export async function POST(request) {
       // Ignorer si les index n'existaient pas
     }
 
-    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction, PointLabel, Subject, Event, Article, Note, Incident, CarnetEntry];
+    const models = [Institution, SchoolSettings, Classe, Eleve, Teacher, Post, Group, GroupMessage, Schedule, ReportCard, AttendanceRecord, AttendanceEntry, PointTransaction, PointLabel, Subject, Event, Article, Note, Incident, CarnetEntry, Stage3eme];
     for (const model of models) {
       if (model) await model.deleteMany({ schoolKey: { $in: schoolKeys } });
     }
@@ -233,8 +235,9 @@ export async function POST(request) {
       });
       await currentClasse.save();
 
-      // --- NOUVEAUX SEEDERS (Finances, Evènements, Blog, Groupes) ---
+      // --- NOUVEAUX SEEDERS (Finances, Stages, Evènements, Blog, Groupes) ---
       await generateFinancialsForClassYear(currentClasse, activeStudentsDocs, year, getRandomDateInYear);
+      await generateStagesForClassYear(currentClasse, activeStudentsDocs, year, schoolKey, teachersList);
       for (const eleve of activeStudentsDocs) {
         eleve.markModified('school_history');
         eleve.markModified('bolobi_class_history_$_ref_µ_classes');

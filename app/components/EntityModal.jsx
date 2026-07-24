@@ -9,6 +9,7 @@ import ConseilClasseManager from './pedagogie/ConseilClasseManager';
 import SocleCommunManager from './pedagogie/SocleCommunManager';
 import DnbSimulator from './pedagogie/DnbSimulator';
 import OrientationManager from './pedagogie/OrientationManager';
+import Stage3emeManager from './pedagogie/Stage3emeManager';
 
 // type: 'eleve' | 'enseignant' | 'classe'
 
@@ -1287,6 +1288,18 @@ export default function EntityModal({ type, entity, onClose, classes = [] }) {
                   </p>
 
                   <OrientationManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
+                </div>
+              )}
+
+              {/* 9. STAGES D'OBSERVATION 3ÈME */}
+              {form.niveau === '3ème' && (
+                <div className="modal__fieldGroup modal__fieldGroup--stage">
+                  <h3 className="modal__sectionTitle">💼 Gestion des Stages d'Observation & Évaluation</h3>
+                  <p className="modal__sectionDescription">
+                    Suivez les conventions en entreprise, la visite de l'enseignant référent et saisissez les notes du stage (/20).
+                  </p>
+
+                  <Stage3emeManager classIdProp={entity?._id} schoolYearProp={form.annee || '2023-2024'} />
                 </div>
               )}
 
