@@ -6,7 +6,7 @@ import OrientationManager from '../components/pedagogie/OrientationManager';
 
 export default function OrientationPage() {
   return (
-    <PermissionGate role="admin">
+    <PermissionGate roles={['admin', 'prof', 'parent', 'eleve']}>
       <div style={{ padding: '2rem', maxWidth: '1280px', margin: '0 auto' }}>
         <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>

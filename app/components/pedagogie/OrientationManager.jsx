@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
+import { useUserRole } from '../../../stores/useUserRole';
 import './OrientationManager.scss';
 
 export const VOIES_ORIENTATION = [
@@ -22,6 +23,9 @@ export const AVIS_CONSEIL = [
 
 export default function OrientationManager({ classIdProp = null, schoolYearProp = '2023-2024' }) {
   const ctx = useContext(AiAdminContext);
+  const { userRole, userData } = useUserRole();
+  const isFamily = ['parent', 'eleve'].includes(userRole);
+
   const classes = ctx?.classes || [];
   const elevesAll = ctx?.eleves || [];
 
@@ -47,12 +51,50 @@ export default function OrientationManager({ classIdProp = null, schoolYearProp 
     if (classIdProp) setSelectedClassId(classIdProp);
   }, [classIdProp]);
 
+  // Si famille, trouver l'enfant rattaché
+  const familyChildIds = useMemo(() => {
+    if (!isFamily || !userData) return [];
+    if (userRole === 'eleve' && userData.roleData?.eleveRef) {
+      return [String(userData.roleData.eleveRef._id || userData.roleData.eleveRef)];
+    }
+    if (userRole === 'parent' && Array.isArray(userData.roleData?.childrenRefs)) {
+      return userData.roleData.childrenRefs.map(c => String(c._id || c));
+    }
+    return [];
+  }, [isFamily, userData, userRole]);
+
+  // Auto-sélection de la classe pour le mode famille
+  useEffect(() => {
+    if (!isFamily || elevesAll.length === 0) return;
+
+    if (familyChildIds.length > 0) {
+      const child = elevesAll.find(e => familyChildIds.includes(String(e._id)));
+      if (child && child.current_classe) {
+        setSelectedClassId(String(child.current_classe._id || child.current_classe));
+        return;
+      }
+    }
+
+    // Fallback Démo : trouver la première classe de 3ème
+    const classe3eme = classes.find(c => c.niveau?.includes('3'));
+    if (classe3eme) {
+      setSelectedClassId(String(classe3eme._id));
+    }
+  }, [isFamily, elevesAll, familyChildIds, classes]);
+
   const currentClasse = classes.find(c => String(c._id) === String(selectedClassId));
-  const elevesClasse = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+  const elevesClasse = useMemo(() => {
+    const classStudents = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+    if (isFamily && familyChildIds.length > 0) {
+      const familyFiltered = classStudents.filter(e => familyChildIds.includes(String(e._id)));
+      return familyFiltered.length > 0 ? familyFiltered : classStudents;
+    }
+    return classStudents;
+  }, [elevesAll, selectedClassId, isFamily, familyChildIds]);
 
   // Sélection auto du 1er élève
   useEffect(() => {
-    if (elevesClasse.length > 0 && !activeStudentId) {
+    if (elevesClasse.length > 0 && (!activeStudentId || !elevesClasse.some(e => String(e._id) === String(activeStudentId)))) {
       setActiveStudentId(elevesClasse[0]._id);
     }
   }, [elevesClasse, activeStudentId]);
@@ -335,101 +377,146 @@ export default function OrientationManager({ classIdProp = null, schoolYearProp 
                 {/* Bloc 2: Avis du Conseil de Classe & Professeur Principal */}
                 <div className="orientation-card__block">
                   <h4>🏛️ 2. Avis du Conseil de Classe & Professeur Principal</h4>
-                  <div className="orientation-card__pills">
-                    {AVIS_CONSEIL.map(avis => {
-                      const isSelected = tempAvis.avis === avis.id;
-                      return (
-                        <button
-                          key={avis.id}
-                          type="button"
-                          className={`orientation-pill ${isSelected ? 'orientation-pill--active' : ''}`}
-                          style={{ '--pill-color': avis.color }}
-                          onClick={() => setTempAvis(prev => ({ ...prev, avis: avis.id }))}
-                        >
-                          <span>{avis.icon}</span>
-                          <span>{avis.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {isFamily ? (
+                    <div>
+                      {(() => {
+                        const avisObj = AVIS_CONSEIL.find(a => a.id === tempAvis.avis) || AVIS_CONSEIL[4];
+                        return (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: '0.4rem 0' }}>
+                            <span style={{ background: avisObj.color, color: '#fff', padding: '0.3rem 0.75rem', borderRadius: '6px', fontWeight: 700, fontSize: '0.85rem' }}>
+                              {avisObj.icon} {avisObj.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#334155' }}>
+                        <b>Commentaire du Conseil :</b> {tempAvis.commentaire || <i>Aucun commentaire saisi pour le moment.</i>}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="orientation-card__pills">
+                        {AVIS_CONSEIL.map(avis => {
+                          const isSelected = tempAvis.avis === avis.id;
+                          return (
+                            <button
+                              key={avis.id}
+                              type="button"
+                              className={`orientation-pill ${isSelected ? 'orientation-pill--active' : ''}`}
+                              style={{ '--pill-color': avis.color }}
+                              onClick={() => setTempAvis(prev => ({ ...prev, avis: avis.id }))}
+                            >
+                              <span>{avis.icon}</span>
+                              <span>{avis.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                  <div className="orientation-card__field" style={{ marginTop: '0.75rem' }}>
-                    <label>Commentaire du Professeur Principal sur l'orientation :</label>
-                    <textarea
-                      rows="2"
-                      placeholder="Commentaires du conseil sur la faisabilité des vœux et préconisations..."
-                      value={tempAvis.commentaire}
-                      onChange={e => setTempAvis(prev => ({ ...prev, commentaire: e.target.value }))}
-                    />
-                  </div>
+                      <div className="orientation-card__field" style={{ marginTop: '0.75rem' }}>
+                        <label>Commentaire du Professeur Principal sur l'orientation :</label>
+                        <textarea
+                          rows="2"
+                          placeholder="Commentaires du conseil sur la faisabilité des vœux et préconisations..."
+                          value={tempAvis.commentaire}
+                          onChange={e => setTempAvis(prev => ({ ...prev, commentaire: e.target.value }))}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Bloc 3: Entretien d'Orientation avec la famille */}
                 <div className="orientation-card__block">
                   <h4>💬 3. Entretien Individuel d'Orientation</h4>
-                  <div className="orientation-card__flex-row">
-                    <label className="orientation-checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={tempEntretien.realise}
-                        onChange={e => setTempEntretien(prev => ({ ...prev, realise: e.target.checked }))}
-                      />
-                      <span>Entretien d'orientation réalisé avec l'élève & la famille</span>
-                    </label>
-
-                    {tempEntretien.realise && (
-                      <div className="orientation-card__field">
-                        <label>Date de l'entretien :</label>
-                        <input
-                          type="date"
-                          value={tempEntretien.dateEntretien}
-                          onChange={e => setTempEntretien(prev => ({ ...prev, dateEntretien: e.target.value }))}
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {tempEntretien.realise && (
-                    <div className="orientation-card__field" style={{ marginTop: '0.75rem' }}>
-                      <label>Compte-rendu de l'entretien d'orientation :</label>
-                      <textarea
-                        rows="2"
-                        placeholder="Accords trouvés, questions en suspens, visites de lycées prévues..."
-                        value={tempEntretien.compteRendu}
-                        onChange={e => setTempEntretien(prev => ({ ...prev, compteRendu: e.target.value }))}
-                      />
+                  {isFamily ? (
+                    <div style={{ fontSize: '0.85rem', color: '#334155' }}>
+                      <p><b>Statut :</b> {tempEntretien.realise ? `✅ Réalisé le ${tempEntretien.dateEntretien || 'Date non précisée'}` : '⏳ Entretien non encore planifié ou effectué'}</p>
+                      {tempEntretien.realise && tempEntretien.compteRendu && (
+                        <p style={{ marginTop: '0.4rem' }}><b>Compte-rendu :</b> {tempEntretien.compteRendu}</p>
+                      )}
                     </div>
+                  ) : (
+                    <>
+                      <div className="orientation-card__flex-row">
+                        <label className="orientation-checkbox-label">
+                          <input
+                            type="checkbox"
+                            checked={tempEntretien.realise}
+                            onChange={e => setTempEntretien(prev => ({ ...prev, realise: e.target.checked }))}
+                          />
+                          <span>Entretien d'orientation réalisé avec l'élève & la famille</span>
+                        </label>
+
+                        {tempEntretien.realise && (
+                          <div className="orientation-card__field">
+                            <label>Date de l'entretien :</label>
+                            <input
+                              type="date"
+                              value={tempEntretien.dateEntretien}
+                              onChange={e => setTempEntretien(prev => ({ ...prev, dateEntretien: e.target.value }))}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {tempEntretien.realise && (
+                        <div className="orientation-card__field" style={{ marginTop: '0.75rem' }}>
+                          <label>Compte-rendu de l'entretien d'orientation :</label>
+                          <textarea
+                            rows="2"
+                            placeholder="Accords trouvés, questions en suspens, visites de lycées prévues..."
+                            value={tempEntretien.compteRendu}
+                            onChange={e => setTempEntretien(prev => ({ ...prev, compteRendu: e.target.value }))}
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
                 {/* Bloc 4: Décision Finale du Chef d'Établissement */}
                 <div className="orientation-card__block orientation-card__block--decision">
                   <h4>👔 4. Décision d'Orientation du Principal (Chef d'Établissement)</h4>
-                  <div className="orientation-card__flex-row">
-                    <div className="orientation-card__field" style={{ flex: 1 }}>
-                      <label>Voie d'orientation retenue :</label>
-                      <select
-                        value={tempDecision.voieRetenue}
-                        onChange={e => setTempDecision(prev => ({ ...prev, voieRetenue: e.target.value }))}
-                      >
-                        <option value="EN_ATTENTE">-- En attente de décision --</option>
-                        {VOIES_ORIENTATION.map(v => (
-                          <option key={v.id} value={v.id}>
-                            {v.icon} {v.label}
-                          </option>
-                        ))}
-                      </select>
+                  {isFamily ? (
+                    <div style={{ fontSize: '0.85rem', color: '#334155' }}>
+                      {(() => {
+                        const vObj = VOIES_ORIENTATION.find(v => v.id === tempDecision.voieRetenue);
+                        return (
+                          <div>
+                            <p><b>Voie retenue par la direction :</b> {vObj ? `${vObj.icon} ${vObj.label}` : '⏳ En attente de décision du conseil du T3'}</p>
+                            <p style={{ marginTop: '0.3rem' }}><b>Accord famille :</b> {tempDecision.accordFamille ? '✅ Accord donné' : '⏳ En attente de confirmation'}</p>
+                          </div>
+                        );
+                      })()}
                     </div>
+                  ) : (
+                    <div className="orientation-card__flex-row">
+                      <div className="orientation-card__field" style={{ flex: 1 }}>
+                        <label>Voie d'orientation retenue :</label>
+                        <select
+                          value={tempDecision.voieRetenue}
+                          onChange={e => setTempDecision(prev => ({ ...prev, voieRetenue: e.target.value }))}
+                        >
+                          <option value="EN_ATTENTE">-- En attente de décision --</option>
+                          {VOIES_ORIENTATION.map(v => (
+                            <option key={v.id} value={v.id}>
+                              {v.icon} {v.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <label className="orientation-checkbox-label" style={{ marginTop: '1.25rem' }}>
-                      <input
-                        type="checkbox"
-                        checked={tempDecision.accordFamille}
-                        onChange={e => setTempDecision(prev => ({ ...prev, accordFamille: e.target.checked }))}
-                      />
-                      <span>Accord de la famille obtenu</span>
-                    </label>
-                  </div>
+                      <label className="orientation-checkbox-label" style={{ marginTop: '1.25rem' }}>
+                        <input
+                          type="checkbox"
+                          checked={tempDecision.accordFamille}
+                          onChange={e => setTempDecision(prev => ({ ...prev, accordFamille: e.target.checked }))}
+                        />
+                        <span>Accord de la famille obtenu</span>
+                      </label>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action de sauvegarde */}
@@ -440,16 +527,17 @@ export default function OrientationManager({ classIdProp = null, schoolYearProp 
                     disabled={saving}
                     onClick={handleSaveOrientation}
                   >
-                    {saving ? 'Enregistrement...' : `✅ Enregistrer le Dossier d'Orientation de ${activeStudent.nom}`}
+                    {saving ? 'Enregistrement...' : isFamily ? `✅ Valider et Transmettre les Vœux de ${activeStudent.nom}` : `✅ Enregistrer le Dossier d'Orientation de ${activeStudent.nom}`}
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Section 3: Tableau récapitulatif de la classe */}
-          <div className="orientation-manager__section">
-            <h4 className="orientation-manager__section-title">📊 Synthèse de l'Orientation de la Classe ({elevesClasse.length} élèves)</h4>
+          {/* Section 3: Tableau récapitulatif de la classe (masqué pour les familles) */}
+          {!isFamily && (
+            <div className="orientation-manager__section">
+              <h4 className="orientation-manager__section-title">📊 Synthèse de l'Orientation de la Classe ({elevesClasse.length} élèves)</h4>
             <div className="orientation-table-wrapper">
               <table className="orientation-table">
                 <thead>
@@ -511,6 +599,7 @@ export default function OrientationManager({ classIdProp = null, schoolYearProp 
               </table>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>

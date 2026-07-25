@@ -10,8 +10,8 @@ import SchoolSettings from '../../_/models/ai/SchoolSettings';
 export async function GET(request) {
   try {
     // 1. Authentification & Rôle UNIFIÉS (1 seule vérification)
-    const { success, userId, isAdmin, isTeacher } = await getAuthAndRole(request);
-    if (!success || (!isAdmin && !isTeacher)) {
+    const { success, userId, role, isAdmin, isTeacher } = await getAuthAndRole(request);
+    if (!success) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 

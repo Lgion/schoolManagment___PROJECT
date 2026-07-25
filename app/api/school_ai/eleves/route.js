@@ -13,10 +13,6 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 401 });
     }
 
-    if (!isAdmin && !isTeacher) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
-
     await dbConnect();
 
     const { cookies } = await import('next/headers');
@@ -31,17 +27,19 @@ export async function GET(request) {
       return NextResponse.json(eleves);
     }
 
-    // Teacher flow: filter students by assigned classes
-    const user = await User.findOne({ clerkId: userId }).populate('roleData.teacherRef');
-    if (!user || user.role !== 'prof' || !user.roleData?.teacherRef) {
-      return NextResponse.json({ error: 'Profil enseignant non trouvé' }, { status: 404 });
+    if (isTeacher) {
+      // Teacher flow: filter students by assigned classes
+      const user = await User.findOne({ clerkId: userId }).populate('roleData.teacherRef');
+      if (user && user.role === 'prof' && user.roleData?.teacherRef) {
+        const teacherClasses = user.roleData.teacherRef.current_classes;
+        const eleves = await Eleve.find({ schoolKey, current_classe: { $in: teacherClasses } })
+          .select('-scolarity_fees_$_checkbox');
+        return NextResponse.json(eleves);
+      }
     }
 
-    const teacherClasses = user.roleData.teacherRef.current_classes;
-
-    const eleves = await Eleve.find({ schoolKey, current_classe: { $in: teacherClasses } })
-      .select('-scolarity_fees_$_checkbox');
-
+    // Family (Parent / Élève) & Sandbox flow: return school students
+    const eleves = await Eleve.find({ schoolKey }).select('-scolarity_fees_$_checkbox');
     return NextResponse.json(eleves);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des élèves', details: error.message }, { status: 500 });

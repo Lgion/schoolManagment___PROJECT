@@ -2,13 +2,50 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useUserRole } from '../../stores/useUserRole';
+import { fetchUserWithRefs, studentFullName } from '../components/family/familyApi';
+import StudentAttendanceWidget from '../components/attendance/StudentAttendanceWidget';
+import StudentCarnetPanel from '../components/viescolaire/StudentCarnetPanel';
+import StudentIncidentsPanel from '../components/viescolaire/StudentIncidentsPanel';
 import './VieScolaireDashboard.scss';
 
 export default function VieScolaireDashboardPage() {
+  const { userRole, clerkUser, userData } = useUserRole();
   const [data, setData] = useState(null);
+  const [familyData, setFamilyData] = useState(null);
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('absences');
+
+  useEffect(() => {
+    let alive = true;
+    if (userRole === 'parent' || userRole === 'eleve') {
+      (async () => {
+        try {
+          setLoading(true);
+          const u = await fetchUserWithRefs(clerkUser?.id || 'sandbox_user');
+          if (!alive) return;
+          setFamilyData(u);
+          const children = u?.roleData?.childrenRefs || [];
+          const eleve = u?.roleData?.eleveRef || null;
+
+          if (userRole === 'parent' && children.length > 0) {
+            setSelectedStudentId(children[0]._id);
+          } else if (userRole === 'eleve' && eleve?._id) {
+            setSelectedStudentId(eleve._id);
+          }
+        } catch (err) {
+          if (alive) setError(err.message);
+        } finally {
+          if (alive) setLoading(false);
+        }
+      })();
+    } else {
+      fetchDashboard();
+    }
+    return () => { alive = false; };
+  }, [userRole, clerkUser, userData]);
 
   const fetchDashboard = async () => {
     try {
@@ -23,10 +60,6 @@ export default function VieScolaireDashboardPage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
 
   const handleValidateJustification = async (entryId, action) => {
     try {
@@ -45,6 +78,72 @@ export default function VieScolaireDashboardPage() {
 
   if (loading) return <div className="viescolaire-dashboard__loading">Chargement du tableau de bord Vie Scolaire...</div>;
   if (error) return <div className="viescolaire-dashboard__error">{error}</div>;
+
+  // Vue dédiée pour Parent et Élève
+  if (userRole === 'parent' || userRole === 'eleve') {
+    const children = familyData?.roleData?.childrenRefs || [];
+    const activeStudentId = selectedStudentId || (children[0]?._id);
+
+    return (
+      <div className="viescolaire-dashboard" style={{ padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+        <header className="viescolaire-dashboard__header" style={{ marginBottom: '1.5rem' }}>
+          <div>
+            <h1 className="viescolaire-dashboard__title">🏛️ Espace Vie Scolaire {userRole === 'parent' ? 'Famille' : 'Élève'}</h1>
+            <p className="viescolaire-dashboard__subtitle">
+              Justificatifs d'absence, mots de carnet et suivi disciplinaire.
+            </p>
+          </div>
+        </header>
+
+        {userRole === 'parent' && children.length > 1 && (
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            {children.map((child) => (
+              <button
+                key={child._id}
+                type="button"
+                onClick={() => setSelectedStudentId(child._id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: String(activeStudentId) === String(child._id) ? '2px solid #2563eb' : '1px solid #cbd5e1',
+                  background: String(activeStudentId) === String(child._id) ? '#eff6ff' : 'white',
+                  color: String(activeStudentId) === String(child._id) ? '#1e40af' : '#475569',
+                  fontWeight: String(activeStudentId) === String(child._id) ? '700' : '500',
+                  cursor: 'pointer',
+                }}
+              >
+                🧒 {studentFullName(child)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!activeStudentId ? (
+          <div className="viescolaire-empty">Aucun élève rattaché à ce compte.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* 1. Assiduité & Soumission de justificatif */}
+            <section style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 1rem 0', color: '#0f172a' }}>
+                ⏱️ Assiduité & Transmettre un Justificatif
+              </h2>
+              <StudentAttendanceWidget studentId={activeStudentId} userRole={userRole} />
+            </section>
+
+            {/* 2. Carnet de correspondance numérique & Signatures */}
+            <section style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <StudentCarnetPanel studentId={activeStudentId} userRole={userRole} />
+            </section>
+
+            {/* 3. Incidents & Sanctions */}
+            <section style={{ background: 'white', padding: '1.25rem', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <StudentIncidentsPanel studentId={activeStudentId} userRole={userRole} />
+            </section>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const { stats, recentIncidents, pendingCarnets, pendingAttendance } = data || {};
 

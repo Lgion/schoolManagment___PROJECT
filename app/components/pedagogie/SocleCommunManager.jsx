@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
+import { useUserRole } from '../../../stores/useUserRole';
 import './SocleCommunManager.scss';
 
 export const DOMAINES_SOCLE = [
@@ -24,6 +25,9 @@ export const NIVEAUX_MAITRISE = [
 
 export default function SocleCommunManager({ classIdProp = null, schoolYearProp = '2023-2024' }) {
   const ctx = useContext(AiAdminContext);
+  const { userRole, userData } = useUserRole();
+  const isFamily = ['parent', 'eleve'].includes(userRole);
+
   const classes = ctx?.classes || [];
   const elevesAll = ctx?.eleves || [];
 
@@ -46,12 +50,46 @@ export default function SocleCommunManager({ classIdProp = null, schoolYearProp 
     if (classIdProp) setSelectedClassId(classIdProp);
   }, [classIdProp]);
 
+  // Enfants rattachés à la famille
+  const familyChildIds = useMemo(() => {
+    if (!isFamily || !userData) return [];
+    if (userRole === 'eleve' && userData.roleData?.eleveRef) {
+      return [String(userData.roleData.eleveRef._id || userData.roleData.eleveRef)];
+    }
+    if (userRole === 'parent' && Array.isArray(userData.roleData?.childrenRefs)) {
+      return userData.roleData.childrenRefs.map(c => String(c._id || c));
+    }
+    return [];
+  }, [isFamily, userData, userRole]);
+
+  // Auto-sélection de la classe pour le mode famille
+  useEffect(() => {
+    if (!isFamily || classIdProp || elevesAll.length === 0) return;
+    if (familyChildIds.length > 0) {
+      const child = elevesAll.find(e => familyChildIds.includes(String(e._id)));
+      if (child?.current_classe) {
+        setSelectedClassId(String(child.current_classe._id || child.current_classe));
+        return;
+      }
+    }
+    // Fallback : première classe de 3ème
+    const classe3 = classes.find(c => c.niveau?.includes('3'));
+    if (classe3) setSelectedClassId(String(classe3._id));
+  }, [isFamily, elevesAll, familyChildIds, classes, classIdProp]);
+
   const currentClasse = classes.find(c => String(c._id) === String(selectedClassId));
-  const elevesClasse = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+  const elevesClasse = useMemo(() => {
+    const all = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+    if (isFamily && familyChildIds.length > 0) {
+      const filtered = all.filter(e => familyChildIds.includes(String(e._id)));
+      return filtered.length > 0 ? filtered : all;
+    }
+    return all;
+  }, [elevesAll, selectedClassId, isFamily, familyChildIds]);
 
   // Auto-sélection du 1er élève
   useEffect(() => {
-    if (elevesClasse.length > 0 && !activeStudentId) {
+    if (elevesClasse.length > 0 && (!activeStudentId || !elevesClasse.some(e => String(e._id) === String(activeStudentId)))) {
       setActiveStudentId(elevesClasse[0]._id);
     }
   }, [elevesClasse, activeStudentId]);

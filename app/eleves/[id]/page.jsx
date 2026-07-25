@@ -342,7 +342,7 @@ export default function ElevePage() {
                 </div>
               </PermissionGate>
 
-              <PermissionGate role="admin">
+              <PermissionGate roles={['admin', 'parent']}>
                 {(() => {
                   const allFees = eleve.scolarity_fees_$_checkbox || {};
                   const totals = {};

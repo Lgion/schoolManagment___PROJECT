@@ -523,6 +523,7 @@ export const AdminContextProvider = ({ children }) => {
     homepage, homepageLoaded, saveHomepage,
     resolveTargetAmount,
     uploadFile,
+    fetchBootstrap,
     selected, setSelected, showModal, setShowModal, editType, setEditType
   }), [
     eleves, fetchEleves, saveEleve, deleteEleve,
@@ -535,6 +536,7 @@ export const AdminContextProvider = ({ children }) => {
     homepage, homepageLoaded, saveHomepage,
     resolveTargetAmount,
     uploadFile,
+    fetchBootstrap,
     selected, showModal, editType
   ]);
 

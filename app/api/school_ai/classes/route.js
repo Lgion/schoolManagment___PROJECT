@@ -20,11 +20,6 @@ export async function GET(request) {
     console.log(`[DEBUG CLASSES] Requête reçue. UserID: ${userId}, isAdmin: ${isAdmin}, isTeacher: ${isTeacher}`);
     console.log(`[DEBUG CLASSES] schoolKey: ${schoolKey}`);
 
-    if (!isAdmin && !isTeacher) {
-      console.log(`[DEBUG CLASSES] ❌ REJETÉ: Ni Admin ni Teacher.`);
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
-
     await dbConnect();
 
     if (isAdmin) {
@@ -33,19 +28,22 @@ export async function GET(request) {
       return NextResponse.json(classes);
     }
 
-    // Teacher flow: filter classes by assigned teacher
-    const user = await User.findOne({ clerkId: userId }).populate('roleData.teacherRef');
-    if (!user || user.role !== 'prof' || !user.roleData?.teacherRef) {
-      return NextResponse.json({ error: 'Profil enseignant non trouvé' }, { status: 404 });
+    if (isTeacher) {
+      // Teacher flow: filter classes by assigned teacher
+      const user = await User.findOne({ clerkId: userId }).populate('roleData.teacherRef');
+      if (user && user.role === 'prof' && user.roleData?.teacherRef) {
+        const teacherId = user.roleData.teacherRef._id;
+        const classes = await Classe.find({ schoolKey, professeur: teacherId })
+          .select('-compositions -moyenne_trimetriel -coefficients');
+        console.log(`[DEBUG CLASSES] Classes trouvées pour Enseignant: ${classes.length}`);
+        return NextResponse.json(classes);
+      }
     }
 
-    const teacherId = user.roleData.teacherRef._id;
-
-    // Filter classes assigned to the teacher and omit financial/administrative data
-    const classes = await Classe.find({ schoolKey, professeur: teacherId })
+    // Family (Parent / Élève) & Fallback flow: return school classes for display
+    const classes = await Classe.find({ schoolKey })
       .select('-compositions -moyenne_trimetriel -coefficients');
-
-    console.log(`[DEBUG CLASSES] Classes trouvées pour Enseignant: ${classes.length}`);
+    console.log(`[DEBUG CLASSES] Classes trouvées pour Famille/Autre: ${classes.length}`);
     return NextResponse.json(classes);
   } catch (error) {
     return NextResponse.json({ error: 'Erreur lors de la récupération des classes', details: error.message }, { status: 500 });

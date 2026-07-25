@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import { AiAdminContext } from '../../../stores/ai_adminContext';
+import { useUserRole } from '../../../stores/useUserRole';
 import './InclusiveDeviceManager.scss';
 
 export const TYPES_DISPOSITIFS = [
@@ -25,6 +26,9 @@ export const AMENAGEMENTS_SUGGESTIONS = [
 
 export default function InclusiveDeviceManager({ classIdProp = null, schoolYearProp = '2023-2024' }) {
   const ctx = useContext(AiAdminContext);
+  const { userRole, userData } = useUserRole();
+  const isFamily = ['parent', 'eleve'].includes(userRole);
+
   const classes = ctx?.classes || [];
   const elevesAll = ctx?.eleves || [];
 
@@ -45,11 +49,48 @@ export default function InclusiveDeviceManager({ classIdProp = null, schoolYearP
     if (classIdProp) setSelectedClassId(classIdProp);
   }, [classIdProp]);
 
-  const elevesClasse = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+  // Si famille, trouver l'enfant rattaché
+  const familyChildIds = useMemo(() => {
+    if (!isFamily || !userData) return [];
+    if (userRole === 'eleve' && userData.roleData?.eleveRef) {
+      return [String(userData.roleData.eleveRef._id || userData.roleData.eleveRef)];
+    }
+    if (userRole === 'parent' && Array.isArray(userData.roleData?.childrenRefs)) {
+      return userData.roleData.childrenRefs.map(c => String(c._id || c));
+    }
+    return [];
+  }, [isFamily, userData, userRole]);
+
+  // Auto-sélection de la classe pour le mode famille
+  useEffect(() => {
+    if (!isFamily || elevesAll.length === 0) return;
+
+    if (familyChildIds.length > 0) {
+      const child = elevesAll.find(e => familyChildIds.includes(String(e._id)));
+      if (child && child.current_classe) {
+        setSelectedClassId(String(child.current_classe._id || child.current_classe));
+        return;
+      }
+    }
+
+    // Fallback Démo : cibler la 1ère classe avec des élèves
+    if (classes.length > 0) {
+      setSelectedClassId(String(classes[0]._id));
+    }
+  }, [isFamily, elevesAll, familyChildIds, classes]);
+
+  const elevesClasse = useMemo(() => {
+    const classStudents = elevesAll.filter(e => String(e.current_classe) === String(selectedClassId));
+    if (isFamily && familyChildIds.length > 0) {
+      const familyFiltered = classStudents.filter(e => familyChildIds.includes(String(e._id)));
+      return familyFiltered.length > 0 ? familyFiltered : classStudents;
+    }
+    return classStudents;
+  }, [elevesAll, selectedClassId, isFamily, familyChildIds]);
 
   // Sélection auto du 1er élève
   useEffect(() => {
-    if (elevesClasse.length > 0 && !activeStudentId) {
+    if (elevesClasse.length > 0 && (!activeStudentId || !elevesClasse.some(e => String(e._id) === String(activeStudentId)))) {
       setActiveStudentId(elevesClasse[0]._id);
     }
   }, [elevesClasse, activeStudentId]);
@@ -468,39 +509,44 @@ export default function InclusiveDeviceManager({ classIdProp = null, schoolYearP
                             </div>
                           </div>
 
-                          <div className="inclusive-card__field" style={{ marginTop: '0.85rem' }}>
-                            <label>Notes & observations confidentielles (Réservé à l'équipe pédagogique) :</label>
-                            <textarea
-                              rows="2"
-                              placeholder="Bilan des synthèses, consignes particulières, dates d'ESS..."
-                              value={device.notesConfidentielles}
-                              onChange={e => handleDeviceChange(idx, 'notesConfidentielles', e.target.value)}
-                            />
-                          </div>
+                          {!isFamily && (
+                            <div className="inclusive-card__field" style={{ marginTop: '0.85rem' }}>
+                              <label>Notes & observations confidentielles (Réservé à l'équipe pédagogique) :</label>
+                              <textarea
+                                rows="2"
+                                placeholder="Bilan des synthèses, consignes particulières, dates d'ESS..."
+                                value={device.notesConfidentielles}
+                                onChange={e => handleDeviceChange(idx, 'notesConfidentielles', e.target.value)}
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
                   })
                 )}
 
-                {/* Action de sauvegarde */}
-                <div className="inclusive-card__actions">
-                  <button
-                    type="button"
-                    className="inclusive-card__save-btn"
-                    disabled={saving}
-                    onClick={handleSaveDevices}
-                  >
-                    {saving ? 'Enregistrement...' : `💾 Enregistrer les Dispositifs Inclusifs de ${activeStudent.nom}`}
-                  </button>
-                </div>
+                {/* Action de sauvegarde (masquée en mode famille purement consultatif) */}
+                {!isFamily && (
+                  <div className="inclusive-card__actions">
+                    <button
+                      type="button"
+                      className="inclusive-card__save-btn"
+                      disabled={saving}
+                      onClick={handleSaveDevices}
+                    >
+                      {saving ? 'Enregistrement...' : `💾 Enregistrer les Dispositifs Inclusifs de ${activeStudent.nom}`}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Section 3: Tableau Récapitulatif de Classe */}
-          <div className="inclusive-manager__section">
-            <h4 className="inclusive-manager__section-title">📊 Registre des Aménagements Inclusifs de la Classe</h4>
+          {/* Section 3: Tableau Récapitulatif de Classe (Masqué pour les familles) */}
+          {!isFamily && (
+            <div className="inclusive-manager__section">
+              <h4 className="inclusive-manager__section-title">📊 Registre des Aménagements Inclusifs de la Classe</h4>
             <div className="inclusive-table-wrapper">
               <table className="inclusive-table">
                 <thead>
@@ -579,6 +625,7 @@ export default function InclusiveDeviceManager({ classIdProp = null, schoolYearP
               </table>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>

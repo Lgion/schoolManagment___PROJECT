@@ -22,14 +22,25 @@ export async function GET(req) {
     }
 
     if (classeId) {
-      const eleves = await Eleve.find({ current_classe: classeId }, '_id');
+      const eleves = await Eleve.find({ current_classe: classeId });
       const eleveIds = eleves.map(e => e._id);
 
-      const list = await Orientation3eme.find({
+      let list = await Orientation3eme.find({
         schoolKey,
         annee,
         eleveId: { $in: eleveIds }
       });
+
+      // Auto-seeding si vide pour l'environnement démo
+      if (list.length === 0 && eleves.length > 0 && ['ecole_st_martin', 'demo_master'].includes(schoolKey)) {
+        const { generateOrientationForClassYear } = await import('../../admin/reset-demo/lib/orientationSeeder');
+        await generateOrientationForClassYear({ niveau: '3ème' }, eleves, annee, schoolKey);
+        list = await Orientation3eme.find({
+          schoolKey,
+          annee,
+          eleveId: { $in: eleveIds }
+        });
+      }
 
       return NextResponse.json({ success: true, data: list });
     }

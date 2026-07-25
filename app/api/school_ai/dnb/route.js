@@ -5,7 +5,7 @@ import SocleEvaluation from '../../_/models/ai/SocleEvaluation';
 import Eleve from '../../_/models/ai/Eleve';
 
 // Helper pour calculer la mention selon le score total sur 800
-export function getMentionDnb(scoreTotal) {
+function getMentionDnb(scoreTotal) {
   if (scoreTotal >= 640) return 'TRES_BIEN';
   if (scoreTotal >= 560) return 'BIEN';
   if (scoreTotal >= 480) return 'ASSEZ_BIEN';
