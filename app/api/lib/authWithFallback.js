@@ -14,6 +14,31 @@ import { NextResponse } from 'next/server'
  */
 export async function authWithFallback(request, context = 'API') {
   try {
+    if (process.env.NEXT_PUBLIC_MODE === 'test') {
+      let mockRole = null;
+      try {
+        const { cookies, headers } = await import('next/headers');
+        const cookieStore = await cookies();
+        mockRole = cookieStore.get('mock_role')?.value;
+        if (!mockRole) {
+          const headersList = await headers();
+          const authHeader = headersList.get('authorization');
+          if (authHeader && authHeader.startsWith('Bearer mock-token-')) {
+            mockRole = authHeader.replace('Bearer mock-token-', '');
+          }
+        }
+      } catch (e) {
+        // Fallback if called outside Next.js request context
+      }
+      if (mockRole) {
+        console.log(`✅ [TEST MODE] Authentification via mockRole = ${mockRole}`);
+        return {
+          success: true,
+          userId: `mock_user_${mockRole}`,
+          response: null
+        };
+      }
+    }
     // Récupérer les headers d'authentification Clerk
     const authStatus = request.headers.get('x-clerk-auth-status')
     const authToken = request.headers.get('x-clerk-auth-token')
@@ -25,12 +50,12 @@ export async function authWithFallback(request, context = 'API') {
     let userId = null
     
     // ÉTAPE 1: Essayer d'abord la méthode standard auth()
+    // auth() est asynchrone dans l'App Router : sans await, userId était toujours undefined
     try {
-      const authResult = auth()
+      const authResult = await auth()
       userId = authResult.userId
-      console.log('  - userId (auth()):', userId)
     } catch (authError) {
-      console.log('  - Erreur auth():', authError.message)
+      console.error('  - Erreur auth():', authError.message)
     }
     
     // ÉTAPE 2: Si auth() échoue, essayer de décoder le token manuellement
@@ -72,6 +97,18 @@ export async function authWithFallback(request, context = 'API') {
     if (forceFalsy || !userId || authStatus !== 'signed-in') {
       // DÉTECTION DU MODE FALSY (non authentifié ou forcé côté client/serveur)
       if (forceFalsy || !userId) {
+        if (process.env.NEXT_PUBLIC_MODE === 'test' && !forceFalsy) {
+          console.log('❌ Utilisateur non authentifié (Mode test actif, pas de fallback falsy)');
+          return {
+            success: false,
+            userId: null,
+            response: NextResponse.json(
+              { error: 'Non autorisé - Utilisateur non connecté' },
+              { status: 401 }
+            )
+          };
+        }
+
         console.log('⚠️ Passage en MODE FALSY (Forcé ou non-authentifié)');
         return {
           success: true,

@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import Link from "next/link";
-import { useDetailPortal } from '../../stores/useDetailPortal';
 import './EleveCard.scss';
 import PermissionGate from "../components/PermissionGate";
 import { AiAdminContext } from '../../stores/ai_adminContext';
@@ -54,8 +53,8 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
     ? getScolarityProgress(fees, targetsList, feeDefinitions, normalizeFeeItem, resolveTargetAmount) 
     : [];
 
-  const progressColors = ["#ff8c00", "#800080", "#00ff00", "#0000ff", "#ff0000", "#00ffff", "#ffff00", "#ff00ff", "#008000", "#000080", "#800000", "#808000", "#800080", "#008080", "#000000", "#ffffff"];
-  const { openPortal } = useDetailPortal();
+  // Palette de progression : tons assez foncés pour garantir un contraste WCAG AA (>=4.5:1) avec le texte blanc
+  const progressColors = ["#1E3A8A", "#155E75", "#9A3412", "#5B21B6", "#166534", "#9F1239", "#1D4ED8", "#115E59"];
 
   // Profiling badges to show (including fallbacks for is*)
   const activeProfiling = [];
@@ -126,7 +125,6 @@ export default function EleveCard({ classe, eleve, onEdit, viewMode = 'grid' }) 
             <button
               type="button"
               className="eleve-card__editbtn"
-              style={{ position: 'absolute', top: 8, right: 8, zIndex: 2, padding: '0.3em 0.7em', fontSize: '0.95em', background: '#fff', border: '1px solid #bbb', borderRadius: '6px', cursor: 'pointer', boxShadow: '0 1px 4px #0001' }}
               onClick={e => { e.stopPropagation(); e.preventDefault(); onEdit(eleve); }}
               tabIndex={0}
             >Éditer</button>

@@ -19,54 +19,63 @@ export default function SchedulingContent() {
   const [selectedClasseId, setSelectedClasseId] = useState(null)
   const [selectedSchedule, setSelectedSchedule] = useState(null)
   const [selectedClasse, setSelectedClasse] = useState(null)
+  const [allClasses, setAllClasses] = useState([])
 
   // Récupération des paramètres URL
   useEffect(() => {
     const classeId = searchParams.get('classeId')
     const view = searchParams.get('view') || 'manager'
+    const scheduleId = searchParams.get('scheduleId')
 
     if (classeId) {
       setSelectedClasseId(classeId)
     }
 
+    if (view === 'editor' && scheduleId) {
+      fetchSchedule(scheduleId)
+    } else if (view !== 'editor') {
+      setSelectedSchedule(null)
+    }
+
     setCurrentView(view)
   }, [searchParams])
 
-  // Récupération des informations de la classe sélectionnée
+  const fetchSchedule = async (scheduleId) => {
+    try {
+      const res = await fetch(`/api/schedules/${scheduleId}`, { credentials: 'include' })
+      const data = await res.json()
+      if (data.success) {
+        setSelectedSchedule(data.data)
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'emploi du temps:', error)
+    }
+  }
+
+  // Chargement de toutes les classes au montage
   useEffect(() => {
-    if (selectedClasseId) {
-      fetchClasseInfo(selectedClasseId)
+    const loadClasses = async () => {
+      try {
+        const response = await fetch('/api/school_ai/classes', { credentials: 'include' })
+        if (response.ok) {
+          const data = await response.json()
+          setAllClasses(data)
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des classes:', error)
+      }
+    }
+    loadClasses()
+  }, [])
+
+  // Mise à jour de la classe sélectionnée
+  useEffect(() => {
+    if (selectedClasseId && allClasses.length > 0) {
+      setSelectedClasse(allClasses.find(c => c._id === selectedClasseId) || null)
     } else {
       setSelectedClasse(null)
     }
-  }, [selectedClasseId])
-
-  // Fonction pour récupérer les informations de la classe
-  const fetchClasseInfo = async (classeId) => {
-    try {
-      const response = await fetch(`/api/school_ai/classes`, {
-        credentials: 'include'
-      })
-
-      if (response.ok) {
-        const classes = await response.json()
-        const classe = classes.find(c => c._id === classeId)
-
-        if (classe) {
-          setSelectedClasse(classe)
-        } else {
-          console.warn('Classe non trouvée:', classeId)
-          setSelectedClasse(null)
-        }
-      } else {
-        console.error('Erreur lors de la récupération des classes')
-        setSelectedClasse(null)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des informations de classe:', error)
-      setSelectedClasse(null)
-    }
-  }
+  }, [selectedClasseId, allClasses])
 
   // Gestion de la navigation
   const handleViewChange = (view, options = {}) => {
@@ -82,6 +91,12 @@ export default function SchedulingContent() {
       params.set('view', view)
     } else {
       params.delete('view') // Nettoyer l'URL pour la vue par défaut
+    }
+    
+    if (options.schedule && options.schedule._id) {
+      params.set('scheduleId', options.schedule._id)
+    } else {
+      params.delete('scheduleId')
     }
 
     const newUrl = `/scheduling${params.toString() ? '?' + params.toString() : ''}`
@@ -161,6 +176,17 @@ export default function SchedulingContent() {
               <span className="scheduling__nav-btn-icon">🎨</span>
               Matières
             </button>
+            <a
+              href="/calendar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="scheduling__nav-btn"
+              style={{ textDecoration: 'none' }}
+              title="Ouvrir l'agenda de l'école dans un nouvel onglet"
+            >
+              <span className="scheduling__nav-btn-icon">📆</span>
+              Agenda école ↗
+            </a>
           </nav>
         </header>
 
@@ -173,7 +199,7 @@ export default function SchedulingContent() {
                 onViewChange={handleViewChange}
               />
               <div className="scheduling__palette-wrapper">
-                <SubjectsPalette />
+                <SubjectsPalette classeId={selectedClasseId} />
               </div>
             </>
           )}
@@ -186,7 +212,7 @@ export default function SchedulingContent() {
                 onBackToManager={() => handleViewChange('manager')}
               />
               <div className="scheduling__palette-wrapper">
-                <SubjectsPalette />
+                <SubjectsPalette classeId={selectedClasseId} />
               </div>
             </>
           )}
@@ -194,15 +220,47 @@ export default function SchedulingContent() {
           {currentView === 'editor' && selectedClasseId && (
             <ScheduleEditor
               classeId={selectedClasseId}
+              classe={selectedClasse}
               schedule={selectedSchedule}
               onSave={() => handleViewChange('manager')}
               onCancel={() => handleViewChange('manager')}
             />
           )}
 
+          {(currentView === 'editor' || currentView === 'history') && !selectedClasseId && (
+            <div className="scheduling__empty-state" style={{ padding: '60px 20px', textAlign: 'center', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ fontSize: '3rem', marginBottom: '15px' }}>🏫</span>
+              <h2 style={{ color: '#1a237e', marginBottom: '10px', fontSize: '1.5rem' }}>Sélectionnez une classe</h2>
+              <p style={{ color: '#546e7a', marginBottom: '30px', maxWidth: '400px' }}>Vous devez choisir une classe pour accéder à l'éditeur ou à l'historique.</p>
+              
+              <select 
+                value=""
+                onChange={(e) => handleClasseSelect(e.target.value)}
+                style={{
+                  padding: '12px 20px',
+                  fontSize: '1rem',
+                  borderRadius: '8px',
+                  border: '1px solid #cfd8dc',
+                  backgroundColor: '#f8f9fa',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  minWidth: '300px',
+                  color: '#263238'
+                }}
+              >
+                <option value="" disabled>-- Choisir une classe --</option>
+                {allClasses.map(c => (
+                  <option key={c._id} value={c._id}>
+                    {c.niveau} {c.alias} ({c.annee})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {currentView === 'subjects' && (
             <div className="scheduling__subjects-view">
-              <SubjectsPalette />
+              <SubjectsPalette classeId={selectedClasseId} />
             </div>
           )}
         </div>

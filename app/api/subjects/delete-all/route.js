@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../lib/dbConnect';
+import { requireAuth } from '../../lib/authWithFallback';
+import { checkRole, Roles } from '../../../../utils/roles';
 const Subject = require('../../_/models/ai/Subject');
 
 /**
@@ -9,9 +11,20 @@ const Subject = require('../../_/models/ai/Subject');
  */
 export async function DELETE(request) {
     try {
+        // Sécurité : opération destructive réservée aux administrateurs
+        const auth = await requireAuth(request, 'DELETE /api/subjects/delete-all');
+        if (auth instanceof NextResponse) return auth;
+
+        const isAdmin = await checkRole(Roles.ADMIN, request);
+        if (!isAdmin) {
+            return NextResponse.json(
+                { success: false, error: 'Accès refusé - réservé aux administrateurs' },
+                { status: 403 }
+            );
+        }
+
         await dbConnect();
 
-        // TO DO: Should ideally check for Admin role here, but relying on frontend gate for now
         // Supprimer toutes les matières
         const result = await Subject.deleteMany({});
 

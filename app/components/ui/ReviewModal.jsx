@@ -278,15 +278,26 @@ export default function ReviewModal({ file, extractedData, students = [], subjec
                                 )}
                             </div>
                             <div className="review-modal__data-list">
-                                {rows.map((row, index) => (
-                                    <ReviewCell
-                                        key={index}
-                                        index={index}
-                                        row={row}
-                                        students={students}
-                                        onChange={handleRowChange}
-                                    />
-                                ))}
+                                <table className="review-modal__data-table_students">
+                                    <thead>
+                                        <tr>
+                                            <th>Élève (IA)</th>
+                                            <th>Correspondance</th>
+                                            <th>Notes détectées</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {rows.map((row, index) => (
+                                            <ReviewCell
+                                                key={index}
+                                                index={index}
+                                                row={row}
+                                                students={students}
+                                                onChange={handleRowChange}
+                                            />
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

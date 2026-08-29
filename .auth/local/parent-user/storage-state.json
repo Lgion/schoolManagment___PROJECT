@@ -1,0 +1,29 @@
+{
+  "cookies": [
+    {
+      "name": "mock_role",
+      "value": "parent",
+      "domain": "localhost",
+      "path": "/",
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax",
+      "expires": 1783034652
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "auth_token",
+          "value": "mock-token-parent"
+        },
+        {
+          "name": "mock_role",
+          "value": "parent"
+        }
+      ]
+    }
+  ]
+}

@@ -1,21 +1,13 @@
 import { NextResponse } from 'next/server';
-import { authWithFallback } from '../lib/authWithFallback';
-import dbConnect from '../lib/dbConnect';
+import { withAuth } from '../lib/withAuth';
 const BreakTime = require('../_/models/ai/BreakTime');
 
 /**
  * GET /api/breaktimes
  * Récupère les pauses actives, optionnellement filtrées par niveau
  */
-export async function GET(request) {
+export const GET = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'GET /api/breaktimes');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-
-    await dbConnect();
-
     const { searchParams } = new URL(request.url);
     const niveau = searchParams.get('niveau');
     const jour = searchParams.get('jour');
@@ -42,21 +34,14 @@ export async function GET(request) {
       error: 'Erreur serveur lors de la récupération des pauses'
     }, { status: 500 });
   }
-}
+}, { context: 'GET /api/breaktimes' });
 
 /**
  * POST /api/breaktimes
  * Crée une nouvelle pause
  */
-export async function POST(request) {
+export const POST = withAuth(async (request) => {
   try {
-    const authResult = await authWithFallback(request, 'POST /api/breaktimes');
-    if (!authResult.success) {
-      return authResult.response;
-    }
-
-    await dbConnect();
-
     const body = await request.json();
     const {
       nom,
@@ -112,4 +97,4 @@ export async function POST(request) {
       error: 'Erreur serveur lors de la création de la pause'
     }, { status: 500 });
   }
-}
+}, { context: 'POST /api/breaktimes' });

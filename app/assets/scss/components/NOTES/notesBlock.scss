@@ -5,7 +5,7 @@
     align-items: center;
     padding: 2rem;
     text-align: center;
-    color: #666;
+    color: var(--color-text-muted);
 
     &-icon {
       font-size: 3rem;
@@ -25,9 +25,9 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
+    background: var(--color-surface-muted);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
   }
 
   &__control-group {
@@ -40,31 +40,30 @@
   &__label {
     font-weight: 600;
     font-size: 0.9rem;
-    color: #495057;
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
   &__select {
     padding: 0.5rem;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background: white;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
     font-size: 0.9rem;
-    
+
     &:focus {
       outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
     }
   }
 
   &__table-container {
     overflow-x: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    background: white;
-    border:1px solid;
-    box-shadow: 0 0 10px 1px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-small);
   }
 
   &__table {
@@ -74,41 +73,41 @@
   }
 
   &__th {
-    background: #f8f9fa;
+    background: var(--color-surface-muted);
     padding: 0.75rem;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid var(--color-border);
     white-space: nowrap;
-    border-right: 1px solid;
+    border-right: 1px solid var(--color-border);
 
     &--moyenne {
-      background: #e3f2fd;
-      color: #1976d2;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
       font-weight: 700;
     }
   }
 
   &__tr {
     &:nth-child(even) {
-      background: #f8f9fa;
+      background: var(--color-surface-muted);
     }
 
     &:hover {
-      background: #e3f2fd;
+      background: var(--color-primary-light);
     }
   }
 
   &__td {
     padding: 0.75rem;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid var(--color-border);
     vertical-align: middle;
 
     &--rang {
       text-align: center;
       font-weight: 600;
-      background: #fff3cd;
-      color: #856404;
+      background: var(--color-secondary-light);
+      color: var(--color-secondary-dark);
       width: 60px;
     }
 
@@ -126,8 +125,8 @@
     &--moyenne {
       text-align: center;
       font-weight: 700;
-      background: #e8f5e8;
-      color: #2e7d32;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
       min-width: 100px;
     }
   }

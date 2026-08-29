@@ -6,24 +6,25 @@
 /**************************VARIABLES**************************/
 /************************************************************/
 $entityModal: (
-  background: #ffffff,
+  background: var(--color-surface),
   overlayBackground: rgba(0, 0, 0, 0.6),
   borderRadius: 16px,
-  boxShadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+  boxShadow: var(--shadow-medium),
   maxWidth: 800px,
   padding: 2rem,
-  headerBackground: #1E3A8A,
-  headerColor: #ffffff,
-  inputBorder: #e1e5e9,
-  inputFocus: #1E3A8A,
+  headerBackground: var(--color-primary),
+  headerColor: var(--color-surface),
+  inputBorder: var(--color-border),
+  inputFocus: var(--color-primary),
+  // valeurs passées à color.adjust() -> doivent rester des couleurs Sass statiques
   buttonPrimary: #F97316,
   buttonDanger: #ff4757,
   buttonSuccess: #2ed573,
   primaryFont: 'Inter, Segoe UI, sans-serif',
   secondaryFont: 'Poppins, Arial, sans-serif',
-  infoNoteBackground: #f8f9fa,
-  infoNoteBorder: #dee2e6,
-  infoNoteColor: #495057
+  infoNoteBackground: var(--color-surface-muted),
+  infoNoteBorder: var(--color-border),
+  infoNoteColor: var(--color-text-secondary)
 );
 
 /************************************************************/
@@ -61,7 +62,7 @@ $entityModal: (
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--color-surface);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -77,21 +78,11 @@ $entityModal: (
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 2px solid #ffffff;
+    border: 2px solid var(--color-surface);
     border-top-color: transparent;
     animation: spin 1s ease-in-out infinite;
   }
 
-  &__header {
-    background: map.get($entityModal, headerBackground);
-    color: map.get($entityModal, headerColor);
-    padding: 1.5rem 2rem;
-    border-radius: map.get($entityModal, borderRadius) map.get($entityModal, borderRadius) 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-  }
 
   &__headerControls {
     display: flex;
@@ -114,7 +105,7 @@ $entityModal: (
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.9);
-    color: #2d3748;
+    color: var(--color-text-primary);
     font-size: 0.85rem;
     min-width: 160px;
     cursor: pointer;
@@ -131,8 +122,8 @@ $entityModal: (
     }
 
     option {
-      background: white;
-      color: #2d3748;
+      background: var(--color-surface);
+      color: var(--color-text-primary);
       padding: 0.25rem;
     }
   }
@@ -173,21 +164,8 @@ $entityModal: (
     backdrop-filter: blur(4px);
 
     option {
-      background: #2c3e50;
+      background: var(--color-heading);
       color: white;
-
-      &.option_green {
-        background: #27ae60;
-        font-weight: 600;
-      }
-
-      &.option_red {
-        background: #e74c3c;
-      }
-
-      &.option_blue {
-        background: #3498db;
-      }
     }
 
     &:focus {
@@ -230,36 +208,16 @@ $entityModal: (
     }
   }
 
-  &__body {
-    // padding: map.get($entityModal, padding);
-  }
 
   &__form {
     // display: grid;
     gap: 1.5rem;
   }
 
-  &__fieldGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    &--row {
-      flex-direction: row;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    &--grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-    }
-  }
 
   &__label {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--color-heading);
     font-size: 0.95rem;
     margin-bottom: 0.25rem;
   }
@@ -275,7 +233,7 @@ $entityModal: (
     &:focus {
       outline: none;
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+      box-shadow: var(--focus-ring);
     }
 
     &--error {
@@ -283,40 +241,6 @@ $entityModal: (
     }
   }
 
-  select {
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    background-color: var(--input-bg);
-    color: var(--text-color);
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-    }
-
-    // Styles pour select multiple
-    &[multiple] {
-      min-height: 120px;
-
-      option {
-        padding: 0.5rem;
-        margin: 0.125rem 0;
-        border-radius: 4px;
-
-        &:checked {
-          background-color: var(--primary-color);
-          color: white;
-        }
-
-        &:hover {
-          background-color: var(--hover-bg, #f0f0f0);
-        }
-      }
-    }
-  }
 
   &__select {
     @extend %entityModal__input;
@@ -335,58 +259,6 @@ $entityModal: (
     resize: vertical;
   }
 
-  &__photoUpload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 2rem;
-    border: 2px dashed map.get($entityModal, inputBorder);
-    border-radius: 8px;
-    background: #fafbfc;
-    transition: border-color 0.2s;
-    cursor: pointer;
-
-    &:hover {
-      border-color: map.get($entityModal, inputFocus);
-      background: #f0f4ff;
-    }
-
-    &--hasFile {
-      border-color: map.get($entityModal, buttonSuccess);
-      background: #f0fff4;
-    }
-  }
-
-  &__photoPreview {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid map.get($entityModal, inputBorder);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  &__uploadIcon {
-    font-size: 2rem;
-    color: map.get($entityModal, inputFocus);
-  }
-
-  &__uploadText {
-    font-size: 0.9rem;
-    color: #6c757d;
-    text-align: center;
-  }
-
-  &__actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    padding: 1.5rem 2rem;
-    border-top: 1px solid #e9ecef;
-    background: #f8f9fa;
-    border-radius: 0 0 map.get($entityModal, borderRadius) map.get($entityModal, borderRadius);
-  }
 
   &__btn {
     padding: 0.75rem 1.5rem;
@@ -416,7 +288,7 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
 
@@ -427,12 +299,12 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonDanger), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
 
     &--secondary {
-      background: #6c757d;
+      background: var(--color-text-secondary);
       color: white;
 
       &:hover:not(:disabled) {
@@ -448,16 +320,16 @@ $entityModal: (
       &:hover:not(:disabled) {
         background: color.adjust(map.get($entityModal, buttonSuccess), $lightness: -8%);
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+        box-shadow: var(--shadow-medium);
       }
     }
   }
 
 
   &__errorMessage {
-    background: #fff5f5;
-    border: 1px solid #fed7d7;
-    color: #c53030;
+    background: var(--color-danger-light);
+    border: 1px solid var(--color-danger-light);
+    color: var(--color-danger-dark);
     padding: 0.75rem;
     border-radius: 6px;
     font-size: 0.9rem;
@@ -465,288 +337,6 @@ $entityModal: (
   }
 
 
-  &__spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--color-border);
-    border-top-color: transparent;
-    animation: spin 1s ease-in-out infinite;
-  }
-
-  &__add-form {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #e8e6ff;
-    border-radius: map.get($entityModal, borderRadius);
-    margin-top: 0.5rem;
-    flex-wrap: wrap;
-
-    .compositions-block__date-input {
-      padding: 0.5rem;
-      border: 1px solid map.get($entityModal, inputBorder);
-      border-radius: 8px;
-      font-family: map.get($entityModal, secondaryFont);
-      font-size: 0.9rem;
-      min-width: 140px;
-    }
-
-    .compositions-block__note-input {
-      width: 60px;
-      padding: 0.5rem;
-      border: 1px solid map.get($entityModal, inputBorder);
-      border-radius: 8px;
-      text-align: center;
-      font-family: map.get($entityModal, secondaryFont);
-    }
-
-    .compositions-block__officiel-badge {
-      padding: 0.5rem 1rem;
-      border: 2px solid map.get($entityModal, inputBorder);
-      border-radius: map.get($entityModal, borderRadius);
-      background: map.get($entityModal, background);
-      color: #7f8c8d;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: map.get($entityModal, secondaryFont);
-      font-size: 0.85rem;
-      font-weight: 600;
-
-      &:hover {
-        border-color: map.get($entityModal, inputFocus);
-        transform: translateY(-1px);
-      }
-
-      &--active {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        border-color: #28a745;
-        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-      }
-    }
-  }
-
-  &__actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    justify-content: flex-start;
-  }
-
-  &__createGroup-btn {
-    background: map.get($entityModal, buttonPrimary);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: map.get($entityModal, borderRadius);
-    cursor: pointer;
-    font-family: map.get($entityModal, secondaryFont);
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      background: color.adjust(map.get($entityModal, buttonPrimary), $lightness: -8%);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-
-  &__note {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: map.get($entityModal, background);
-    border: 1px solid map.get($entityModal, inputBorder);
-    border-radius: map.get($entityModal, borderRadius);
-    margin-bottom: 0.5rem;
-    position: relative;
-    transition: all 0.3s ease;
-
-    &:hover {
-      border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    &-matiere {
-      font-weight: 600;
-      color: map.get($entityModal, buttonPrimary);
-      font-family: map.get($entityModal, primaryFont);
-    }
-
-    &-value {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #2c3e50;
-      font-family: map.get($entityModal, secondaryFont);
-    }
-
-    &-details {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 0.5rem;
-    }
-
-    &-date {
-      font-size: 0.8rem;
-      color: #7f8c8d;
-      font-family: map.get($entityModal, secondaryFont);
-      background: #e8e6ff;
-      padding: 2px 0.5rem;
-      border-radius: 4px;
-    }
-
-    &-badge {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 2px 0.5rem;
-      border-radius: 4px;
-      font-family: map.get($entityModal, secondaryFont);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-
-      &--officiel {
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        box-shadow: 0 1px 3px rgba(40, 167, 69, 0.3);
-      }
-
-      &--non-officiel {
-        background: linear-gradient(135deg, #6c757d, #868e96);
-        color: white;
-        box-shadow: 0 1px 3px rgba(108, 117, 125, 0.3);
-      }
-    }
-  }
-
-  &__remove-comp-btn {
-    background: transparent;
-    color: map.get($entityModal, buttonDanger);
-    border: 1px solid map.get($entityModal, buttonDanger);
-    padding: 2px 6px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    margin-left: auto;
-
-    &:hover {
-      background: map.get($entityModal, buttonDanger);
-      color: white;
-      transform: scale(1.05);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
-    }
-  }
-
-  &__note-actions {
-    display: flex;
-    gap: 0.25rem;
-    margin-left: auto;
-  }
-
-  &__edit-btn {
-    background: transparent;
-    color: map.get($entityModal, buttonPrimary);
-    border: 1px solid map.get($entityModal, buttonPrimary);
-    border-radius: 4px;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.2s;
-
-    &:hover {
-      background: map.get($entityModal, buttonPrimary);
-      color: white;
-    }
-  }
-
-  &__edit-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    background: #fff;
-    padding: 2px;
-    border-radius: 4px;
-    border: 1px solid map.get($entityModal, inputFocus);
-  }
-
-  &__edit-input {
-    width: 45px;
-    border: none;
-    padding: 2px 4px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    text-align: center;
-
-    &:focus {
-      outline: none;
-    }
-  }
-
-  &__edit-sur {
-    font-size: 0.8rem;
-    color: #666;
-    margin-right: 4px;
-  }
-
-  &__save-edit-btn {
-    background: map.get($entityModal, buttonSuccess);
-    color: white;
-    border: none;
-    border-radius: 3px;
-    padding: 2px 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-  }
-
-  &__cancel-edit-btn {
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    padding: 2px 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-  }
-
-  &__remove-btn {
-    position: relative; // Changé de absolute pour le flex container
-    background: linear-gradient(135deg, map.get($entityModal, buttonDanger), #c82333);
-    color: white;
-    border: none;
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-
-    &:hover {
-      transform: scale(1.1);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
-    }
-  }
 }
 
 // Animation keyframes
@@ -786,16 +376,16 @@ $entityModal: (
 
 %entityModal__input {
   padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s;
-  background: white;
+  background: var(--color-surface);
 
   &:focus {
     outline: none;
     border-color: map.get($themeColors, primary);
-    box-shadow: 0 0 0 3px rgba(map.get($themeColors, primary), 0.1);
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -817,7 +407,7 @@ $entityModal: (
 
 %entityModal__label {
   font-weight: 600;
-  color: #374151;
+  color: var(--color-heading);
   margin-bottom: 0.5rem;
   display: block;
 }
@@ -842,12 +432,12 @@ $entityModal: (
 }
 
 %entityModal__btn--primary {
-  background: linear-gradient(135deg, map.get($themeColors, primary), color.scale(map.get($themeColors, primary), $lightness: -10%));
+  background: var(--gradient-brand);
   color: white;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
+    box-shadow: var(--shadow-brand);
   }
 }
 
@@ -862,35 +452,11 @@ $entityModal: (
   backdrop-filter: blur(4px);
 
   option {
-    background: #2c3e50;
+    background: var(--color-heading);
     color: white;
   }
 }
 
-/************************************************************/
-/**************************MIXIN**************************/
-/************************************************************/
-@mixin entityModal($paramMixi_: $entityModal,
-  $background: map.get($entityModal, background),
-  $borderRadius: map.get($entityModal, borderRadius)) {
-  $paramMixi: entityModal(map.merge($entityModal, $paramMixi_));
-
-  @extend %entityModal;
-
-  &__container {
-    background: map.get($paramMixi, background);
-    border-radius: map.get($paramMixi, borderRadius);
-  }
-}
-
-/************************************************************/
-/**************************FUNCTION**************************/
-/************************************************************/
-@function entityModal($defaultValues) {
-  @return map.merge($defaultValues,
-    ( // background-contrast: color.scale(map.get($defaultValues, background), $lightness: -17.2881355932%),
-    ));
-}
 
 /************************************************************/
 /********************COMPOSITIONS BLOCK********************/
@@ -915,8 +481,8 @@ $entityModal: (
     align-items: center;
     margin-bottom: 1.5rem;
     padding: 0.75rem 1rem;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     font-size: 1rem;
     color: map.get($themeColors, primary);
@@ -927,7 +493,7 @@ $entityModal: (
     }
 
     span {
-      background: wheat;
+      background: var(--color-secondary-light);
       padding: .5em;
       font-size: 1.5em;
       font-weight: 900;
@@ -936,37 +502,19 @@ $entityModal: (
 
   &__trimestre {
     margin-bottom: 1.5rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     overflow: hidden;
 
     &-header {
-      background: #f8f9fa;
+      background: var(--color-surface-muted);
       padding: 1rem 1.5rem;
-      border-bottom: 1px solid #e9ecef;
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 0.5rem;
-
-      &-title {
-        font-weight: 600;
-        color: #495057;
-        font-size: 1.1rem;
-        font-family: map.get($entityModal, primaryFont);
-      }
-
-      &-score {
-        font-size: 0.9rem;
-        color: map.get($themeColors, success);
-        font-weight: 500;
-        background: rgba(40, 167, 69, 0.1);
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        border: 1px solid rgba(40, 167, 69, 0.2);
-        font-family: map.get($entityModal, secondaryFont);
-      }
     }
   }
 
@@ -983,8 +531,8 @@ $entityModal: (
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    border: 1px solid #dee2e6;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
@@ -992,7 +540,7 @@ $entityModal: (
 
     &:hover {
       border-color: map.get($entityModal, inputFocus);
-      box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
+      box-shadow: var(--shadow-small);
     }
 
     &-matiere {
@@ -1003,8 +551,8 @@ $entityModal: (
 
     &-value {
       font-weight: 700;
-      color: #2d3748;
-      background: #e2e8f0;
+      color: var(--color-text-primary);
+      background: var(--color-surface-muted);
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
       min-width: 30px;
@@ -1033,7 +581,7 @@ $entityModal: (
   }
 
   &__no-compo {
-    color: #6c757d;
+    color: var(--color-text-muted);
     font-style: italic;
     padding: 1rem;
     text-align: center;
@@ -1044,8 +592,8 @@ $entityModal: (
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    background: #f8f9fa;
-    border: 2px dashed #dee2e6;
+    background: var(--color-surface-muted);
+    border: 2px dashed var(--color-border);
     border-radius: 6px;
     padding: 0.75rem;
     flex-wrap: wrap;
@@ -1085,121 +633,11 @@ $entityModal: (
     min-width: auto;
 
     &--cancel {
-      background: #6c757d;
+      background: var(--color-text-secondary);
 
       &:hover:not(:disabled) {
         background: color.adjust(#6c757d, $lightness: -8%);
       }
-    }
-  }
-
-  // Contrôles de photo avec caméra
-  &__photo-controls {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  &__input--file {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  &__camera-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #28a745, #20c997);
-    color: white;
-    border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: map.get($entityModal, primaryFont);
-    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-    white-space: nowrap;
-
-    &:hover {
-      background: linear-gradient(135deg, #20c997, #17a2b8);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-    }
-
-    &:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-    }
-
-    &-icon {
-      font-size: 1.1rem;
-    }
-
-    &-text {
-      @media (max-width: 480px) {
-        display: none;
-      }
-    }
-  }
-
-  // Prévisualisation photo
-  &__photo-preview {
-    position: relative;
-    display: inline-block;
-    margin-top: 0.75rem;
-
-    >img {
-      width: 100%;
-      padding: 1em;
-      box-sizing: border-box;
-      border: solid;
-    }
-  }
-
-  &__preview-image {
-    max-width: 200px;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #e1e5e9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-
-    &:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  &__remove-photo-btn {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-
-    &:hover {
-      background: #c82333;
-      transform: scale(1.1);
-      box-shadow: 0 3px 8px rgba(220, 53, 69, 0.4);
-    }
-
-    &:active {
-      transform: scale(0.95);
     }
   }
 
@@ -1218,7 +656,7 @@ $entityModal: (
       line-height: 1.4;
 
       strong {
-        color: #007bff;
+        color: var(--color-primary);
       }
     }
   }

@@ -4,12 +4,23 @@
 .image-scanner {
     margin: 1rem 0;
 
+    // ── Mode inline (dans une toolbar infos_cards) ──
+    // Le wrapper se comporte comme un bouton flex natif
+    &.infos_cards__btn--ai,
+    &.infos_cards__btn {
+        margin: 0;
+        display: inline-flex;
+        align-items: stretch;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
     &.--compact {
         margin: 0;
     }
 
     &__btn {
-        background: map.get($themeColors, primary);
+        background: var(--color-primary);
         color: white;
         font-family: $primaryFont;
         font-weight: 600;
@@ -21,8 +32,28 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        box-shadow: 0 4px 12px rgba(map.get($themeColors, primary), 0.3);
+        box-shadow: var(--shadow-brand);
         transition: all 0.2s ease;
+
+        // ── Quand le wrapper est dans la toolbar, reset total ──
+        .infos_cards__btn--ai &,
+        .infos_cards__btn & {
+            all: unset;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            height: 100%;
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 700;
+            white-space: nowrap;
+            color: inherit;
+
+            .icon { font-size: 1rem; }
+        }
 
         .--compact & {
             padding: 0.4rem 1rem;
@@ -34,14 +65,14 @@
             opacity: 0.5;
             cursor: not-allowed;
             filter: grayscale(1);
-            background: #eee !important;
-            color: #999 !important;
+            background: var(--color-surface-muted) !important;
+            color: var(--color-text-muted) !important;
             box-shadow: none !important;
         }
 
         &:hover:not(.--disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(map.get($themeColors, primary), 0.4);
+            box-shadow: var(--shadow-brand);
         }
 
         &:active:not(.--disabled) {
@@ -76,13 +107,13 @@
         bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: #333;
+        background: var(--color-text-primary);
         color: white;
         padding: 12px 24px;
         border-radius: 8px;
         z-index: 10000;
         font-size: 0.95rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--shadow-medium);
         animation: fadeup 0.3s ease;
     }
 
@@ -96,8 +127,8 @@
         .spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid rgba(map.get($themeColors, primary), 0.2);
-            border-top-color: map.get($themeColors, primary);
+            border: 2px solid var(--color-primary-soft);
+            border-top-color: var(--color-primary);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }

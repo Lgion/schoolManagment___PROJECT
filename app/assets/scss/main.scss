@@ -1,28 +1,11 @@
 
-@use "./utils/variables" as *;
-@use "./utils/functions" as *;
-@use "./utils/mixins" as *;
-@use "./utils/extensions" as *;
-
-@use "./themes/template" as *;
-
 @use "./base/base" as *;
 @use "./base/normalize" as *;
 @use "./base/typography" as *;
-// @use "./vendors/" as *;
 
-@use "./components/buttons" as *;
-@use "./components/lists" as *;
-@use "./components/cards" as *;
-@use "./components/POSTS/_post" as *;
 @use "./components/SCHEDULES/scheduleViewer" as *;
 @use "./components/FORMS/cameraCapture" as *;
 
 @use "./layouts/headers" as *;
-@use "./layouts/navs" as *;
-@use "./layouts/mains" as *;
-@use "./layouts/footers" as *;
 
-@use "./pages/all" as *;
 @use "./pages/home" as *;
-@use "./pages/menus" as *;

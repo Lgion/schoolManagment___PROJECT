@@ -219,8 +219,8 @@ export default function NotesBlock({ eleves, classeId, isCurrentYear, annee, all
 
               // Essayer d'utiliser le coefficient de config de classe pour l'ancien format
               let coefficient = 2;
-              if (coefficients && coefficients[matiere]) {
-                coefficient = coefficients[matiere] >= 10 ? coefficients[matiere] / 10 : coefficients[matiere];
+              if (matiereCoefficients && matiereCoefficients[matiere]) {
+                coefficient = matiereCoefficients[matiere] >= 10 ? matiereCoefficients[matiere] / 10 : matiereCoefficients[matiere];
               }
               if (coefficient === 0) coefficient = 1;
 

@@ -68,6 +68,7 @@ export function RoleIndicator({ className = "" }) {
     admin: 'Administrateur',
     prof: 'Professeur',
     eleve: 'Élève',
+    parent: 'Parent',
     public: 'Visiteur'
   };
 
@@ -75,6 +76,7 @@ export function RoleIndicator({ className = "" }) {
     admin: 'roleIndicator--admin',
     prof: 'roleIndicator--prof',
     eleve: 'roleIndicator--eleve',
+    parent: 'roleIndicator--parent',
     public: 'roleIndicator--public'
   };
 
@@ -82,6 +84,7 @@ export function RoleIndicator({ className = "" }) {
     admin: '👑',
     prof: '👨‍🏫',
     eleve: '👨‍🎓',
+    parent: '👪',
     public: '👤'
   };
 
@@ -124,9 +127,10 @@ export function UserProfile({ className = "" }) {
       <header className="userProfile__header">
         <div className="userProfile__avatar">
           <span className="userProfile__avatar-icon">
-            {userRole === 'admin' ? '👑' : 
-             userRole === 'prof' ? '👨‍🏫' : 
-             userRole === 'eleve' ? '👨‍🎓' : '👤'}
+            {userRole === 'admin' ? '👑' :
+             userRole === 'prof' ? '👨‍🏫' :
+             userRole === 'eleve' ? '👨‍🎓' :
+             userRole === 'parent' ? '👪' : '👤'}
           </span>
         </div>
         <div className="userProfile__info">
@@ -177,98 +181,17 @@ export function UserProfile({ className = "" }) {
               <span className="userProfile__roleData-value">Lié</span>
             </div>
           )}
+
+          {userRole === 'parent' && Array.isArray(userData.roleData.childrenRefs) && (
+            <div className="userProfile__roleData-item">
+              <span className="userProfile__roleData-label">Enfants rattachés:</span>
+              <span className="userProfile__roleData-value">{userData.roleData.childrenRefs.length}</span>
+            </div>
+          )}
         </section>
       )}
     </article>
   );
-}
-
-// Composant pour navigation conditionnelle selon le rôle
-export function RoleBasedNavigation({ className = "" }) {
-  const { userRole, isAdmin, isProf, isEleve, loading } = useUserRole();
-
-  if (loading) {
-    return null;
-  }
-
-  return (
-    <nav className={`roleBasedNavigation ${className}`}>
-      {/* Navigation pour tous les utilisateurs authentifiés */}
-      <div className="roleBasedNavigation__section">
-        <h4 className="roleBasedNavigation__title">Général</h4>
-        <ul className="roleBasedNavigation__list">
-          <li className="roleBasedNavigation__item">
-            <a href="/" className="roleBasedNavigation__link">
-              🏠 Accueil
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      {/* Navigation pour les admins */}
-      {isAdmin() && (
-        <div className="roleBasedNavigation__section">
-          <h4 className="roleBasedNavigation__title">Administration</h4>
-          <ul className="roleBasedNavigation__list">
-            <li className="roleBasedNavigation__item">
-              <a href="/admin/users" className="roleBasedNavigation__link">
-                👥 Gestion des utilisateurs
-              </a>
-            </li>
-            <li className="roleBasedNavigation__item">
-              <a href="/admin/settings" className="roleBasedNavigation__link">
-                ⚙️ Paramètres
-              </a>
-            </li>
-          </ul>
-        </div>
-      )}
-
-      {/* Navigation pour les profs */}
-      {(isAdmin() || isProf()) && (
-        <div className="roleBasedNavigation__section">
-          <h4 className="roleBasedNavigation__title">Enseignement</h4>
-          <ul className="roleBasedNavigation__list">
-            <li className="roleBasedNavigation__item">
-              <a href="/classes" className="roleBasedNavigation__link">
-                🏫 Mes classes
-              </a>
-            </li>
-            <li className="roleBasedNavigation__item">
-              <a href="/eleves" className="roleBasedNavigation__link">
-                👨‍🎓 Mes élèves
-              </a>
-            </li>
-          </ul>
-        </div>
-      )}
-
-      {/* Navigation pour les élèves */}
-      {isEleve() && (
-        <div className="roleBasedNavigation__section">
-          <h4 className="roleBasedNavigation__title">Mon espace élève</h4>
-          <ul className="roleBasedNavigation__list">
-            <li className="roleBasedNavigation__item">
-              <a href="/eleve/notes" className="roleBasedNavigation__link">
-                📊 Mes notes
-              </a>
-            </li>
-            <li className="roleBasedNavigation__item">
-              <a href="/eleve/emploi-du-temps" className="roleBasedNavigation__link">
-                📅 Mon emploi du temps
-              </a>
-            </li>
-          </ul>
-        </div>
-      )}
-    </nav>
-  );
-}
-
-// 
-export function getRole(){
-  const { userRole } = useUserRole();
-  return userRole
 }
 
 // Fonction utilitaire pour formater les labels de permissions

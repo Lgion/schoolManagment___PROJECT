@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/dbConnect';
+import { requireAuth } from '../../../lib/authWithFallback';
 import Classe from '../../../_/models/ai/Classe';
 
 export async function POST(request, { params }) {
   const { id } = await params;
-  
+
   try {
+    const auth = await requireAuth(request, 'POST /api/classes/[id]/duplicate');
+    if (auth instanceof NextResponse) return auth;
+
     await dbConnect();
     
     const { targetYear } = await request.json();

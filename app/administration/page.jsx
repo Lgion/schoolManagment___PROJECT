@@ -6,6 +6,7 @@ import { useUserRole } from '../../stores/useUserRole';
 import PermissionGate from '../components/PermissionGate';
 import Link from 'next/link';
 import FeeConfigManager from '../components/FeeConfigManager';
+import DesignSettingsManager from '../components/DesignSettingsManager';
 
 /**
  * Page d'Administration
@@ -19,8 +20,10 @@ export default function AdministrationPage() {
         setSelected, setShowModal, setEditType
     } = useContext(AiAdminContext);
 
-    const { isAdmin, loading: authLoading } = useUserRole();
-    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees'
+    const { isAdmin, loading: authLoading, clerkUser } = useUserRole();
+    const [isMigrating, setIsMigrating] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+    const [activeTab, setActiveTab] = useState('eleves'); // 'eleves', 'enseignants', 'classes', 'fees', 'design'
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -71,6 +74,31 @@ export default function AdministrationPage() {
         } catch (error) {
             console.error('Erreur migration:', error);
             alert(`❌ Erreur : ${error.message}`);
+        }
+    };
+
+    const handleResetDemo = async () => {
+        if (!confirm(`⚠️ ATTENTION : Êtes-vous sûr de vouloir réinitialiser la démo ?\n\nCette action va écraser les données actuelles de l'école démo pour regénérer les 6 années d'historique.`)) {
+            return;
+        }
+
+        setIsResetting(true);
+        try {
+            const res = await fetch('/api/admin/reset-demo', { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Erreur lors de la réinitialisation');
+            }
+            const data = await res.json();
+            alert(`✅ Succès : ${data.message}`);
+            fetchEleves();
+            fetchEnseignants();
+            fetchClasses();
+        } catch (error) {
+            console.error('Erreur reset demo:', error);
+            alert(`❌ Erreur : ${error.message}`);
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -129,6 +157,13 @@ export default function AdministrationPage() {
                             >
                                 ⚙️ Paramètres des Frais
                             </button>
+                            <button
+                                className={`admin-page__config-btn ${activeTab === 'design' ? '--active' : ''}`}
+                                onClick={() => setActiveTab('design')}
+                                style={{ marginLeft: '10px' }}
+                            >
+                                🎨 Paramètres de Design
+                            </button>
                         </div>
                     </div>
 
@@ -153,15 +188,8 @@ export default function AdministrationPage() {
                         </button>
                     </nav>
 
-                    {activeTab !== 'fees' && (
+                    {activeTab !== 'fees' && activeTab !== 'design' && (
                         <div className="admin-page__controls">
-
-                            <button
-                                className="admin-page__config-btn --migrate"
-                                onClick={handleMigrateYear}
-                            >
-                                🚀 Migrer l'Année Scolaire
-                            </button>
                             <div className="admin-page__search-wrapper">
                                 <input
                                     type="text"
@@ -182,6 +210,15 @@ export default function AdministrationPage() {
                     {activeTab === 'fees' ? (
                         <div className="admin-page__dynamic-content">
                             <FeeConfigManager />
+                        </div>
+                    ) : activeTab === 'design' ? (
+                        <div className="admin-page__dynamic-content">
+                            <DesignSettingsManager
+                                handleMigrateYear={handleMigrateYear}
+                                handleResetDemo={handleResetDemo}
+                                isResetting={isResetting}
+                                clerkUser={clerkUser}
+                            />
                         </div>
                     ) : (
                         <div className="admin-page__table-container">

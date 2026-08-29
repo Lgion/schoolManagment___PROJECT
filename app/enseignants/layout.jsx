@@ -1,12 +1,11 @@
 
 "use client"
 
-import { useContext, useRef, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import { useDetailPortal } from '../../stores/useDetailPortal';
-import PermissionGate from '../components/PermissionGate';
-import EntityModal from '../components/EntityModal';
 import PersonCard from '../components/PersonCard';
+import LoadingState from '../components/ui/LoadingState';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -20,82 +19,8 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
 
-    console.log(enseignants);
-    console.log(enseignants);
     return (<>
-        {/* <PermissionGate roles={['admin', 'prof']}>
-            <button onClick={() => { setSelected(null); setEditType("enseignant"); setShowModal(true); }} className={"ecole-admin__nav-btn"}>Ajouter un enseignant</button>
-        </PermissionGate> */}
-        <h2>Liste des enseignants </h2>
-
-        {/* Contrôles de filtrage et tri */}
-        {/*
-        <div className="infos_cards__controls">
-            {// Recherche textuelle 
-            }
-            <div className="infos_cards__control-group">
-                <label htmlFor="search-input-enseignants" className="infos_cards__label">🔍 Rechercher :</label>
-                <input 
-                    id="search-input-enseignants"
-                    type="text"
-                    className="infos_cards__search-input"
-                    placeholder="Nom, prénom..."
-                    value={searchText}
-                    onChange={e => setSearchText(e.target.value)}
-                    aria-label="Rechercher un enseignant par nom ou prénom"
-                />
-            </div>
-
-            {// Contrôles de tri 
-            }
-            <div className="infos_cards__control-group">
-                <label htmlFor="sort-by-enseignants" className="infos_cards__label">📊 Trier par :</label>
-                <select 
-                    id="sort-by-enseignants"
-                    className="infos_cards__select"
-                    value={sortBy}
-                    onChange={e => setSortBy(e.target.value)}
-                    aria-label="Choisir le critère de tri"
-                >
-                    <option value="nom">Nom de famille</option>
-                    <option value="classe">Nombre de classes</option>
-                </select>
-            </div>
-
-            <div className="infos_cards__control-group">
-                <label htmlFor="sort-order-enseignants" className="infos_cards__label">🔄 Ordre :</label>
-                <select 
-                    id="sort-order-enseignants"
-                    className="infos_cards__select"
-                    value={sortOrder}
-                    onChange={e => setSortOrder(e.target.value)}
-                    aria-label="Choisir l'ordre de tri"
-                >
-                    <option value="asc">Croissant (A→Z)</option>
-                    <option value="desc">Décroissant (Z→A)</option>
-                </select>
-            </div>
-
-            {// Bouton de basculement d'affichage /
-            }
-            <div className="infos_cards__control-group">
-                <label className="infos_cards__label">👁️ Affichage :</label>
-                <button 
-                    className={`infos_cards__view-toggle ${viewMode === 'grid' ? 'infos_cards__view-toggle--active' : ''}`}
-                    onClick={() => setViewMode(viewMode === 'grid' ? 'inline' : 'grid')}
-                    aria-label={`Basculer vers l'affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
-                    title={`Affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
-                >
-                    <span className="infos_cards__view-toggle-icon">
-                        {viewMode === 'grid' ? '📋' : '⊞'}
-                    </span>
-                    <span className="infos_cards__view-toggle-text">
-                        {viewMode === 'grid' ? 'Ligne' : 'Grille'}
-                    </span>
-                </button>
-            </div>
-        </div>
-*/}
+        <h2 className="page-title">Liste des enseignants</h2>
 
         {enseignants ?
             <div className={`enseignants-list ${viewMode === 'inline' ? 'enseignants-list--inline' : ''}`}>
@@ -139,7 +64,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                         <PersonCard
                             key={enseignant._id}
                             person={enseignant}
-                            classes={(enseignant?.current_classes || []).map(el => Array.isArray(classes) ? classes.find(c => c._id === el) : null).filter(Boolean)}
+                            classes={(enseignant?.current_classes && Array.isArray(classes) && classes.length > 0) ? enseignant.current_classes.map(el => classes.find(c => c._id === el)).filter(Boolean) : []}
                             type="enseignant"
                             onEdit={e => { setSelected(e); setEditType("enseignant"); setShowModal(true); }}
                             viewMode={viewMode}
@@ -147,7 +72,7 @@ export default function EcoleAdminEleveLayout({ children }) {
                     ))}
             </div>
             :
-            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
+            <LoadingState label="Chargement des enseignants…" />
         }
 
         {children}

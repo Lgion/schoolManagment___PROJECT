@@ -8,26 +8,24 @@ import Gmap from '../../_/Gmap_plus';
 import PermissionGate from "../../components/PermissionGate";
 import { useEntityDetail, ClasseDisplay } from '../../../utils/classeUtils';
 import { getEnseignantImagePath } from '../../../utils/imageUtils';
+import { DetailEmpty } from '../../components/ui/detailCards';
 import DetailPortal from "../../components/DetailPortal";
 
 export default function EnseignantDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const ctx = useContext(AiAdminContext);
-  const [isReduced, setIsReduced] = useState(false);
 
   if (!ctx) return <div style={{ color: 'red' }}>Erreur : contexte non trouvé</div>;
-  useEffect(() => {
-    ctx.fetchEnseignants && ctx.fetchEnseignants();
-    ctx.fetchClasses && ctx.fetchClasses();
-    ctx.fetchEleves && ctx.fetchEleves();
-  }, []);
 
   const { setSelected, showModal, setShowModal, setEditType } = ctx;
   const { entity: enseignant, classe } = useEntityDetail(id, ctx, 'enseignants');
   const [gmapOpen, setGmapOpen] = useState(false);
 
   if (!enseignant) return <div style={{ color: 'red' }}>Enseignant introuvable</div>;
+
+  // Normalisation de l'affichage des prénoms (tableau ou chaîne)
+  const prenomsDisplay = Array.isArray(enseignant.prenoms) ? enseignant.prenoms.join(' ') : (enseignant.prenoms || '');
 
   // Récupérer les classes assignées à cet enseignant
   const classesAssignees = (ctx.classes || []).filter(c =>
@@ -44,10 +42,9 @@ export default function EnseignantDetailPage() {
     <DetailPortal
       isOpen={true}
       onClose={() => router.back()}
-      title={`Enseignant ${enseignant.nom} ${enseignant.prenoms}`}
+      title={`${enseignant.nom} ${prenomsDisplay}`}
       icon={"👨‍🏫"}
-      reduced={[isReduced, setIsReduced]}
-    ><main className={`person-detail ${isReduced ? '--reduce' : ''}`}>
+    ><main className="person-detail">
         <PermissionGate roles={['admin', 'prof']}>
           {setSelected && !showModal && (
             <button
@@ -69,7 +66,7 @@ export default function EnseignantDetailPage() {
           <div className="person-detail__header-content">
             <div className="person-detail__header-info">
               <h1 className="person-detail__title">
-                {enseignant.nom} {enseignant.prenoms}
+                {enseignant.nom} {prenomsDisplay}
               </h1>
               <p className="person-detail__subtitle-text">
                 Enseignant • {enseignant.sexe === 'M' ? 'Homme' : 'Femme'}
@@ -86,15 +83,9 @@ export default function EnseignantDetailPage() {
               <img
                 className="person-detail__photo"
                 src={getEnseignantImagePath(enseignant)}
-                alt={`${enseignant.nom} ${enseignant.prenoms}`}
+                alt={`${enseignant.nom} ${prenomsDisplay}`}
                 onError={(e) => {
                   e.target.src = '/school/default-teacher.webp';
-                }}
-                onClick={e => {
-                  e.preventDefault();
-                  // e.target.closest('.person-detail').classList.toggle('--reduce')
-                  // e.target.closest('.person-detail').classList.toggle('--')
-                  setIsReduced(!isReduced)
                 }}
               />
             </div>
@@ -136,10 +127,7 @@ export default function EnseignantDetailPage() {
             Classes assignées
           </h2>
           {classesAssignees.length === 0 ? (
-            <div className="person-detail__empty">
-              <div className="person-detail__empty-icon">🏫</div>
-              <p className="person-detail__empty-text">Aucune classe assignée</p>
-            </div>
+            <DetailEmpty icon="🏫" text="Aucune classe assignée" />
           ) : (
             <div className="person-detail__grid">
               {classesAssignees.map(classe => (

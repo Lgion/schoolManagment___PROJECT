@@ -84,7 +84,8 @@ const saveFileLocally = async (file, type, payload, entityType) => {
   } else {
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = path.extname(file.name || '');
-    const destPath = path.join(targetDir, 'photo' + ext);
+    const baseName = (file.name || 'photo').replace(ext, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const destPath = path.join(targetDir, baseName + ext);
     await fs.promises.writeFile(destPath, buffer);
     let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
     console.log(`✅ Fichier générique sauvé localement: ${publicPath}`);
@@ -131,14 +132,15 @@ const getTargetDir = (type, payload) => {
   let safeName = ""
   if (type === 'student') return path.join(BASE_PATH, 'students', safeName);
   if (type === 'teacher') return path.join(BASE_PATH, 'teachers', safeName);
+  if (type === 'schedule' || type === 'scheduleScan') return path.join(BASE_PATH, 'schedules');
   // default: school root
   return BASE_PATH;
 };
 
 export async function POST(request) {
   try {
-    const isAdmin = await checkRole(Roles.ADMIN);
-    const isTeacher = await checkRole(Roles.TEACHER);
+    const isAdmin = await checkRole(Roles.ADMIN, request);
+    const isTeacher = await checkRole(Roles.TEACHER, request);
     if (!isAdmin && !isTeacher) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
@@ -191,6 +193,10 @@ export async function POST(request) {
           const classeFolder = `${payload.niveau?.toLowerCase()}-${payload.alias}/${payload.annee}`;
           folder = `school/classes/${classeFolder}`;
           tags.push('class', payload.niveau, payload.annee);
+        } else if (entityType === 'schedule' || type === 'scheduleScan') {
+          folder = 'school/schedules';
+          if (payload.classeId) folder = `school/schedules/${payload.classeId}`;
+          tags.push('schedule');
         }
 
         // Upload vers Cloudinary (initialiser d'abord le service)
@@ -403,7 +409,8 @@ async function handleLocalUpload(type, payload, entityType, files) {
       const file = files[0];
       const buffer = Buffer.from(await file.arrayBuffer());
       const ext = path.extname(file.name || '');
-      const destPath = path.join(targetDir, 'photo' + ext);
+      const baseName = (file.name || 'photo').replace(ext, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const destPath = path.join(targetDir, baseName + ext);
       await fs.promises.writeFile(destPath, buffer);
       let publicPath = destPath.replace(path.join(process.cwd(), 'public'), '');
       return NextResponse.json({ paths: [publicPath] });

@@ -11,18 +11,18 @@
     width: 100%;
     height: 100%;
     min-height: 300px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-small);
 
     &__shimmer-block {
         width: 100%;
         border-radius: 8px;
-        background: #f6f7f8;
+        background: var(--color-surface-muted);
         background-image: linear-gradient(90deg,
-                #f6f7f8 0px,
-                #edeef1 40px,
-                #f6f7f8 80px);
+                var(--color-surface-muted) 0px,
+                var(--color-border) 40px,
+                var(--color-surface-muted) 80px);
         background-size: 600px;
         animation: shimmer 1.5s infinite linear;
 

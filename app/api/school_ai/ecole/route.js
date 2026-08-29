@@ -19,12 +19,32 @@ export async function GET(request) {
     }
 
     await dbConnect();
-    const settings = await SchoolSettings.findOne({ schoolKey: 'default' });
+    
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
+    const settings = await SchoolSettings.findOne({ schoolKey });
+
+    const defaultHomepage = {
+      title: 'École de Démo',
+      slogan: 'Système de gestion scolaire',
+      texts: ['Bienvenue sur l\'application de gestion scolaire.'],
+      photo: '/ecole_testes/photo.jpg',
+      logoUrl: '/logo.png',
+      bannerUrl: '/bg_header.webp',
+      primaryColor: '#1E3A8A',
+      accentColor: '#F97316',
+      fontHeading: 'Poppins',
+      fontBody: 'Inter',
+      borderRadiusPreset: 'medium',
+      headerStylePreset: 'glass'
+    };
 
     return NextResponse.json({
       feeDefinitions: settings?.feeDefinitions ?? [],
       targets: settings?.targets ?? [],
-      homepage: settings?.homepage ?? { title: '', texts: [], photo: '' },
+      homepage: settings?.homepage ? { ...defaultHomepage, ...settings.homepage.toObject?.() ?? settings.homepage } : defaultHomepage,
     });
   } catch (error) {
     console.error('❌ GET /api/school_ai/ecole:', error);
@@ -74,16 +94,35 @@ export async function PUT(request) {
       console.log(`🧹 Nettoyage cascade: clé "${key}" retirée de tous les élèves.`);
     }
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     const updated = await SchoolSettings.findOneAndUpdate(
-      { schoolKey: 'default' },
+      { schoolKey },
       updateFields,
       { upsert: true, new: true }
     );
 
+    const defaultHomepage = {
+      title: 'École de Démo',
+      slogan: 'Système de gestion scolaire',
+      texts: ['Bienvenue sur l\'application de gestion scolaire.'],
+      photo: '/ecole_testes/photo.jpg',
+      logoUrl: '/logo.png',
+      bannerUrl: '/bg_header.webp',
+      primaryColor: '#1E3A8A',
+      accentColor: '#F97316',
+      fontHeading: 'Poppins',
+      fontBody: 'Inter',
+      borderRadiusPreset: 'medium',
+      headerStylePreset: 'glass'
+    };
+
     return NextResponse.json({
       feeDefinitions: updated.feeDefinitions,
       targets: updated.targets,
-      homepage: updated.homepage,
+      homepage: updated.homepage ? { ...defaultHomepage, ...updated.homepage.toObject?.() ?? updated.homepage } : defaultHomepage,
     });
   } catch (error) {
     console.error('❌ PUT /api/school_ai/ecole:', error);

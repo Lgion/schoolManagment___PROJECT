@@ -2,7 +2,6 @@
 import React, { useContext } from 'react';
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import Link from "next/link";
-import { useDetailPortal } from '../../stores/useDetailPortal';
 import { getEleveImagePath, getEnseignantImagePath } from '../../utils/imageUtils';
 import PermissionGate from "./PermissionGate";
 import './PersonCard.scss';
@@ -14,28 +13,22 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
     : type === 'enseignant'
       ? getEnseignantImagePath(person)
       : person.photo_$_file || '/default-photo.png';
-  const { openPortal } = useDetailPortal();
 
-  // Couleur de fond selon le sexe
-  const getBackgroundColor = (sexe) => {
-    if (sexe === 'Garçon' || sexe === 'garcon' || sexe === 'M' || sexe === 'Masculin') {
-      return 'rgba(54, 162, 235, 0.1)'; // Bleu très léger
-    } else if (sexe === 'Fille' || sexe === 'fille' || sexe === 'F' || sexe === 'Féminin') {
-      return 'rgba(255, 99, 132, 0.1)'; // Rose très léger
-    }
-    return 'transparent';
-  };
-
-  console.log(person.nom);
-  console.log(classes);
+  // Classe « sexe » pour la teinte de la carte (gérée par le CSS tokenisé,
+  // identique aux cartes élèves — voir couche de cohérence index.scss)
+  const genreClass = (() => {
+    const s = person.sexe;
+    if (s === 'M' || s === 'Garçon' || s === 'garcon' || s === 'Masculin') return 'm';
+    if (s === 'F' || s === 'Fille' || s === 'fille' || s === 'Féminin') return 'f';
+    return '';
+  })();
 
   return (
-    <div className="person-card-wrapper" style={{ position: 'relative' }}>
+    <div className={`person-card-wrapper ${genreClass}`} style={{ position: 'relative' }}>
       <Link
         href={`/${type}s/${person._id}`}
         className={`person-card ${viewMode === 'inline' ? 'person-card--inline' : ''}`}
         tabIndex={0}
-        style={{ backgroundColor: getBackgroundColor(person.sexe) }}
       >
         <img className="person-card__photo" src={photoUrl} alt={person.nom + ' ' + person.prenoms} />
         <div className="person-card__infos">
@@ -53,13 +46,13 @@ export default function PersonCard({ person, classes, onClick, onEdit, type, vie
                 (targetDefinitions || []).forEach(td => {
                   const val = targetsList[td.key];
                   if (val) {
-                    activeProfiling.push(Array.isArray(val) ? val.join(', ') : val);
+                    activeProfiling.push({ key: td.key, value: Array.isArray(val) ? val.join(', ') : val });
                   } else if (td.key.startsWith('is')) {
-                    activeProfiling.push(td.options[1]);
+                    activeProfiling.push({ key: td.key, value: td.options[1] });
                   }
                 });
-                return activeProfiling.map((val, i) => (
-                  <span key={i} className={`person-card__isinterne-badge ${val === 'Externe' ? 'person-card__isinterne-badge--externe' : ''}`}>{val}</span>
+                return activeProfiling.map((p) => (
+                  <span key={p.key} className={`person-card__isinterne-badge ${p.value === 'Externe' ? 'person-card__isinterne-badge--externe' : ''}`}>{p.value}</span>
                 ));
               })()}
             </div>

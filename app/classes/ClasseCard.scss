@@ -1,7 +1,9 @@
 .classe-card {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-secondary);
+  border-radius: 14px;
+  box-shadow: var(--shadow-small);
   padding: 1.1em 1.5em 1.3em 1.5em;
   margin: 0.7em 0;
   max-width: 410px;
@@ -10,25 +12,40 @@
   flex-direction: column;
   gap: 0.7em;
   position: relative;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
   cursor: pointer;
+  box-sizing: border-box;
 
   @media (min-width: 768px) {
     width: 420px;
   }
+
+  // Mobile : la carte remplit la largeur disponible et ne déborde jamais
+  @media (max-width: 600px) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 1em 1.1em 1.2em;
+  }
 }
 
 .classe-card:hover {
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--color-primary);
+  border-top-color: var(--color-secondary);
+  transform: translateY(-3px);
 }
 
 .classe-card__header {
   display: flex;
-  gap: 1.1em;
+  flex-wrap: wrap;
+  gap: 0.5em 1.1em;
   align-items: baseline;
   font-size: 1.18em;
-  font-weight: 600;
-  color: #1a2956;
+  font-weight: 700;
+  color: var(--color-heading);
+  // Réserve la place du bouton « Éditer » (absolu en haut à droite)
+  padding-right: 5em;
 }
 
 .classe-card__niveau {
@@ -37,7 +54,7 @@
 
 .classe-card__alias {
   font-size: 1.1em;
-  color: #3b3b3b;
+  color: var(--color-text-secondary);
 }
 
 .classe-card__annee {
@@ -71,18 +88,26 @@
 
 .classe-card__editbtn {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #f5f5f5;
-  border: 1px solid #c0c0c0;
-  border-radius: 4px;
-  padding: 0.25em 0.7em;
-  font-size: 1em;
+  top: 0.6em;
+  right: 0.6em;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0.3em 0.8em;
+  font-size: 0.9em;
+  font-weight: 600;
   cursor: pointer;
-  color: #2a2a2a;
-  transition: background 0.15s;
+  color: var(--color-primary);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .classe-card__editbtn:hover {
-  background: #e6e6e6;
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.classe-card__editbtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }

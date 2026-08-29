@@ -3,7 +3,15 @@ import { requireAuth } from '../../lib/authWithFallback'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../../_/models/ai/Schedule')
-const { archiveSchedule, reactivateSchedule, convertPlanningToDetails } = require('../../../../utils/scheduleHelpers')
+const dbConnect = require('../../lib/dbConnect').default || require('../../lib/dbConnect')
+const { archiveSchedule, reactivateSchedule } = require('../../../../utils/scheduleHelpers')
+const { normalizeSchedule, planningToEvents, validateEvents } = require('../../../../utils/scheduleEvents')
+
+// Populate couvrant nouveau format (events) et ancien (planning).
+const POPULATE_PATHS =
+  'events.subjectId ' +
+  'planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId ' +
+  'planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId'
 
 /**
  * GET /api/schedules/[id]
@@ -19,10 +27,13 @@ export async function GET(request, { params }) {
       return userId
     }
 
-    const { id } = params
+    await dbConnect()
+
+    const { id } = await params
 
     const schedule = await Schedule.findById(id)
-      .populate('planning.lundi.subjectId planning.mardi.subjectId planning.mercredi.subjectId planning.jeudi.subjectId planning.vendredi.subjectId planning.samedi.subjectId')
+      .populate(POPULATE_PATHS)
+      .lean()
 
     if (!schedule) {
       return NextResponse.json(
@@ -33,7 +44,7 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({
       success: true,
-      data: schedule
+      data: normalizeSchedule(schedule)
     })
 
   } catch (error) {
@@ -59,8 +70,23 @@ export async function PUT(request, { params }) {
       return userId
     }
 
-    const { id } = params
+    await dbConnect()
+
+    const { id } = await params
     const body = await request.json()
+    const { label, validFrom, validUntil, mediaSourceUrls } = body
+
+    // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat.
+    let events = Array.isArray(body.events) ? body.events : null
+    if (!events && body.planning) events = planningToEvents(body.planning)
+
+    // Nettoyage : Mongoose n'accepte pas "" pour un ObjectId
+    if (events) {
+      events = events.map(e => ({
+        ...e,
+        subjectId: e.subjectId === "" ? null : e.subjectId
+      }))
+    }
 
     const schedule = await Schedule.findById(id)
 
@@ -78,18 +104,40 @@ export async function PUT(request, { params }) {
       )
     }
 
-    // Sauvegarde l'état avant modification pour l'historique
-    const oldPlanning = schedule.planning
+    if (events) {
+      const validation = validateEvents(events)
+      if (!validation.isValid) {
+        return NextResponse.json(
+          { error: 'Emploi du temps invalide', details: validation.errors },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Sauvegarde l'état avant modification pour l'historique (snapshot plat).
+    const snap = schedule.toObject()
+    const before = { events: snap.events, planning: snap.planning }
 
     // Met à jour les champs
     if (label) schedule.label = label
-    if (planning) schedule.planning = planning
+    if (events) {
+      schedule.events = events
+      schedule.planning = undefined // bascule définitive vers le nouveau format
+    }
+    if (validFrom !== undefined) schedule.validFrom = validFrom || undefined
+    if (validUntil !== undefined) schedule.validUntil = validUntil || null
+    if (mediaSourceUrls !== undefined) {
+      if (JSON.stringify(schedule.mediaSourceUrls) !== JSON.stringify(mediaSourceUrls)) {
+        schedule.mediaUpdatedAt = new Date();
+      }
+      schedule.mediaSourceUrls = mediaSourceUrls || [];
+    }
 
     // Ajoute la modification à l'historique
     schedule.modifications.push({
       userId,
       action: "updated",
-      details: convertPlanningToDetails(oldPlanning)
+      details: before
     })
 
     const updatedSchedule = await schedule.save()
@@ -122,6 +170,8 @@ export async function PATCH(request, { params }) {
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const { id } = await params
     body = await request.json()

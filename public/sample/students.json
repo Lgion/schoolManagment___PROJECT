@@ -7469,7 +7469,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 15.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15.25,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 10,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 17.5,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7556,7 +7586,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 11.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 17.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 16.25,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 9.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 16.5,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7643,7 +7703,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 11.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 14,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 9,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 11.75,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 9,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7730,7 +7820,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 16.5,
+                "sur": 20
+              },
+              "Français": {
+                "note": 13.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 8.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 11,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7810,7 +7930,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 15.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 12.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 8.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 13.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 13.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7875,7 +8025,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 8.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 8.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 17.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 17.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 10.25,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -7955,7 +8135,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 14.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 17.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 8.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 10.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 11,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -8035,7 +8245,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 11.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 14.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 14.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 13,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -8122,7 +8362,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 9,
+                "sur": 20
+              },
+              "Français": {
+                "note": 11.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 11.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 10.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 13,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -8202,7 +8472,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 9.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 9.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 12.25,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -8289,7 +8589,37 @@
       }
     },
     "compositions": {
-      "2025-2026": true
+      "2025-2026": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 8.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 13.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 11.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 17.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2025-2026": [
@@ -8354,7 +8684,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 13.5,
+                "sur": 20
+              },
+              "Français": {
+                "note": 9.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 13.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 8.25,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 8.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8426,7 +8786,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 14.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 13.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 14,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 9.5,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8491,7 +8881,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 9.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 16.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 15.25,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8556,7 +8976,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 8.5,
+                "sur": 20
+              },
+              "Français": {
+                "note": 12.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 12.25,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 11.75,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 8.5,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8628,7 +9078,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 12.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 9,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 14,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 11.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8700,7 +9180,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 15.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 16.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 8.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 11,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8765,7 +9275,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 8.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 9.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 12,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 17.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8830,7 +9370,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 10,
+                "sur": 20
+              },
+              "Français": {
+                "note": 12,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 8.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 13.75,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 10.25,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8895,7 +9465,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 17.25,
+                "sur": 20
+              },
+              "Français": {
+                "note": 9.25,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15.75,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 12.75,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 8.75,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -8960,7 +9560,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 17.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 13.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 16,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 17,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -9025,7 +9655,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Français": {
+                "note": 13.5,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15.5,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 17,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -9090,7 +9750,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 18,
+                "sur": 20
+              },
+              "Français": {
+                "note": 10.75,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 10.25,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 15.75,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 9.5,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [
@@ -9162,7 +9852,37 @@
       }
     },
     "compositions": {
-      "2026-2027": true
+      "2026-2027": true,
+      "2024-2025": [
+        {},
+        {
+          "officiel": {
+            "1739613600000": {
+              "Mathématiques": {
+                "note": 8.5,
+                "sur": 20
+              },
+              "Français": {
+                "note": 17,
+                "sur": 20
+              },
+              "Histoire-Géo": {
+                "note": 11,
+                "sur": 20
+              },
+              "Anglais": {
+                "note": 17,
+                "sur": 20
+              },
+              "SVT": {
+                "note": 9.25,
+                "sur": 20
+              }
+            }
+          }
+        },
+        {}
+      ]
     },
     "moyenne_trimetriel": {
       "2026-2027": [

@@ -1,0 +1,219 @@
+// === Bulletins scolaires ===
+// Panneau de génération (prof) + liste de téléchargement (élève/parent).
+// Couleurs issues exclusivement des tokens du design system « École chaleureux ».
+
+/* ---------- Panneau prof ---------- */
+.bulletins {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  &__controls {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+
+    select {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-family: inherit;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+    }
+  }
+
+  &__generate {
+    margin-left: auto;
+    background: var(--gradient-accent);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-small);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-medium); }
+    &:disabled { opacity: 0.45; cursor: not-allowed; }
+  }
+
+  &__error {
+    color: var(--color-danger-dark);
+    background: var(--color-danger-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  &__msg {
+    color: var(--color-success-dark);
+    background: var(--color-success-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  &__empty { color: var(--color-text-muted); }
+
+  &__notice {
+    color: var(--color-warning-dark);
+    background: var(--color-warning-light);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-sm);
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  &__row {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  &__rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary-soft);
+    color: var(--color-primary-700);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+  }
+
+  &__name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    flex: 1;
+  }
+
+  &__avg {
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+  }
+
+  &__dl {
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: 2px var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+
+    &:hover { background: var(--color-primary-soft); }
+  }
+
+  &__appr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    resize: vertical;
+  }
+
+  &__bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  &__tag {
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: 2px var(--spacing-sm);
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    transition: background var(--transition-fast);
+
+    &:hover { background: var(--color-primary-soft); color: var(--color-primary-700); }
+  }
+}
+
+/* ---------- Liste élève / parent ---------- */
+.studentBulletins {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__loading,
+  &__empty { color: var(--color-text-muted); }
+  &__error { color: var(--color-danger-dark); }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__period {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  &__avg {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  &__dl {
+    background: var(--gradient-accent);
+    color: var(--color-white);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: var(--spacing-xs) var(--spacing-md);
+    cursor: pointer;
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+
+    &:hover { box-shadow: var(--shadow-small); }
+  }
+}

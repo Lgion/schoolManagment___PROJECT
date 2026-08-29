@@ -21,7 +21,8 @@ export async function GET(request, { params }) {
     // Récupération des données utilisateur avec références
     const user = await User.findOne({ clerkId })
       .populate('roleData.teacherRef')
-      .populate('roleData.eleveRef');
+      .populate('roleData.eleveRef')
+      .populate('roleData.childrenRefs');
 
     if (!user) {
       return NextResponse.json(
@@ -68,26 +69,33 @@ export async function PATCH(request, { params }) {
 
     // Vérification des permissions pour modification (seuls les admins peuvent modifier les rôles)
     const currentUser = await User.findOne({ clerkId: userId });
+    const isAdmin = currentUser?.role === 'admin';
 
-    if (!currentUser || (userId !== clerkId && currentUser.role !== 'admin')) {
+    if (!currentUser || (userId !== clerkId && !isAdmin)) {
       return NextResponse.json(
         { error: 'Accès refusé' },
         { status: 403 }
       );
     }
 
+    // Champs modifiables par l'utilisateur sur son propre compte
+    const updateData = {
+      firstName: body.firstName,
+      lastName: body.lastName,
+      preferences: body.preferences,
+    };
+    // Seul un admin peut changer le rôle ou les permissions (sinon escalade de privilèges)
+    if (isAdmin) {
+      if (body.role !== undefined) updateData.role = body.role;
+      if (body.customPermissions !== undefined) updateData.customPermissions = body.customPermissions;
+    }
+
     // Mise à jour des données utilisateur
     const updatedUser = await User.findOneAndUpdate(
       { clerkId },
-      {
-        role: body.role,
-        firstName: body.firstName,
-        lastName: body.lastName,
-        preferences: body.preferences,
-        customPermissions: body.customPermissions
-      },
+      updateData,
       { new: true }
-    ).populate('roleData.teacherRef').populate('roleData.eleveRef');
+    ).populate('roleData.teacherRef').populate('roleData.eleveRef').populate('roleData.childrenRefs');
 
     return NextResponse.json(updatedUser);
 

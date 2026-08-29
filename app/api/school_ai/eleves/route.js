@@ -23,8 +23,12 @@ export async function GET(request) {
 
     await dbConnect();
 
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const schoolKey = cookieStore.get('x-school-key')?.value || 'ecole_st_martin';
+
     if (isAdmin) {
-      const eleves = await Eleve.find();
+      const eleves = await Eleve.find({ schoolKey });
       return NextResponse.json(eleves);
     }
 
@@ -36,7 +40,7 @@ export async function GET(request) {
 
     const teacherClasses = user.roleData.teacherRef.current_classes;
 
-    const eleves = await Eleve.find({ current_classe: { $in: teacherClasses } })
+    const eleves = await Eleve.find({ schoolKey, current_classe: { $in: teacherClasses } })
       .select('-scolarity_fees_$_checkbox');
 
     return NextResponse.json(eleves);

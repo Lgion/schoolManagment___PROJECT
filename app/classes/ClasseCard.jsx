@@ -1,14 +1,12 @@
 // Carte d'affichage d'une classe (ClasseCard)
 import React from "react";
 import Link from "next/link";
-import { useDetailPortal } from '../../stores/useDetailPortal';
 import './ClasseCard.scss';
 import { getClasseImagePath } from '../../utils/imageUtils';
 import PermissionGate from "../components/PermissionGate";
 
-export default function ClasseCard({ classe, enseignants, eleves: elevesFromProp, onEdit, onOpenModal }) {
+function ClasseCard({ classe, enseignants, eleves: elevesFromProp, onEdit, onOpenModal }) {
   if (!classe) return null;
-  const { openPortal } = useDetailPortal();
 
   // Déterminer l'effectif : priorité au tableau d'élèves passé en prop (filtré dynamiquement)
   // Sinon on utilise le tableau d'IDs stocké dans le document de classe
@@ -96,3 +94,7 @@ export default function ClasseCard({ classe, enseignants, eleves: elevesFromProp
     </div>
   );
 }
+
+// Mémoïsé : évite de recalculer la recherche du professeur principal pour chaque
+// carte à chaque render de la liste quand ses props n'ont pas changé.
+export default React.memo(ClasseCard);

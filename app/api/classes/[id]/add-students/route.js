@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '../../../lib/dbConnect';
+import { requireAuth } from '../../../lib/authWithFallback';
 import Classe from '../../../_/models/ai/Classe';
 import Eleve from '../../../_/models/ai/Eleve';
 
 export async function PATCH(request, { params }) {
   const { id } = await params;
-  
+
   try {
+    const auth = await requireAuth(request, 'PATCH /api/classes/[id]/add-students');
+    if (auth instanceof NextResponse) return auth;
+
     await dbConnect();
     
     const { studentIds } = await request.json();
@@ -95,7 +99,7 @@ export async function PATCH(request, { params }) {
     return NextResponse.json(
       { 
         error: 'Erreur lors de l\'ajout des élèves',
-        details: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
       { status: 500 }

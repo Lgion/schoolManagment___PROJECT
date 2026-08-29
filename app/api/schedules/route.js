@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '../lib/authWithFallback'
+import dbConnect from '../lib/dbConnect'
 
 // Import dynamique pour les modèles Mongoose
 const Schedule = require('../_/models/ai/Schedule')
@@ -13,11 +14,13 @@ export async function GET(request) {
   try {
     // Authentification avec fallback robuste
     const userId = await requireAuth(request, 'GET /api/schedules')
-    
+
     // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
     if (userId instanceof NextResponse) {
       return userId
     }
+
+    await dbConnect()
 
     const { searchParams } = new URL(request.url)
     const classeId = searchParams.get('classeId')
@@ -64,28 +67,47 @@ export async function POST(request) {
   try {
     // Authentification avec fallback robuste
     const userId = await requireAuth(request, 'POST /api/schedules')
-    
+
     // Si requireAuth retourne une NextResponse, c'est une erreur d'auth
     if (userId instanceof NextResponse) {
       return userId
     }
 
-    const body = await request.json()
-    const { classeId, label, planning, } = body
+    await dbConnect()
 
-    // Validation des données requises
-    if (!classeId || !planning ) {
+    const body = await request.json()
+    const { classeId, label, validFrom, validUntil, mediaSourceUrls } = body
+
+    // Nouveau format `events` privilégié ; `planning` accepté en rétro-compat
+    // (converti en events) tant que d'anciens clients existent.
+    const { planningToEvents, validateEvents } = require('../../../utils/scheduleEvents')
+    let events = Array.isArray(body.events) ? body.events : null
+    if (!events && body.planning) {
+      events = planningToEvents(body.planning)
+    }
+
+    // Nettoyage : Mongoose n'accepte pas "" pour un ObjectId
+    if (events) {
+      events = events.map(e => ({
+        ...e,
+        subjectId: e.subjectId === "" ? null : e.subjectId
+      }))
+    }
+
+    if (!classeId || !events) {
       return NextResponse.json(
-        { error: '"classeId" et "planning" sont requis' },
+        { error: '"classeId" et "events" (ou "planning") sont requis' },
         { status: 400 }
       )
     }
 
-    
-    // return NextResponse.json(
-    //   { error: 'La date de fin doit être postérieure à la date de début' },
-    //   { status: 400 }
-    // )
+    const validation = validateEvents(events)
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { error: 'Emploi du temps invalide', details: validation.errors },
+        { status: 400 }
+      )
+    }
 
     // ÉTAPE 1: Archiver tous les emplois du temps actifs de cette classe
     console.log('📚 Archivage des emplois du temps précédents pour la classe:', classeId)
@@ -115,7 +137,11 @@ export async function POST(request) {
     const newSchedule = new Schedule({
       classeId,
       label: label || undefined, // Utilise le default du schéma si non fourni
-      planning,
+      events,
+      validFrom: validFrom || undefined,
+      validUntil: validUntil || null,
+      mediaSourceUrls: mediaSourceUrls || [],
+      mediaUpdatedAt: mediaSourceUrls && mediaSourceUrls.length > 0 ? new Date() : null,
       createdBy: userId,
       isArchived: false, // Explicitement actif
       modifications: [{

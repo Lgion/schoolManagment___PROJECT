@@ -1,16 +1,16 @@
 // Composant CompositionsManager - Gestion des dates de compositions pour les classes
 .compositions-manager {
   padding: 1rem;
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: var(--bg-secondary, #f8f9fa);
+  background: var(--color-surface-muted);
   
   &__list {
     margin-bottom: 1rem;
   }
   
   &__empty {
-    color: var(--text-muted, #6c757d);
+    color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
     padding: 2rem;
@@ -23,13 +23,13 @@
     gap: 0.75rem;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
-    background: var(--bg-primary, #ffffff);
-    border: 1px solid var(--border-light, #dee2e6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     transition: all 0.2s ease;
-    
+
     &:hover {
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow-small);
       transform: translateY(-1px);
     }
     
@@ -40,7 +40,7 @@
   
   &__date {
     font-weight: 600;
-    color: var(--text-primary, #212529);
+    color: var(--color-text-primary);
     font-family: var(--font-primary, 'Inter', sans-serif);
   }
   
@@ -53,12 +53,12 @@
     letter-spacing: 0.5px;
     
     &--officiel {
-      background: linear-gradient(135deg, #28a745, #20c997);
+      background: var(--color-success);
       color: white;
     }
-    
+
     &--non-officiel {
-      background: linear-gradient(135deg, #6c757d, #adb5bd);
+      background: var(--color-text-muted);
       color: white;
     }
   }
@@ -67,7 +67,7 @@
     margin-left: auto;
     background: none;
     border: none;
-    color: var(--danger-color, #dc3545);
+    color: var(--color-danger);
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0.25rem;
@@ -80,7 +80,7 @@
     transition: all 0.2s ease;
     
     &:hover {
-      background: var(--danger-color, #dc3545);
+      background: var(--color-danger);
       color: white;
       transform: scale(1.1);
     }
@@ -89,7 +89,7 @@
   &__add-btn {
     width: 100%;
     padding: 0.75rem;
-    background: linear-gradient(135deg, var(--primary-color, #007bff), var(--primary-dark, #0056b3));
+    background: var(--gradient-brand);
     color: white;
     border: none;
     border-radius: 6px;
@@ -100,7 +100,7 @@
     
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      box-shadow: var(--shadow-brand);
     }
     
     &:active {
@@ -110,8 +110,8 @@
   
   &__add-form {
     padding: 1rem;
-    background: var(--bg-primary, #ffffff);
-    border: 1px solid var(--border-light, #dee2e6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 6px;
     margin-top: 1rem;
   }
@@ -131,36 +131,36 @@
   &__date-input {
     flex: 1;
     padding: 0.5rem;
-    border: 1px solid var(--border-color, #ced4da);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     font-family: var(--font-primary, 'Inter', sans-serif);
-    
+
     &:focus {
       outline: none;
-      border-color: var(--primary-color, #007bff);
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      border-color: var(--color-primary);
+      box-shadow: var(--focus-ring);
     }
   }
   
   &__officiel-toggle {
     padding: 0.5rem 1rem;
-    border: 2px solid var(--border-color, #ced4da);
+    border: 2px solid var(--color-border);
     border-radius: 20px;
-    background: var(--bg-primary, #ffffff);
-    color: var(--text-muted, #6c757d);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
     white-space: nowrap;
-    
+
     &:hover {
-      border-color: var(--primary-color, #007bff);
+      border-color: var(--color-primary);
     }
-    
+
     &--active {
-      background: linear-gradient(135deg, #28a745, #20c997);
+      background: var(--color-success);
       color: white;
-      border-color: #28a745;
+      border-color: var(--color-success);
     }
   }
   
@@ -172,17 +172,17 @@
   
   &__validate-btn {
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: var(--color-success);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
-    
+
     &:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+      box-shadow: var(--shadow-small);
     }
     
     &:disabled {
@@ -193,17 +193,17 @@
   
   &__cancel-btn {
     padding: 0.5rem 1rem;
-    background: var(--bg-secondary, #f8f9fa);
-    color: var(--text-secondary, #6c757d);
-    border: 1px solid var(--border-color, #ced4da);
+    background: var(--color-surface-muted);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
-    
+
     &:hover {
-      background: var(--bg-light, #e9ecef);
-      color: var(--text-primary, #212529);
+      background: var(--color-border);
+      color: var(--color-text-primary);
     }
   }
 }

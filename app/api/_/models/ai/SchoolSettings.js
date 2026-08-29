@@ -30,8 +30,17 @@ const targetDefinitionSchema = new mongoose.Schema(
 const homepageSchema = new mongoose.Schema(
   {
     title: { type: String, default: 'École de Démo' },
+    slogan: { type: String, default: 'Système de gestion scolaire' },
     texts: { type: [String], default: ['Bienvenue sur l\'application de gestion scolaire.'] },
     photo: { type: String, default: '/ecole_testes/photo.jpg' },
+    logoUrl: { type: String, default: '/logo.png' },
+    bannerUrl: { type: String, default: '/bg_header.webp' },
+    primaryColor: { type: String, default: '#1E3A8A' },
+    accentColor: { type: String, default: '#F97316' },
+    fontHeading: { type: String, default: 'Poppins' },
+    fontBody: { type: String, default: 'Inter' },
+    borderRadiusPreset: { type: String, default: 'medium' },
+    headerStylePreset: { type: String, default: 'glass' },
   },
   { _id: false }
 );

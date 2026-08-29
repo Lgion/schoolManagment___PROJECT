@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { getSchoolYear } from '../../utils/scheduleEvents'
 
 /**
  * Composant ScheduleHistory
@@ -18,6 +19,22 @@ const ScheduleHistory = ({
   const [loading, setLoading] = useState(true)
   const [archiving, setArchiving] = useState(null)
   const [reactivating, setReactivating] = useState(null)
+  const [showActive, setShowActive] = useState(true)
+  const [showArchived, setShowArchived] = useState(true)
+
+  // Liste filtrée selon les cases à cocher actifs / archivés
+  const visibleSchedules = schedules.filter(s =>
+    (showActive && !s.isArchived) || (showArchived && s.isArchived)
+  )
+
+  const groupedSchedules = visibleSchedules.reduce((acc, schedule) => {
+    const year = getSchoolYear(schedule.validFrom || schedule.createdAt)
+    if (!acc[year]) acc[year] = []
+    acc[year].push(schedule)
+    return acc
+  }, {})
+
+  const sortedYears = Object.keys(groupedSchedules).sort((a, b) => b.localeCompare(a))
 
   useEffect(() => {
     loadScheduleHistory()
@@ -63,69 +80,40 @@ const ScheduleHistory = ({
     }
   }
 
-  const handleArchiveSchedule = async (scheduleId) => {
-    if (!confirm('Êtes-vous sûr de vouloir archiver cet emploi du temps ?')) {
-      return
-    }
-
+  // Archive / réactive un emploi du temps (PATCH) : même flux, seuls l'action,
+  // le libellé et le setter « occupé » changent.
+  const patchScheduleAction = async (scheduleId, action, { confirmMsg, setBusy, errVerb }) => {
+    if (!confirm(confirmMsg)) return
     try {
-      setArchiving(scheduleId)
-      
+      setBusy(scheduleId)
       const response = await fetch(`/api/schedules/${scheduleId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ action: 'archive' })
+        body: JSON.stringify({ action })
       })
-
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de l\'archivage')
-      }
-
+      if (!response.ok) throw new Error(data.error || `Erreur lors de ${errVerb}`)
       await loadScheduleHistory() // Recharge la liste
     } catch (error) {
-      console.error('Erreur lors de l\'archivage:', error)
-      alert('Erreur lors de l\'archivage de l\'emploi du temps')
+      console.error(`Erreur lors de ${errVerb}:`, error)
+      alert(`Erreur lors de ${errVerb} de l'emploi du temps`)
     } finally {
-      setArchiving(null)
+      setBusy(null)
     }
   }
 
-  const handleReactivateSchedule = async (scheduleId) => {
-    if (!confirm('Êtes-vous sûr de vouloir réactiver cet emploi du temps ?')) {
-      return
-    }
+  const handleArchiveSchedule = (scheduleId) => patchScheduleAction(scheduleId, 'archive', {
+    confirmMsg: 'Êtes-vous sûr de vouloir archiver cet emploi du temps ?',
+    setBusy: setArchiving,
+    errVerb: "l'archivage",
+  })
 
-    try {
-      setReactivating(scheduleId)
-      
-      const response = await fetch(`/api/schedules/${scheduleId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ action: 'reactivate' })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Erreur lors de la réactivation')
-      }
-
-      await loadScheduleHistory() // Recharge la liste
-    } catch (error) {
-      console.error('Erreur lors de la réactivation:', error)
-      alert('Erreur lors de la réactivation de l\'emploi du temps')
-    } finally {
-      setReactivating(null)
-    }
-  }
+  const handleReactivateSchedule = (scheduleId) => patchScheduleAction(scheduleId, 'reactivate', {
+    confirmMsg: 'Êtes-vous sûr de vouloir réactiver cet emploi du temps ?',
+    setBusy: setReactivating,
+    errVerb: 'la réactivation',
+  })
 
   const handleDuplicateSchedule = (schedule) => {
     // Crée une copie de l'emploi du temps pour édition
@@ -171,18 +159,20 @@ const ScheduleHistory = ({
       <div className="scheduleHistory__filters">
         <div className="scheduleHistory__filter-group">
           <label className="scheduleHistory__filter-label">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               className="scheduleHistory__filter-checkbox"
-              defaultChecked={true}
+              checked={showActive}
+              onChange={e => setShowActive(e.target.checked)}
             />
             Emplois du temps actifs
           </label>
           <label className="scheduleHistory__filter-label">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               className="scheduleHistory__filter-checkbox"
-              defaultChecked={true}
+              checked={showArchived}
+              onChange={e => setShowArchived(e.target.checked)}
             />
             Emplois du temps archivés
           </label>
@@ -190,124 +180,131 @@ const ScheduleHistory = ({
       </div>
 
       <div className="scheduleHistory__timeline">
-        {schedules.map((schedule, index) => (
-          <div 
-            key={schedule._id}
-            className={`scheduleHistory__item ${schedule.isArchived ? 'scheduleHistory__item--archived' : 'scheduleHistory__item--active'}`}
-          >
-            <div className="scheduleHistory__item-marker">
-              <span className="scheduleHistory__item-marker-icon">
-                {schedule.isArchived ? '📦' : '📅'}
-              </span>
-            </div>
+        {sortedYears.map(year => (
+          <div key={year} className="scheduleHistory__year-group">
+            <h3 className="scheduleHistory__year-title" style={{ marginTop: '20px', marginBottom: '10px', paddingBottom: '5px', borderBottom: '2px solid var(--color-primary)', color: 'var(--color-primary-dark)' }}>
+              Année Scolaire {year}
+            </h3>
+            {groupedSchedules[year].map((schedule, index) => (
+              <div 
+                key={schedule._id}
+                className={`scheduleHistory__item ${schedule.isArchived ? 'scheduleHistory__item--archived' : 'scheduleHistory__item--active'}`}
+              >
+                <div className="scheduleHistory__item-marker">
+                  <span className="scheduleHistory__item-marker-icon">
+                    {schedule.isArchived ? '📦' : '📅'}
+                  </span>
+                </div>
 
-            <div className="scheduleHistory__item-content">
-              <div className="scheduleHistory__item-header">
-                <h3 className="scheduleHistory__item-title">{schedule.label}</h3>
-                <div className="scheduleHistory__item-badges">
-                  {!schedule.isArchived && (
-                    <span className="scheduleHistory__badge scheduleHistory__badge--active">
-                      Actif
+                <div className="scheduleHistory__item-content">
+                  <div className="scheduleHistory__item-header">
+                    <h3 className="scheduleHistory__item-title">{schedule.label}</h3>
+                    <div className="scheduleHistory__item-badges">
+                      {!schedule.isArchived && (
+                        <span className="scheduleHistory__badge scheduleHistory__badge--active">
+                          Actif
+                        </span>
+                      )}
+                      {schedule.isArchived && (
+                        <span className="scheduleHistory__badge scheduleHistory__badge--archived">
+                          Archivé
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="scheduleHistory__item-meta">
+                    <span className="scheduleHistory__item-created">
+                      🕒 Créé le {new Date(schedule.createdAt).toLocaleDateString('fr-FR')}
                     </span>
-                  )}
-                  {schedule.isArchived && (
-                    <span className="scheduleHistory__badge scheduleHistory__badge--archived">
-                      Archivé
-                    </span>
+                    {schedule.modifications.length > 0 && (
+                      <span className="scheduleHistory__item-modifications">
+                        ✏️ {schedule.modifications.length} modification{schedule.modifications.length > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="scheduleHistory__item-actions">
+                    <button 
+                      className="scheduleHistory__item-btn scheduleHistory__item-btn--view"
+                      onClick={() => onEditSchedule(schedule)}
+                    >
+                      <span className="scheduleHistory__item-btn-icon">👁️</span>
+                      Voir
+                    </button>
+                    
+                    {!schedule.isArchived && (
+                      <button 
+                        className="scheduleHistory__item-btn scheduleHistory__item-btn--edit"
+                        onClick={() => onEditSchedule(schedule)}
+                      >
+                        <span className="scheduleHistory__item-btn-icon">✏️</span>
+                        Modifier
+                      </button>
+                    )}
+                    
+                    <button 
+                      className="scheduleHistory__item-btn scheduleHistory__item-btn--duplicate"
+                      onClick={() => handleDuplicateSchedule(schedule)}
+                    >
+                      <span className="scheduleHistory__item-btn-icon">📋</span>
+                      Dupliquer
+                    </button>
+                    
+                    {!schedule.isArchived ? (
+                      <button 
+                        className="scheduleHistory__item-btn scheduleHistory__item-btn--archive"
+                        onClick={() => handleArchiveSchedule(schedule._id)}
+                        disabled={archiving === schedule._id}
+                      >
+                        <span className="scheduleHistory__item-btn-icon">
+                          {archiving === schedule._id ? '⏳' : '📦'}
+                        </span>
+                        {archiving === schedule._id ? 'Archivage...' : 'Archiver'}
+                      </button>
+                    ) : (
+                      <button 
+                        className="scheduleHistory__item-btn scheduleHistory__item-btn--reactivate"
+                        onClick={() => handleReactivateSchedule(schedule._id)}
+                        disabled={reactivating === schedule._id}
+                      >
+                        <span className="scheduleHistory__item-btn-icon">
+                          {reactivating === schedule._id ? '⏳' : '🔄'}
+                        </span>
+                        {reactivating === schedule._id ? 'Réactivation...' : 'Réactiver'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Détails des modifications */}
+                  {schedule.modifications.length > 0 && (
+                    <details className="scheduleHistory__item-details">
+                      <summary className="scheduleHistory__item-details-summary">
+                        Voir l'historique des modifications
+                      </summary>
+                      <div className="scheduleHistory__modifications">
+                        {schedule.modifications.map((mod, modIndex) => (
+                          <div key={modIndex} className="scheduleHistory__modification">
+                            <span className="scheduleHistory__modification-date">
+                              {new Date(mod.date).toLocaleDateString('fr-FR')} à {new Date(mod.date).toLocaleTimeString('fr-FR')}
+                            </span>
+                            <span className="scheduleHistory__modification-action">
+                              {mod.action === 'created' && '✨ Créé'}
+                              {mod.action === 'updated' && '✏️ Modifié'}
+                              {mod.action === 'archived' && '📦 Archivé'}
+                              {mod.action === 'reactivated' && '🔄 Réactivé'}
+                            </span>
+                            <span className="scheduleHistory__modification-user">
+                              par {mod.userId}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
                   )}
                 </div>
               </div>
-
-              <div className="scheduleHistory__item-meta">
-                <span className="scheduleHistory__item-created">
-                  🕒 Créé le {new Date(schedule.createdAt).toLocaleDateString('fr-FR')}
-                </span>
-                {schedule.modifications.length > 0 && (
-                  <span className="scheduleHistory__item-modifications">
-                    ✏️ {schedule.modifications.length} modification{schedule.modifications.length > 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-
-              <div className="scheduleHistory__item-actions">
-                <button 
-                  className="scheduleHistory__item-btn scheduleHistory__item-btn--view"
-                  onClick={() => onEditSchedule(schedule)}
-                >
-                  <span className="scheduleHistory__item-btn-icon">👁️</span>
-                  Voir
-                </button>
-                
-                {!schedule.isArchived && (
-                  <button 
-                    className="scheduleHistory__item-btn scheduleHistory__item-btn--edit"
-                    onClick={() => onEditSchedule(schedule)}
-                  >
-                    <span className="scheduleHistory__item-btn-icon">✏️</span>
-                    Modifier
-                  </button>
-                )}
-                
-                <button 
-                  className="scheduleHistory__item-btn scheduleHistory__item-btn--duplicate"
-                  onClick={() => handleDuplicateSchedule(schedule)}
-                >
-                  <span className="scheduleHistory__item-btn-icon">📋</span>
-                  Dupliquer
-                </button>
-                
-                {!schedule.isArchived ? (
-                  <button 
-                    className="scheduleHistory__item-btn scheduleHistory__item-btn--archive"
-                    onClick={() => handleArchiveSchedule(schedule._id)}
-                    disabled={archiving === schedule._id}
-                  >
-                    <span className="scheduleHistory__item-btn-icon">
-                      {archiving === schedule._id ? '⏳' : '📦'}
-                    </span>
-                    {archiving === schedule._id ? 'Archivage...' : 'Archiver'}
-                  </button>
-                ) : (
-                  <button 
-                    className="scheduleHistory__item-btn scheduleHistory__item-btn--reactivate"
-                    onClick={() => handleReactivateSchedule(schedule._id)}
-                    disabled={reactivating === schedule._id}
-                  >
-                    <span className="scheduleHistory__item-btn-icon">
-                      {reactivating === schedule._id ? '⏳' : '🔄'}
-                    </span>
-                    {reactivating === schedule._id ? 'Réactivation...' : 'Réactiver'}
-                  </button>
-                )}
-              </div>
-
-              {/* Détails des modifications */}
-              {schedule.modifications.length > 0 && (
-                <details className="scheduleHistory__item-details">
-                  <summary className="scheduleHistory__item-details-summary">
-                    Voir l'historique des modifications
-                  </summary>
-                  <div className="scheduleHistory__modifications">
-                    {schedule.modifications.map((mod, modIndex) => (
-                      <div key={modIndex} className="scheduleHistory__modification">
-                        <span className="scheduleHistory__modification-date">
-                          {new Date(mod.date).toLocaleDateString('fr-FR')} à {new Date(mod.date).toLocaleTimeString('fr-FR')}
-                        </span>
-                        <span className="scheduleHistory__modification-action">
-                          {mod.action === 'created' && '✨ Créé'}
-                          {mod.action === 'updated' && '✏️ Modifié'}
-                          {mod.action === 'archived' && '📦 Archivé'}
-                          {mod.action === 'reactivated' && '🔄 Réactivé'}
-                        </span>
-                        <span className="scheduleHistory__modification-user">
-                          par {mod.userId}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </details>
-              )}
-            </div>
+            ))}
           </div>
         ))}
       </div>

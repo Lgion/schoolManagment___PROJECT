@@ -10,7 +10,7 @@
 
   // En-tête principal de la page
   &__header {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--gradient-brand);
     border-radius: 16px;
     padding: 2rem;
     margin-bottom: 2rem;
@@ -92,7 +92,7 @@
 
   // Contenu principal
   &__content {
-    background: white;
+    background: var(--color-surface);
     border-radius: 16px;
     box-shadow: var(--shadow-small);
     border: 1px solid var(--color-border);
@@ -202,19 +202,19 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
-  background: white;
-  color: var(--color-primary, #2c3e50);
-  border: 1px solid var(--color-border, #eee);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-small);
 
   &:hover {
-    background: var(--color-primary, #2c3e50);
+    background: var(--color-primary);
     color: white;
-    border-color: var(--color-primary, #2c3e50);
+    border-color: var(--color-primary);
     transform: translateX(-5px);
   }
 
@@ -234,17 +234,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary, #2c3e50), #3498db);
+  background: var(--gradient-brand);
   color: white;
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
-  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: var(--shadow-medium);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    box-shadow: var(--shadow-large);
     filter: brightness(1.1);
   }
 

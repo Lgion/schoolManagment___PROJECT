@@ -1,7 +1,7 @@
 "use client"
 
 import Chart from "chart.js/auto"
-import { useContext, useRef, useEffect, useState } from "react";
+import { useContext, useRef, useEffect, useState, useMemo } from "react";
 import { AiAdminContext } from '../../stores/ai_adminContext';
 import PermissionGate from '../components/PermissionGate';
 import EleveCard from './EleveCard';
@@ -9,6 +9,8 @@ import './EleveCard.scss';
 import { getLSItem } from "../../utils/localStorageManager";
 import ImageScanner from '../components/ui/ImageScanner';
 import ReviewFeesModal from '../components/ui/ReviewFeesModal';
+import LoadingState from '../components/ui/LoadingState';
+import { fetchBalance } from '../components/points/pointsApi';
 
 export default function EcoleAdminEleveLayout({ children }) {
     const ctx = useContext(AiAdminContext);
@@ -24,6 +26,39 @@ export default function EcoleAdminEleveLayout({ children }) {
     const [searchText, setSearchText] = useState(''); // Recherche textuelle
     const [viewMode, setViewMode] = useState('grid'); // 'grid', 'inline'
     const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false); // Toggle panneau des filtres
+    const [balances, setBalances] = useState({});
+    const [loadingBalances, setLoadingBalances] = useState(true);
+
+    useEffect(() => {
+        if (!Array.isArray(eleves) || eleves.length === 0) {
+            setLoadingBalances(false);
+            return;
+        }
+        setLoadingBalances(true);
+        (async () => {
+            try {
+                const results = await Promise.all(
+                    eleves.map(e => fetchBalance(e._id).then(b => [e._id, b.balance]).catch(() => [e._id, 0]))
+                );
+                if (results) {
+                    setBalances(Object.fromEntries(results));
+                }
+            } catch (err) {
+                console.error("Erreur chargement balances élèves:", err);
+            } finally {
+                setLoadingBalances(false);
+            }
+        })();
+    }, [eleves]);
+
+    const topStudents = useMemo(() => {
+        if (loadingBalances) return [];
+        return eleves
+            .map(e => ({ student: e, balance: balances[e._id] ?? 0 }))
+            .filter(item => item.balance > 0)
+            .sort((a, b) => b.balance - a.balance)
+            .slice(0, 3);
+    }, [eleves, balances, loadingBalances]);
 
     // IA Analyse Fees States
     const [scanResult, setScanResult] = useState(null);
@@ -203,17 +238,122 @@ export default function EcoleAdminEleveLayout({ children }) {
         setScanResult(null);
     };
 
+    // Index classe par id (lookup O(1) au lieu d'un .find() par carte/comparaison)
+    const classesById = useMemo(() => {
+        const m = new Map();
+        (ctx.classes || []).forEach(c => m.set(c._id, c));
+        return m;
+    }, [ctx.classes]);
+
+    // Liste filtrée + triée mémoïsée : ne recalcule que si une dépendance change
+    const displayedEleves = useMemo(() => {
+        if (!Array.isArray(eleves)) return [];
+        return eleves
+            .filter(eleve => {
+                let matchesClasse = true;
+                if (filterByClasse !== 'toutes') {
+                    const classe = classesById.get(eleve.current_classe);
+                    matchesClasse = classe?.niveau === filterByClasse;
+                }
+
+                let matchesGender = true;
+                if (filterByGender !== 'tous') {
+                    matchesGender = eleve.sexe === filterByGender;
+                }
+
+                let matchesInterne = true;
+                if (filterByInterne !== 'tous') {
+                    if (filterByInterne === 'interne') {
+                        matchesInterne = eleve.targetsList?.isInterne === "Interne";
+                    } else if (filterByInterne === 'externe') {
+                        matchesInterne = !eleve.targetsList?.isInterne || eleve.targetsList?.isInterne !== "Interne";
+                    }
+                }
+
+                let matchesSearch = true;
+                if (searchText.trim()) {
+                    const searchLower = searchText.toLowerCase().trim();
+                    const nom = eleve.nom || '';
+                    const prenom = (Array.isArray(eleve.prenoms) ? eleve.prenoms.join('') : eleve.prenoms || '')
+                        .normalize('NFD').replace(/[̀-ͯ]/g, "");
+                    const nomComplet = `${nom} ${prenom}`.toLowerCase();
+                    matchesSearch = nomComplet.includes(searchLower);
+                }
+
+                return matchesClasse && matchesGender && matchesInterne && matchesSearch;
+            })
+            .sort((a, b) => {
+                let comparison = 0;
+                if (sortBy === 'nom') {
+                    const nomA = a.nom || '';
+                    const nomB = b.nom || '';
+                    const prenomA = (Array.isArray(a.prenoms) ? a.prenoms.join(' ') : a.prenoms) || '';
+                    const prenomB = (Array.isArray(b.prenoms) ? b.prenoms.join(' ') : b.prenoms) || '';
+                    comparison = nomA.localeCompare(nomB) || prenomA.localeCompare(prenomB);
+                } else if (sortBy === 'classe') {
+                    const niveauA = classesById.get(a.current_classe)?.niveau || '';
+                    const niveauB = classesById.get(b.current_classe)?.niveau || '';
+                    const priorityA = classOrderPriority?.[niveauA] ?? Number.MAX_SAFE_INTEGER;
+                    const priorityB = classOrderPriority?.[niveauB] ?? Number.MAX_SAFE_INTEGER;
+                    const nomA = a.nom || '';
+                    const nomB = b.nom || '';
+                    comparison = priorityA - priorityB || nomA.localeCompare(nomB);
+                }
+                return sortOrder === 'desc' ? -comparison : comparison;
+            });
+    }, [eleves, classesById, filterByClasse, filterByGender, filterByInterne, searchText, sortBy, sortOrder]);
+
     return (<>
-        <h2>Liste des élèves</h2>
-        <canvas ref={canvasRef} id="camembert"
-            width={320}
-            height={320}
-        ></canvas>
+        <h2 className="page-title">Liste des élèves</h2>
+        
+        <div className="eleves-header-grid">
+            <div className="eleves-header-card --camembert">
+                <canvas ref={canvasRef} id="camembert"
+                    width={220}
+                    height={220}
+                    role="img"
+                    aria-label={`Répartition des élèves par genre (total : ${totalEleves})`}
+                ></canvas>
+            </div>
+            
+            <div className="eleves-header-card --honors">
+                <h3 className="eleves-header-card__title">🏆 Élèves à l'Honneur (Bons Points)</h3>
+                {loadingBalances ? (
+                    <div className="eleves-header-card__loading">Chargement des distinctions...</div>
+                ) : topStudents.length === 0 ? (
+                    <div className="eleves-header-card__empty">Aucun élève distingué pour le moment.</div>
+                ) : (
+                    <div className="eleves-header-card__honors-list">
+                        {topStudents.map((item, idx) => {
+                            const rankEmojis = ['🥇', '🥈', '🥉'];
+                            const photo = item.student.cloudinary?.url || item.student.photo_$_file || item.student.photo || '/default-avatar.png';
+                            const pName = Array.isArray(item.student.prenoms) ? item.student.prenoms.join(' ') : item.student.prenoms;
+                            return (
+                                <div key={item.student._id} className="eleves-header-card__honor-item">
+                                    <span className="eleves-header-card__rank">{rankEmojis[idx] || '🎖️'}</span>
+                                    <img src={photo} alt="" className="eleves-header-card__honor-avatar" />
+                                    <div className="eleves-header-card__honor-info">
+                                        <span className="eleves-header-card__honor-name">
+                                            {item.student.nom} {pName}
+                                        </span>
+                                        <span className="eleves-header-card__honor-points">Solde : {item.balance} points</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
+
         <form className="infos_cards">
             {/* --- Top Bar: Search and Actions --- */}
             <div className="infos_cards__top-bar">
                 {/* Recherche textuelle */}
                 <div className="infos_cards__search-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="18" height="18">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
                     <input
                         id="search-input"
                         type="text"
@@ -223,43 +363,47 @@ export default function EcoleAdminEleveLayout({ children }) {
                         onChange={e => setSearchText(e.target.value)}
                         aria-label="Rechercher un élève par nom ou prénom"
                     />
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
                 </div>
 
                 <div className="infos_cards__top-bar-controls">
+                    {/* Bouton Filtres */}
                     <button 
                         type="button" 
                         className={`infos_cards__btn infos_cards__btn--icon ${isFilterPanelOpen ? 'infos_cards__btn--active' : ''}`}
                         onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
                         title="Afficher/Masquer les filtres"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="20" height="20">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" width="16" height="16">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5m4.5 12h9.75M10.5 18a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5m4.5-6h9.75M10.5 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm0 0H4.5" />
                         </svg>
                         Filtres
                     </button>
 
+                    {/* Bouton Analyse IA — wrapper flex pour aligner au meme niveau */}
                     <PermissionGate roles={['admin', 'prof']}>
-                        <div className="infos_cards__actions">
-                            <ImageScanner
-                                apiEndpoint="/api/school_ai/extract-fees"
-                                label="Analyse IA"
-                                className="infos_cards__btn infos_cards__btn--primary"
-                                title="Scanner une liste de paiements de scolarité avec l'IA"
-                                onScanComplete={(result) => {
-                                    if (result.success) {
-                                        setScanResult(result);
-                                    } else {
-                                        alert(result.error || "Erreur lors du scan");
-                                    }
-                                }}
-                            />
-                            <button type="button" onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className="infos_cards__btn infos_cards__btn--primary">
-                                Ajouter un élève +
-                            </button>
-                        </div>
+                        <ImageScanner
+                            apiEndpoint="/api/school_ai/extract-fees"
+                            label="🤖 Analyse IA"
+                            className="infos_cards__btn infos_cards__btn--ai"
+                            title="Scanner une liste de paiements de scolarité avec l'IA"
+                            onScanComplete={(result) => {
+                                if (result.success) {
+                                    setScanResult(result);
+                                } else {
+                                    alert(result.error || "Erreur lors du scan");
+                                }
+                            }}
+                        />
+                    </PermissionGate>
+
+                    {/* Bouton Ajouter */}
+                    <PermissionGate roles={['admin', 'prof']}>
+                        <button type="button" onClick={() => { setSelected(null); setEditType("eleve"); setShowModal(true); }} className="infos_cards__btn infos_cards__btn--primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" width="15" height="15">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Ajouter un élève
+                        </button>
                     </PermissionGate>
                 </div>
             </div>
@@ -267,8 +411,8 @@ export default function EcoleAdminEleveLayout({ children }) {
             {/* --- Filter Panel --- */}
             <div className={`infos_cards__filter-panel ${isFilterPanelOpen ? 'infos_cards__filter-panel--open' : ''}`}>
                 <div className="infos_cards__filter-header">
-                    <h3 className="infos_cards__filter-title">Student Management Filter Panel</h3>
-                    <button type="button" className="infos_cards__filter-close" onClick={() => setIsFilterPanelOpen(false)}>✕</button>
+                    <h3 className="infos_cards__filter-title">Filtrer les élèves</h3>
+                    <button type="button" className="infos_cards__filter-close" onClick={() => setIsFilterPanelOpen(false)} aria-label="Fermer le panneau de filtrage">✕</button>
                 </div>
 
                 {/* Filtre Classes */}
@@ -370,8 +514,19 @@ export default function EcoleAdminEleveLayout({ children }) {
                             aria-label={`Basculer vers l'affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
                             title={`Affichage ${viewMode === 'grid' ? 'en ligne' : 'en grille'}`}
                         >
-                            <span className="infos_cards__view-toggle-icon">
-                                {viewMode === 'grid' ? '📋' : '⊞'}
+                            <span className="infos_cards__view-toggle-icon" aria-hidden="true">
+                                {viewMode === 'grid' ? (
+                                    // Icône « liste » (passer en affichage en ligne)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+                                        <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                                    </svg>
+                                ) : (
+                                    // Icône « grille » (passer en affichage en grille)
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+                                    </svg>
+                                )}
                             </span>
                         </button>
                     </div>
@@ -393,81 +548,18 @@ export default function EcoleAdminEleveLayout({ children }) {
 
         {Array.isArray(eleves) ?
             <ul className={`eleves-list ${viewMode === 'inline' ? 'eleves-list--inline' : ''}`}>
-                {eleves
-                    .filter(eleve => {
-                        // Filtre par classe
-                        let matchesClasse = true;
-                        if (filterByClasse !== 'toutes') {
-                            const classe = (ctx.classes || []).find(c => c._id === eleve.current_classe);
-                            matchesClasse = classe?.niveau === filterByClasse;
-                        }
-
-                        // Filtre par genre
-                        let matchesGender = true;
-                        if (filterByGender !== 'tous') {
-                            matchesGender = eleve.sexe === filterByGender;
-                        }
-
-                        // Filtre par statut interne/externe
-                        let matchesInterne = true;
-                        if (filterByInterne !== 'tous') {
-                            if (filterByInterne === 'interne') {
-                                matchesInterne = eleve.targetsList?.isInterne === "Interne";
-                            } else if (filterByInterne === 'externe') {
-                                matchesInterne = !eleve.targetsList?.isInterne || eleve.targetsList?.isInterne !== "Interne";
-                            }
-                        }
-
-                        // Filtre par recherche textuelle
-                        let matchesSearch = true;
-                        if (searchText.trim()) {
-                            const searchLower = searchText.toLowerCase().trim();
-                            const nom = eleve.nom || '';
-                            const prenom = eleve.prenoms.join('').normalize('NFD').replace(/[\u0300-\u036f]/g, "") || '';
-                            const nomComplet = `${nom} ${prenom}`.toLowerCase();
-                            matchesSearch = nomComplet.includes(searchLower);
-                        }
-
-                        return matchesClasse && matchesGender && matchesInterne && matchesSearch;
-                    })
-                    .sort((a, b) => {
-                        let comparison = 0;
-
-                        if (sortBy === 'nom') {
-                            // Tri par nom de famille puis prénom (avec vérifications de sécurité)
-                            const nomA = a.nom || '';
-                            const nomB = b.nom || '';
-                            const prenomA = a.prenom || '';
-                            const prenomB = b.prenom || '';
-                            comparison = nomA.localeCompare(nomB) || prenomA.localeCompare(prenomB);
-                        } else if (sortBy === 'classe') {
-                            // Tri par classe (niveau) selon ordre défini
-                            const classeA = (ctx.classes || []).find(c => c._id === a.current_classe);
-                            const classeB = (ctx.classes || []).find(c => c._id === b.current_classe);
-                            const niveauA = classeA?.niveau || '';
-                            const niveauB = classeB?.niveau || '';
-                            const priorityA = classOrderPriority?.[niveauA] ?? Number.MAX_SAFE_INTEGER;
-                            const priorityB = classOrderPriority?.[niveauB] ?? Number.MAX_SAFE_INTEGER;
-                            const nomA = a.nom || '';
-                            const nomB = b.nom || '';
-                            comparison = priorityA - priorityB || nomA.localeCompare(nomB);
-                        }
-
-                        // Inverser l'ordre si décroissant
-                        return sortOrder === 'desc' ? -comparison : comparison;
-                    })
-                    .map(eleve => (
-                        <EleveCard
-                            key={eleve._id}
-                            classe={(ctx.classes || []).find(c => c._id === eleve.current_classe) || {}}
-                            eleve={eleve}
-                            onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
-                            viewMode={viewMode}
-                        />
-                    ))}
+                {displayedEleves.map(eleve => (
+                    <EleveCard
+                        key={eleve._id}
+                        classe={classesById.get(eleve.current_classe) || {}}
+                        eleve={eleve}
+                        onEdit={e => { setSelected(e); setEditType("eleve"); setShowModal(true); }}
+                        viewMode={viewMode}
+                    />
+                ))}
             </ul>
             :
-            <div style={{ textAlign: 'center', marginTop: '2em', fontSize: '1.3em' }}>Chargement...</div>
+            <LoadingState label="Chargement des élèves…" />
         }
 
         {children}
